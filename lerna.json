@@ -1,0 +1,10 @@
+{
+  "packages": [
+    "session-service",
+    "user-service",
+    "email-service",
+    "message-authentication-service",
+    "secret-link-service"
+  ],
+  "version": "0.0.0"
+}

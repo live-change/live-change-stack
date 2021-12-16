@@ -1,0 +1,15 @@
+{
+  "name": "live-change-services",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "session-service",
+    "user-service",
+    "email-service",
+    "message-authentication-service",
+    "secret-link-service"
+  ],
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
+}

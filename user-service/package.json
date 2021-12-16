@@ -1,0 +1,27 @@
+{
+  "name": "@live-change/user-service",
+  "version": "0.1.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-services.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-services/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-services",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "dependencies": {
+    "@live-change/framework": "^0.5.7",
+    "@live-change/relations-plugin": "^0.1.10"
+  }
+}

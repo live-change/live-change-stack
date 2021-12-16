@@ -1,0 +1,31 @@
+{
+  "name": "@live-change/email-service",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-services.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-services/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-services",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "dependencies": {
+    "@live-change/framework": "^0.5.7",
+    "nodemailer": "^6.7.2",
+    "got": "^11.8.3",
+    "jsdom": "^18.1.1",
+    "inline-css": "3.0.0",
+    "html-to-text": "8.1.0"
+  }
+}
