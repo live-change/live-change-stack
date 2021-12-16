@@ -1,6 +1,6 @@
 {
   "name": "@live-change/message-authentication-service",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -23,5 +23,6 @@
   "dependencies": {
     "@live-change/framework": "^0.5.7",
     "nodemailer": "^6.7.2"
-  }
+  },
+  "gitHead": "e7b365e7bcc4512d9922d9fbe5eb21ed1b418c63"
 }
