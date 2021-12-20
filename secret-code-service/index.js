@@ -1,9 +1,9 @@
 const nodemailer = require('nodemailer')
 const app = require("@live-change/framework").app()
-const { randomString } = require('@live-change/uid')
+const crypto = require('crypto')
 
 const definition = app.createServiceDefinition({
-  name: "secretLink"
+  name: "secretCode"
 })
 const config = definition.config
 
@@ -23,8 +23,8 @@ const secretProperties = {
   }
 }
 
-const Link = definition.model({
-  name: "Link",
+const Code = definition.model({
+  name: "Code",
   properties: {
     ...targetProperties,
     ...secretProperties,
@@ -34,8 +34,8 @@ const Link = definition.model({
     }
   },
   indexes: {
-    bySecretCode: {
-      property: 'secretCode'
+    byAuthenticationAndSecretCode: {
+      property: ['authentication', 'secretCode']
     },
     byAuthentication: {
       property: 'authentication'
@@ -44,16 +44,16 @@ const Link = definition.model({
 })
 
 definition.event({
-  name: 'linkCreated',
-  execute({ link, authentication, secretCode, expire }) {
-    return Link.create({ id: link, authentication, secretCode, expire })
+  name: 'codeCreated',
+  execute({ code, authentication, secretCode, expire }) {
+    return Code.create({ id: code, authentication, secretCode, expire })
   }
 })
 
 definition.event({
-  name: 'linkExpired',
-  execute({ link }) {
-    return Link.update(link, { date: new Date(Date.now() - 1000) })
+  name: 'codeExpired',
+  execute({ code }) {
+    return Code.update(code, { date: new Date(Date.now() - 1000) })
   }
 })
 
@@ -64,19 +64,20 @@ definition.trigger({
   },
   waitForEvents: true,
   async execute({ authentication }, context, emit) {
-    const link = app.generateUid()
-    const secretCode = randomString(config.secretCodeLength || 16)
+    const code = app.generateUid()
+    const digits = config.digits || 6
+    const secretCode = crypto.randomInt(0, Math.pow(10, digits)).toFixed().padStart(digits, '0')
     const expire = new Date()
-    expire.setTime(Date.now() + (config.expireTime || 24*60*60*1000))
+    expire.setTime(Date.now() + (config.expireTime || 10*60*1000))
     emit({
-      type: 'linkCreated',
-      link,
+      type: 'codeCreated',
+      code,
       authentication,
       secretCode, expire
     })
     return {
-      type: 'link',
-      link,
+      type: 'code',
+      code,
       expire,
       secret: {
         secretCode
@@ -92,23 +93,24 @@ definition.trigger({
   },
   waitForEvents: true,
   async execute({ authentication }, context, emit) {
-    const currentLink = await Link.indexObjectGet('byAuthentication', authentication)
-    if(currentLink) {
-      emit({ type: 'linkExpired', link: currentLink.id })
+    const currentCode = await Code.indexObjectGet('byAuthentication', authentication)
+    if(currentCode) {
+      emit({ type: 'codeExpired', code: currentCode.id })
     }
-    const link = app.generateUid()
-    const secretCode = randomString(config.secretCodeLength || 16)
+    const code = app.generateUid()
+    const digits = config.digits || 6
+    const secretCode = crypto.randomInt(0, Math.pow(10, digits)).toFixed().padStart(digits, '0')
     const expire = new Date()
     expire.setTime(Date.now() + (config.expireTime || 24*60*60*1000))
     emit({
-      type: 'linkCreated',
-      link,
+      type: 'codeCreated',
+      code,
       authentication,
       secretCode, expire
     })
     return {
-      type: 'link',
-      link,
+      type: 'code',
+      code,
       expire,
       secret: {
         secretCode
@@ -117,29 +119,23 @@ definition.trigger({
   }
 })
 
-definition.view({
-  name: "link",
-  properties: {
-    ...secretProperties
-  },
-  daoPath({ secretCode }, { client, context }) {
-    return Link.indexObjectPath('bySecretCode', secretCode)
-  }
-})
-
 definition.trigger({
-  name: "checkLinkSecret",
+  name: "checkCodeSecret",
   properties: {
     secret: {
       type: String,
       validation: ['nonEmpty']
+    },
+    authentication: {
+      type: String,
+      validation: ['nonEmpty']
     }
   },
-  async execute({ secret }, context, emit) {
-    const linkData = await Link.indexObjectGet('bySecretCode', secret)
-    if(!linkData) throw 'linkNotFound'
-    if(new Date().toISOString() > linkData.expire) throw "linkExpired"
-    return linkData.authentication
+  async execute({ secret, authentication }, context, emit) {
+    const codeData = await Code.indexObjectGet('byAuthenticationAndSecretCode', [authentication, secret])
+    if(!codeData) throw { properties: { secret: 'codeNotFound' } }
+    if(new Date().toISOString() > codeData.expire) throw { properties: { secret: "codeExpired" } }
+    return codeData.authentication
   }
 })
 

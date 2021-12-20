@@ -137,15 +137,19 @@ definition.action({
     secret: {
       type: String,
       validation: ['nonEmpty']
+    },
+    authentication: {
+      type: Authentication
     }
   },
-  async execute({ secretType, secret }, { client, service }, emit) {
+  async execute({ secretType, secret, authentication = undefined }, { client, service }, emit) {
     const secretTypeUpperCase = secretType[0].toUpperCase() + secretType.slice(1)
     const checkResults = await service.trigger({
       type: 'check' + secretTypeUpperCase + 'Secret',
-      secret
+      secret,
+      authentication
     })
-    const authentication = checkResults[0]
+    authentication = checkResults[0]
     const authenticationData = await Authentication.get(authentication)
     if(authenticationData.state == 'used') throw 'authenticationUsed'
     const actionName = authenticationData.action
@@ -160,7 +164,10 @@ definition.action({
       type: 'authenticationUsed',
       authentication
     })
-    return actionResults[0]
+    return {
+      result: actionResults[0],
+      targetPage: authenticationData.targetPage
+    }
   }
 })
 
