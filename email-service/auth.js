@@ -79,6 +79,7 @@ definition.trigger({
     }
   },
   async execute({ user, email }, { client, service }, emit) {
+    if(!email) throw new Error("no email")
     const emailData = await Email.get(email)
     if(emailData) throw 'taken'
     emit({

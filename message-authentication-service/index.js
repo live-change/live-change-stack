@@ -153,7 +153,7 @@ definition.action({
       type: actionName+'Authenticated',
       ...authenticationData.actionProperties,
       contactType: authenticationData.contactType,
-      contact: autoValidation.contact,
+      contact: authenticationData.contact,
       session: client.session
     })
     emit({

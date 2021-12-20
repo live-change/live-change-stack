@@ -31,7 +31,7 @@ definition.event({
 const Session = definition.foreignModel('session', 'Session')
 
 const AuthenticatedUser = definition.model({
-  name: "LoggedInUser",
+  name: "AuthenticatedUser",
   sessionProperty: {
   },
   userItem: {

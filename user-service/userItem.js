@@ -8,7 +8,6 @@ definition.processor(function(service, app) {
   for(let modelName in service.models) {
     const model = service.models[modelName]
     if(model.userItem) {
-      console.trace("PROCESS MODEL " + modelName)
       if (model.properties.user) throw new Error('user property already exists!!!')
       const originalModelProperties = {...model.properties}
       const modelProperties = Object.keys(model.properties)
