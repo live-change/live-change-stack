@@ -4,6 +4,7 @@
     "user-service",
     "email-service",
     "message-authentication-service",
+    "password-authentication-service",
     "secret-link-service"
   ],
   "publishConfig": {
