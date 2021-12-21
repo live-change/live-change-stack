@@ -13,11 +13,6 @@ const Email = definition.model({
   },
   userItem: {
     userReadAccess: () => true
-  },
-  indexes: {
-    byEmail: {
-      property: 'email'
-    }
   }
 })
 
@@ -68,7 +63,7 @@ definition.trigger({
   },
   async execute({ email }, context, emit) {
     const emailData = await Email.get(email)
-    if(emailData) throw 'taken'
+    if(emailData) throw { properties: { email: 'taken' } }
     return true
   }
 })
@@ -83,7 +78,21 @@ definition.trigger({
   },
   async execute({ email }, context, emit) {
     const emailData = await Email.get(email)
-    if(!emailData) throw 'notFound'
+    if(!emailData) throw { properties: { email: 'notFound' } }
+    return emailData
+  }
+})
+
+definition.trigger({
+  name: "getEmailOrNull",
+  properties: {
+    email: {
+      type: String,
+      validation: ['nonEmpty', 'email']
+    }
+  },
+  async execute({ email }, context, emit) {
+    const emailData = await Email.get(email)
     return emailData
   }
 })
@@ -103,7 +112,7 @@ definition.trigger({
   async execute({ user, email }, { client, service }, emit) {
     if(!email) throw new Error("no email")
     const emailData = await Email.get(email)
-    if(emailData) throw 'taken'
+    if(emailData) throw { properties: { email: 'taken' } }
     emit({
       type: 'emailConnected',
       user, email
@@ -126,7 +135,7 @@ definition.trigger({
   },
   async execute({ user, email }, { client, service }, emit) {
     const emailData = await Email.get(email)
-    if(!emailData) throw 'notFound'
+    if(!emailData) throw { properties: { email: 'notFound' } }
     emit({
       type: 'emailDisconnected',
       user, email
@@ -144,7 +153,7 @@ definition.trigger({
   },
   async execute({ email, session }, { client, service }, emit) {
     const emailData = await Email.get(email)
-    if(!emailData) throw 'emailNotFound'
+    if(!emailData) throw { properties: { email: 'notFound' } }
     const { user } = emailData
     return service.trigger({
       type: 'signIn',

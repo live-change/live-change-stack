@@ -259,6 +259,23 @@ definition.trigger({
   }
 })
 
+definition.trigger({
+  name: 'connectWithMessageAuthenticated',
+  waitForEvents: true,
+  properties: {
+    ...contactProperties
+  },
+  async execute({ contactType, contact, user }, { client, service }, emit) {
+    const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
+    await service.trigger({
+      type: 'connect' + contactTypeUpperCase,
+      [contactType]: contact,
+      user
+    })
+    return user
+  }
+})
+
 for(const contactType of config.contactTypes) {
   const contactTypeUpperCaseName = contactType[0].toUpperCase() + contactType.slice(1)
 
@@ -326,17 +343,34 @@ for(const contactType of config.contactTypes) {
 
   if(contactConfig.connect || config.connect ) {
     definition.action({
-      name: 'connect',
+      name: 'connect' + contactTypeUpperCaseName,
       properties: {
         ...contactTypeProperties
       },
+      access: (params, { client }) => {
+        return !!client.user
+      },
       async execute({ [contactTypeName]: contact }, { client, service }, emit) {
-
+        await service.trigger({
+          type: 'checkNew' + contactTypeUName,
+          [contactType]: contact,
+        })
+        return service.triggerService(definition.name, {
+          type: 'authenticateWithMessage',
+          contactType,
+          contact,
+          action: 'connectWithMessage',
+          actionProperties: {
+            user: client.user
+          },
+          messageData: {
+            user: client.user
+          },
+          targetPage: config.signUpTargetPage || { name: 'user:connectFinished' }
+        })
       }
     })
   }
-
-
 
   if(contactConfig.signUp || config.signUp) {
     definition.action({
@@ -346,7 +380,31 @@ for(const contactType of config.contactTypes) {
         ...contactTypeProperties
       },
       async execute({ [contactType]: contact }, { client, service }, emit) {
-
+        const contactData = await service.trigger({
+          type: 'get' + contactTypeUName + 'OrNull',
+          [contactType]: contact,
+        })
+        if(contactData) {
+          const messageData = {
+            user: contactData.user
+          }
+          return service.triggerService(definition.name, {
+            type: 'authenticateWithMessage',
+            contactType,
+            contact,
+            messageData,
+            action: 'signInWithMessage',
+            targetPage: config.signInTargetPage || { name: 'user:signInFinished' }
+          })
+        } else {
+          return service.triggerService(definition.name, {
+            type: 'authenticateWithMessage',
+            contactType,
+            contact,
+            action: 'signUpWithMessage',
+            targetPage: config.signUpTargetPage || { name: 'user:signUpFinished' }
+          })
+        }
       }
     })
   }
