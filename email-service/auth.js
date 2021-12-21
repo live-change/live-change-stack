@@ -1,9 +1,16 @@
+const { validation } = require('@live-change/framework')
 const definition = require('./definition.js')
 
 const User = definition.foreignModel('user', 'User')
 
 const Email = definition.model({
   name: 'Email',
+  properties: {
+    email: {
+      type: String,
+      validation: ['nonEmpty', 'email']
+    }
+  },
   userItem: {
     userReadAccess: () => true
   },
@@ -67,6 +74,21 @@ definition.trigger({
 })
 
 definition.trigger({
+  name: "getEmail",
+  properties: {
+    email: {
+      type: String,
+      validation: ['nonEmpty', 'email']
+    }
+  },
+  async execute({ email }, context, emit) {
+    const emailData = await Email.get(email)
+    if(!emailData) throw 'notFound'
+    return emailData
+  }
+})
+
+definition.trigger({
   name: "connectEmail",
   properties: {
     email: {
@@ -120,7 +142,7 @@ definition.trigger({
       type: String
     }
   },
-  async execute({ email }, { client, service }, emit) {
+  async execute({ email, session }, { client, service }, emit) {
     const emailData = await Email.get(email)
     if(!emailData) throw 'emailNotFound'
     const { user } = emailData

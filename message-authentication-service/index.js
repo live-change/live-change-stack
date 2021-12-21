@@ -41,11 +41,18 @@ const targetProperties = {
   }
 }
 
+const messageProperties = {
+  messageData: {
+    type: Object
+  }
+}
+
 const Authentication = definition.model({
   name: 'Authentication',
   properties: {
     ...contactProperties,
     ...targetProperties,
+    ...messageProperties,
     state: {
       type: "String",
       validation: ['nonEmpty'],
@@ -69,11 +76,12 @@ definition.view({
 
 definition.event({
   name: 'authenticationCreated',
-  execute({ authentication, contactType, contact, action, actionProperties, targetPage }) {
+  execute({ authentication, contactType, contact, action, actionProperties, targetPage, messageData }) {
     return Authentication.create({
       id: authentication,
       contactType, contact,
       action, actionProperties, targetPage,
+      messageData,
       state: 'created'
      })
   }
@@ -91,9 +99,11 @@ definition.trigger({
   waitForEvents: true,
   properties: {
     ...contactProperties,
-    ...targetProperties
+    ...targetProperties,
+    ...messageProperties
   },
-  async execute({ contactType, contact, action, actionProperties, targetPage }, { client, service }, emit) {
+  async execute({ contactType, contact, action, actionProperties, targetPage, messageData },
+      { client, service }, emit) {
     const authentication = app.generateUid()
     const secrets = await service.trigger({
       type: 'authenticationSecret',
@@ -107,7 +117,8 @@ definition.trigger({
         action,
         contactType,
         contact,
-        secrets
+        secrets,
+        ...messageData
       }
     })
     emit({
@@ -117,9 +128,11 @@ definition.trigger({
       contact,
       action,
       actionProperties,
-      targetPage
+      targetPage,
+      messageData
     })
     return {
+      type: 'sent',
       authentication,
       secrets: secrets.map(({ secret, ...notSecret }) => notSecret)
     }
@@ -196,7 +209,8 @@ definition.action({
         action,
         contactType,
         contact,
-        secrets
+        secrets,
+        ...authentication.messageData
       }
     })
     return {
@@ -234,11 +248,12 @@ definition.trigger({
   properties: {
     ...contactProperties
   },
-  async execute({ contactType, contact }, { client, service }, emit) {
+  async execute({ contactType, contact, session }, { client, service }, emit) {
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     const user = await service.trigger({
       type: 'signIn' + contactTypeUpperCase,
       [contactType]: contact,
+      session
     })
     return user
   }
@@ -257,31 +272,6 @@ for(const contactType of config.contactTypes) {
       type: String,
       validation: ['nonEmpty', contactTypeName]
     }
-  }
-
-  if(contactConfig.signUp || config.signUp || contactConfig.signIn || config.signIn) {
-    definition.action({
-      name: 'signIn' + contactTypeUpperCaseName,
-      waitForEvents: true,
-      properties: {
-        ...contactTypeProperties
-      },
-      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
-
-      }
-    })
-  }
-
-  if(contactConfig.connect || config.connect ) {
-    definition.action({
-      name: 'connect',
-      properties: {
-        ...contactTypeProperties
-      },
-      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
-
-      }
-    })
   }
 
   if(contactConfig.signUp || config.signUp) {
@@ -306,6 +296,47 @@ for(const contactType of config.contactTypes) {
       }
     })
   }
+
+  if(contactConfig.signUp || config.signUp || contactConfig.signIn || config.signIn) {
+    definition.action({
+      name: 'signIn' + contactTypeUpperCaseName,
+      waitForEvents: true,
+      properties: {
+        ...contactTypeProperties
+      },
+      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
+        const contactData = await service.trigger({
+          type: 'get' + contactTypeUName,
+          [contactType]: contact,
+        })
+        const messageData = {
+          user: contactData.user
+        }
+        return service.triggerService(definition.name, {
+          type: 'authenticateWithMessage',
+          contactType,
+          contact,
+          messageData,
+          action: 'signInWithMessage',
+          targetPage: config.signInTargetPage || { name: 'user:signInFinished' }
+        })
+      }
+    })
+  }
+
+  if(contactConfig.connect || config.connect ) {
+    definition.action({
+      name: 'connect',
+      properties: {
+        ...contactTypeProperties
+      },
+      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
+
+      }
+    })
+  }
+
+
 
   if(contactConfig.signUp || config.signUp) {
     definition.action({
