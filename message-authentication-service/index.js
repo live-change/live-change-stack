@@ -231,7 +231,7 @@ definition.trigger({
     const user = app.generateUid()
     await service.trigger({
       type: 'connect' + contactTypeUpperCase,
-      [contactType]: contact,
+      [contactTypeName]: contact,
       user
     })
     await service.trigger({
@@ -277,15 +277,13 @@ definition.trigger({
 })
 
 for(const contactType of config.contactTypes) {
-  const contactTypeUpperCaseName = contactType[0].toUpperCase() + contactType.slice(1)
 
   const contactConfig = (typeof contactType == "string") ? { name: contactType } : contactType
-
   const contactTypeName = contactConfig.name
   const contactTypeUName = contactTypeName[0].toUpperCase() + contactTypeName.slice(1)
 
   const contactTypeProperties = {
-    [contactType]: {
+    [contactTypeName]: {
       type: String,
       validation: ['nonEmpty', contactTypeName]
     }
@@ -293,7 +291,7 @@ for(const contactType of config.contactTypes) {
 
   if(contactConfig.signUp || config.signUp) {
     definition.action({
-      name: 'signUp' + contactTypeUpperCaseName,
+      name: 'signUp' + contactTypeUName,
       waitForEvents: true,
       properties: {
         ...contactTypeProperties
@@ -301,7 +299,7 @@ for(const contactType of config.contactTypes) {
       async execute({ [contactTypeName]: contact }, { client, service }, emit) {
         await service.trigger({
           type: 'checkNew' + contactTypeUName,
-          [contactType]: contact,
+          [contactTypeName]: contact,
         })
         return service.triggerService(definition.name, {
           type: 'authenticateWithMessage',
@@ -316,7 +314,7 @@ for(const contactType of config.contactTypes) {
 
   if(contactConfig.signUp || config.signUp || contactConfig.signIn || config.signIn) {
     definition.action({
-      name: 'signIn' + contactTypeUpperCaseName,
+      name: 'signIn' + contactTypeUName,
       waitForEvents: true,
       properties: {
         ...contactTypeProperties
@@ -324,7 +322,7 @@ for(const contactType of config.contactTypes) {
       async execute({ [contactTypeName]: contact }, { client, service }, emit) {
         const contactData = await service.trigger({
           type: 'get' + contactTypeUName,
-          [contactType]: contact,
+          [contactTypeName]: contact,
         })
         const messageData = {
           user: contactData.user
@@ -343,7 +341,7 @@ for(const contactType of config.contactTypes) {
 
   if(contactConfig.connect || config.connect ) {
     definition.action({
-      name: 'connect' + contactTypeUpperCaseName,
+      name: 'connect' + contactTypeUName,
       properties: {
         ...contactTypeProperties
       },
@@ -353,7 +351,7 @@ for(const contactType of config.contactTypes) {
       async execute({ [contactTypeName]: contact }, { client, service }, emit) {
         await service.trigger({
           type: 'checkNew' + contactTypeUName,
-          [contactType]: contact,
+          [contactTypeName]: contact,
         })
         return service.triggerService(definition.name, {
           type: 'authenticateWithMessage',
@@ -370,19 +368,45 @@ for(const contactType of config.contactTypes) {
         })
       }
     })
+
+    definition.action({
+      name: 'disconnect' + contactTypeUName,
+      properties: {
+        ...contactTypeProperties
+      },
+      access: (params, { client }) => {
+        return !!client.user
+      },
+      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
+        const contacts = (await service.trigger({
+          type: 'getConnectedContacts',
+          user: client.user
+        })).flat()
+        console.log("CONTACTS", contacts, contactTypeName, contact)
+        const contactData = contacts.find(c => c.type == contactTypeName && c.contact == contact)
+        if(!contactData) throw 'notFound'
+        if(contacts.length == 1) throw 'lastOne'
+        console.log("DISCONNECT", contact)
+        return await service.trigger({
+          type: 'disconnect' + contactTypeUName,
+          [contactTypeName]: contact,
+          user: client.user
+        })
+      }
+    })
   }
 
   if(contactConfig.signUp || config.signUp) {
     definition.action({
-      name: 'signInOrSignUp' + contactTypeUpperCaseName,
+      name: 'signInOrSignUp' + contactTypeUName,
       waitForEvents: true,
       properties: {
         ...contactTypeProperties
       },
-      async execute({ [contactType]: contact }, { client, service }, emit) {
+      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
         const contactData = await service.trigger({
           type: 'get' + contactTypeUName + 'OrNull',
-          [contactType]: contact,
+          [contactTypeName]: contact,
         })
         if(contactData) {
           const messageData = {

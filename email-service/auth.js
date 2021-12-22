@@ -136,6 +136,7 @@ definition.trigger({
   async execute({ user, email }, { client, service }, emit) {
     const emailData = await Email.get(email)
     if(!emailData) throw { properties: { email: 'notFound' } }
+    if(emailData.user != user) throw { properties: { email: 'notFound' } }
     emit({
       type: 'emailDisconnected',
       user, email
@@ -159,6 +160,20 @@ definition.trigger({
       type: 'signIn',
       user, session
     })
+  }
+})
+
+definition.trigger({
+  name: "getConnectedContacts",
+  properties: {
+    user: {
+      type: User,
+      validation: ['nonEmpty', 'email']
+    }
+  },
+  async execute({ user }, context, emit) {
+    const emails = await Email.indexRangeGet('byUser', user)
+    return emails.map(email => ({ ...email, type: 'email', contact: email.email }))
   }
 })
 
