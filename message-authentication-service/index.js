@@ -231,7 +231,7 @@ definition.trigger({
     const user = app.generateUid()
     await service.trigger({
       type: 'connect' + contactTypeUpperCase,
-      [contactTypeName]: contact,
+      [contactType]: contact,
       user
     })
     await service.trigger({

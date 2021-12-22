@@ -49,16 +49,6 @@ definition.trigger({
 
 definition.action({
   name: 'signOut',
-  properties: {
-    user: {
-      type: User,
-      validation: ['nonEmpty']
-    },
-    session: {
-      type: Session,
-      validation: ['nonEmpty']
-    }
-  },
   async execute({ }, { client, service }, emit) {
     if(!client.user) throw "notSignedIn"
     emit({
