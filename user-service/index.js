@@ -40,6 +40,8 @@ definition.trigger({
     }
   },
   async execute({ user, session }, { client, service }, emit) {
+    const userData = await User.get(user)
+    if(!userData) throw 'userNotFound'
     emit({
       type: "signedIn",
       user, session
@@ -85,5 +87,25 @@ definition.trigger({
   }
 })
 
+definition.action({
+  name: 'deleteMe',
+  properties: {
+  },
+  access: (params, { client }) => {
+    return !!client.user
+  },
+  async execute({ }, { client, service }, emit) {
+    const user = client.user
+    await service.trigger({
+      type: 'userDeleted',
+      user
+    })
+    emit([{
+      type: "deleted",
+      user
+    }])
+    return user
+  }
+})
 
 module.exports = definition

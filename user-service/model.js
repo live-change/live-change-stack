@@ -72,4 +72,17 @@ definition.event({
   }
 })
 
+definition.event({
+  name: "deleted",
+  properties: {
+    user: {
+      type: User
+    }
+  },
+  async execute({ user }) {
+    const authenticated = await AuthenticatedUser.indexRangeGet('byUser', user)
+    await Promise.all([ User.delete(user) ].concat(authenticated.map(auth => AuthenticatedUser.delete(auth))))
+  }
+})
+
 module.exports = { User, AuthenticatedUser }

@@ -53,6 +53,20 @@ definition.event({
   }
 })
 
+definition.event({
+  name: "userDeleted",
+  properties: {
+    user: {
+      type: User,
+      validation: ['nonEmpty']
+    }
+  },
+  async execute({ user }) {
+    const emails = await Email.indexRangeGet('byUser', user)
+    await Promise.all(emails.map(email => Email.delete(email)))
+  }
+})
+
 definition.trigger({
   name: "checkNewEmail",
   properties: {
@@ -174,6 +188,21 @@ definition.trigger({
   async execute({ user }, context, emit) {
     const emails = await Email.indexRangeGet('byUser', user)
     return emails.map(email => ({ ...email, type: 'email', contact: email.email }))
+  }
+})
+
+definition.trigger({
+  name: 'userDeleted',
+  properties: {
+    user: {
+      type: User
+    }
+  },
+  async execute({ user }, { service }, emit) {
+    emit([{
+      type: "userDeleted",
+      user
+    }])
   }
 })
 
