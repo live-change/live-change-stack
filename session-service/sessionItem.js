@@ -45,7 +45,7 @@ definition.processor(function(service, app) {
           const viewName = 'mySession' + modelName + 'sBy' + sortFieldUc
           service.views[viewName] = new ViewDefinition({
             name: viewName,
-            access: config.readAccess,
+            access: config.sessionReadAccess,
             properties: App.rangeProperties,
             daoPath(range, { client, context }) {
               return modelRuntime().sortedIndexRangePath('bySession' + sortFieldUc, [client.session], range )

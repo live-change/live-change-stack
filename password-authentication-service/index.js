@@ -1,11 +1,15 @@
-const autoValidation = require('@live-change/framework/lib/processors/autoValidation')
-const nodemailer = require('nodemailer')
+const crypto = require('crypto')
 const app = require("@live-change/framework").app()
+const user = require('@live-change/user-service')
+const { AuthenticatedUser } = require("../user-service/model.js")
 
 const definition = app.createServiceDefinition({
-  name: "passwordAuthentication"
+  name: "passwordAuthentication",
+  use: [ user ]
 })
 const config = definition.config
+
+const User = definition.foreignModel('user', 'User')
 
 const secretProperties = {
   passwordHash: {
@@ -16,6 +20,69 @@ const secretProperties = {
     validation: config.passwordValidation || ['password']
   },
 }
+
+const PasswordAuthentication = definition.model({
+  name: 'PasswordAuthentication',
+  userProperty: {
+    userViews: [
+      { suffix: 'Exists', fields: ['user'] }
+    ]
+  },
+  properties: {
+    ...secretProperties,
+  }
+})
+
+definition.event({
+  name: 'passwordAuthenticationSet',
+  async execute({ user, passwordHash }) {
+    await PasswordAuthentication.create({ id: user, user, passwordHash })
+  }
+})
+
+definition.action({
+  name: 'setPassword',
+  waitForEvents: true,
+  properties: {
+    ...secretProperties
+  },
+  access: (params, { client }) => {
+    return !!client.user
+  },
+  async execute({ passwordHash }, { client, service }, emit) {
+    const user = client.user
+    const passwordAuthenticationData = await PasswordAuthentication.get(user)
+    if(passwordAuthenticationData) throw 'exists'
+    emit({
+      type: 'passwordAuthenticationSet',
+      user, passwordHash
+    })
+  }
+})
+
+definition.action({
+  name: 'changePassword',
+  waitForEvents: true,
+  properties: {
+    currentPasswordHash: secretProperties.passwordHash,
+    ...secretProperties
+  },
+  access: (params, { client }) => {
+    return !!client.user
+  },
+  async execute({ currentPasswordHash, passwordHash }, { client, service }, emit) {
+    const user = client.user
+    const passwordAuthenticationData = await PasswordAuthentication.get(user)
+    if(!passwordAuthenticationData) throw 'notFound'
+    if(currentPasswordHash != passwordAuthenticationData.passwordHash) throw { properties: {
+      currentPasswordHash: 'wrongPassword'
+    } }
+    emit({
+      type: 'passwordAuthenticationSet',
+      user, passwordHash
+    })
+  }
+})
 
 for(const contactType of config.contactTypes) {
   const contactTypeUpperCaseName = contactType[0].toUpperCase() + contactType.slice(1)

@@ -35,9 +35,23 @@ definition.processor(function(service, app) {
           access: config.sessionReadAccess,
           daoPath(params, { client, context }) {
             return modelRuntime().path(client.session)
-            //return modelRuntime().indexObjectPath('bySession', client.session)
           }
         })
+      }
+
+      if(config.sessionViews) {
+        for(const view of config.sessionViews) {
+          const viewName = view.name || ('mySession' + (view.prefix || '') + modelName + (view.suffix || ''))
+          service.views[viewName] = new ViewDefinition({
+            name: viewName,
+            access: view.access,
+            daoPath(params, { client, context }) {
+              return view.fields
+              ? modelRuntime().limitedPath(client.session, view.fields)
+              : modelRuntime().path(client.session)
+            }
+          })
+        }
       }
 
       if(config.sessionSetAccess || config.sessionWriteAccess) {

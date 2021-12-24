@@ -32,7 +32,10 @@ definition.processor(function(service, app) {
         const viewName = 'myUser' + modelName + 's'
         service.views[viewName] = new ViewDefinition({
           name: viewName,
-          access: config.userReadAccess,
+          access(params, context) {
+            if(!context.client.user) return false
+            return config.userReadAccess ? config.userReadAccess(params, context) : true
+          },
           properties: App.rangeProperties,
           daoPath(range, { client, context }) {
             const path = modelRuntime().indexRangePath('byUser', [client.user], range )
@@ -44,7 +47,10 @@ definition.processor(function(service, app) {
           const viewName = 'myUser' + modelName + 'sBy' + sortFieldUc
           service.views[viewName] = new ViewDefinition({
             name: viewName,
-            access: config.readAccess,
+            access(params, context) {
+              if(!context.client.user) return false
+              return config.userReadAccess ? config.userReadAccess(params, context) : true
+            },
             properties: App.rangeProperties,
             daoPath(range, { client, context }) {
               return modelRuntime().sortedIndexRangePath('byUser' + sortFieldUc, [client.user], range )

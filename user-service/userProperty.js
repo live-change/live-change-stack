@@ -32,11 +32,32 @@ definition.processor(function(service, app) {
         const viewName = 'myUser' + modelName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
-          access: config.userReadAccess,
+          access(params, context) {
+            if(!context.client.user) return false
+            return config.userReadAccess ? config.userReadAccess(params, context) : true
+          },
           daoPath(params, { client, context }) {
             return modelRuntime().path(client.user)
           }
         })
+      }
+
+      if(config.userViews) {
+        for(const view of config.userViews) {
+          const viewName = view.name || ('myUser' + (view.prefix || '') + modelName + (view.suffix || ''))
+          service.views[viewName] = new ViewDefinition({
+            name: viewName,
+            access(params, context) {
+              if(!context.client.user) return false
+              return view.access ? view.access(params, context) : true
+            },
+            daoPath(params, { client, context }) {
+              return view.fields
+              ? modelRuntime().limitedPath(client.user, view.fields)
+              : modelRuntime().path(client.user)
+            }
+          })
+        }
       }
 
       if(config.userSetAccess || config.userWriteAccess) {
