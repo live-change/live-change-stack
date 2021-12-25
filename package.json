@@ -10,6 +10,5 @@
     "secret-link-service"
   ],
   "devDependencies": {
-    "lerna": "^4.0.0"
   }
 }
