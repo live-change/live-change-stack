@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-level",
-  "version": "0.1.15",
+  "version": "0.5.1",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -21,14 +21,14 @@
   },
   "homepage": "https://github.com/live-change/db-store-level",
   "devDependencies": {
-    "rimraf": "^3.0.2",
-    "tape": "^5.3.1",
     "encoding-down": "^7.1.0",
     "leveldown": "^6.1.0",
     "levelup": "^5.1.1",
     "memdown": "^6.1.1",
+    "rimraf": "^3.0.2",
     "rocksdb": "^5.1.1",
-    "subleveldown": "^6.0.1"
+    "subleveldown": "^6.0.1",
+    "tape": "^5.3.1"
   },
   "dependencies": {
     "@live-change/dao": "^0.3.3",
