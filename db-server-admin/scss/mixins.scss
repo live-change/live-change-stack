@@ -1,0 +1,7 @@
+@mixin time {
+  font-size: 0.9em;
+  color: rgba(0,0,0, 0.7);
+  & > img {
+    height: 0.7em;
+  }
+}

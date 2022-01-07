@@ -1,0 +1,37 @@
+{
+  "name": "@live-change/db-store-level",
+  "version": "0.1.15",
+  "description": "Database with observable data for live queries",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/db-store-level.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/db-store-level/issues"
+  },
+  "homepage": "https://github.com/live-change/db-store-level",
+  "devDependencies": {
+    "rimraf": "^3.0.2",
+    "tape": "^5.3.1",
+    "encoding-down": "^7.1.0",
+    "leveldown": "^6.1.0",
+    "levelup": "^5.1.1",
+    "memdown": "^6.1.1",
+    "rocksdb": "^5.1.1",
+    "subleveldown": "^6.0.1"
+  },
+  "dependencies": {
+    "@live-change/dao": "^0.3.3",
+    "@live-change/interval-tree": "^1.0.12"
+  }
+}

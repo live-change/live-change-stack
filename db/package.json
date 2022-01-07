@@ -1,0 +1,37 @@
+{
+  "name": "@live-change/db",
+  "version": "0.3.64",
+  "description": "Database with observable data for live queries",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/db.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/db/issues"
+  },
+  "homepage": "https://github.com/live-change/db",
+  "devDependencies": {
+    "@live-change/db-store-level": "^0.1.14",
+    "@live-change/db-store-lmdb": "^0.1.13",
+    "minimist": ">=1.2.3",
+    "rimraf": "^3.0.2",
+    "sockjs": "^0.3.21",
+    "tape": "^4.13.3",
+    "websocket-extensions": ">=0.1.4"
+  },
+  "dependencies": {
+    "@live-change/dao": "^0.3.3",
+    "get-random-values": "^1.2.2",
+    "node-interval-tree": "^1.3.3"
+  }
+}

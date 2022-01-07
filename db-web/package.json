@@ -1,0 +1,38 @@
+{
+  "name": "@live-change/db-web",
+  "version": "0.1.14",
+  "author": {
+    "email": "michal@laszczewski.com",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "maintainers": [
+    {
+      "email": "michal@laszczewski.com",
+      "name": "Michał Łaszczewski"
+    }
+  ],
+  "homepage": "https://github.com/live-change/db-web",
+  "bugs": {
+    "url": "https://github.com/live-change/db-web/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/live-change/db-web.git"
+  },
+  "description": "live data access object",
+  "readme": "README.md",
+  "directories": {},
+  "license": "MIT",
+  "main": "index.js",
+  "optionalDependencies": {},
+  "devDependencies": {
+    "tape": "^5.2.2"
+  },
+  "dependencies": {
+    "@live-change/dao": "^0.2.16",
+    "@live-change/db": "^0.3.62",
+    "@live-change/db-store-rbtree": "^0.1.1",
+    "debug": "^4.3.1"
+  }
+}

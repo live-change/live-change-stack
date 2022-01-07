@@ -1,0 +1,31 @@
+{
+  "name": "@live-change/db-store-rbtree",
+  "version": "0.1.2",
+  "description": "Database with observable data for live queries",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/db-store-rbtree.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/db-store-rbtree/issues"
+  },
+  "homepage": "https://github.com/live-change/db-store-rbtree",
+  "devDependencies": {
+    "tape": "^4.11.0"
+  },
+  "dependencies": {
+    "@live-change/dao": "^0.2.22",
+    "@live-change/interval-tree": "^1.0.12",
+    "functional-red-black-tree": "^1.0.1"
+  }
+}

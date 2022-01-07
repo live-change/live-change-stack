@@ -1,0 +1,18 @@
+{
+  "packages": [
+    "db",
+    "db-client",
+    "db-server",
+    "db-server-admin",
+    "db-store-indexeddb",
+    "db-store-level",
+    "db-store-lmdb",
+    "db-store-observable-db",
+    "db-store-rbtree",
+    "db-web"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.5.0"
+}
