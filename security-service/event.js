@@ -23,22 +23,10 @@ const eventProperties = {
     type: String
   },
   keys: {
-    type: Array,
-    of: {
-      type: Object,
-      properties: {
-        key: {
-          type: {
-            String
-          }
-        },
-        value: {
-          type: {
-            String
-          }
-        }
-      }
-    }
+    type: Object
+  },
+  properties: {
+    type: Object
   },
   timestamp: {
     type: Date
@@ -51,8 +39,21 @@ const Event = definition.model({
     ...eventProperties
   },
   indexes: {
-    byTypeAndTimestamp: {
-      property: ['type', 'timestamp']
+    byKeyTypeAndTimestamp: {
+      function: async function(input, output) {
+        async function spread(event) {
+          for(const key in event.keys) {
+            output.put({
+              id: `${key}:${JSON.stringify(event.keys[key])}:${event.type}:${event.timestamp}_${event.id}`,
+              type: event.type,
+              timestamp: event.timestamp
+            })
+          }
+        }
+        await input.table('securityService_Event').onChange(
+          (obj, oldObj) => spread(obj)
+        )
+      }
     }
   }
 })
@@ -140,30 +141,42 @@ async function processSecurityCounters(event, timestamp, service) {
   for(const counter of counters) {
     const duration = lcp.parseDuration(counter.duration)
     for(const eventType of counter.match) {
-      const request = counterEventsRequests.find(req => req.type == eventType)
-      if(request) {
-        request.max = Math.max(request.max, counter.max)
-        request.duration = Math.max(request.duration, duration)
-      } else {
-        counterEventsRequests.push({
-          type: eventType,
-          max: counter.max,
-          duration
-        })
+      for(const key of counter.keys) {
+        const request = counterEventsRequests.find(req => req.type == eventType && req.key == key)
+        if(request) {
+          request.max = Math.max(request.max, counter.max)
+          request.duration = Math.max(request.duration, duration)
+        } else {
+          counterEventsRequests.push({
+            type: eventType,
+            key,
+            max: counter.max,
+            duration
+          })
+        }
       }
     }
   }
-  console.log("COUNTER EVENTS REQUESTS", counterEventsRequests)
-  const counterEvents = await Promise.all(counterEventsRequests.map(async request => ({
-    type: request.type,
-    events: await Event.indexRangeGet('byTypeAndTimestamp',{
-      gt: `"${request.type}":"${(new Date(now - request.duration - 1000)).toISOString()}"`,
-      lt: `"${request.type}":\xFF`,
+  const indexName = Event.tableName+'_byKeyTypeAndTimestamp'
+  //console.log("ALL COUNTER EVENTS REQUESTS", counterEventsRequests)
+  const counterEvents = await Promise.all(counterEventsRequests.map(async request => {
+    const back = (new Date(now - request.duration - 1000)).toISOString()
+    const prefix = `${request.key}:${JSON.stringify(event.keys[request.key])}:${request.type}:`
+    console.log("{", prefix)
+    const range = {
+      gt: prefix + back, // time limited
+      lt: prefix + '\xFF',
       reverse: true,
       limit: request.max
-    })
-  })))
-  console.log("COUNTER EVENTS", counterEvents)
+    }
+    console.log("R", range)
+    const events = await app.dao.get(['database', 'indexRange', service.databaseName, indexName, range])
+    console.log("RR", events)
+    return {
+      type: request.type,
+      events
+    }
+  }))
   for(const counter of counters) {
     const duration = lcp.parseDuration(counter.duration)
     const fromTime = (new Date(now - duration)).toISOString()
@@ -177,7 +190,7 @@ async function processSecurityCounters(event, timestamp, service) {
       }
     }
     if(count + 1 > counter.max) { // +1 for the new event, not added yet
-      console.log("COUNTER FIRE", counter)
+      //console.log("COUNTER FIRE", counter)
       actions.push(...counter.actions)
     }
   }
@@ -189,17 +202,7 @@ definition.trigger({
   properties: {
     event: {
       type: Object,
-      properties: {
-        type: {
-          type: String
-        },
-        keys: {
-          type: Object
-        },
-        properties: {
-          type: Object
-        }
-      }
+      properties: eventProperties
     },
     client: {
       type: Object
