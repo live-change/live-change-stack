@@ -129,12 +129,33 @@ definition.trigger({
     authentication: {
       type: String,
       validation: ['nonEmpty']
+    },
+    client: {
+      type: Object,
+      validation: ['nonEmpty']
     }
   },
-  async execute({ secret, authentication }, context, emit) {
+  secured: {},
+  async execute({ secret, authentication, client }, context, emit) {
     const codeData = await Code.indexObjectGet('byAuthenticationAndSecretCode', [authentication, secret])
-    if(!codeData) throw { properties: { secret: 'codeNotFound' } }
-    if(new Date().toISOString() > codeData.expire) throw { properties: { secret: "codeExpired" } }
+    if(!codeData) {
+      if(client) {
+        await context.trigger({
+          type: 'securityEvent',
+          event: {
+            type: 'wrong-secret-code',
+            properties: {
+              authentication
+            }
+          },
+          client
+        })
+      }
+      throw { properties: { secret: 'codeNotFound' } }
+    }
+    if(new Date().toISOString() > codeData.expire) {
+      throw { properties: { secret: "codeExpired" } }
+    }
     return codeData.authentication
   }
 })

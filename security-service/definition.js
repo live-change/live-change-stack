@@ -1,10 +1,8 @@
 const app = require("@live-change/framework").app()
 
-const security = require('@live-change/security-service')
-
 const definition = app.createServiceDefinition({
-  name: "messageAuthentication",
-  use: [ security ]
+  name: "securityService"
 })
+const config = definition.config
 
 module.exports = definition

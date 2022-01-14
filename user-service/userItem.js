@@ -21,7 +21,7 @@ definition.processor(function(service, app) {
       const config = model.userItem
       const writeableProperties = modelProperties || config.writableProperties
 
-      console.log("USER ITEM", model)
+      //console.log("USER ITEM", model)
 
       model.itemOf = {
         what: User,

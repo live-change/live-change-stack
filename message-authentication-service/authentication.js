@@ -154,7 +154,8 @@ definition.action({
     const checkResults = await service.trigger({
       type: 'check' + secretTypeUpperCase + 'Secret',
       secret,
-      authentication
+      authentication,
+      client
     })
     authentication = checkResults[0]
     const authenticationData = await Authentication.get(authentication)
