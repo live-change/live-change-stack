@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/db-store-indexeddb.git"
+    "url": "git+https://github.com/live-change/live-change-db.git"
   },
   "author": {
     "email": "michal@laszczewski.com",
@@ -17,9 +17,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/db-store-indexeddb/issues"
+    "url": "https://github.com/live-change/live-change-db/issues"
   },
-  "homepage": "https://github.com/live-change/db-store-indexeddb",
+  "homepage": "https://github.com/live-change/live-change-db",
   "devDependencies": {
     "fake-indexeddb": "^3.1.3",
     "idb": "^6.1.4",

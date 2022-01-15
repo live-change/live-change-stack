@@ -167,6 +167,10 @@ class QueryWriter {
     this.#locks.set(key, promise)
     return await promise
   }
+  timeout(date, callback) {
+    /// ignore
+    return () => {}
+  }
   debug(...args) {
     console.log('QUERY DEBUG', ...args)
   }

@@ -12,13 +12,13 @@
       "name": "Michał Łaszczewski"
     }
   ],
-  "homepage": "https://github.com/live-change/db-server-admin",
+  "homepage": "https://github.com/live-change/live-change-db",
   "bugs": {
-    "url": "https://github.com/live-change/db-server-admin/issues"
+    "url": "https://github.com/live-change/live-change-dbn/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/live-change/db-server-admin.git"
+    "url": "https://github.com/live-change/live-change-db.git"
   },
   "description": "live data access object",
   "readme": "README.md",
@@ -36,7 +36,7 @@
     "core-js": "^3.6.5",
     "javascript-stringify": "^2.0.1",
     "moment": "^2.29.1",
-    "node-sass": "^4.8.3",
+    "node-sass": "^6.0.0",
     "normalize.css": "^8.0.1",
     "open-sans-fonts": "^1.6.2",
     "prism-es6": "^1.2.0",
@@ -46,9 +46,10 @@
     "vue-router": "^3.2.0"
   },
   "devDependencies": {
+    "@vue/babel-preset-app": "^4.5.15",
     "@vue/cli-plugin-babel": "^4.5.0",
     "@vue/cli-service": "^4.5.0",
-    "sass-loader": "^10.1.0",
+    "sass-loader": "^10.2.0",
     "vue-template-compiler": "^2.6.11"
   },
   "gitHead": "af756efb8db9ba90d79774786201cffe9c2162cf"

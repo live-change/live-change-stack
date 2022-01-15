@@ -12,13 +12,13 @@
       "name": "Michał Łaszczewski"
     }
   ],
-  "homepage": "https://github.com/live-change/db-web",
+  "homepage": "https://github.com/live-change/live-change-db",
   "bugs": {
-    "url": "https://github.com/live-change/db-web/issues"
+    "url": "https://github.com/live-change/live-change-db/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/live-change/db-web.git"
+    "url": "https://github.com/live-change/live-change-db.git"
   },
   "description": "live data access object",
   "readme": "README.md",

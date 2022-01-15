@@ -244,6 +244,7 @@ class QueryWriter {
   #locks = new Map()
   #observationMode = false
   #reverse = false
+  #timeouts = new Set()
 
   constructor(observable, database) {
     this.#observable = observable
@@ -335,6 +336,20 @@ class QueryWriter {
     this.#locks.set(key, promise)
     return await promise
   }
+  timeout(date, callback) {
+    const toTimeout = new Date(date).getTime() - Date.now()
+    const timeout = setTimeout(callback, toTimeout)
+    this.#timeouts.add(timeout)
+    return () => {
+      this.#timeouts.delete(timeout)
+    }
+  }
+  dispose() {
+    for(let timeout of this.#timeouts) {
+      clearTimeout(timeout)
+    }
+    this.#timeouts.clear()
+  }
   debug(...args) {
     console.log('QUERY DEBUG', ...args)
   }
@@ -383,6 +398,7 @@ class QueryObservable extends ReactiveDao.ObservableList {
     }
 
     if(this.reader) this.reader.dispose()
+    if(this.writer) this.writer.dispose()
 
     this.disposed = true
     this.respawnId++

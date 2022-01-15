@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/db.git"
+    "url": "git+https://github.com/live-change/live-change-db.git"
   },
   "author": {
     "email": "m8@em8.pl",
@@ -17,9 +17,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/db/issues"
+    "url": "https://github.com/live-change/live-change-db/issues"
   },
-  "homepage": "https://github.com/live-change/db",
+  "homepage": "https://github.com/live-change/live-change-db",
   "devDependencies": {
     "@live-change/db-store-level": "^0.5.3",
     "@live-change/db-store-lmdb": "^0.5.3",

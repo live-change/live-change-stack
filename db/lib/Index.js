@@ -421,6 +421,9 @@ class IndexWriter {
   synchronized(key, code) {
     return this.index.synchronized(key, code)
   }
+  timeout(date, callback) {
+    throw new Error('index timeouts not implemented yet!')
+  }
   debug(...args) {
     console.log('INDEX', this.index.name, 'DEBUG', ...args)
   }

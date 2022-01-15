@@ -229,39 +229,29 @@ class Database {
     return summary
   }
 
-  async openIndex(name) {
-    let config = this.config.indexes[name]
-    if(!config) {
-      debug("INDEX", name, "NOT EXISTS - WAITING!")
-      await new Promise(r => setTimeout(r, 500))
-      config = this.config.indexes[name]
-    }
-    let index, code
-    if(!config) throw new Error(`Index ${name} not found`)
-    code = config.code
-    const params = config.parameters
-    index = new Index(this, name, code, params, config)
-    try {
-      debug("STARTING INDEX", name)
-      await index.startIndex()
-      debug("STARTED INDEX", name)
-    } catch(error) {
-      console.error("INDEX", name, "ERROR", error, "CODE:\n", code)
-      console.error("DELETING INDEX", name)
-      delete this.config.indexes[name]
-      this.indexesListObservable.remove(name)
-      if(this.onAutoRemoveIndex && config) this.onAutoRemoveIndex(name, config.uid)
-      await this.saveConfig(this.config)
-      throw error
-    }
-    this.indexes.set(name, index)
-    return index
-  }
   async index(name) {
     let index = this.indexes.get(name)
     if(!index) {
-      index = this.openIndex(name)
+      const config = this.config.indexes[name]
+      if(!config) throw new Error(`Index ${name} not found`)
+      let code = config.code
+      const params = config.parameters
+      index = new Index(this, name, code, params, config)
+      try {
+        debug("STARTING INDEX", name)
+        await index.startIndex()
+        debug("STARTED INDEX", name)
+      } catch(error) {
+        console.error("INDEX", name, "ERROR", error, "CODE:\n", code)
+        console.error("DELETING INDEX", name)
+        delete this.config.indexes[name]
+        this.indexesListObservable.remove(name)
+        if(this.onAutoRemoveIndex && config) this.onAutoRemoveIndex(name, config.uid)
+        await this.saveConfig(this.config)
+        throw error
+      }
       this.indexes.set(name, index)
+      return index
     }
     return index
   }
