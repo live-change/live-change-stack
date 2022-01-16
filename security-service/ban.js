@@ -1,6 +1,6 @@
 const app = require("@live-change/framework").app()
 const definition = require('./definition.js')
-const { getClientKeysStrings } = require('./utils.js')
+const { getClientKeysStrings, multiKeyIndexQuery } = require('./utils.js')
 const lcp = require('@live-change/pattern')
 
 const banProperties = {
@@ -61,7 +61,7 @@ const Ban = definition.model({
           }
           return res
         }
-        await input.table("securityService_Ban").onChange((obj, oldObj) => {
+        await input.table("security_Ban").onChange((obj, oldObj) => {
           if(obj && oldObj) {
             let pointers = obj && new Set(values(obj))
             let oldPointers = oldObj && new Set(values(oldObj))

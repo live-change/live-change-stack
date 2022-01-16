@@ -1,14 +1,14 @@
 const crypto = require('crypto')
 const app = require("@live-change/framework").app()
 const definition = require('./definition.js')
-const { getClientKeysObject } = require('./utils.js')
+const { getClientKeysObject, getClientKeysStrings} = require('./utils.js')
 
 const lcp = require('@live-change/pattern')
 const lcpDb = require('@live-change/pattern-db')
 const { request } = require('http')
 
 const securityPatterns = definition.config.patterns
-const relationsStore = lcpDb.relationsStore(app.dao, app.databaseName, 'securityService_relations')
+const relationsStore = lcpDb.relationsStore(app.dao, app.databaseName, 'security_relations')
 lcp.prepareModelForLive(securityPatterns)
 //console.log("SECURITY PATTERNS", securityPatterns)
 
@@ -50,7 +50,7 @@ const Event = definition.model({
             })
           }
         }
-        await input.table('securityService_Event').onChange(
+        await input.table('security_Event').onChange(
           (obj, oldObj) => spread(obj)
         )
       }
@@ -255,3 +255,154 @@ definition.trigger({
   }
 })
 
+definition.view({
+  name: 'myCountersState',
+  properties: {
+    eventType: {
+      type: String
+    }
+  },
+  daoPath({ eventType }, { client, service }) {
+    const keys = getClientKeysObject(client)
+    const eventRequests = []
+    for(const counter of securityCounters) {
+      if(!counter.match.includes(eventType)) continue
+      const duration = lcp.parseDuration(counter.duration)
+      for(const keyName in keys) {
+        const keyValue = keys[keyName]
+        if(keyValue === undefined) continue
+        eventRequests.push({
+          counter: counter.id,
+          duration,
+          keyName,
+          keyValue,
+          max: counter.max
+        })
+      }
+    }
+    return ['database', 'query', service.databaseName, `(${
+      async (input, output, { eventRequests, indexName, eventType } ) => {
+        const index = await input.index(indexName)
+        
+        class Request {
+          constructor(eventRequest) {
+            this.eventRequest = eventRequest
+            
+            this.id = eventRequest.counter + ':' + eventRequest.keyName
+            this.count = 0
+            this.max = this.eventRequest.max
+            this.remaining = this.max
+            
+            this.prefix = `${eventRequest.keyName}:${JSON.stringify(eventRequest.keyValue)}:${eventType}:` 
+            this.range = undefined 
+            this.indexRange = undefined
+            this.fromTime = 0
+            this.value = undefined
+            this.observer = undefined
+            this.oldest = undefined
+            this.expire = Infinity
+            
+            this.loading = false
+          }
+          async refresh() {
+            this.loading = true
+            const newFromTime = Date.now() - this.eventRequest.duration
+            output.debug("REFRESH", newFromTime, this.fromTime, newFromTime - this.fromTime)
+            if(Math.abs(newFromTime - this.fromTime) > 5000) { // refresh only when time is different by 5s
+              output.debug("OBSERVER REFRESH!")
+              this.fromTime = newFromTime
+              const newRange = {
+                gt: this.prefix + (new Date(this.fromTime)).toISOString(), // time limited
+                lt: this.prefix + '\xFF',
+                reverse: true,
+                limit: this.eventRequest.max
+              }
+              this.range = newRange
+              output.debug("NEW RANGE", this.range)
+              if(this.observer) {
+                this.indexRange.unobserve(this.observer)
+              }
+              output.debug("OBSERVE RANGE!", this.range)
+              this.indexRange = index.range(this.range)
+              
+              this.observer = await this.indexRange.onChange(async (ind, oldInd) => {
+                output.debug("RANGE CHANGE!", newRange, ind)
+                if(!this.loading) {
+                  await this.refresh()
+                }
+              })
+            }
+            const newValue = await this.indexRange.get()
+            this.loading = false
+            if(JSON.stringify(this.value) != JSON.stringify(newValue)) {
+              this.value = newValue
+              if(this.value) {
+                this.count = this.value.length
+                this.oldest = this.value[this.count - 1]
+                this.remaining = this.max - this.count
+                this.expire = this.oldest
+                    ? (new Date(this.oldest.timestamp)).getTime() + this.eventRequest.duration
+                    : Infinity
+              }
+              await recompute()
+            }
+          }
+        }
+        
+        const requests = new Array(eventRequests.length)
+
+        let currentTimeout = null
+        let expire = Infinity
+        async function recompute() {
+          output.debug("RECOMPUTE?")
+          for(const request of requests) {
+            if(request.value === undefined) return // no recompute until all readed
+          }
+          output.debug("RECOMPUTE!")
+          let firstExpire = Infinity
+          let firstExpireRequest = null
+          for(const request of requests) {
+            console.log("REQUEST EXPIRE", request.prefix, request.expire)
+            if(request.expire < firstExpire) {
+              firstExpire = request.expire
+              firstExpireRequest = request
+            }
+            const { id, count, remaining, max, oldest, value } = request
+            output.change({
+              id,
+              count, remaining, max, 
+              oldest: oldest?.timestamp,
+              expire: request.expire ? new Date(request.expire) : null,
+              value
+            })
+          }
+          console.log("FIRST EXPIRE", firstExpire)
+          console.log("LAST EXPIRE", expire)
+          if(firstExpire != expire) {
+            expire = firstExpire
+            if(currentTimeout) { // clears timeout
+              currentTimeout()
+            }
+            expire += 1000 // additional delay
+            console.log("SET TIMEOUT", new Date(expire))
+            currentTimeout = output.timeout(expire, () => {
+              output.debug("EXPIRE TIMEOUT!", expire)
+              firstExpireRequest.refresh()
+            }) // time parameter can be number or date or iso
+          }
+        }
+        
+        if(eventRequests.length == 0) return
+        for(const i in eventRequests) {
+          const eventRequest = eventRequests[i]
+          const request = new Request(eventRequest)
+          requests[i] = request
+          output.debug("REQUEST", eventRequest, '=>', request)
+        }
+        await Promise.all(requests.map(async request => {
+          await request.refresh()
+        }))
+      }
+    })`, { eventRequests, indexName: Event.tableName + '_byKeyTypeAndTimestamp', eventType }]
+  }
+})
