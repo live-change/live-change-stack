@@ -232,7 +232,6 @@ class QueryReader {
       } else {
         reader.dispose()
       }
-
     }
   }
 }

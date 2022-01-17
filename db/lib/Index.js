@@ -38,7 +38,7 @@ class RangeReader extends ChangeStream {
     this.tableReader.rangeTree.insert(...this.rangeDescr, this )
     this.callbacks = []
   }
-  onChange(cb) {
+  async onChange(cb) {
     this.callbacks.push(cb)
   }
   async change(obj, oldObj, id, timestamp) {

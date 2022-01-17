@@ -37,7 +37,7 @@ class RangeReader extends ChangeStream {
   }
   async onChange(cb) {
     const now = this.#time()
-    let objects = await (await this.#table).rangeGet(this.#range)
+    const objects = await (await this.#table).rangeGet(this.#range)
     await Promise.all(objects.map(object => cb(object, null, object.id, now)))
   }
   unobserve(obs) {}
