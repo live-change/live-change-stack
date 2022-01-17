@@ -50,6 +50,9 @@ const Ban = definition.model({
     actionBans: {
       function: async function(input, output) {
         const values = (ban) => {
+          //output.debug("BAN", ban)
+          if(!ban.keys) return []
+          if(!ban.actions) return []
           const v = ban.keys.length
           const w = ban.actions.length
           let res = new Array(v * w)
@@ -59,10 +62,12 @@ const Ban = definition.model({
               res[i * v + j] = `${ban.actions[j]}:${key.key}:${key.value}`
             }
           }
+          //output.debug("BAN ACTIONS", res)
           return res
         }
         await input.table("security_Ban").onChange((obj, oldObj) => {
           if(obj && oldObj) {
+            //output.debug("CHANGE!", obj, oldObj)
             let pointers = obj && new Set(values(obj))
             let oldPointers = oldObj && new Set(values(oldObj))
             for(let pointer of pointers) {
@@ -72,8 +77,10 @@ const Ban = definition.model({
               if(!!pointers.has(pointer)) output.change(null, { id: pointer+'_'+obj.id, to: obj.id })
             }
           } else if(obj) {
+            //output.debug("CREATE!", obj, oldObj)
             values(obj).forEach(v => output.change({ id: v+'_'+obj.id, to: obj.id }, null))
           } else if(oldObj) {
+            //output.debug("DELETE!", obj, oldObj)
             values(oldObj).forEach(v => output.change(null, { id: v+'_'+obj.id, to: obj.id }))
           }
         })
@@ -101,7 +108,7 @@ definition.view({
   properties: {},
   daoPath(params, { client, service }) {
     const keys = getClientKeysStrings(client)
-    return multiKeyIndexQuery(keys, 'Ban_bans')
+    return multiKeyIndexQuery(keys, 'security_Ban_bans', Ban.tableName)
   },
 })
 
@@ -112,9 +119,12 @@ definition.view({
       type: String
     }
   },
-  daoPath({ action }, { client, service }) {
-    const keys = getClientKeysStrings(client, action + ':')
-    return multiKeyIndexQuery(keys, 'Ban_actionBans')
+  daoPath({ actions }, { client, service }) {
+    const keys = []
+    for(const action of actions) {
+      keys.push(...getClientKeysStrings(client, action + ':'))
+    }
+    return multiKeyIndexQuery(keys, 'security_Ban_actionBans', Ban.tableName)
   },
 })
 
@@ -152,23 +162,23 @@ definition.trigger({
     console.log("BAN KEYS", banKeys)
     console.log("BAN EXPIRE", banExpire)
 
-    // service.trigger({
-    //   type: 'createTimer',
-    //   timer: {
-    //     timestamp: banExpire.getTime() + 1000,
-    //     service: 'security',
-    //     trigger: {
-    //       type: 'removeExpiredBan',
-    //       ban
-    //     }
-    //   }
-    // })
+    service.trigger({
+      type: 'createTimer',
+      timer: {
+        timestamp: banExpire.getTime() + 1000,
+        service: 'security',
+        trigger: {
+          type: 'removeExpiredBan',
+          ban
+        }
+      }
+    })
 
-    // emit({
-    //   type: "banCreated",
-    //   ban,
-    //   data: { actions, banKeys, expire, type }
-    // })
+    emit({
+      type: "banCreated",
+      ban,
+      data: { actions, keys: banKeys, expire, type }
+    })
   }
 })
 
@@ -177,7 +187,7 @@ definition.trigger({
   properties: {
     ...banProperties
   },
-  async execute({ ban }, {client, service}, emit) {
+  async execute({ ban }, { client, service }, emit) {
     emit({
       type: "banRemoved",
       ban

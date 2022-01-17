@@ -1,9 +1,10 @@
+const app = require("@live-change/framework").app()
 const definition = require('./definition.js')
 
 const clientKeys = definition.config.clientKeys
 
-function multiKeyIndexQuery(keys, indexName) {
-  return ['database', 'query', database, `(${
+function multiKeyIndexQuery(keys, indexName, tableName) {
+  return ['database', 'query', app.databaseName, `(${
     async (input, output, { keys, indexName, tableName }) => {
       const objectStates = new Map()
       async function mapper(res) {
@@ -55,7 +56,7 @@ function multiKeyIndexQuery(keys, indexName) {
         await (await input.index(indexName)).range(range).onChange(onIndexChange)
       }))
     }
-  })`, { keys, indexName, tableName: Ban.tableName }]
+  })`, { keys, indexName, tableName }]
 }
 
 function getClientKeysStrings(client, prefix = '') {

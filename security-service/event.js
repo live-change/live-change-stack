@@ -209,7 +209,7 @@ definition.trigger({
     }
   },
   async execute({ event, client, timestamp }, { service }, emit) {
-    console.log("SECURITY EVENT TRIGGERED", arguments[0])
+    //console.log("SECURITY EVENT TRIGGERED", arguments[0])
     event.id = event.id || app.generateUid()
     event.time = event.time || timestamp
     const time = (typeof event.time == 'number') ? event.time : new Date(event.time).getTime()
@@ -218,7 +218,7 @@ definition.trigger({
       event.keys = { ...getClientKeysObject(client), ...event.keys }
     }
 
-    console.log("PROCESS EVENT", event)
+    //console.log("PROCESS EVENT", event)
     let [
       { newRelations, canceledRelations, actions: patternsActions },
       { actions: countersActions }
@@ -232,7 +232,7 @@ definition.trigger({
 
     for(const action of actions) {
       const actionTypeUpperCase = action.type[0].toUpperCase() + action.type.slice(1)
-      console.log("ACTION", JSON.stringify(action, null, '  '))
+      //console.log("ACTION", JSON.stringify(action, null, '  '))
       promises.push(service.trigger({
         ...action,
         event,
@@ -258,30 +258,33 @@ definition.trigger({
 definition.view({
   name: 'myCountersState',
   properties: {
-    eventType: {
+    events: {
       type: String
     }
   },
-  daoPath({ eventType }, { client, service }) {
+  daoPath({ events }, { client, service }) {
     const keys = getClientKeysObject(client)
     const eventRequests = []
-    for(const counter of securityCounters) {
-      if(!counter.match.includes(eventType)) continue
-      const duration = lcp.parseDuration(counter.duration)
-      for(const keyName in keys) {
-        const keyValue = keys[keyName]
-        if(keyValue === undefined) continue
-        eventRequests.push({
-          counter: counter.id,
-          duration,
-          keyName,
-          keyValue,
-          max: counter.max
-        })
+    for(const eventType of events) {
+      for(const counter of securityCounters) {
+        if(!counter.match.includes(eventType)) continue
+        const duration = lcp.parseDuration(counter.duration)
+        for(const keyName in keys) {
+          const keyValue = keys[keyName]
+          if(keyValue === undefined) continue
+          eventRequests.push({
+            eventType,
+            counter: counter.id,
+            duration,
+            keyName,
+            keyValue,
+            max: counter.max
+          })
+        }
       }
     }
     return ['database', 'query', service.databaseName, `(${
-      async (input, output, { eventRequests, indexName, eventType } ) => {
+      async (input, output, { eventRequests, indexName } ) => {
         const index = await input.index(indexName)
         
         class Request {
@@ -293,7 +296,7 @@ definition.view({
             this.max = this.eventRequest.max
             this.remaining = this.max
             
-            this.prefix = `${eventRequest.keyName}:${JSON.stringify(eventRequest.keyValue)}:${eventType}:` 
+            this.prefix = `${eventRequest.keyName}:${JSON.stringify(eventRequest.keyValue)}:${eventRequest.eventType}:` 
             this.range = undefined 
             this.indexRange = undefined
             this.fromTime = 0
@@ -307,9 +310,9 @@ definition.view({
           async refresh() {
             this.loading = true
             const newFromTime = Date.now() - this.eventRequest.duration
-            output.debug("REFRESH", newFromTime, this.fromTime, newFromTime - this.fromTime)
+            //output.debug("REFRESH", newFromTime, this.fromTime, newFromTime - this.fromTime)
             if(Math.abs(newFromTime - this.fromTime) > 5000) { // refresh only when time is different by 5s
-              output.debug("OBSERVER REFRESH!")
+              //output.debug("OBSERVER REFRESH!")
               this.fromTime = newFromTime
               const newRange = {
                 gt: this.prefix + (new Date(this.fromTime)).toISOString(), // time limited
@@ -318,15 +321,15 @@ definition.view({
                 limit: this.eventRequest.max
               }
               this.range = newRange
-              output.debug("NEW RANGE", this.range)
+              //output.debug("NEW RANGE", this.range)
               if(this.observer) {
                 this.indexRange.unobserve(this.observer)
               }
-              output.debug("OBSERVE RANGE!", this.range)
+              //output.debug("OBSERVE RANGE!", this.range)
               this.indexRange = index.range(this.range)
               
               this.observer = await this.indexRange.onChange(async (ind, oldInd) => {
-                output.debug("RANGE CHANGE!", newRange, ind)
+                //output.debug("RANGE CHANGE!", newRange, ind)
                 if(!this.loading) {
                   await this.refresh()
                 }
@@ -354,15 +357,15 @@ definition.view({
         let currentTimeout = null
         let expire = Infinity
         async function recompute() {
-          output.debug("RECOMPUTE?")
+          //output.debug("RECOMPUTE?")
           for(const request of requests) {
             if(request.value === undefined) return // no recompute until all readed
           }
-          output.debug("RECOMPUTE!")
+          //output.debug("RECOMPUTE!")
           let firstExpire = Infinity
           let firstExpireRequest = null
           for(const request of requests) {
-            console.log("REQUEST EXPIRE", request.prefix, request.expire)
+            //console.log("REQUEST EXPIRE", request.prefix, request.expire)
             if(request.expire < firstExpire) {
               firstExpire = request.expire
               firstExpireRequest = request
@@ -376,17 +379,17 @@ definition.view({
               value
             })
           }
-          console.log("FIRST EXPIRE", firstExpire)
-          console.log("LAST EXPIRE", expire)
+          //console.log("FIRST EXPIRE", firstExpire)
+          //console.log("LAST EXPIRE", expire)
           if(firstExpire != expire) {
             expire = firstExpire
             if(currentTimeout) { // clears timeout
               currentTimeout()
             }
             expire += 1000 // additional delay
-            console.log("SET TIMEOUT", new Date(expire))
+            //console.log("SET TIMEOUT", new Date(expire))
             currentTimeout = output.timeout(expire, () => {
-              output.debug("EXPIRE TIMEOUT!", expire)
+              //output.debug("EXPIRE TIMEOUT!", expire)
               firstExpireRequest.refresh()
             }) // time parameter can be number or date or iso
           }
@@ -397,12 +400,12 @@ definition.view({
           const eventRequest = eventRequests[i]
           const request = new Request(eventRequest)
           requests[i] = request
-          output.debug("REQUEST", eventRequest, '=>', request)
+          //output.debug("REQUEST", eventRequest, '=>', request)
         }
         await Promise.all(requests.map(async request => {
           await request.refresh()
         }))
       }
-    })`, { eventRequests, indexName: Event.tableName + '_byKeyTypeAndTimestamp', eventType }]
+    })`, { eventRequests, indexName: Event.tableName + '_byKeyTypeAndTimestamp' }]
   }
 })
