@@ -5,7 +5,8 @@
     "email-service",
     "message-authentication-service",
     "password-authentication-service",
-    "secret-link-service"
+    "secret-link-service",
+    "security-service"
   ],
   "publishConfig": {
     "access": "public"
