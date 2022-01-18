@@ -267,6 +267,7 @@ definition.view({
     const eventRequests = []
     for(const eventType of events) {
       for(const counter of securityCounters) {
+        if(!counter.visible) continue
         if(!counter.match.includes(eventType)) continue
         const duration = lcp.parseDuration(counter.duration)
         for(const keyName in keys) {
@@ -294,7 +295,7 @@ definition.view({
             this.id = eventRequest.counter + ':' + eventRequest.keyName
             this.count = 0
             this.max = this.eventRequest.max
-            this.remaining = this.max
+            this.remaining = this.max + 1
             
             this.prefix = `${eventRequest.keyName}:${JSON.stringify(eventRequest.keyValue)}:${eventRequest.eventType}:` 
             this.range = undefined 
@@ -342,7 +343,7 @@ definition.view({
               if(this.value) {
                 this.count = this.value.length
                 this.oldest = this.value[this.count - 1]
-                this.remaining = this.max - this.count
+                this.remaining = this.max - this.count + 1
                 this.expire = this.oldest
                     ? (new Date(this.oldest.timestamp)).getTime() + this.eventRequest.duration
                     : Infinity
@@ -376,7 +377,7 @@ definition.view({
               count, remaining, max, 
               oldest: oldest?.timestamp,
               expire: request.expire ? new Date(request.expire) : null,
-              value
+              //value
             })
           }
           //console.log("FIRST EXPIRE", firstExpire)

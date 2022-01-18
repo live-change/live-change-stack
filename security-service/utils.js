@@ -59,13 +59,35 @@ function multiKeyIndexQuery(keys, indexName, tableName) {
   })`, { keys, indexName, tableName }]
 }
 
-function getClientKeysStrings(client, prefix = '') {
+function fastMultiKeyIndexQuery(keys, indexName) {
+  return ['database', 'query', app.databaseName, `(${
+      async (input, output, { keys, indexName }) => {
+        function mapper(obj) {
+          if(!obj) return null
+          const { id, to, ...safeObj } = obj
+          return { ...safeObj, id: to }
+        }
+        function onIndexChange(obj, oldObj) {
+          output.change(mapper(obj), mapper(oldObj))
+        }
+        await Promise.all(keys.map(async (encodedKey) => {
+          const range = {
+            gte: encodedKey + '_',
+            lte: encodedKey + "_\xFF\xFF\xFF\xFF"
+          }
+          await (await input.index(indexName)).range(range).onChange(onIndexChange)
+        }))
+      }
+  })`, { keys, indexName}]
+}
+
+function getClientKeysStrings(client, prefix = '', suffix = '') {
   if(clientKeys) {
-    return clientKeys(client).map(k => prefix + k.key + ':' + k.value)
+    return clientKeys(client).filter(k => k.value).map(k => prefix + k.key + ':' + k.value + suffix)
   } else {
     const keys = []
     for(let key in client) {
-      keys.push(prefix + key + ':' + client[key])
+      if(client[key]) keys.push(prefix + key + ':' + client[key] + suffix)
     }
     return keys
   }
@@ -83,4 +105,4 @@ function getClientKeysObject(client, prefix = '') {
   }
 }
 
-module.exports = { multiKeyIndexQuery, getClientKeysStrings, getClientKeysObject }
+module.exports = { multiKeyIndexQuery, fastMultiKeyIndexQuery, getClientKeysStrings, getClientKeysObject }
