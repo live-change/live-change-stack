@@ -66,6 +66,7 @@ const Ban = definition.model({
           return res
         }
         function indexObject(prefix, obj) {
+          //output.debug("BAN", obj)
           return {
             id: prefix+'_'+obj.id,
             to: obj.id,
@@ -77,20 +78,20 @@ const Ban = definition.model({
         await input.table("security_Ban").onChange((obj, oldObj) => {
           if(obj && oldObj) {
             //output.debug("CHANGE!", obj, oldObj)
-            let pointers = obj && new Set(prefixes(obj))
-            let oldPointers = oldObj && new Set(prefixes(oldObj))
+            const pointers = obj && new Set(prefixes(obj))
+            const oldPointers = oldObj && new Set(prefixes(oldObj))
             for(let pointer of pointers) {
               if(!!oldPointers.has(pointer)) output.change(indexObject(pointer, obj), null)
             }
             for(let pointer of oldPointers) {
-              if(!!pointers.has(pointer)) output.change(null, indexObject(pointer, obj))
+              if(!!pointers.has(pointer)) output.change(null, indexObject(pointer, oldObj))
             }
           } else if(obj) {
             //output.debug("CREATE!", obj, oldObj)
             prefixes(obj).forEach(v => output.change(indexObject(v, obj), null))
           } else if(oldObj) {
             //output.debug("DELETE!", obj, oldObj)
-            prefixes(oldObj).forEach(v => output.change(null, indexObject(v, obj)))
+            prefixes(oldObj).forEach(v => output.change(null, indexObject(v, oldObj)))
           }
         })
       }
@@ -114,6 +115,7 @@ const Ban = definition.model({
           return res
         }
         function indexObject(prefix, obj) {
+          //output.debug("BAN", obj)
           return {
             id: prefix+'_'+obj.id,
             to: obj.id,
@@ -131,14 +133,14 @@ const Ban = definition.model({
               if(!!oldPointers.has(pointer)) output.change(indexObject(pointer, obj), null)
             }
             for(let pointer of oldPointers) {
-              if(!!pointers.has(pointer)) output.change(null, indexObject(pointer, obj))
+              if(!!pointers.has(pointer)) output.change(null, indexObject(pointer, oldObj))
             }
           } else if(obj) {
             //output.debug("CREATE!", obj, oldObj)
             prefixes(obj).forEach(v => output.change(indexObject(v, obj), null))
           } else if(oldObj) {
             //output.debug("DELETE!", obj, oldObj)
-            prefixes(oldObj).forEach(v => output.change(null, indexObject(v, obj)))
+            prefixes(oldObj).forEach(v => output.change(null, indexObject(v, oldObj)))
           }
         })
       }
@@ -307,6 +309,7 @@ definition.trigger({
     ...banProperties
   },
   async execute({ ban }, { client, service }, emit) {
+    console.log("REMOVE EXPIRED BAN", ban)
     emit({
       type: "banRemoved",
       ban
