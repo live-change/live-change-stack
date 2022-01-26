@@ -1,0 +1,40 @@
+{
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "homepage": "https://github.com/live-change/live-change-dao",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-dao/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/live-change/live-change-dao.git"
+  },
+  "dependencies": {
+    "debug": "^4.1.1"
+  },
+  "description": "live data access object",
+  "devDependencies": {
+    "blue-tape": "^1.0.0",
+    "supports-color": "^6.1.0"
+  },
+  "directories": {},
+  "license": "MIT",
+  "main": "index.js",
+  "browsernpm ": "browser.js",
+  "maintainers": [
+    {
+      "email": "michal@emikse.com",
+      "name": "Michał Łaszczewski"
+    }
+  ],
+  "name": "@live-change/dao",
+  "optionalDependencies": {},
+  "readme": "README.md",
+  "scripts": {
+    "test": "NODE_ENV=test blue-tape tests/*"
+  },
+  "version": "0.3.17"
+}

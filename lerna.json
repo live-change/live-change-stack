@@ -1,0 +1,13 @@
+{
+  "packages": [
+    "dao",
+    "dao-websocket",
+    "dao-sockjs",
+    "dao-vue",
+    "dao-vue3"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.5.4"
+}

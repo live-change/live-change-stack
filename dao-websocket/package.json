@@ -1,0 +1,44 @@
+{
+  "name": "@live-change/dao-websocket",
+  "version": "0.3.2",
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "http://www.viamage.com/"
+  },
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-dao/issues"
+  },
+  "dependencies": {
+    "@live-change/dao": "^0.3.10",
+    "bufferutil": "^4.0.3",
+    "debug": "^4.3.1",
+    "supports-color": "^6.1.0",
+    "universal-websocket-client": "^1.0.1",
+    "utf-8-validate": "^5.0.4",
+    "websocket": "^1.0.33"
+  },
+  "description": "live-change dao websocket transport",
+  "devDependencies": {
+    "blue-tape": "^1.0.0"
+  },
+  "directories": {},
+  "homepage": "https://github.com/live-change/live-change-dao",
+  "license": "MIT",
+  "main": "index.js",
+  "browser": "browser.js",
+  "maintainers": [
+    {
+      "email": "michal@laszczewski.com",
+      "name": "Michał Łaszczewski"
+    }
+  ],
+  "readme": "README.md",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "scripts": {
+    "compileTests": "webpack test/*.js tests-bundle.js"
+  }
+}

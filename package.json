@@ -1,0 +1,12 @@
+{
+  "name": "live-change-dao",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "dao",
+    "dao-sockjs",
+    "dao-websocket",
+    "dao-vue",
+    "dao-vue3"
+  ]
+}
