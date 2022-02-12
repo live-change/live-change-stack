@@ -372,6 +372,10 @@ function localReads(server, scriptContext) {
       observable: () => server.databasesListObservable,
       get: async () => server.databasesListObservable.list
     },
+    databases: {
+      observable: () => server.databasesListObservable.next(list => list.map(dbName => ({ id: dbName }))),
+      get: async () => server.databasesListObservable.list.map(dbName => ({ id: dbName }))
+    },
     databaseConfig: {
       observable: (dbName) => {
         const db = server.databases.get(dbName)
@@ -418,6 +422,78 @@ function localReads(server, scriptContext) {
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.logsListObservable.list
+      }
+    },
+    tablesCount: {
+      observable: (dbName, tableName, id) => {
+        const db = server.databases.get(dbName)
+        if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+        return db.tablesListObservable.next(tables => tables.length ?? 0)
+      },
+      get: async (dbName, tableName, id) =>{
+        const db = server.databases.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        return db.tablesListObservable.list.length
+      }
+    },
+    indexesCount: {
+      observable: (dbName, tableName, id) => {
+        const db = server.databases.get(dbName)
+        if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+        return db.indexesListObservable.next(tables => tables.length ?? 0)
+      },
+      get: async (dbName, tableName, id) =>{
+        const db = server.databases.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        return db.indexesListObservable.list.length
+      }
+    },
+    logsCount: {
+      observable: (dbName, tableName, id) => {
+        const db = server.databases.get(dbName)
+        if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+        return db.logsListObservable.next(tables => tables.length ?? 0)
+      },
+      get: async (dbName, tableName, id) =>{
+        const db = server.databases.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        return db.logsListObservable.list.length
+      }
+    },
+    tables: {
+      observable: (dbName, tableName, id) => {
+        const db = server.databases.get(dbName)
+        if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+        return db.tablesListObservable.next(list => list.map(dbName => ({ id: dbName })))
+      },
+      get: async (dbName, tableName, id) =>{
+        const db = server.databases.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        return db.tablesListObservable.list.map(dbName => ({ id: dbName }))
+      }
+    },
+    indexes: {
+      observable: (dbName, indexName, id) => {
+        const db = server.databases.get(dbName)
+        if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+        return db.indexesListObservable.next(list => list.map(dbName => ({ id: dbName })))
+      },
+      get: async (dbName, indexName, id) =>{
+        const db = server.databases.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        return db.indexesListObservable.list.map(dbName => ({ id: dbName }))
+      }
+    },
+    logs: {
+      observable: (dbName, logName, id) => {
+        const db = server.databases.get(dbName)
+        if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+        return db.logsListObservable.next(list => list.map(dbName => ({ id: dbName })))
+      },
+      get: async (dbName, logName, id) => {
+        const db = server.databases.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        return db.logsListObservable.list.map(dbName => ({ id: dbName }))
       }
     },
     tableConfig: {

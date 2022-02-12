@@ -108,7 +108,6 @@ function createBackend(config) {
       closeStore(store) {
       },
       async deleteStore(store) {
-        await store.clear()
       }
     }
   } else if(config.backend == 'lmdb') {

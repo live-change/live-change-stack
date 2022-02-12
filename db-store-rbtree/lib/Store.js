@@ -84,14 +84,6 @@ class RangeObservable extends ReactiveDao.ObservableList {
     this.store.rangeObservables.set(this.rangeKey, this)
     const treeInsert = this.rangeDescr
     const inserted = this.store.rangeObservablesTree.insert(treeInsert, this)
-    if(this.store.rangeObservablesTree.search([this.low, this.high]).length == 0) {
-      console.error("TREE NOT WORKING")
-      console.log("INSERTED", JSON.stringify(treeInsert),
-          "TO TREE", this.store.rangeObservablesTree)
-      console.log("FOUND", this.store.rangeObservablesTree.search(this.rangeDescr))
-      console.log("ALL RECORDS", this.store.rangeObservablesTree.search(['', '\xFF\xFF\xFF\xFF']))
-      process.exit(1)
-    }
     this.set(await this.store.rangeGet(this.range))
   }
 
@@ -218,11 +210,92 @@ class RangeObservable extends ReactiveDao.ObservableList {
   }
 }
 
+class CountObservable extends ReactiveDao.ObservableValue {
+  constructor(store, range) {
+    super()
+    this.store = store
+    this.range = range
+
+    this.disposed = false
+    this.ready = false
+    this.respawnId = 0
+    this.refillId = 0
+    this.refillPromise = null
+
+    this.forward = null
+
+    this.rangeKey = JSON.stringify(this.range)
+    this.rangeDescr = [ this.range.gt || this.range.gte || '', this.range.lt || this.range.lte || '\xFF\xFF\xFF\xFF']
+
+    this.readPromise = this.startReading()
+  }
+
+  async startReading() {
+    this.store.rangeObservables.set(this.rangeKey, this)
+    const treeInsert = this.rangeDescr
+    const inserted = this.store.rangeObservablesTree.insert(treeInsert, this)
+    this.set(await this.store.countGet(this.range))
+  }
+
+  async putObject(object, oldObject) {
+    const id = object.id
+    if(this.range.gt && !(id > this.range.gt)) return
+    if(this.range.lt && !(id < this.range.lt)) return
+    await this.readPromise
+    if(this.range.limit) {
+      this.set(await this.store.countGet(this.range))
+    } else {
+      if(object && !oldObject) {
+        this.set(this.value + 1)
+      } else if(!object && oldObject) {
+        this.set(this.value - 1)
+      }
+    }
+  }
+
+  async deleteObject(object) {
+    const id = object.id
+    if(this.range.gt && !(id > this.range.gt)) return
+    if(this.range.lt && !(id < this.range.lt)) return
+    this.set(this.value - 1)
+  }
+
+  dispose() {
+    if(this.forward) {
+      this.forward.unobserve(this)
+      this.forward = null
+      return
+    }
+
+    this.disposed = true
+    this.respawnId++
+    this.changesStream = null
+
+    this.store.rangeObservables.delete(this.rangeKey)
+    let removed = this.store.rangeObservablesTree.remove(this.rangeDescr, this)
+  }
+
+  respawn() {
+    const existingObservable = this.store.rangeObservables.get(JSON.stringify(this.range))
+    if(existingObservable) {
+      this.forward = existingObservable
+      this.forward.observe(this)
+      return
+    }
+
+    this.respawnId++
+    this.ready = false
+    this.disposed = false
+    this.startReading()
+  }
+}
+
 class Store {
   constructor() {
     this.tree = createTree()
     this.objectObservables = new Map()
     this.rangeObservables = new Map()
+    this.countObservables = new Map()
     this.rangeObservablesTree = new IntervalTree()
   }
 
@@ -291,6 +364,55 @@ class Store {
     let observable = this.rangeObservables.get(JSON.stringify(range))
     if(observable) return observable
     observable = new RangeObservable(this, range)
+    return observable
+  }
+
+  countGet(range) {
+    if(!range) throw new Error("range not defined")
+    return new Promise((resolve, reject) => {
+      const min = range.gt || range.gte
+      const max = range.lt || range.lte
+      let cursor
+      let count = 0
+      if(range.reverse) {
+        if(max) {
+          cursor = range.lt ? this.tree.lt(max) : this.tree.le(max)
+        } else {
+          cursor = this.tree.end
+        }
+        while((!range.limit || count < range.limit) && cursor.key !== undefined) {
+          if(range.gt && cursor.key <= range.gt) break;
+          if(range.gte && cursor.key < range.gte) break;
+          if((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
+            // key in range, skip keys outside range
+            count++
+          }
+          cursor.prev()
+        }
+      } else {
+        if(min) {
+          cursor = range.gt ? this.tree.gt(min) : this.tree.ge(min)
+        } else {
+          cursor = this.tree.begin
+        }
+        while((!range.limit || count < range.limit) && cursor.key !== undefined) {
+          if(range.lt && cursor.key >= range.lt) break;
+          if(range.lte && cursor.key > range.lte) break;
+          if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
+            // key in range, skip keys outside range
+            count++
+          }
+          cursor.next()
+        }
+      }
+      resolve(count)
+    })
+  }
+
+  countObservable(range) {
+    let observable = this.countObservables.get(JSON.stringify(range))
+    if(observable) return observable
+    observable = new CountObservable(this, range)
     return observable
   }
 
