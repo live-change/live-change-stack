@@ -20,13 +20,31 @@
       </div>
     </div>
   </div>
-  <p>READ COMPILED: {{ readCompiled }}</p>
-  <p>WRITE COMPILED: {{ writeCompiled }}</p>
+  <div class="surface-0 shadow-1 w-full">
+    <div class="flex flex-row flex-wrap w-full" >
+      <div class="col-2 text-right">Compiled:</div>
+      <div class="col-10" v-if="!readCompiled.error" v-html="highlightedObject(readCompiled.example)" />
+      <div class="col-10 p-error" v-else>{{ readCompiled.error }}</div>
+    </div>
+    <div class="flex flex-row flex-wrap w-full">
+      <div class="col-2 text-right"></div>
+      <div class="col-10" v-if="!writeCompiled.error" v-html="highlightedObject(writeCompiled.example)" />
+      <div class="col-10 p-error" v-else>{{ writeCompiled.error }}</div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 
   import CodeEditor from "./CodeEditor.vue"
+
+  import { stringify } from "javascript-stringify"
+  import * as Prism from 'prismjs/components/prism-core'
+
+  function highlightedObject(obj) {
+    const code = stringify(obj)
+    return Prism.highlight(code, Prism.languages.js, "js")
+  }
 
   import { ref, reactive, computed, watch } from "vue"
 
@@ -37,13 +55,13 @@
     }
   })
 
-  const emit = defineEmits(['update:modelValue'])
+  const emit = defineEmits(['update:modelValue', 'update:read', 'update:write'])
 
   const path = reactive(modelValue)
 
+
   function handleReadChange(result) {
     if(result.error) {
-
     } else {
       path.read = result.code
     }
@@ -51,7 +69,6 @@
 
   function handleWriteChange(result) {
     if(result.error) {
-
     } else {
       path.write = result.code
     }
@@ -59,7 +76,6 @@
 
   function handleParamChange(param, result) {
     if(result.error) {
-
     } else {
       path.params.find(p => p[0] == param)[1] = result.code
     }
@@ -86,7 +102,7 @@
     return {
       read: path.read,
       write: path.write,
-      params: path.params
+      params: path.params.map(([k, v]) => [k, v])
     }
   })
 
@@ -114,13 +130,8 @@
 
   const readCompiled = computed(() => {
     try {
-      const compiled = compilePath(path.read, path.params, (name) => {
-        switch(name) {
-          case 'range': return '{}'
-          default: throw new Error("external dependency "+name+" not defined")
-        }
-      })
-      return compiled
+      const compiled = compilePath(path.read, path.params, ['range'])
+      return { ...compiled, example: compiled.result({ range: {  } }) }
     } catch (error) {
       console.error("READ CODE ERROR", error)
       return {
@@ -131,13 +142,8 @@
 
   const writeCompiled = computed(() => {
     try {
-      const compiled = compilePath(path.write, path.params, (name) => {
-        switch(name) {
-          case 'object': return '{ id: "object" }'
-          default: throw new Error("external dependency "+name+" not defined")
-        }
-      })
-      return compiled
+      const compiled = compilePath(path.write, path.params, ['object'])
+      return { ...compiled, example: compiled.result({ object: { id: 'object' } }) }
     } catch (error) {
       console.error("WRITE CODE ERROR", error)
       return {
@@ -146,5 +152,13 @@
     }
   })
 
+  watch(() => readCompiled.value, value => {
+    if(!value.error) emit('update:read', value)
+  })
+  watch(() => writeCompiled.value, value => {
+    if(!value.error) emit('update:write', value)
+  })
+  emit('update:read', readCompiled.value)
+  emit('update:write', writeCompiled.value)
 
 </script>

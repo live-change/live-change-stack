@@ -35,8 +35,7 @@ function sortDependencies(params) {
   }
 }
 
-function compilePath(path, params,
-                     external = () => { throw new Error("external dependencies not provided") }) {
+function compilePath(path, params, possibleExternal = []) {
   const paramsMap = new Map(params)
   const { paramsOrder, dependencies } = sortDependencies([
       ...params,
@@ -47,23 +46,23 @@ function compilePath(path, params,
   const filteredParamsOrder = paramsOrder.filter(p => p && pathDependencies.has(p))
 
   const externalDependencies = Array.from(pathDependencies).filter(dep => !dependencies.has(dep))
-  const externalValues = externalDependencies.map(name => {
-    const value = external(name)
-    return [name, value]
-  })
+  for(const external of externalDependencies) {
+    if(!possibleExternal.includes(external)) {
+      throw new Error('External value '+external+' not defined')
+    }
+  }
 
   const lines = [
-      `(() => {`,
-      `  const $ = {};`,
-      ...externalValues.map(([name, value]) => `  $.${name} = ( ${ value } );`),
-      ...filteredParamsOrder.map(paramName => `  $.${paramName} = ( ${ paramsMap.get(paramName) } );`),
+      `(({ ${externalDependencies.join(', ')} }) => {`,
+      `  const $ = { ${externalDependencies.join(', ')} };`,
+      ...filteredParamsOrder.map(paramName => `  $.${paramName} = ${ paramsMap.get(paramName) };`),
       `  return ${path};`,
-      `})()`
+      `})`
   ]
   const code = lines.join('\n')
   console.log("CODE", code)
-  const value = eval(code)
-  return { result: value, external: externalDependencies }
+  const result = eval(code)
+  return { result, external: externalDependencies }
 }
 
 export { extractParams, compilePath }

@@ -3,7 +3,8 @@
                 class="config-editor" :highlight="highlight"
                 :style="{ height: (codeLines * 1.35) + 'em' }"
                 v-model="code"
-                :readonly="readOnly" line-numbers />
+                :readonly="readOnly" :line-numbers="codeLines > 1" />
+  <small v-if="editResult.error" class="p-error">{{ editResult.error }}</small>
 </template>
 
 <script setup>
@@ -53,7 +54,8 @@
     if(!modified.value && initialData) return { data: initialData, code: code.value }
     try {
       const $ = {}
-      const result = eval('(' + code.value + ')')
+      console.log("COMPILE CODE", code.value)
+      const result = eval(code.value)
       if(result) return { data: result, code: code.value }
       return { error: 'empty' }
     } catch(e) {
