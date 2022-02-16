@@ -4,18 +4,19 @@
 
   <p>{{ path }}</p>
 
-
-  <div v-if="read?.external?.includes('range')">
-    RANGED
-  </div>
-  <div v-else>
-    DONE
-  </div>
+  <template v-if="read?.external?.includes('range')">
+    <DataRangeView v-if="read && write" :read="read.result" :write="write.result" />
+  </template>
+  <template v-else>
+    <DataView v-if="read && write" :read="read.result" :write="write.result" />
+  </template>
 
 </template>
 
 <script setup>
   import PathEditor from "./PathEditor.vue"
+  import DataRangeView from "./DataRangeView.vue"
+  import DataView from "./DataView.vue"
 
   const props = defineProps({
     position: {
