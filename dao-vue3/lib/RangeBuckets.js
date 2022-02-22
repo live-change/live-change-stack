@@ -47,7 +47,7 @@ class Bucket {
 
   async load() {
     this.path = this.pathFunction(this.range)
-    this.dataPromise = live(this.api(), this.path, fun => onDispose.push(fun))
+    this.dataPromise = live(this.api(), this.path, fun => this.onDispose.push(fun))
     this.dataPromise.then(data => {
       this.liveData.value = data
     })
@@ -134,7 +134,8 @@ class RangeBuckets {
   }
 
   async wait() {
-    //console.log("WAIT FOR BUCKETS", this.buckets.length)
+    // console.log("WAIT FOR BUCKETS", this.buckets.length)
+    // console.log("BUCKET", this.buckets)
     await Promise.all(this.buckets.map(bucket => bucket.promise)).then(loaded => this)
   }
 
