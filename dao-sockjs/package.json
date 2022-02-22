@@ -1,6 +1,6 @@
 {
   "name": "@live-change/dao-sockjs",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": {
     "email": "m8@em8.pl",
     "name": "Michał Łaszczewski",
@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-dao/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.4.0",
+    "@live-change/dao": "^0.4.1",
     "debug": "^4.3.1",
     "sockjs-client": "git+https://github.com/sockjs/sockjs-client.git",
     "supports-color": "^7.2.0"
