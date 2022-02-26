@@ -1,6 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-column surface-ground">
     <NavBar v-if="!navBarHidden"></NavBar>
+
     <div class="relative h-0 w-full">
       <ProgressBar v-if="loading || working" mode="indeterminate" class="absolute top-0 w-full" style="height: .2em" />
     </div>

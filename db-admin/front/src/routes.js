@@ -18,7 +18,7 @@ export function routes(config = {}) {
     }),
 
     route({
-      path: prefix+'data/:position/:read/:write/:params*',
+      path: prefix+'data/:position/:read/:write/:remove/:params*',
       name: 'db:data',
       meta: { pageType: 'wide' },
       component: () => import("./Data.vue"),

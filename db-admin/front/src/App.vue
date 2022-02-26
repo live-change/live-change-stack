@@ -1,4 +1,6 @@
 <template>
+  <ConfirmPopup v-if="isClientSide"></ConfirmPopup>
+  <Toast v-if="isClientSide"></Toast>
   <router-view v-slot="{ route, Component }">
     <template v-if="route?.meta?.raw">
       <component :is="Component" />
@@ -30,44 +32,47 @@
 </template>
 
 <script setup>
-import 'primevue/resources/primevue.min.css'
-import 'primevue/resources/themes/saga-blue/theme.css'
-import 'primeflex/primeflex.css'
-import 'primeicons/primeicons.css'
+  import ConfirmPopup from 'primevue/confirmpopup'
+  import Toast from 'primevue/toast'
 
-import ProgressSpinner from 'primevue/progressspinner'
+  import 'primevue/resources/primevue.min.css'
+  import 'primevue/resources/themes/saga-blue/theme.css'
+  import 'primeflex/primeflex.css'
+  import 'primeicons/primeicons.css'
 
-import { useMeta } from 'vue-meta'
-import Page from "./Page.vue"
+  import ProgressSpinner from 'primevue/progressspinner'
 
-const { meta } = useMeta({
-  title: 'Title',
-  meta: [
-    { charset: 'utf-8' },
-    { name: 'viewport',
-      content: "user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1," +
-          " width=device-width, viewport-fit=cover" }
-  ],
-  htmlAttrs: {
-    lang: 'en',
-    amp: true
-  }
-})
+  import { useMeta } from 'vue-meta'
+  import Page from "./Page.vue"
 
-import { onMounted } from 'vue'
-import isClientSide from "./isClientSide.js"
-onMounted(() => isClientSide.value = true)
+  const { meta } = useMeta({
+    title: 'Title',
+    meta: [
+      { charset: 'utf-8' },
+      { name: 'viewport',
+        content: "user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1," +
+            " width=device-width, viewport-fit=cover" }
+    ],
+    htmlAttrs: {
+      lang: 'en',
+      amp: true
+    }
+  })
 
-import { ref } from 'vue'
-const working = ref(false)
-const loading = ref(false)
+  import { onMounted } from 'vue'
+  import isClientSide from "./isClientSide.js"
+  onMounted(() => isClientSide.value = true)
 
-import { watch } from 'vue'
-import { client as useClient } from '@live-change/vue3-ssr'
-const client = useClient()
-watch(client, (newClient, oldClient) => {
-  console.log("WATCH CLIENT", oldClient, '=>', newClient)
-})
+  import { ref } from 'vue'
+  const working = ref(false)
+  const loading = ref(false)
+
+  import { watch } from 'vue'
+  import { client as useClient } from '@live-change/vue3-ssr'
+  const client = useClient()
+  watch(client, (newClient, oldClient) => {
+    console.log("WATCH CLIENT", oldClient, '=>', newClient)
+  })
 
 </script>
 

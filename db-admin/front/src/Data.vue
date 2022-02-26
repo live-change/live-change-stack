@@ -1,14 +1,17 @@
 <template>
 
-  <PathEditor v-model="path" @update:read="v => read = v" @update:write="v => write = v"></PathEditor>
+  <PathEditor v-model="path"
+              @update:read="v => read = v"
+              @update:write="v => write = v"
+              @update:remove="v => remove = v" />
 
-  <p>{{ path }}</p>
+<!--  <p>{{ path }}</p>-->
 
   <template v-if="read?.external?.includes('range')">
-    <DataRangeView v-if="read && write" :read="read.result" :write="write.result" />
+    <DataRangeView v-if="read && write && remove" :read="read.result" :write="write.result" :remove="remove.result" />
   </template>
   <template v-else>
-    <DataView v-if="read && write" :read="read.result" :write="write.result" />
+    <DataView v-if="read && write && remove" :read="read.result" :write="write.result" :remove="remove.result" />
   </template>
 
 </template>
@@ -31,6 +34,10 @@
       type: String,
       required: true
     },
+    remove: {
+      type: String,
+      required: true
+    },
     params: {
       type: Array,
       required: true
@@ -43,7 +50,7 @@
   import { ref, watch } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
 
-  const path = ref({ read: props.read, write: props.write, params: pathParams })
+  const path = ref({ read: props.read, write: props.write, remove: props.remove, params: pathParams })
 
   const router = useRouter()
   const route = useRoute()
@@ -53,7 +60,8 @@
     const paramsArray = value.params.flat()
     router.replace({ name: route.name, params: {
       read: value.read,
-      write: value.write,
+      write: value.write, 
+      remove: value.remove,
       params: paramsArray
     } })
     /// TODO: update URL
@@ -61,5 +69,6 @@
 
   const read = ref()
   const write = ref()
+  const remove = ref()
 
 </script>

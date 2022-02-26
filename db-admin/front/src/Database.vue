@@ -1,7 +1,5 @@
 <template>
   <div class="surface-card p-4 shadow-2 border-round w-full">
-    <ConfirmPopup v-if="isMounted"></ConfirmPopup>
-    <Toast v-if="isMounted"></Toast>
 
     <div class="text-center mb-3">
       <div v-if="tables.length > 0" class="text-900 text-3xl font-medium mb-3">Tables</div>
@@ -165,8 +163,8 @@
       accept: async () => {
         workingZone.addPromise('deleteTable', (async () => {
           await dao.request([dbApi, 'deleteTable'], dbName, id)
+          toast.add({ severity:'info', summary: `Table ${id} deleted`, life: 1500 })
         })())
-        toast.add({ severity:'info', summary: `Table ${id} deleted`, life: 1500 })
       },
       reject: () => {
         toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
@@ -223,8 +221,8 @@
       accept: async () => {
         workingZone.addPromise('deleteLog', (async () => {
           await dao.request([dbApi, 'deleteLog'], dbName, id)
+          toast.add({ severity:'info', summary: `Log ${id} deleted`, life: 1500 })
         })())
-        toast.add({ severity:'info', summary: `Log ${id} deleted`, life: 1500 })
       },
       reject: () => {
         toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
@@ -279,8 +277,8 @@
       accept: async () => {
         workingZone.addPromise('deleteIndex', (async () => {
           await dao.request([dbApi, 'deleteIndex'], dbName, id)
+          toast.add({ severity:'info', summary: `Index ${id} deleted`, life: 1500 })
         })())
-        toast.add({ severity:'info', summary: `Index ${id} deleted`, life: 1500 })
       },
       reject: () => {
         toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
@@ -315,6 +313,7 @@
         position: " ",
         read: `['tableRange',$.db,$.table,$.range]`,
         write: `[['put'],$.db,$.table,$.object]`,
+        remove: `[['delete'],$.db,$.table,$.object.id]`,
         params: [
           'db', JSON.stringify(dbName),
           'table', JSON.stringify(table)
