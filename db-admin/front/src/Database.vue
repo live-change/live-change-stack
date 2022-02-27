@@ -311,9 +311,9 @@
   function tableLink(table) {
     return { name: 'db:data', params: {
         position: " ",
-        read: `['tableRange',$.db,$.table,$.range]`,
-        write: `[['put'],$.db,$.table,$.object]`,
-        remove: `[['delete'],$.db,$.table,$.object.id]`,
+        read: `db.tableRange($.db,$.table,$.range)`,
+        write: `db.put($.db,$.table,$.object)`,
+        remove: `db.delete($.db,$.table,$.object.id)`,
         params: [
           'db', JSON.stringify(dbName),
           'table', JSON.stringify(table)

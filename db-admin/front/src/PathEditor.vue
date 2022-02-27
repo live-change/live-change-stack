@@ -1,35 +1,35 @@
 <template>
-  <div class="surface-0 shadow-1 w-full">
+  <div class="surface-0 shadow-1 w-full p-2">
     <div class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right">Read:</div>
-      <div class="col-10">
+      <div class="col-2 text-right p-1">read:</div>
+      <div class="col-10 p-1">
         <CodeEditor :initialCode="path.read"
-                    @result="result => handleReadChange(result)" :env="env" />
+                    @result="result => handleReadChange(result)" :env="env" :dbSugar="dbViewSugar" />
       </div>
     </div>
     <div class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right">Write:</div>
-      <div class="col-10">
+      <div class="col-2 text-right p-1">write:</div>
+      <div class="col-10 p-1">
         <CodeEditor :initialCode="path.write"
-                    @result="result => handleWriteChange(result)" :env="env" />
+                    @result="result => handleWriteChange(result)" :env="env" :dbSugar="dbRequestSugar" />
       </div>
     </div>
     <div class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right">remove:</div>
-      <div class="col-10">
+      <div class="col-2 text-right p-1">remove:</div>
+      <div class="col-10 p-1">
         <CodeEditor :initialCode="path.remove"
-                    @result="result => handleRemoveChange(result)" :env="env" />
+                    @result="result => handleRemoveChange(result)" :env="env" :dbSugar="dbRequestSugar" />
       </div>
     </div>
     <div v-for="field in path.params" class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right">{{ field[0] }} = </div>
-      <div class="col-10">
+      <div class="col-2 text-right p-1">{{ field[0] }} = </div>
+      <div class="col-10 p-1">
         <CodeEditor :initialCode="field[1]"
                     @result="result => handleParamChange(field[0], result)" />
       </div>
     </div>
   </div>
-  <div class="surface-0 shadow-1 w-full mb-2">
+  <div v-if="false" class="surface-0 shadow-1 w-full">
     <div class="flex flex-row flex-wrap w-full" >
       <div class="col-2 text-right">Compiled:</div>
       <div class="col-10" v-if="!readCompiled.error" v-html="highlightedObject(readCompiled.example)" />
@@ -59,6 +59,8 @@
     const code = stringify(obj)
     return Prism.highlight(code, Prism.languages.js, "js")
   }
+
+  import { dbRequestSugar, dbViewSugar } from "./dbSugar.js";
 
   import { ref, reactive, computed, watch } from "vue"
 
@@ -124,6 +126,7 @@
     return {
       read: path.read,
       write: path.write,
+      remove: path.remove,
       params: path.params.map(([k, v]) => [k, v])
     }
   })
@@ -153,7 +156,7 @@
   const readCompiled = computed(() => {
     try {
       const compiled = compilePath(path.read, path.params, ['range'])
-      return { ...compiled, example: compiled.result({ range: {  } }) }
+      return { ...compiled, example: compiled.result({ range: {  } }, dbViewSugar) }
     } catch (error) {
       console.error("READ CODE ERROR", error)
       return {
@@ -165,7 +168,7 @@
   const writeCompiled = computed(() => {
     try {
       const compiled = compilePath(path.write, path.params, ['object'])
-      return { ...compiled, example: compiled.result({ object: { id: 'object' } }) }
+      return { ...compiled, example: compiled.result({ object: { id: 'object' } }, dbRequestSugar) }
     } catch (error) {
       console.error("WRITE CODE ERROR", error)
       return {
@@ -177,7 +180,7 @@
   const removeCompiled = computed(() => {
     try {
       const compiled = compilePath(path.remove, path.params, ['object'])
-      return { ...compiled, example: compiled.result({ object: { id: 'object' } }) }
+      return { ...compiled, example: compiled.result({ object: { id: 'object' } }, dbRequestSugar) }
     } catch (error) {
       console.error("DELETE CODE ERROR", error)
       return {

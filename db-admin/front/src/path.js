@@ -53,7 +53,7 @@ function compilePath(path, params, possibleExternal = []) {
   }
 
   const lines = [
-      `(({ ${externalDependencies.join(', ')} }) => {`,
+      `(({ ${externalDependencies.join(', ')} }, db) => {`,
       `  const $ = { ${externalDependencies.join(', ')} };`,
       ...filteredParamsOrder.map(paramName => `  $.${paramName} = ${ paramsMap.get(paramName) };`),
       `  return ${path};`,
