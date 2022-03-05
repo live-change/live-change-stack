@@ -1,7 +1,7 @@
 const app = require("@live-change/framework").app()
 
-const definition = app.createServiceDefinition({
-  name: "security"
-})
+const definition = require('./definition.js')
+
+require('./notification.js')
 
 module.exports = definition

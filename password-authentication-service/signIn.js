@@ -37,6 +37,7 @@ for(const contactType of config.contactTypes) {
         console.log("PASSWORD AUTH!", passwordAuthenticationData)
         if(!passwordAuthenticationData || passwordAuthenticationData.passwordHash != passwordHash)
           throw { properties: { passwordHash: 'wrongPassword' } }
+        const { session } = client
         await service.trigger({
           type: 'signIn', user, session
         })

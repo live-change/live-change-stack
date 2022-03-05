@@ -8,7 +8,8 @@
     "email-service",
     "message-authentication-service",
     "secret-link-service",
-    "timer-service"
+    "timer-service",
+    "notification-service"
   ],
   "devDependencies": {
   }
