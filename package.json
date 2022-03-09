@@ -1,0 +1,15 @@
+{
+  "name": "live-change-framework",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "uid",
+    "framework",
+    "server",
+    "cli",
+    "filesystem-plugin",
+    "elasticsearch-plugin",
+    "relations-plugin",
+    "codeceptjs-helper"
+  ]
+}

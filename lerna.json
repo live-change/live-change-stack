@@ -1,0 +1,16 @@
+{
+  "packages": [
+    "cli",
+    "codeceptjs-helper",
+    "elasticsearch-plugin",
+    "filesystem-plugin",
+    "framework",
+    "relations-plugin",
+    "server",
+    "uid"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.5.18"
+}

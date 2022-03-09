@@ -1,0 +1,25 @@
+{
+  "name": "@live-change/uid",
+  "version": "0.1.4",
+  "description": "Simple unique id generator with timestamp and source",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/uid.git"
+  },
+  "author": {
+    "email": "michal@laszczewski.com",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/uid/issues"
+  },
+  "homepage": "https://github.com/live-change/uid",
+  "devDependencies": {},
+  "dependencies": {}
+}

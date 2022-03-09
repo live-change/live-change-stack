@@ -1,0 +1,26 @@
+{
+  "name": "@live-change/elasticsearch-plugin",
+  "version": "0.1.5",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/elasticsearch-plugin.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/elasticsearch-plugin/issues"
+  },
+  "homepage": "https://github.com/live-change/elasticsearch-plugin",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "7.13.0"
+  }
+}
