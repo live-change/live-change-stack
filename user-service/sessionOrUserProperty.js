@@ -8,9 +8,9 @@ definition.processor(function(service, app) {
   for(let modelName in service.models) {
     const model = service.models[modelName]
 
-    if(model.userProperty) {
-      console.log("MODEL " + modelName + " IS USER PROPERTY, CONFIG:", model.userProperty)
-      if (model.properties.user) throw new Error('user property already exists!!!')
+    if(model.sessionOrUserProperty) {
+      console.log("MODEL " + modelName + " IS SESSION OR USER PROPERTY, CONFIG:", model.userProperty)
+      if (model.properties.owner) throw new Error('owner property already exists!!!')
 
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
@@ -20,57 +20,58 @@ definition.processor(function(service, app) {
         return service._runtime.models[modelName]
       }
 
-      const config = model.userProperty
+      const config = model.sessionOrUserProperty
       const writeableProperties = modelProperties || config.writableProperties
 
-      model.propertyOf = {
-        what: User,
+      model.propertyOfAny = {
         ...config
       }
 
-      if(config.userReadAccess) {
-        const viewName = 'myUser' + modelName
+      if(config.ownerReadAccess) {
+        const viewName = 'my' + modelName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access(params, context) {
-            if(!context.client.user) return false
-            return config.userReadAccess ? config.userReadAccess(params, context) : true
+            return config.ownerReadAccess ? config.ownerReadAccess(params, context) : true
           },
           daoPath(params, { client, context }) {
-            return modelRuntime().path(client.user)
+            const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            const id = owner.map(p => JSON.stringify(p)).join(':')
+            return modelRuntime().path(id)
           }
         })
       }
 
-      if(config.userViews) {
+      if(config.ownerViews) {
         for(const view of config.userViews) {
-          const viewName = view.name || ('myUser' + (view.prefix || '') + modelName + (view.suffix || ''))
+          const viewName = view.name || ('my' + (view.prefix || '') + modelName + (view.suffix || ''))
           service.views[viewName] = new ViewDefinition({
             name: viewName,
             access(params, context) {
-              if(!context.client.user) return false
               return view.access ? view.access(params, context) : true
             },
             daoPath(params, { client, context }) {
+              const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+              const id = owner.map(p => JSON.stringify(p)).join(':')
               return view.fields
-              ? modelRuntime().limitedPath(client.user, view.fields)
-              : modelRuntime().path(client.user)
+                ? modelRuntime().limitedPath(id, view.fields)
+                : modelRuntime().path(id)
             }
           })
         }
       }
 
-      if(config.userSetAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Set'
-        const actionName = 'setMyUser' + modelName
+      if(config.ownerSetAccess || config.ownerWriteAccess) {
+        const eventName = 'ownerOwned' + modelName + 'Set'
+        const actionName = 'setMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
           properties: {
             ...originalModelProperties
           },
-          access: config.userSetAccess || config.userWriteAccess,
+          access: config.ownerSetAccess || config.ownerWriteAccess,
           skipValidation: true,
-          queuedBy: (command) => command.client.user,
+          queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
           async execute(properties, {client, service}, emit) {
             let newObject = {}
@@ -81,11 +82,16 @@ definition.processor(function(service, app) {
             }
             const data = App.utils.mergeDeep({}, defaults, newObject)
             await App.validation.validate(data, validators, { source: action, action, service, app, client })
+            const identifiers = client.user ? {
+              ownerType: 'user_User',
+              owner: client.user,
+            } : {
+              ownerType: 'session_Session',
+              owner: client.session,
+            }
             emit({
               type: eventName,
-              identifiers: {
-                user: client.user
-              },
+              identifiers,
               data
             })
           }
@@ -94,20 +100,22 @@ definition.processor(function(service, app) {
         const validators = App.validation.getValidators(action, service, action)
       }
 
-      if(config.userUpdateAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Updated'
-        const actionName = 'updateMyUser' + modelName
+      if(config.ownerUpdateAccess || config.ownerWriteAccess) {
+        const eventName = 'ownerOwned' + modelName + 'Updated'
+        const actionName = 'updateMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
           properties: {
             ...originalModelProperties
           },
-          access: config.userUpdateAccess || config.userWriteAccess,
+          access: config.ownerUpdateAccess || config.ownerWriteAccess,
           skipValidation: true,
-          queuedBy: (command) => command.client.user,
+          queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
-            const entity = await modelRuntime().get(client.user)
+            const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            const id = owner.map(p => JSON.stringify(p)).join(':')
+            const entity = await modelRuntime().get(id)
             if(!entity) throw 'not_found'
             let updateObject = {}
             for(const propertyName of writeableProperties) {
@@ -117,11 +125,16 @@ definition.processor(function(service, app) {
             }
             const merged = App.utils.mergeDeep({}, entity, updateObject)
             await App.validation.validate(merged, validators, { source: action, action, service, app, client })
+            const identifiers = client.user ? {
+              ownerType: 'user_User',
+              owner: client.user,
+            } : {
+              ownerType: 'session_Session',
+              owner: client.session,
+            }
             emit({
               type: eventName,
-              identifiers: {
-                user: client.user
-              },
+              identifiers,
               data: properties || {}
             })
           }
@@ -130,22 +143,29 @@ definition.processor(function(service, app) {
         const validators = App.validation.getValidators(action, service, action)
       }
 
-      if(config.userResetAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Reset'
-        const actionName = 'resetMyUser' + modelName
+      if(config.ownerResetAccess || config.ownerWriteAccess) {
+        const eventName = 'ownerOwned' + modelName + 'Reset'
+        const actionName = 'resetMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
-          access: config.userResetAccess || config.userWriteAccess,
-          queuedBy: (command) => command.client.user,
+          access: config.ownerResetAccess || config.ownerWriteAccess,
+          queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
           async execute(properties, {client, service}, emit) {
-            const entity = await modelRuntime().indexObjectGet('byUser', client.user)
+            const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            const id = owner.map(p => JSON.stringify(p)).join(':')
+            const entity = await modelRuntime().get(id)
             if (!entity) throw 'not_found'
+            const identifiers = client.user ? {
+              ownerType: 'user_User',
+              owner: client.user,
+            } : {
+              ownerType: 'session_Session',
+              owner: client.session,
+            }
             emit({
               type: eventName,
-              identifiers: {
-                user: client.user
-              }
+              identifiers
             })
           }
         })

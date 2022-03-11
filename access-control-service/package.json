@@ -1,5 +1,5 @@
 {
-  "name": "@live-change/user-service",
+  "name": "@live-change/access-control-service",
   "version": "0.2.16",
   "description": "",
   "main": "index.js",
@@ -21,8 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.5.10",
-    "@live-change/relations-plugin": "^0.1.10"
+    "@live-change/framework": "^0.5.7"
   },
   "gitHead": "7691357c7569a18373668691eb6a81a9e161194d"
 }

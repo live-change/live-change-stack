@@ -1,7 +1,7 @@
 const app = require("@live-change/framework").app()
 const definition = require('./definition.js')
 
-const clientKeys = definition.config.clientKeys
+const clientKeys = definition.config?.clientKeys ?? []
 
 function multiKeyIndexQuery(keys, indexName, tableName) {
   return ['database', 'query', app.databaseName, `(${

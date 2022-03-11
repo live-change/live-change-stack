@@ -7,12 +7,12 @@ const lcp = require('@live-change/pattern')
 const lcpDb = require('@live-change/pattern-db')
 const { request } = require('http')
 
-const securityPatterns = definition.config.patterns
+const securityPatterns = definition.config?.patterns ?? []
 const relationsStore = lcpDb.relationsStore(app.dao, app.databaseName, 'security_relations')
 lcp.prepareModelForLive(securityPatterns)
 //console.log("SECURITY PATTERNS", securityPatterns)
 
-const securityCounters = definition.config.counters
+const securityCounters = definition.config?.counters ?? []
 
 definition.beforeStart(service => {
   relationsStore.createTable()

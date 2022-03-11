@@ -5,8 +5,10 @@
     "email-service",
     "message-authentication-service",
     "password-authentication-service",
+    "secret-code-service",
     "secret-link-service",
-    "security-service"
+    "security-service",
+    "access-control-service"
   ],
   "publishConfig": {
     "access": "public"

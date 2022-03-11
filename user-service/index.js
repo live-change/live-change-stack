@@ -5,6 +5,8 @@ const { User, AutheticatedUser } = require('./model.js')
 require('./authenticator.js')
 require('./userProperty.js')
 require('./userItem.js')
+require('./sessionOrUserProperty.js')
+require('./sessionOrUserItem.js')
 
 const Session = definition.foreignModel('session', 'Session')
 
