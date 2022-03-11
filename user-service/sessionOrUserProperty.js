@@ -23,6 +23,7 @@ definition.processor(function(service, app) {
       const config = model.sessionOrUserProperty
       const writeableProperties = modelProperties || config.writableProperties
 
+      if(model.propertyOfAny) throw new Error("model " + modelName + " already have owner")
       model.propertyOfAny = {
         ...config
       }

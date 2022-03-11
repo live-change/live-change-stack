@@ -3,6 +3,8 @@ const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
 const { User } = require("./model.js")
 
+const pluralize = require('pluralize')
+
 definition.processor(function(service, app) {
 
   for(let modelName in service.models) {
@@ -23,12 +25,13 @@ definition.processor(function(service, app) {
 
       //console.log("USER ITEM", model)
 
+      if(model.itemOfAny) throw new Error("model " + modelName + " already have owner")
       model.itemOfAny = {
         ...config
       }
 
       if(config.ownerReadAccess) {
-        const viewName = 'my' + modelName + 's'
+        const viewName = 'my' + pluralize(modelName)
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access(params, context) {
@@ -43,7 +46,7 @@ definition.processor(function(service, app) {
         })
         for(const sortField of config.sortBy || []) {
           const sortFieldUc = sortField.slice(0, 1).toUpperCase() + sortField.slice(1)
-          const viewName = 'mySessionOrUser' + modelName + 'sBy' + sortFieldUc
+          const viewName = 'mySessionOrUser' + pluralize(modelName) + 'By' + sortFieldUc
           service.views[viewName] = new ViewDefinition({
             name: viewName,
             access(params, context) {

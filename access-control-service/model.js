@@ -5,12 +5,14 @@ const access = require('./access.js')(definition)
 const Access = definition.model({
   name: 'Access',
   sessionOrUserItem: {
-    ownerReadAccess: true
+    ownerReadAccess: () => true
   },
-  itemOfAny: {
+  relatedToAny: {
     to: 'object',
-    readAccess: (params, { client, context }) => access.clientHasAnyAccess(client, params.ownerType, params.owner),
-    writeAccess: (params, { client, context }) => access.clientHasAdminAccess(client, params.ownerType, params.owner)
+    readAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAnyAccess(client, params.ownerType, params.owner),
+    writeAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
   },
   properties: {
     role: {
@@ -24,8 +26,10 @@ const PublicAccess = definition.model({
   name: "PublicAccess",
   propertyOfAny: {
     to: 'object',
-    readAccess: (params, { client, context }) => access.clientHasAnyAccess(client, params.ownerType, params.owner),
-    writeAccess: (params, { client, context }) => access.clientHasAdminAccess(client, params.ownerType, params.owner)
+    readAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAnyAccess(client, params.ownerType, params.owner),
+    writeAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
   },
   properties: {
     userRole: {
@@ -45,9 +49,10 @@ const AccessRequest = definition.model({
   name: 'AccessRequest',
   sessionOrUserItem: {
   },
-  itemOfAny: {
+  relatedToAny: {
     to: 'object',
-    readAccess: (params, { client, context }) => access.clientHasAdminAccess(client, params.ownerType, params.owner)
+    readAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
   },
   properties: {
     role: {
