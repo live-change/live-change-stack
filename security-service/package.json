@@ -1,6 +1,6 @@
 {
   "name": "@live-change/security-service",
-  "version": "0.2.19",
+  "version": "0.2.20",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -26,5 +26,5 @@
     "@live-change/pattern-db": "^0.2.2",
     "nodemailer": "^6.7.2"
   },
-  "gitHead": "7691357c7569a18373668691eb6a81a9e161194d"
+  "gitHead": "c2833a9660374ee17dd3def99fd1cdf47f6b1531"
 }
