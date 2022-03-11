@@ -52,6 +52,7 @@ function defineSetAction(config, context) {
     service, app, model,  defaults,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
+
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Set'
   const actionName = 'set' + joinedOthersClassName + 'Owned' + modelName
   service.actions[actionName] = new ActionDefinition({
@@ -144,7 +145,7 @@ function defineResetAction(config, context) {
 
 
 module.exports = function(service, app) {
-  processModelsAnyAnnotation(service, app, 'propertyOf', (config, context) => {
+  processModelsAnyAnnotation(service, app, 'propertyOfAny', (config, context) => {
 
     defineAnyProperties(context.model, context.otherPropertyNames)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)

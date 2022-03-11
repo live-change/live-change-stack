@@ -6,6 +6,8 @@ const {
   processModelsAnnotation
 } = require('./utils.js')
 
+const pluralize = require('pluralize')
+
 function defineView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
@@ -17,7 +19,7 @@ function defineView(config, context) {
       validation: ['nonEmpty']
     })
   }
-  const viewName = joinedOthersPropertyName + 'Owned' + modelName + 's'
+  const viewName = joinedOthersPropertyName + 'Owned' + pluralize(modelName)
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -184,7 +186,7 @@ module.exports = function(service, app) {
     defineTransferredEvent(config, context)
     defineDeletedEvent(config, context)
 
-    if(config.setAccess || config.writeAccess) {
+    if(config.createAccess || config.writeAccess) {
       defineCreateAction(config, context)
     }
 

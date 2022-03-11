@@ -27,7 +27,7 @@ function generateAnyId(otherPropertyNames, properties) {
 }
 
 function defineAnyProperties(model, names) {
-  for (let i = 0; i < types.length; i++) {
+  for (let i = 0; i < names.length; i++) {
     model.properties[names[i]] = new PropertyDefinition({
       type: String,
       validation: ['nonEmpty']
@@ -70,15 +70,15 @@ function processModelsAnyAnnotation(service, app, annotation, cb) {
       if (!model.indexes) model.indexes = {}
 
       let config = model[annotation] // only single ownership is possible, but may be owned by objects set
-      if (typeof config == 'string' || Array.isArray(config)) config = {what: config}
+      if (typeof config == 'string' || Array.isArray(config)) config = { what: config }
 
       console.log("MODEL " + modelName + " IS "+ annotation +" " + config.what)
 
-      const otherPropertyNames = (Array.isArray(config.to) ? config.to : [config.to ?? 'owner'])
+      const otherPropertyNames = (Array.isArray(config.to) ? config.to : [ config.to ?? 'owner' ])
           .map(other => other.name ? other.name : other)
 
       const writeableProperties = modelProperties || config.writeableProperties
-      const others = otherPropertyNames.map(other => other.slice(0, 1).toLowerCase() + other.slice(1))
+      const others = otherPropertyNames.map(other => other.slice(0, 1).toUpperCase() + other.slice(1))
       const joinedOthersPropertyName = otherPropertyNames[0] +
           (others.length > 1 ? ('And' + others.slice(1).join('And')) : '')
       const joinedOthersClassName = others.join('And')

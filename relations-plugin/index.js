@@ -14,4 +14,4 @@ module.exports = function(app, services) {
 
 }
 
-module.exports.processors = [ propertyOf, itemOf ]
+module.exports.processors = [ propertyOf, itemOf, propertyOfAny, itemOfAny ]

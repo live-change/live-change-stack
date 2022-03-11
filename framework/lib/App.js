@@ -98,7 +98,15 @@ class App {
       processors.unshift(...service.processors)
     }
     processUse(sourceService)
-    for(let processor of processors) processor(sourceService, this)
+    //console.log("FOUND PROCESSORS", processors.length)
+    processors = processors.filter(function(item, pos, self) {
+      return self.indexOf(item) == pos
+    })
+    //console.log("RUNNING PROCESSORS", processors.length)
+    for(let processor of processors) {
+      //console.log("PROCESSOR", processor)
+      processor(sourceService, this)
+    }
   }
 
   computeChanges( oldServiceJson, newService ) {

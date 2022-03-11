@@ -10,6 +10,8 @@ const {
   processModelsAnyAnnotation
 } = require('./utilsAny.js')
 
+const pluralize = require('pluralize')
+
 function defineView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
@@ -25,7 +27,7 @@ function defineView(config, context) {
       validation: ['nonEmpty']
     })
   }
-  const viewName = joinedOthersPropertyName + 'Owned' + modelName + 's'
+  const viewName = joinedOthersPropertyName + 'Owned' + pluralize(modelName)
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -172,6 +174,7 @@ function defineSortIndex(context, sortFields) {
 
 module.exports = function(service, app) {
   processModelsAnyAnnotation(service, app, 'itemOfAny', (config, context) => {
+    console.log("ITEM OF ANY", config)
 
     defineAnyProperties(context.model, context.otherPropertyNames)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
@@ -192,7 +195,7 @@ module.exports = function(service, app) {
     defineTransferredEvent(config, context)
     defineDeletedEvent(config, context)
 
-    if(config.setAccess || config.writeAccess) {
+    if(config.createAccess || config.writeAccess) {
       defineCreateAction(config, context)
     }
 
