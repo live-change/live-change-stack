@@ -43,7 +43,7 @@ function defineView(config, context) {
 const {
   defineCreatedEvent, defineUpdatedEvent, defineDeletedEvent, defineTransferredEvent,
 } = require('./itemEvents.js')
-const {defineTransferEvent} = require("./itemEvents");
+const { defineTransferEvent } = require("./itemEvents");
 
 function defineCreateAction(config, context) {
   const {

@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/uid.git"
+    "url": "git+https://github.com/live-change/live-change-framework.git"
   },
   "author": {
     "email": "michal@laszczewski.com",
@@ -17,7 +17,7 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/uid/issues"
+    "url": "https://github.com/live-change/live-change-framework/issues"
   },
-  "homepage": "https://github.com/live-change/uid"
+  "homepage": "https://github.com/live-change/live-change-framework"
 }

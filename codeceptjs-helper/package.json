@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/codeceptjs-helper.git"
+    "url": "git+https://github.com/live-change/live-change-framework.git"
   },
   "author": {
     "email": "m8@em8.pl",
@@ -17,9 +17,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/codeceptjs-helper/issues"
+    "url": "https://github.com/live-change/live-change-framework/issues"
   },
-  "homepage": "https://github.com/live-change/codeceptjs-helper",
+  "homepage": "https://github.com/live-change/live-change-framework",
   "dependencies": {
     "@codeceptjs/helper": "^1.0.2"
   },

@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/cli.git"
+    "url": "git+https://github.com/live-change/live-change-framework.git"
   },
   "author": {
     "email": "m8@em8.pl",
@@ -20,9 +20,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/cli/issues"
+    "url": "https://github.com/live-change/live-change-framework/issues"
   },
-  "homepage": "https://github.com/live-change/cli",
+  "homepage": "https://github.com/live-change/live-change-framework",
   "dependencies": {
     "@live-change/dao": "^0.3.12",
     "@live-change/dao-sockjs": "^0.2.1",

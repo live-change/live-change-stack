@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/relations-plugin.git"
+    "url": "git+https://github.com/live-change/live-change-framework.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/relations-plugin/issues"
+    "url": "https://github.com/live-change/live-change-framework/issues"
   },
-  "homepage": "https://github.com/live-change/relations-plugin",
+  "homepage": "https://github.com/live-change/live-change-framework",
   "author": {
     "email": "michal@laszczewski.pl",
     "name": "Michał Łaszczewski",
