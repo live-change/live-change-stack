@@ -8,10 +8,10 @@ const { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetE
 const  { defineView, defineSetAction, defineUpdateAction, defineResetAction } = require('./singularRelationUtils.js')
 
 module.exports = function(service, app) {
-  processModelsAnyAnnotation(service, app, 'propertyOfAny', false, (config, context) => {
+  processModelsAnyAnnotation(service, app, 'boundToAny', false, (config, context) => {
 
-    context.relationWord = 'Property'
-    context.reverseRelationWord = 'Owned'
+    context.relationWord = 'Friend'
+    context.reverseRelationWord = 'Bound'
 
     defineAnyProperties(context.model, context.otherPropertyNames)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)

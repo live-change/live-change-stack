@@ -1,7 +1,7 @@
 const {
-  defineProperties, defineIndex,
-  processModelsAnnotation
-} = require('./utils.js')
+  defineAnyProperties, defineAnyIndex,
+  processModelsAnyAnnotation
+} = require('./utilsAny.js')
 
 const {
   defineCreatedEvent, defineUpdatedEvent, defineDeletedEvent, defineTransferredEvent,
@@ -9,16 +9,16 @@ const {
 
 const {
   defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex
-} = require('./pluralRelationUtils.js')
+} = require('./pluralRelationAnyUtils.js')
 
 module.exports = function(service, app) {
-  processModelsAnnotation(service, app, 'itemOf', false, (config, context) => {
+  processModelsAnyAnnotation(service, app, 'relatedToAny',true, (config, context) => {
 
-    context.relationWord = 'Item'
-    context.reverseRelationWord = 'Owned'
+    context.relationWord = 'Friend'
+    context.reverseRelationWord = 'Related'
 
-    defineProperties(context.model, context.others, context.otherPropertyNames)
-    defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
+    defineAnyProperties(context.model, context.otherPropertyNames)
+    defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
     if(config.sortBy) {
       for(const sortFields of config.sortBy) {

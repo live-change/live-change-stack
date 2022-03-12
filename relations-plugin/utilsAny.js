@@ -45,7 +45,7 @@ function defineAnyIndex(model, what, props) {
   })
 }
 
-function processModelsAnyAnnotation(service, app, annotation, cb) {
+function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
   if (!service) throw new Error("no service")
   if (!app) throw new Error("no app")
 
@@ -69,26 +69,38 @@ function processModelsAnyAnnotation(service, app, annotation, cb) {
 
       if (!model.indexes) model.indexes = {}
 
-      let config = model[annotation] // only single ownership is possible, but may be owned by objects set
-      if (typeof config == 'string' || Array.isArray(config)) config = { what: config }
-
-      console.log("MODEL " + modelName + " IS "+ annotation +" " + config.what)
-
-      const otherPropertyNames = (Array.isArray(config.to) ? config.to : [ config.to ?? 'owner' ])
-          .map(other => other.name ? other.name : other)
-
-      const writeableProperties = modelProperties || config.writeableProperties
-      const others = otherPropertyNames.map(other => other.slice(0, 1).toUpperCase() + other.slice(1))
-      const joinedOthersPropertyName = otherPropertyNames[0] +
-          (others.length > 1 ? ('And' + others.slice(1).join('And')) : '')
-      const joinedOthersClassName = others.join('And')
-
-      const context = {
-        service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
-        otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+      if (!model.indexes) {
+        model.indexes = {}
       }
 
-      cb(config, context)
+      let configs
+      if(multiple) {
+        configs = Array.isArray(model[annotation]) ? model[annotation] : [ model[annotation] ]
+      } else { // only single ownership is possible, but may be owned by objects set
+        configs = [ model[annotation] ]
+      }
+
+      for(let config of configs) {
+        if (typeof config == 'string' || Array.isArray(config)) config = {what: config}
+
+        console.log("MODEL " + modelName + " IS " + annotation + " " + config.what)
+
+        const otherPropertyNames = (Array.isArray(config.to) ? config.to : [config.to ?? 'owner'])
+            .map(other => other.name ? other.name : other)
+
+        const writeableProperties = modelProperties || config.writeableProperties
+        const others = otherPropertyNames.map(other => other.slice(0, 1).toUpperCase() + other.slice(1))
+        const joinedOthersPropertyName = otherPropertyNames[0] +
+            (others.length > 1 ? ('And' + others.slice(1).join('And')) : '')
+        const joinedOthersClassName = others.join('And')
+
+        const context = {
+          service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
+          otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+        }
+
+        cb(config, context)
+      }
     }
   }
 }

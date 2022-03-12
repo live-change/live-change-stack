@@ -12,10 +12,10 @@ const {
 } = require('./pluralRelationUtils.js')
 
 module.exports = function(service, app) {
-  processModelsAnnotation(service, app, 'itemOf', false, (config, context) => {
+  processModelsAnnotation(service, app, 'relatedTo', true, (config, context) => {
 
-    context.relationWord = 'Item'
-    context.reverseRelationWord = 'Owned'
+    context.relationWord = 'Friend'
+    context.reverseRelationWord = 'Related'
 
     defineProperties(context.model, context.others, context.otherPropertyNames)
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
