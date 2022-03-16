@@ -15,9 +15,13 @@ const Access = definition.model({
         visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
   },
   properties: {
-    role: {
-      type: String,
-      validation: ['nonEmpty']
+    roles: {
+      type: Array,
+      of: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      validation: ['elementsNonEmpty']
     }
   }
 })
@@ -32,13 +36,21 @@ const PublicAccess = definition.model({
         visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
   },
   properties: {
-    userRole: {
-      type: String,
-      validation: ['nonEmpty']
+    userRoles: {
+      type: Array,
+      of: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      validation: ['elementsNonEmpty']
     },
-    sessionRole: {
-      type: String,
-      validation: ['nonEmpty']
+    sessionRoles: {
+      type: Array,
+      of: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      validation: ['elementsNonEmpty']
     },
   },
   indexes: {
@@ -55,9 +67,13 @@ const AccessRequest = definition.model({
         visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
   },
   properties: {
-    role: {
-      type: String,
-      validation: ['nonEmpty']
+    roles: {
+      type: Array,
+      of: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      validation: ['elementsNonEmpty']
     },
     message: {
       type: String,
