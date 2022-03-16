@@ -3,9 +3,13 @@ const {
   processModelsAnyAnnotation, generateAnyId
 } = require('./utilsAny.js')
 
-const { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } = require('./propertyEvents.js')
+const {
+  defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent
+} = require('./propertyEvents.js')
 
-const  { defineView, defineSetAction, defineUpdateAction, defineResetAction } = require('./singularRelationUtils.js')
+const {
+  defineView, defineSetAction, defineUpdateAction, defineResetAction
+} = require('./singularRelationAnyUtils.js')
 
 module.exports = function(service, app) {
   processModelsAnyAnnotation(service, app, 'propertyOfAny', false, (config, context) => {

@@ -9,7 +9,7 @@ const {
 
 const {
   defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex
-} = require('./pluralRelationUtils.js')
+} = require('./pluralRelationAnyUtils.js')
 
 module.exports = function(service, app) {
   processModelsAnyAnnotation(service, app, 'itemOfAny',false, (config, context) => {

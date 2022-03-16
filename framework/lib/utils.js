@@ -246,8 +246,16 @@ function fieldListToFieldsObject(fieldList) {
   return fields
 }
 
+function encodeIdentifier(parts) {
+  if(!Array.isArray(parts)) {
+    return parts
+  }
+  return parts.map(p => JSON.stringify(p)).join(':')
+}
+
 module.exports = {
   typeName, toJSON, setDifference, mapDifference, crudChanges,
   getProperty, setProperty, getField, setField, isObject, mergeDeep, generateDefault,
-  prefixRange, rangeProperties, fieldListToFieldsObject
+  prefixRange, rangeProperties, fieldListToFieldsObject,
+  encodeIdentifier
 }

@@ -67,8 +67,6 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
         return service._runtime.models[modelName]
       }
 
-      if (!model.indexes) model.indexes = {}
-
       if (!model.indexes) {
         model.indexes = {}
       }

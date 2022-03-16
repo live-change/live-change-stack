@@ -49,7 +49,7 @@ function defineCreateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
-  const actionName = 'set' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {

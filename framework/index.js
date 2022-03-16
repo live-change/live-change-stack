@@ -12,6 +12,7 @@ module.exports.app = () => {
 module.exports.utils = require('./lib/utils.js')
 module.exports.validation = require('./lib/utils/validation.js')
 module.exports.rangeProperties = module.exports.utils.rangeProperties
+module.exports.encodeIdentifier = module.exports.utils.encodeIdentifier
 
 
 module.exports.ActionDefinition = require('./lib/definition/ActionDefinition.js')
