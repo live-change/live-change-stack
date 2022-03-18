@@ -1,0 +1,10 @@
+{
+  "name": "live-change-framework-vue3",
+  "version": "0.0.1",
+  "private": true,
+  "workspaces": [
+    "vue-api",
+    "vue3-components",
+    "vue3-ssr"
+  ]
+}

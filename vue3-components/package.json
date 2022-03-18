@@ -1,0 +1,29 @@
+{
+  "name": "@live-change/vue3-components",
+  "version": "0.1.17",
+  "description": "Live Change Framework - vue components",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/vue3-components.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/vue3-components/issues"
+  },
+  "homepage": "https://github.com/live-change/vue3-components",
+  "dependencies": {
+    "debug": "^4.3.2",
+    "vue": "^3.2.31",
+    "@live-change/vue3-ssr": "0.2.2",
+    "mitt": "3.0.0"
+  }
+}

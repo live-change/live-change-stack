@@ -1,0 +1,11 @@
+{
+  "packages": [
+    "vue-api",
+    "vue3-components",
+    "vue3-ssr"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.2.3"
+}

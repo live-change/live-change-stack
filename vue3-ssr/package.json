@@ -1,0 +1,28 @@
+{
+  "name": "@live-change/vue3-ssr",
+  "version": "0.2.2",
+  "description": "Live Change Framework - vue components",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/vue3-ssr.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/vue3-ssr/issues"
+  },
+  "homepage": "https://github.com/live-change/vue3-ssr",
+  "dependencies": {
+    "debug": "^4.3.2",
+    "vue": "^3.2.31",
+    "@live-change/uid": "0.5.20"
+  }
+}
