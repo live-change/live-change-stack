@@ -25,7 +25,11 @@ class Dao extends EventEmitter {
     const protocol = this.definition.protocols[proto]
     if(!protocol) throw new Error("Protocol "+proto+" not supported")
     debug("connecting to "+url)
-    connection = new protocol(this.credentials, url, this.definition.connectionSettings)
+    try {
+      connection = new protocol(this.credentials, url, this.definition.connectionSettings)
+    } catch(e) {
+      connection = protocol(this.credentials, url, this.definition.connectionSettings)
+    }
     this.connections.set(connectionId, connection)
 
     connection.on('connect', (...args) => this.emit('connect', connection, ...args))

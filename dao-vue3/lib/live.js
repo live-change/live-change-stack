@@ -1,6 +1,6 @@
 import { ref, onUnmounted, getCurrentInstance, unref, reactive } from 'vue'
 import { collectPointers, ExtendedObservableList } from '@live-change/dao'
-import nodeDebug from "debug"
+import nodeDebug from 'debug'
 const debug = nodeDebug('dao-vue3')
 
 const liveSymbol = Symbol('live')
