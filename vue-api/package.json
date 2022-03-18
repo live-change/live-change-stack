@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/vue-api.git"
+    "url": "git+https://github.com/live-change/live-change-framework-vue3.git"
   },
   "author": {
     "email": "m8@em8.pl",
@@ -17,9 +17,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/vue-api/issues"
+    "url": "https://github.com/live-change/live-change-framework-vue3/issues"
   },
-  "homepage": "https://github.com/live-change/vue-api",
+  "homepage": "https://github.com/live-change/live-change-framework-vue3",
   "dependencies": {
     "@live-change/dao": "0.4.2",
     "debug": "^4.3.2",
