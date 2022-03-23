@@ -40,7 +40,7 @@ function defineView(config, context) {
 
 function defineSetAction(config, context) {
   const {
-    service, app, model,  defaults,
+    service, app, model, defaults,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
 
@@ -104,6 +104,39 @@ function defineUpdateAction(config, context) {
   const validators = App.validation.getValidators(action, service, action)
 }
 
+function defineSetOrUpdateAction(config, context) {
+  const {
+    service, app, model, modelRuntime, defaults,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
+  const actionName = 'setOrUpdate' + joinedOthersClassName + context.reverseRelationWord + modelName
+  service.actions[actionName] = new ActionDefinition({
+    name: actionName,
+    properties: {
+      ...(model.properties)
+    },
+    access: config.updateAccess || config.writeAccess,
+    skipValidation: true,
+    queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    async execute(properties, {client, service}, emit) {
+      const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
+      const id = generateAnyId(otherPropertyNames, properties)
+      const entity = await modelRuntime().get(id)
+      const data = extractObjectData(writeableProperties, properties, { ...defaults, ...entity } )
+      await App.validation.validate({ ...identifiers, ...data }, validators,
+          {source: action, action, service, app, client})
+      emit({
+        type: eventName,
+        identifiers, data
+      })
+    }
+  })
+  const action = service.actions[actionName]
+  const validators = App.validation.getValidators(action, service, action)
+}
+
 function defineResetAction(config, context) {
   const {
     service, modelRuntime, modelPropertyName,
@@ -135,4 +168,4 @@ function defineResetAction(config, context) {
   })
 }
 
-module.exports = { defineView, defineSetAction, defineUpdateAction, defineResetAction }
+module.exports = { defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction }

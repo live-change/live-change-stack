@@ -8,7 +8,7 @@ const {
 } = require('./propertyEvents.js')
 
 const {
-  defineView, defineSetAction, defineUpdateAction, defineResetAction
+  defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
 } = require('./singularRelationAnyUtils.js')
 
 module.exports = function(service, app) {
@@ -40,6 +40,10 @@ module.exports = function(service, app) {
 
     if(config.updateAccess || config.writeAccess) {
       defineUpdateAction(config, context)
+    }
+
+    if((config.setAccess && config.updateAccess) || config.writeAccess) {
+      defineSetOrUpdateAction(config, context)
     }
 
     if(config.resetAccess || config.writeAccess) {

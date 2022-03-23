@@ -24,7 +24,7 @@ function defineUpdatedEvent(config, context, generateId) {
     name: eventName,
     execute(properties) {
       const id = generateId(otherPropertyNames, properties.identifiers)
-      return modelRuntime().update(id, { ...properties.data, /*...properties.identifiers*/ })
+      return modelRuntime().update(id, { ...properties.data, ...properties.identifiers })
     }
   })
 }
@@ -65,4 +65,6 @@ function defineResetEvent(config, context, generateId) {
   })
 }
 
-module.exports = { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent }
+module.exports = {
+  defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent
+}

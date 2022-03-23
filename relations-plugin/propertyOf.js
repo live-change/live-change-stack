@@ -5,7 +5,9 @@ const {
 
 const { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } = require('./propertyEvents.js')
 
-const { defineView, defineSetAction, defineUpdateAction, defineResetAction } = require('./singularRelationUtils.js')
+const {
+  defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
+} = require('./singularRelationUtils.js')
 
 module.exports = function(service, app) {
   processModelsAnnotation(service, app, 'propertyOf', false, (config, context) => {
@@ -36,6 +38,10 @@ module.exports = function(service, app) {
 
     if(config.updateAccess || config.writeAccess) {
       defineUpdateAction(config, context)
+    }
+
+    if((config.setAccess && config.updateAccess) || config.writeAccess) {
+      defineSetOrUpdateAction(config, context)
     }
 
     if(config.resetAccess || config.writeAccess) {
