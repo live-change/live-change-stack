@@ -9,7 +9,8 @@
     "message-authentication-service",
     "secret-link-service",
     "timer-service",
-    "notification-service"
+    "notification-service",
+    "user-identification-service"
   ],
   "devDependencies": {
   }

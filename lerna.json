@@ -8,7 +8,8 @@
     "secret-code-service",
     "secret-link-service",
     "security-service",
-    "access-control-service"
+    "access-control-service",
+    "user-identification-service"
   ],
   "publishConfig": {
     "access": "public"
