@@ -55,10 +55,11 @@ function defineSetAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, {client, service}, emit) {
+    async execute(properties, { client, service }, emit) {
       const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
       const data = extractObjectData(writeableProperties, properties, defaults)
-      await App.validation.validate(data, validators, { source: action, action, service, app, client })
+      await App.validation.validate({ ...identifiers, ...data }, validators,
+          { source: action, action, service, app, client })
       emit({
         type: eventName,
         identifiers, data
@@ -91,7 +92,8 @@ function defineUpdateAction(config, context) {
       const entity = await modelRuntime().get(id)
       if (!entity) throw new Error('not_found')
       const data = extractObjectData(writeableProperties, properties, entity)
-      await App.validation.validate(data, validators, { source: action, action, service, app, client })
+      await App.validation.validate({ ...identifiers, ...data }, validators,
+          { source: action, action, service, app, client })
       emit({
         type: eventName,
         identifiers, data

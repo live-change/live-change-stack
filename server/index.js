@@ -8,6 +8,7 @@ const renderTemplate = require('./lib/renderTemplate.js')
 const setupApiServer = require('./lib/setupApiServer.js')
 const setupApiSockJs = require('./lib/setupApiSockJs.js')
 const setupApiWs = require('./lib/setupApiWs.js')
+const setupApiEndpoints = require('./lib/setupApiEndpoints.js')
 const setupDbServer = require('./lib/setupDbServer.js')
 const setupDbClient = require('./lib/setupDbClient.js')
 const setupApp = require('./lib/setupApp.js')
@@ -24,6 +25,7 @@ module.exports = {
   setupApiServer,
   setupApiSockJs,
   setupApiWs,
+  setupApiEndpoints,
   setupDbServer,
   setupDbClient,
   setupApp

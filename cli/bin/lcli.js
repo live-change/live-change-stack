@@ -18,7 +18,8 @@ const {
   setupApiWs,
   setupDbServer,
   setupDbClient,
-  setupApp
+  setupApp,
+  setupApiEndpoints
 
 } = require("@live-change/server")
 
@@ -275,6 +276,10 @@ async function ssrServer(argv, dev) {
   })
 
   await ssrServer.start()
+
+  if(argv.withApi) {
+    setupApiEndpoints(expressApp, apiServer)
+  }
 
   const httpServer = http.createServer(expressApp)
   if(argv.withApi) {

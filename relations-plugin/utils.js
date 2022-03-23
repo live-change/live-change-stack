@@ -35,13 +35,13 @@ function generateId(otherPropertyNames, properties) {
 }
 
 function extractObjectData(writeableProperties, properties, defaults) {
-  let updateObject = {}
+  let objectData = {}
   for (const propertyName of writeableProperties) {
     if (properties.hasOwnProperty(propertyName)) {
-      newObject[propertyName] = properties[propertyName]
+      objectData[propertyName] = properties[propertyName]
     }
   }
-  return App.utils.mergeDeep({}, defaults, updateObject)
+  return App.utils.mergeDeep({}, defaults, objectData)
 }
 
 function defineProperties(model, types, names) {

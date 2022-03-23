@@ -85,6 +85,7 @@ class ServiceDefinition {
     this.processors = []
     this.authenticators = []
     this.beforeStartCallbacks = []
+    this.endpoints = []
     this.validators = defaultValidators
     for(let key in definition) this[key] = definition[key]
   }
@@ -147,6 +148,10 @@ class ServiceDefinition {
 
   beforeStart(callback) {
     this.beforeStartCallbacks.push(callback)
+  }
+
+  endpoint(endpoint) {
+    this.endpoints.push(endpoint)
   }
 
   toJSON() {

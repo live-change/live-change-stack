@@ -60,7 +60,8 @@ function defineCreateAction(config, context) {
       if(entity) throw 'exists'
       const identifiers = extractIdentifiers(otherPropertyNames, properties)
       const data = extractObjectData(writeableProperties, properties, defaults)
-      await App.validation.validate(data, validators, { source: action, action, service, app, client })
+      await App.validation.validate({ ...identifiers, ...data }, validators,
+          { source: action, action, service, app, client })
       emit({
         type: eventName,
         [modelPropertyName]: id,
@@ -99,7 +100,8 @@ function defineUpdateAction(config, context) {
       }
       const identifiers = extractIdentifiers(otherPropertyNames, properties)
       const data = extractObjectData(writeableProperties, properties, entity)
-      await App.validation.validate(data, validators, { source: action, action, service, app, client })
+      await App.validation.validate({ ...identifiers, ...data }, validators,
+          { source: action, action, service, app, client })
       emit({
         type: eventName,
         [modelPropertyName]: id,
