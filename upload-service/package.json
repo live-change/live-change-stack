@@ -1,5 +1,5 @@
 {
-  "name": "@live-change/security-service",
+  "name": "@live-change/upload-service",
   "version": "0.2.22",
   "description": "",
   "main": "index.js",
@@ -22,9 +22,8 @@
   },
   "dependencies": {
     "@live-change/framework": "0.5.27",
-    "@live-change/pattern": "0.2.1",
-    "@live-change/pattern-db": "^0.2.2",
-    "nodemailer": "^6.7.2"
+    "@live-change/relations-plugin": "^0.5.20",
+    "pluralize": "8.0.0"
   },
   "gitHead": "48b13d32478da797b31f73ed1d6f4271cd68b574"
 }

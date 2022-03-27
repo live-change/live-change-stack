@@ -22,6 +22,9 @@ const Access = definition.model({
         validation: ['nonEmpty']
       },
       validation: ['elementsNonEmpty']
+    },
+    lastUpdate: {
+      type: Date
     }
   }
 })
@@ -52,6 +55,9 @@ const PublicAccess = definition.model({
       },
       validation: ['elementsNonEmpty']
     },
+    lastUpdate: {
+      type: Date
+    }
   },
   indexes: {
   }
@@ -83,5 +89,34 @@ const AccessRequest = definition.model({
   indexes: {
   }
 })
+
+/*
+const AccessInvite = definition.model({
+  name: 'AccessInvite',
+  userOrContactItem: {},
+  relatedToAny: {
+    to: 'object',
+    readAccess: (params, {client, context, visibilityTest}) =>
+        visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
+  },
+  properties: {
+    roles: {
+      type: Array,
+      of: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      validation: ['elementsNonEmpty']
+    },
+    message: {
+      type: String,
+      validation: []
+    }
+  },
+  indexes: {
+
+  }
+})
+*/
 
 module.exports = { Access, PublicAccess, AccessRequest }

@@ -19,7 +19,8 @@ const identificationFields = {
 }
 
 const Identification = definition.model({
-  userSessionProperty: {
+  name: 'Identification',
+  sessionOrUserProperty: {
     ownerReadAccess: () => true,
     ownerWriteAccess: () => true,
     readAccess: () => true
@@ -28,3 +29,5 @@ const Identification = definition.model({
     ...identificationFields
   }
 })
+
+module.exports = { Identification }

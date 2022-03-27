@@ -9,6 +9,7 @@
     "secret-link-service",
     "security-service",
     "access-control-service",
+    "image-service",
     "user-identification-service"
   ],
   "publishConfig": {
