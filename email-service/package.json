@@ -1,6 +1,6 @@
 {
   "name": "@live-change/email-service",
-  "version": "0.2.23",
+  "version": "0.2.24",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -28,5 +28,5 @@
     "jsdom": "^18.1.1",
     "nodemailer": "^6.7.2"
   },
-  "gitHead": "48b13d32478da797b31f73ed1d6f4271cd68b574"
+  "gitHead": "c22bdb7af06561f1dc64b9d9c8cb90154dcd3618"
 }
