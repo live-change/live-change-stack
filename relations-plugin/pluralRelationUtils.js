@@ -89,7 +89,7 @@ function defineUpdateAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, {client, service}, emit) {
+    async execute(properties, { client, service }, emit) {
       const id = properties[modelPropertyName]
       const entity = await modelRuntime().get(id)
       if(!entity) throw 'not_found'
@@ -130,7 +130,7 @@ function defineDeleteAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, {client, service}, emit) {
+    async execute(properties, { client, service }, emit) {
       const id = properties[modelPropertyName]
       const entity = await modelRuntime().get(id)
       if(!entity) throw new Error('not_found')

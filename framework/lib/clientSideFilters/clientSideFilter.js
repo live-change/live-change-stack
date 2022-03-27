@@ -23,4 +23,6 @@ module.exports = function(service, definition, app) {
   delete definition.foreignIndexes
   delete definition.config
   delete definition.indexes
+  delete definition.endpoints
+  delete definition.beforeStartCallbacks
 }

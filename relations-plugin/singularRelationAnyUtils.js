@@ -120,13 +120,13 @@ function defineSetOrUpdateAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, {client, service}, emit) {
+    async execute(properties, { client, service }, emit) {
       const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
       const id = generateAnyId(otherPropertyNames, properties)
       const entity = await modelRuntime().get(id)
       const data = extractObjectData(writeableProperties, properties, { ...defaults, ...entity } )
       await App.validation.validate({ ...identifiers, ...data }, validators,
-          {source: action, action, service, app, client})
+          { source: action, action, service, app, client })
       emit({
         type: eventName,
         identifiers, data

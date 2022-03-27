@@ -96,6 +96,7 @@ function defineUpdateAction(config, context) {
     waitForEvents: true,
     async execute(properties, { client, service }, emit) {
       const id = properties[modelPropertyName]
+      if(!id) throw 'no_id'
       const entity = await modelRuntime().get(id)
       if(!entity) throw 'not_found'
       const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)

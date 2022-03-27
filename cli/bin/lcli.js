@@ -213,6 +213,8 @@ async function apiServer(argv) {
 
   const expressApp = express()
 
+  setupApiEndpoints(expressApp, apiServer)
+
   const httpServer = http.createServer(expressApp)
 
   setupApiWs(httpServer, apiServer)
@@ -221,6 +223,7 @@ async function apiServer(argv) {
   httpServer.listen(apiPort, apiHost)
   console.log('Listening on port ' + apiPort)
 }
+
 async function ssrServer(argv, dev) {
   const { ssrRoot, ssrPort, ssrHost, apiHost, apiPort } = argv
 
@@ -258,6 +261,10 @@ async function ssrServer(argv, dev) {
     apiServer = await setupApiServer({ ...argv, fastAuth })
   }
 
+  if(argv.withApi) {
+    setupApiEndpoints(expressApp, apiServer)
+  }
+
   const ssrServer = new SsrServer(expressApp, manifest, {
     ...argv,
     dev,
@@ -276,10 +283,6 @@ async function ssrServer(argv, dev) {
   })
 
   await ssrServer.start()
-
-  if(argv.withApi) {
-    setupApiEndpoints(expressApp, apiServer)
-  }
 
   const httpServer = http.createServer(expressApp)
   if(argv.withApi) {

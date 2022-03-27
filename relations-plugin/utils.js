@@ -41,7 +41,7 @@ function extractObjectData(writeableProperties, properties, defaults) {
       objectData[propertyName] = properties[propertyName]
     }
   }
-  return App.utils.mergeDeep({}, defaults, objectData)
+  return App.utils.mergeDeep({}, defaults, JSON.parse(JSON.stringify(objectData)))
 }
 
 function defineProperties(model, types, names) {

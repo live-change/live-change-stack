@@ -3,9 +3,9 @@ const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, E
 
 function defineSetEvent(config, context, generateId) {
   const {
-    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames
+    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Set'
+  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Set'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     execute(properties) {
@@ -17,9 +17,9 @@ function defineSetEvent(config, context, generateId) {
 
 function defineUpdatedEvent(config, context, generateId) {
   const {
-    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames
+    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
+  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Updated'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     execute(properties) {
@@ -31,9 +31,9 @@ function defineUpdatedEvent(config, context, generateId) {
 
 function defineTransferredEvent(config, context, generateId) {
   const {
-    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames
+    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Transferred'
+  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Transferred'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     async execute(properties) {
@@ -53,9 +53,9 @@ function defineTransferredEvent(config, context, generateId) {
 
 function defineResetEvent(config, context, generateId) {
   const {
-    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames
+    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Reset'
+  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Reset'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     execute({ identifiers }) {
