@@ -102,8 +102,8 @@ class Api extends DaoProxy {
         apiInfo = this.prerenderCache.cache.get(cachePath)
       }
     }
-    console.trace("GENERATE API SERVICES!")
-    console.log("GENERATE SERVICES API", apiInfo)
+    //console.trace("GENERATE API SERVICES!")
+    //console.log("GENERATE SERVICES API", apiInfo)
     const definitions = apiInfo?.services
     if(JSON.stringify(definitions) == JSON.stringify(api.servicesApiDefinitions)) return
     if(!definitions) throw new Error("API DEFINITIONS NOT FOUND! UNABLE TO GENERATE API!")
@@ -220,7 +220,8 @@ class Api extends DaoProxy {
 
   command(method, args = {}) {
     const _commandId = args._commandId || this.uidGenerator()
-    console.trace("COMMAND "+_commandId+":"+JSON.stringify(method))
+    //console.trace("COMMAND "+_commandId+":"+JSON.stringify(method))
+    console.log("COMMAND "+_commandId+":"+JSON.stringify(method)+"("+JSON.stringify(args)+")")
     return this.request(method, { ...args, _commandId })
   }
 

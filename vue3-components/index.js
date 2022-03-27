@@ -19,6 +19,6 @@ import createReactiveObject from "./utils/createReactiveObject.mjs"
 
 export { createReactiveObject }
 
-import { analytics, useAnalytics, installRouterAnalytics } from "./logic"
-export { analytics, useAnalytics, installRouterAnalytics }
+import { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList } from "./logic"
+export { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList }
 
