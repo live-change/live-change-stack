@@ -69,11 +69,16 @@ function synchronizedList(options) {
     return synchronizedElement
   }
   function synchronizeFromSource() {
-    console.log("SYNCHRONIZE FROM SOURCE!")
+    //console.log("SYNCHRONIZE FROM SOURCE!")
     let obsoleteLocallyAdded = new Set()
     let obsoleteLocallyDeleted = new Set()
     let newSynchronized = sortedArraysMerge(
       (synchronizedElement, sourceElement, locallyAddedElement, locallyDeletedElement) => {
+
+        /*console.log("MERGE ELEMENT", synchronizedElement)
+        console.log("SOURCE ELEMENT", sourceElement)
+        console.log("LOCALLY ADDED", locallyAddedElement)
+        console.log("LOCALLY DELETED", locallyDeletedElement)*/
 
         if(locallyAddedElement && sourceElement) {
           obsoleteLocallyAdded.add(locallyAddedElement.id)
@@ -88,13 +93,15 @@ function synchronizedList(options) {
           }
           if(sourceElement) {
             synchronizedElement.source.value = sourceElement
+            return synchronizedElement
           } else if(locallyAddedElement) {
             synchronizedElement.source.value = locallyAddedElement
+            return synchronizedElement
           } else {
             return null // synchronized element deleted
           }
         } else if(sourceElement) {
-          console.log("CREATE SYNCHRONIZED FROM SOURCE!")
+          //console.log("CREATE SYNCHRONIZED FROM SOURCE!")
           return createSynchronizedElement(sourceElement)
         } else if(locallyAddedElement) {
           return createSynchronizedElement(locallyAddedElement)
@@ -113,7 +120,10 @@ function synchronizedList(options) {
     synchronizedList.value = newSynchronized
   }
 
-  watch(() => (source.value ?? []).map(({ id }) => id), sourceIds => synchronizeFromSource())
+  watch(() => (source.value ?? []).map(({ id }) => id), (sourceIds, oldSourceIds) => {
+    console.log("SOURCE IDs changed", oldSourceIds, '=>', sourceIds)
+    synchronizeFromSource()
+  })
   synchronizeFromSource()
 
   const changed = computed(() => (synchronizedList.value.some(({ changed }) => changed.value))
