@@ -40,7 +40,7 @@ function synchronizedList(options) {
     source,
     update: updateAction,
     insert: insertAction,
-    remove: removeAction,
+    delete: deleteAction,
     move: moveAction,
     identifiers = {},
     objectIdentifiers = object => ({ id: object.id }),
@@ -59,7 +59,7 @@ function synchronizedList(options) {
   if(!source) throw new Error('source must be defined')
   const synchronizedList = ref([])
   const locallyAdded = ref([])
-  const locallyRemoved = ref([])
+  const locallyDeleted = ref([])
 
   function createSynchronizedElement(sourceData) {
     const elementSource = ref(sourceData)
@@ -69,19 +69,21 @@ function synchronizedList(options) {
     return synchronizedElement
   }
   function synchronizeFromSource() {
+    console.log("SYNCHRONIZE FROM SOURCE!")
     let obsoleteLocallyAdded = new Set()
-    let obsoleteLocallyRemoved = new Set()
+    let obsoleteLocallyDeleted = new Set()
     let newSynchronized = sortedArraysMerge(
-      (synchronizedElement, sourceElement, locallyAddedElement, locallyRemovedElement) => {
+      (synchronizedElement, sourceElement, locallyAddedElement, locallyDeletedElement) => {
+
         if(locallyAddedElement && sourceElement) {
           obsoleteLocallyAdded.add(locallyAddedElement.id)
         }
-        if(locallyRemovedElement && !sourceElement) {
-          obsoleteLocallyRemoved.add(locallyAddedElement.id)
+        if(locallyDeletedElement && !sourceElement) {
+          obsoleteLocallyDeleted.add(locallyAddedElement.id)
         }
 
         if(synchronizedElement) {
-          if(locallyRemovedElement) {
+          if(locallyDeletedElement) {
             return null // synchronized element locally
           }
           if(sourceElement) {
@@ -97,27 +99,25 @@ function synchronizedList(options) {
         } else if(locallyAddedElement) {
           return createSynchronizedElement(locallyAddedElement)
         }
-      }, synchronizedList.value, source.value || [], locallyAdded.value, locallyRemoved.value)
+      }, synchronizedList.value, source.value || [], locallyAdded.value, locallyDeleted.value)
     if(obsoleteLocallyAdded.length > 0) {
       locallyAdded.value = locallyAdded.value.filter(
         locallyAddedElement => obsoleteLocallyAdded.has(locallyAddedElement.id)
       )
     }
-    if(obsoleteLocallyRemoved.length > 0) {
-      locallyRemoved.value = locallyRemoved.value.filter(
-        locallyRemovedElement => obsoleteLocallyRemoved.has(locallyRemovedElement.id)
+    if(obsoleteLocallyDeleted.length > 0) {
+      locallyDeleted.value = locallyDeleted.value.filter(
+        locallyDeletedElement => obsoleteLocallyDeleted.has(locallyDeletedElement.id)
       )
     }
     synchronizedList.value = newSynchronized
   }
 
-  const sourceIds = computed(() => (source.value ?? []).map(({ id }) => id))
-  watch(() => sourceIds, () => synchronizeFromSource())
-
+  watch(() => (source.value ?? []).map(({ id }) => id), sourceIds => synchronizeFromSource())
   synchronizeFromSource()
 
   const changed = computed(() => (synchronizedList.value.some(({ changed }) => changed.value))
-                              || locallyAdded.length || locallyRemoved.length)
+                              || locallyAdded.length || locallyDeleted.length)
 
   async function save() {
     const results = await Promise.app(synchronizedList.value.map(synchronizedElement => synchronizedElement.save()))
@@ -125,13 +125,13 @@ function synchronizedList(options) {
   }
 
   async function insert(element) {
-    locallyAdded.push(element)
+    locallyAdded.value.push(element)
     await insertAction({ ...element, [timeField]: timeSource(), ...identifiers })
   }
 
-  async function remove(element) {
-    locallyRemoved.push(element)
-    await removeAction({ ...element, ...identifiers })
+  async function deleteElement(element) {
+    locallyDeleted.value.push(element)
+    await deleteAction({ ...element, ...identifiers })
   }
 
   async function move(element, toId) {
@@ -139,7 +139,7 @@ function synchronizedList(options) {
   }
 
   const synchronizedValue = computed(() => synchronizedList.value.map(synchronizedElement => synchronizedElement.value))
-  return { value: synchronizedValue, save, changed, insert, remove, move }
+  return { value: synchronizedValue, save, changed, insert, delete: deleteElement, move }
 }
 
 export default synchronizedList
