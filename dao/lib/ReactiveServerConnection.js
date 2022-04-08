@@ -15,32 +15,59 @@ class PushObservableTrigger {
     this.triggers = new Map()
 
     if(this.more && this.more.length > 0) {
-      this.localList = new ObservableList()
+      const localList = new ObservableList()
       this.pointerMethods = {
         set: (value) => this.setPointers(this.findPointers(value)),
         push: (value) => this.addPointers(this.findPointers(value)),
         unshift: (value) => this.addPointers(this.findPointers(value)),
-        shift: () => this.removePointers(this.findPointers(this.localList.list[0])),
-        pop: () => this.removePointers(this.findPointers(this.localList.list[this.localList.list.length - 1])),
+        shift: () => this.removePointers(this.findPointers(localList.list[0])),
+        pop: () => this.removePointers(this.findPointers(localList.list[localList.list.length - 1])),
         splice: (at, count, ...add) => this.replacePointers(
-            this.findPointers(this.localList.list.slice(at, at + count)),
+            this.findPointers(localList.list.slice(at, at + count)),
             this.findPointers(add)
         ),
-        remove: (value) => this.removePointers(this.findPointers(this.localList.list.filter(v => v == value))),
-        removeByField: (fieldName, value) =>
-            this.removePointers(this.findPointers(this.localList.list.filter(v => v[fieldName] == value))),
-        update: (value, update) => this.replacePointers(
-            this.findPointers(this.localList.list.filter(v => v == value)),
-            this.findPointers(this.localList.list.filter(v => v == value).map(u => update))
-        ),
-        updateByField: (fieldName, value, update) => this.replacePointers(
-            this.findPointers(this.localList.list.filter(v => v[fieldName] == value)),
-            this.findPointers(this.localList.list.filter(v => v[fieldName] == value).map(u => update))
-        )
+        remove: (value) => {
+          const valueJson = JSON.stringify(value)
+          this.removePointers(
+              this.findPointers(
+                  localList.list.filter(v => JSON.stringify(v) == valueJson)
+              )
+          )
+        },
+        removeByField: (fieldName, value) => {
+          const valueJson = JSON.stringify(value)
+          this.removePointers(
+              this.findPointers(
+                  localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson)
+              )
+          )
+        },
+        update: (value, update) => {
+          const valueJson = JSON.stringify(value)
+          this.replacePointers(
+              this.findPointers(
+                  localList.list.filter(v => JSON.stringify(v) == valueJson)
+              ),
+              this.findPointers(
+                  localList.list.filter(v => JSON.stringify(v) == valueJson).map(u => update)
+              )
+          )
+        },
+        updateByField: (fieldName, value, update) => {
+          const valueJson = JSON.stringify(value)
+          this.replacePointers(
+              this.findPointers(
+                  localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson)
+              ),
+              this.findPointers(
+                  localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson).map(u => update)
+              )
+          )
+        }
       }
       this.observer = (signal, ...args) => {
-        if (this.pointerMethods[signal]) this.pointerMethods[signal](...args)
-        if (this.localList[signal]) this.localList[signal](...args)
+        if(this.pointerMethods[signal]) this.pointerMethods[signal](...args)
+        if(localList[signal]) localList[signal](...JSON.parse(JSON.stringify(args)))
       }
 
       this.observation.observable.observe(this.observer)
