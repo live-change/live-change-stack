@@ -9,8 +9,9 @@ definition.processor(function(service, app) {
 
   for(let modelName in service.models) {
     const model = service.models[modelName]
-    if(model.sessionOrUserItem) {
-      if (model.properties.owner) throw new Error('user property already exists!!!')
+    if(model.contactOrUserItem) {
+      if(model.properties.owner) throw new Error('user property already exists!!!')
+
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
       const defaults = App.utils.generateDefault(model.properties)
@@ -20,7 +21,7 @@ definition.processor(function(service, app) {
         return service._runtime.models[modelName]
       }
 
-      const config = model.sessionOrUserItem
+      const config = model.contactOrUserItem
       const writeableProperties = modelProperties || config.writableProperties
 
       //console.log("USER ITEM", model)
@@ -30,19 +31,94 @@ definition.processor(function(service, app) {
         ...config
       }
 
-      /// TODO: merge on signedIn trigger
-      /// TODO: delete on userDeleted trigger
+      /*await service.trigger({
+        type: 'contactConnected',
+        contactType: 'email',
+        contact: email,
+        user
+      })*/
+
+      service.trigger({
+        name: 'contactConnected',
+        properties: {
+          contactType: {
+            type: String,
+            validation: ['nonEmpty']
+          },
+          contact: {
+            type: String,
+            validation: ['nonEmpty']
+          },
+          user: {
+            type: User,
+            validation: ['nonEmpty']
+          }
+        },
+        async execute({ contactType, contact, user }, { service }, emit) {
+          const contactPath = [contactType, contact]
+          const contactItems = await modelRuntime().indexRangeGet('byOwner', contactPath, {} )
+          if(config.merge) {
+            const userPath = ['user_User', user]
+            const userItems = await modelRuntime().indexRangeGet('byOwner', userPath, {} )
+            const mergeResult = await config.merge(contactItems, userItems)
+            if(mergeResult) {
+              const { transferred, updated, deleted } = mergeResult
+              for(const entity of transferred) {
+                emit({
+                  type: 'ownerOwned' + modelName + 'Transferred',
+                  [modelPropertyName]: entity.id,
+                  to: {
+                    id: entity.id,
+                    ownerType: 'user_User',
+                    owner: user
+                  }
+                })
+              }
+              for(const entity of updated) {
+                emit({
+                  type: 'ownerOwned' + modelName + 'Updated',
+                  [modelPropertyName]: entity.id,
+                  identifiers: {
+                    id: entity.id,
+                    ownerType: 'user_User',
+                    owner: user
+                  },
+                  data: entity
+                })
+              }
+              for(const entity of deleted) {
+                emit({
+                  type: 'ownerOwned' + modelName + 'Deleted',
+                  [modelPropertyName]: entity.id,
+                })
+              }
+            }
+          } else {
+            for(const entity of contactItems) {
+              emit({
+                type: 'ownerOwned' + modelName + 'Transferred',
+                [modelPropertyName]: entity.id,
+                identifiers: {
+                  id: entity.id,
+                  ownerType: 'user_User',
+                  owner: user
+                }
+              })
+            }
+          }
+        }
+      })
 
       if(config.ownerReadAccess) {
         const viewName = 'my' + pluralize(modelName)
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access(params, context) {
-            return config.ownerReadAccess ? config.ownerReadAccess(params, context) : true
+            return context.client.user && (config.ownerReadAccess ? config.ownerReadAccess(params, context) : true)
           },
           properties: App.rangeProperties,
           daoPath(range, { client, context }) {
-            const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            const owner = ['user_User', client.user]
             const path = modelRuntime().indexRangePath('byOwner', owner, range )
             return path
           }
@@ -53,11 +129,12 @@ definition.processor(function(service, app) {
           service.views[viewName] = new ViewDefinition({
             name: viewName,
             access(params, context) {
+              if(!context.client.user) return false
               return config.ownerReadAccess(params, context)
             },
             properties: App.rangeProperties,
             daoPath(range, { client, context }) {
-              const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+              const owner = ['user_User', client.user]
               return modelRuntime().sortedIndexRangePath('byOwner' + sortFieldUc, owner, range)
             }
           })
@@ -69,7 +146,8 @@ definition.processor(function(service, app) {
         const actionName = 'createMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
-          access: config.ownerCreateAccess || config.ownerWriteAccess,
+          access: (params, context) => context.client.user
+              && (config.ownerCreateAccess || config.ownerWriteAccess)(params,context),
           properties: {
             ...originalModelProperties,
             [modelPropertyName]: {
@@ -77,19 +155,16 @@ definition.processor(function(service, app) {
               validation: ['localId']
             }
           },
-          queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
+          queuedBy: (command) => 'u:'+command.client.user,
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
             const id = properties[modelPropertyName] || app.generateUid()
             const entity = await modelRuntime().get(id)
             if(entity) throw 'exists'
-            const identifiers = client.user ? {
-                  ownerType: 'user_User',
-                  owner: client.user,
-                } : {
-                  ownerType: 'session_Session',
-                  owner: client.session,
-                }
+            const identifiers = {
+              ownerType: 'user_User',
+              owner: client.user,
+            }
             emit({
               type: eventName,
               [modelPropertyName]: id,
@@ -105,7 +180,8 @@ definition.processor(function(service, app) {
         const actionName = 'updateMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
-          access: config.ownerUpdateAccess || config.ownerWriteAccess,
+          access: (params, context) => context.client.user
+              && (config.ownerUpdateAccess || config.ownerWriteAccess)(params,context),
           properties: {
             ...originalModelProperties,
             [modelPropertyName]: {
@@ -121,10 +197,7 @@ definition.processor(function(service, app) {
             if(!entity) throw 'not_found'
             if(entity.ownerType == 'user_User') {
               if(entity.owner != client.user) throw 'not_authorized'
-            }
-            if(entity.ownerType == 'session_Session') {
-              if(entity.owner != client.session) throw 'not_authorized'
-            }
+            } else throw 'not_authorized'
             let updateObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -156,7 +229,8 @@ definition.processor(function(service, app) {
         const actionName = 'deleteMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
-          access: config.userDeleteAccess || config.userWriteAccess,
+          access: (params, context) => context.client.user
+              && (config.ownerDeleteAccess || config.ownerWriteAccess)(params,context),
           properties: {
             [modelPropertyName]: {
               type: model,
@@ -170,10 +244,7 @@ definition.processor(function(service, app) {
             if(!entity) throw 'not_found'
             if(entity.ownerType == 'user_User') {
               if(entity.owner != client.user) throw 'not_authorized'
-            }
-            if(entity.ownerType == 'session_Session') {
-              if(entity.owner != client.session) throw 'not_authorized'
-            }
+            } else throw 'not_authorized'
             const identifiers = client.user ? {
               ownerType: 'user_User',
               owner: client.user,

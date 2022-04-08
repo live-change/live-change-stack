@@ -29,6 +29,8 @@ definition.processor(function(service, app) {
         ...config
       }
 
+      /// TODO: delete on userDeleted trigger
+
       if(config.userReadAccess) {
         const viewName = 'myUser' + modelName
         service.views[viewName] = new ViewDefinition({

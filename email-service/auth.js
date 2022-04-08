@@ -123,10 +123,16 @@ definition.trigger({
       validation: ['nonEmpty']
     }
   },
-  async execute({ user, email }, { client, service }, emit) {
+  async execute({ user, email }, { service }, emit) {
     if(!email) throw new Error("no email")
     const emailData = await Email.get(email)
     if(emailData) throw { properties: { email: 'taken' } }
+    await service.trigger({
+      type: 'contactConnected',
+      contactType: 'email_Email',
+      contact: email,
+      user
+    })
     emit({
       type: 'emailConnected',
       user, email

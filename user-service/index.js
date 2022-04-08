@@ -7,6 +7,8 @@ require('./userProperty.js')
 require('./userItem.js')
 require('./sessionOrUserProperty.js')
 require('./sessionOrUserItem.js')
+require('./contactOrUserProperty.js')
+require('./contactOrUserItem.js')
 
 const Session = definition.foreignModel('session', 'Session')
 
@@ -44,6 +46,10 @@ definition.trigger({
   async execute({ user, session }, { client, service }, emit) {
     const userData = await User.get(user)
     if(!userData) throw 'userNotFound'
+    await service.trigger({
+      type: 'signedIn',
+      session, user
+    })
     emit({
       type: "signedIn",
       user, session
@@ -55,6 +61,11 @@ definition.action({
   name: 'signOut',
   async execute({ }, { client, service }, emit) {
     if(!client.user) throw "notSignedIn"
+    await service.trigger({
+      type: 'signedOut',
+      session: client.session,
+      user: client.user
+    })
     emit({
       type: "signedOut",
       user: client.user,
@@ -78,6 +89,10 @@ definition.trigger({
     if(!user) {
       user = app.generateUid()
     }
+    await service.trigger({
+      type: 'signedIn',
+      session, user
+    })
     emit([{
       type: "created",
       user
@@ -98,6 +113,14 @@ definition.action({
   },
   async execute({ }, { client, service }, emit) {
     const user = client.user
+    await service.trigger({
+      type: 'signedOut',
+      session: client.session, user: client.user
+    })
+    await service.trigger({
+      type: 'userDeleted',
+      user: client.user
+    })
     await service.trigger({
       type: 'userDeleted',
       user

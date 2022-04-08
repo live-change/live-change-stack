@@ -4,15 +4,27 @@ const access = require('./access.js')(definition)
 
 const Access = definition.model({
   name: 'Access',
-  sessionOrUserItem: {
+  /*sessionOrUserItem: {
     ownerReadAccess: () => true
   },
   relatedToAny: {
     to: 'object',
     readAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAnyAccess(client, params.ownerType, params.owner),
-    writeAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
+        visibilityTest || access.clientHasAnyAccess(client, params.objectType, params.object),
+    updateAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object),
+    deleteAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
+  },*/
+  sessionOrUserExtendedProperty: {
+    extendedWith: ['object'],
+    ownerReadAccess: () => true,
+    readAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAnyAccess(client, params.objectType, params.object),
+    updateAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object),
+    deleteAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
   },
   properties: {
     roles: {
@@ -34,9 +46,9 @@ const PublicAccess = definition.model({
   propertyOfAny: {
     to: 'object',
     readAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAnyAccess(client, params.ownerType, params.owner),
+        visibilityTest || access.clientHasAnyAccess(client, params.objectType, params.object),
     writeAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
+        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
   },
   properties: {
     userRoles: {
@@ -70,7 +82,7 @@ const AccessRequest = definition.model({
   relatedToAny: {
     to: 'object',
     readAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
+        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
   },
   properties: {
     roles: {
@@ -90,14 +102,14 @@ const AccessRequest = definition.model({
   }
 })
 
-/*
+
 const AccessInvite = definition.model({
   name: 'AccessInvite',
-  userOrContactItem: {},
+  contactOrUserItem: {},
   relatedToAny: {
     to: 'object',
     readAccess: (params, {client, context, visibilityTest}) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.ownerType, params.owner)
+        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
   },
   properties: {
     roles: {
@@ -117,6 +129,5 @@ const AccessInvite = definition.model({
 
   }
 })
-*/
 
-module.exports = { Access, PublicAccess, AccessRequest }
+module.exports = { Access, PublicAccess, AccessRequest, AccessInvite }
