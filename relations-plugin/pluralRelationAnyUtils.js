@@ -1,7 +1,8 @@
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
 const { extractTypeAndIdParts, extractIdentifiersWithTypes } = require("./utilsAny.js")
-const { extractRange, extractObjectData } = require("./utils.js")
+const { extractObjectData } = require("./utils.js")
+const { extractRange } = App
 
 const pluralize = require('pluralize')
 

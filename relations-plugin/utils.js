@@ -9,17 +9,6 @@ function extractIdParts(otherPropertyNames, properties) {
   return idParts
 }
 
-function extractRange(properties) {
-  return {
-    gt: properties.gt,
-    gte: properties.gte,
-    lt: properties.lt,
-    lte: properties.lte,
-    reverse: properties.reverse,
-    limit: properties.limit
-  }
-}
-
 function extractIdentifiers(otherPropertyNames, properties) {
   const identifiers = {}
   for (const propertyName of otherPropertyNames) {
@@ -128,5 +117,5 @@ function processModelsAnnotation(service, app, annotation, multiple, cb) {
 
 module.exports = {
   extractIdParts, extractIdentifiers, extractObjectData, defineProperties, defineIndex,
-  processModelsAnnotation, extractRange, generateId
+  processModelsAnnotation, generateId
 }

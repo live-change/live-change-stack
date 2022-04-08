@@ -1,5 +1,6 @@
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
+const { allCombinations } = require("./combinations.js")
 
 function extractTypeAndIdParts(otherPropertyNames, properties) {
   const typeAndIdParts = []
@@ -48,6 +49,14 @@ function defineAnyIndex(model, what, props) {
   model.indexes['by' + what] = new IndexDefinition({
     property: props.map(prop => [prop+'Type', prop]).flat()
   })
+}
+
+function defineAnyIndexes(model, props) {
+  const propCombinations = allCombinations(props)
+  for(const propCombination of propCombinations) {
+    const upperCaseProps = propCombination.map(prop => prop[0].toUpperCase() + prop.slice(1))
+    defineAnyIndex(model, upperCaseProps.join('And'), propCombination)
+  }
 }
 
 function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
@@ -109,6 +118,7 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
 }
 
 module.exports = {
-  extractTypeAndIdParts, extractIdentifiersWithTypes, defineAnyProperties, defineAnyIndex,
+  extractTypeAndIdParts, extractIdentifiersWithTypes, defineAnyProperties,
+  defineAnyIndex, defineAnyIndexes,
   processModelsAnyAnnotation, generateAnyId
 }

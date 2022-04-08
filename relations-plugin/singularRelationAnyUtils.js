@@ -2,9 +2,26 @@ const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } = App
 const { extractTypeAndIdParts, extractIdentifiersWithTypes, generateAnyId } = require("./utilsAny.js")
 const { extractObjectData } = require("./utils.js")
+const { allCombinations } = require("./combinations.js")
 
+const pluralize = require('pluralize')
 
-function defineView(config, context) {
+function createIdentifiersProperties(keys) {
+  const identifiers = {}
+  if(keys) for(const key of keys) {
+    identifiers[key] = {
+      type: String,
+      validation: ['nonEmpty']
+    }
+    identifiers[key + 'Type'] = {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  }
+  return identifiers
+}
+
+function defineObjectView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
   const viewProperties = {}
@@ -36,6 +53,37 @@ function defineView(config, context) {
       return path
     }
   })
+}
+
+function defineRangeViews(config, context) {
+  const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
+    modelName, others, model } = context
+  const identifierCombinations = allCombinations(otherPropertyNames).slice(0, -1)
+  for(const combination of identifierCombinations) {
+    const propsUpperCase = combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
+    const indexName = 'by' + combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
+    const viewName = combination[0][0].toLowerCase() + combination[0].slice(1) +
+        propsUpperCase.slice(1).join('And') + context.partialReverseRelationWord + pluralize(modelName)
+    console.log("DEFINE RANGE VIEW", viewName, combination)
+    const identifiers = createIdentifiersProperties(combination)
+    service.views[viewName] = new ViewDefinition({
+      name: viewName,
+      properties: {
+        ...identifiers,
+        ...App.rangeProperties,
+      },
+      access(params, context) {
+        return config.access ? config.access(params, context) : true
+      },
+      daoPath(params, { client, context }) {
+        const owner = []
+        for (const key of combination) {
+          owner.push(params[key + 'Type'], params[key])
+        }
+        return modelRuntime().sortedIndexRangePath(indexName, owner, App.extractRange(params) )
+      }
+    })
+  }
 }
 
 function defineSetAction(config, context) {
@@ -139,7 +187,7 @@ function defineSetOrUpdateAction(config, context) {
 
 function defineResetAction(config, context) {
   const {
-    service, modelRuntime, modelPropertyName,
+    service, modelRuntime, modelPropertyName, identifiers,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Reset'
@@ -150,7 +198,8 @@ function defineResetAction(config, context) {
       [modelPropertyName]: {
         type: model,
         validation: ['nonEmpty']
-      }
+      },
+      ...identifiers
     },
     access: config.resetAccess || config.writeAccess,
     queuedBy: otherPropertyNames,
@@ -168,4 +217,7 @@ function defineResetAction(config, context) {
   })
 }
 
-module.exports = { defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction }
+module.exports = {
+  defineObjectView, defineRangeViews,
+  defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
+}

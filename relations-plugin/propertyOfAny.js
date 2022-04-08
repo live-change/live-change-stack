@@ -1,5 +1,5 @@
 const {
-  defineAnyProperties, defineAnyIndex,
+  defineAnyProperties, defineAnyIndex, defineAnyIndexes,
   processModelsAnyAnnotation, generateAnyId
 } = require('./utilsAny.js')
 
@@ -8,7 +8,7 @@ const {
 } = require('./propertyEvents.js')
 
 const {
-  defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
+  defineObjectView, defineRangeViews, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
 } = require('./singularRelationAnyUtils.js')
 
 module.exports = function(service, app) {
@@ -16,16 +16,18 @@ module.exports = function(service, app) {
 
     context.relationWord = 'Property'
     context.reverseRelationWord = 'Owned'
+    context.partialReverseRelationWord = 'Owned'
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
-    defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
+    defineAnyIndexes(context.model, context.otherPropertyNames)
 
     if(config.readAccess) {
-      defineView({ ...config, access: config.readAccess }, context)
+      defineObjectView({ ...config, access: config.readAccess }, context)
+      defineRangeViews({ ...config, access: config.readAccess }, context)
     }
     if(config.views) {
       for(const view of config.views) {
-        defineView({ ...config, ...view }, context)
+        defineObjectView({ ...config, ...view }, context)
       }
     }
 

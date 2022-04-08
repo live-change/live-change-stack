@@ -253,9 +253,20 @@ function encodeIdentifier(parts) {
   return parts.map(p => JSON.stringify(p)).join(':')
 }
 
+function extractRange(properties) {
+  return {
+    gt: properties.gt,
+    gte: properties.gte,
+    lt: properties.lt,
+    lte: properties.lte,
+    reverse: properties.reverse,
+    limit: properties.limit
+  }
+}
+
 module.exports = {
   typeName, toJSON, setDifference, mapDifference, crudChanges,
   getProperty, setProperty, getField, setField, isObject, mergeDeep, generateDefault,
   prefixRange, rangeProperties, fieldListToFieldsObject,
-  encodeIdentifier
+  encodeIdentifier, extractRange
 }
