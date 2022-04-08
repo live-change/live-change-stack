@@ -2,6 +2,7 @@ import { ref, onUnmounted, getCurrentInstance, unref, reactive, isRef } from 'vu
 import { collectPointers, ExtendedObservableList } from '@live-change/dao'
 import nodeDebug from 'debug'
 const debug = nodeDebug('dao-vue3')
+debug.log = console.log.bind(console)
 
 const liveSymbol = Symbol('live')
 
@@ -71,7 +72,6 @@ async function live(api, path, onUnmountedCb) {
     return createObject(path.what, path.more)
   } else {
     const preFetchPaths = api.observable({ paths })
-    const observables = []
     function bindResult(what, more, object, property) {
       if(!what) throw new Error("what parameter required!")
       const observable = api.observable(what)
