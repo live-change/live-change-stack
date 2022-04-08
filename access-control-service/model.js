@@ -4,26 +4,14 @@ const access = require('./access.js')(definition)
 
 const Access = definition.model({
   name: 'Access',
-  /*sessionOrUserItem: {
-    ownerReadAccess: () => true
-  },
-  relatedToAny: {
-    to: 'object',
-    readAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAnyAccess(client, params.objectType, params.object),
-    updateAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object),
-    deleteAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
-  },*/
-  sessionOrUserExtendedProperty: {
+  sessionOrUserProperty: {
     extendedWith: ['object'],
     ownerReadAccess: () => true,
     readAccess: (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientHasAnyAccess(client, params.objectType, params.object),
     updateAccess: (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object),
-    deleteAccess: (params, { client, context, visibilityTest }) =>
+    resetAccess: (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
   },
   properties: {

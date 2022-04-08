@@ -2,6 +2,24 @@ const definition = require("./definition.js")
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
 const { User } = require("./model.js")
+const { allCombinations } = require("./combinations.js")
+
+const pluralize = require('pluralize')
+
+function createIdentifiersProperties(keys) {
+  const identifiers = {}
+  if(keys) for(const key of keys) {
+    identifiers[key] = {
+      type: String,
+      validation: ['nonEmpty']
+    }
+    identifiers[key + 'Type'] = {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  }
+  return identifiers
+}
 
 definition.processor(function(service, app) {
 
@@ -9,8 +27,8 @@ definition.processor(function(service, app) {
     const model = service.models[modelName]
 
     if(model.sessionOrUserProperty) {
-      console.log("MODEL " + modelName + " IS SESSION OR USER PROPERTY, CONFIG:", model.userProperty)
-      if (model.properties.owner) throw new Error('owner property already exists!!!')
+      console.log("MODEL " + modelName + " IS SESSION OR USER PROPERTY, CONFIG:", model.sessionOrUserProperty)
+      if (model.properties.sessionOrUser) throw new Error('sessionOrUser property already exists!!!')
 
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
@@ -23,27 +41,68 @@ definition.processor(function(service, app) {
       const config = model.sessionOrUserProperty
       const writeableProperties = modelProperties || config.writableProperties
 
+      if(model.propertyOf) throw new Error("model " + modelName + " already have owner")
       if(model.propertyOfAny) throw new Error("model " + modelName + " already have owner")
+
+      const extendedWith = config.extendedWith
+          ? (Array.isArray(config.extendedWith) ? config.extendedWith : [config.extendedWith])
+          : []
       model.propertyOfAny = {
-        ...config
+        ...config,
+        to: ['sessionOrUser', ...extendedWith]
       }
 
       /// TODO: merge on signedIn trigger
       /// TODO: delete on userDeleted trigger
 
-      if(config.ownerReadAccess) {
+
+      if(config.ownerReadAccess) { // single item view
         const viewName = 'my' + modelName
+        const identifiers = createIdentifiersProperties(extendedWith)
         service.views[viewName] = new ViewDefinition({
           name: viewName,
+          properties: {
+            ...identifiers
+          },
           access(params, context) {
             return config.ownerReadAccess ? config.ownerReadAccess(params, context) : true
           },
           daoPath(params, { client, context }) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            for(const key of extendedWith) {
+              owner.push(params[key+'Type'], params[key])
+            }
             const id = owner.map(p => JSON.stringify(p)).join(':')
             return modelRuntime().path(id)
           }
         })
+      }
+
+      if(config.ownerReadAccess && config.extendedWith) {
+        const extendedCombinations = [[]].concat(allCombinations(extendedWith).slice(0, -1))
+        for(const combination of extendedCombinations) {
+          const propsUpperCase = combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
+          const indexName = 'by' + (combination).map(prop => prop[0].toUpperCase() + prop.slice(1))
+          const viewName = 'my' + propsUpperCase.join('And') + pluralize(modelName)
+          const identifiers = createIdentifiersProperties(combination)
+          service.views[viewName] = new ViewDefinition({
+            name: viewName,
+            properties: {
+              ...identifiers,
+              ...App.rangeProperties,
+            },
+            access(params, context) {
+              return config.ownerReadAccess ? config.ownerReadAccess(params, context) : true
+            },
+            daoPath(params, {client, context}) {
+              const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+              for (const key of combination) {
+                owner.push(params[key + 'Type'], params[key])
+              }
+              return modelRuntime().indexRangePath(indexName, owner, App.extractRange(params) )
+            }
+          })
+        }
       }
 
       if(config.ownerViews) {

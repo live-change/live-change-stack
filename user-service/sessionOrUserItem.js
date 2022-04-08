@@ -58,7 +58,7 @@ definition.processor(function(service, app) {
             properties: App.rangeProperties,
             daoPath(range, { client, context }) {
               const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
-              return modelRuntime().sortedIndexRangePath('byOwner' + sortFieldUc, owner, range)
+              return modelRuntime().sortedIndexRangePath('byOwner' + sortFieldUc, owner, App.extractRange(range))
             }
           })
         }
