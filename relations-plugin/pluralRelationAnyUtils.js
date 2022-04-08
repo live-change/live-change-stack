@@ -88,6 +88,10 @@ function defineUpdateAction(config, context) {
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      },
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
@@ -122,7 +126,7 @@ function defineUpdateAction(config, context) {
 
 function defineDeleteAction(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName,
+    service, app, model, modelRuntime, modelPropertyName, identifiers,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
@@ -130,7 +134,11 @@ function defineDeleteAction(config, context) {
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
-      ...(model.properties)
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      },
+      ...identifiers
     },
     access: config.deleteAccess || config.writeAccess,
     skipValidation: true,

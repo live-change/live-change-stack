@@ -192,16 +192,16 @@ class App {
     console.log("TRIGGER ROUTES", data.type, '=>', routes)
     let promises = []
     for(const route of routes) {
-      promises.push(this.triggerService(route.service, { ...data }))
+      promises.push(this.triggerService(route.service, { ...data }, true))
     }
     const promise = Promise.all(promises)
     await this.profileLog.endPromise(profileOp, promise)
-    const result = await promise
+    const result = (await promise).flat()
     console.log("TRIGGER FINISHED!", result)
     return result
   }
 
-  async triggerService(service, data) {
+  async triggerService(service, data, returnArray = false) {
 
     if(!data.id) data.id = this.generateUid()
     data.service = service
@@ -233,7 +233,10 @@ class App {
       objectObservable.unobserve(observer)
     })
     await this.profileLog.endPromise(profileOp, promise)
-    return promise
+
+    const result = await promise
+    if(!returnArray && Array.isArray(result) && result.length == 1) return result[0]
+    return result
   }
 
   async command(data, requestTimeout) {

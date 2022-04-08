@@ -134,7 +134,8 @@ class ServiceDefinition {
 
   trigger(definition) {
     const trigger = new TriggerDefinition(definition)
-    this.triggers[trigger.name] = trigger
+    //if(this.triggers[trigger.name]) throw new Error('trigger ' + trigger.name + ' already exists')
+    this.triggers[trigger.name] = [ ...(this.triggers[trigger.name] || []) , trigger ]
     return trigger
   }
 
@@ -170,7 +171,7 @@ class ServiceDefinition {
     let views = {}
     for(let key in this.views) views[key] = this.views[key].toJSON()
     let triggers = {}
-    for(let key in this.triggers) triggers[key] = this.triggers[key].toJSON()
+    for(let key in this.triggers) triggers[key] = this.triggers[key].map(t=>t.toJSON())
     return {
       ...this,
       _runtime: undefined,

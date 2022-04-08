@@ -27,16 +27,21 @@ function generateAnyId(otherPropertyNames, properties) {
 }
 
 function defineAnyProperties(model, names) {
+  const identifiers = {}
   for (let i = 0; i < names.length; i++) {
-    model.properties[names[i]] = new PropertyDefinition({
+    identifiers[names[i]] = new PropertyDefinition({
       type: String,
       validation: ['nonEmpty']
     })
-    model.properties[names[i]+'Type'] = new PropertyDefinition({
+    identifiers[names[i]+'Type'] = new PropertyDefinition({
       type: String,
       validation: ['nonEmpty']
     })
   }
+  for(const key in identifiers) {
+    model.properties[key] = identifiers[key]
+  }
+  return identifiers
 }
 
 function defineAnyIndex(model, what, props) {

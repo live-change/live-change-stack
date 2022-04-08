@@ -45,12 +45,17 @@ function extractObjectData(writeableProperties, properties, defaults) {
 }
 
 function defineProperties(model, types, names) {
+  const identifiers = {}
   for (let i = 0; i < types.length; i++) {
-    model.properties[names[i]] = new PropertyDefinition({
+    identifiers[names[i]] = new PropertyDefinition({
       type: types[i],
       validation: ['nonEmpty']
     })
   }
+  for(const key in identifiers) {
+    model.properties[key] = identifiers[key]
+  }
+  return identifiers
 }
 
 function defineIndex(model, what, props) {

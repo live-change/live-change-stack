@@ -213,7 +213,7 @@ async function apiServer(argv) {
 
   const expressApp = express()
 
-  setupApiEndpoints(expressApp, apiServer)
+  await setupApiEndpoints(expressApp, apiServer)
 
   const httpServer = http.createServer(expressApp)
 
@@ -262,8 +262,10 @@ async function ssrServer(argv, dev) {
   }
 
   if(argv.withApi) {
-    setupApiEndpoints(expressApp, apiServer)
+    await setupApiEndpoints(expressApp, apiServer)
   }
+
+  console.log("ENDPOINTS INSTALLED! CREATING SSR SERVER!")
 
   const ssrServer = new SsrServer(expressApp, manifest, {
     ...argv,
@@ -281,8 +283,9 @@ async function ssrServer(argv, dev) {
       }
     )
   })
-
   await ssrServer.start()
+
+  console.log("SSR INSTALLED! CREATING HTTP SERVER!")
 
   const httpServer = http.createServer(expressApp)
   if(argv.withApi) {
@@ -290,5 +293,9 @@ async function ssrServer(argv, dev) {
     setupApiSockJs(httpServer, apiServer)
   }
 
+  console.log("HTTP SERVER CREATED! INSTALLING!")
+
   httpServer.listen(ssrPort, ssrHost)
+
+  console.log("LISTENING ON ",`${ssrHost}:${ssrPort} link: http://${ssrHost}:${ssrPort}/`)
 }

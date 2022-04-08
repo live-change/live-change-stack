@@ -17,7 +17,7 @@ module.exports = function(service, app) {
     context.relationWord = 'Property'
     context.reverseRelationWord = 'Owned'
 
-    defineAnyProperties(context.model, context.otherPropertyNames)
+    context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
     if(config.readAccess) {

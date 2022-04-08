@@ -17,7 +17,7 @@ module.exports = function(service, app) {
     context.relationWord = 'Friend'
     context.reverseRelationWord = 'Related'
 
-    defineProperties(context.model, context.others, context.otherPropertyNames)
+    context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
     if(config.sortBy) {
@@ -44,7 +44,7 @@ module.exports = function(service, app) {
       defineUpdateAction(config, context)
     }
 
-    if(config.resetAccess || config.writeAccess) {
+    if(config.deleteAccess || config.writeAccess) {
       defineDeleteAction(config, context)
     }
   })
