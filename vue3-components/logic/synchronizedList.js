@@ -79,7 +79,7 @@ function synchronizedList(options) {
           obsoleteLocallyAdded.add(locallyAddedElement.id)
         }
         if(locallyDeletedElement && !sourceElement) {
-          obsoleteLocallyDeleted.add(locallyAddedElement.id)
+          obsoleteLocallyDeleted.add(locallyDeletedElement.id)
         }
 
         if(synchronizedElement) {
@@ -130,8 +130,9 @@ function synchronizedList(options) {
   }
 
   async function deleteElement(element) {
+    const deleted = JSON.parse(JSON.stringify(element))
     locallyDeleted.value.push(element)
-    await deleteAction({ ...element, ...identifiers })
+    await deleteAction({ ...element, ...identifiers, ...objectIdentifiers(element) })
   }
 
   async function move(element, toId) {

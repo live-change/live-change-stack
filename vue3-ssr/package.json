@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/live-change/live-change-framework-vue3",
   "dependencies": {
-    "@live-change/uid": "0.5.27",
+    "@live-change/uid": "0.6.0",
     "@vueuse/core": "^8.1.2",
     "debug": "^4.3.2",
     "vue": "^3.2.31"
