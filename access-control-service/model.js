@@ -1,3 +1,5 @@
+const App = require("@live-change/framework")
+const app = App.app()
 const definition = require('./definition.js')
 const config = definition.config
 const access = require('./access.js')(definition)
@@ -8,11 +10,11 @@ const Access = definition.model({
     extendedWith: ['object'],
     ownerReadAccess: () => true,
     readAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAnyAccess(client, params.objectType, params.object),
+        visibilityTest || access.clientHasAnyAccess(client, params),
     updateAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object),
+        visibilityTest || access.clientHasAdminAccess(client, params),
     resetAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
+        visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {
     roles: {
@@ -34,9 +36,9 @@ const PublicAccess = definition.model({
   propertyOfAny: {
     to: 'object',
     readAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAnyAccess(client, params.objectType, params.object),
+        visibilityTest || access.clientHasAnyAccess(client, params),
     writeAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
+        visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {
     userRoles: {
@@ -55,6 +57,14 @@ const PublicAccess = definition.model({
       },
       validation: ['elementsNonEmpty']
     },
+    availableRoles: {
+      type: Array,
+      of: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      validation: ['elementsNonEmpty']
+    },
     lastUpdate: {
       type: Date
     }
@@ -65,12 +75,16 @@ const PublicAccess = definition.model({
 
 const AccessRequest = definition.model({
   name: 'AccessRequest',
-  sessionOrUserItem: {
-  },
-  relatedToAny: {
-    to: 'object',
+  sessionOrUserProperty: {
+    extendedWith: ['object'],
+    ownerReadAccess: () => true,
+    ownerResetAccess: () => true,
     readAccess: (params, { client, context, visibilityTest }) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
+        visibilityTest || access.clientHasAnyAccess(client, params),
+    updateAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params),
+    resetAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {
     roles: {
@@ -90,32 +104,64 @@ const AccessRequest = definition.model({
   }
 })
 
+const invitationProperties = {
+  roles: {
+    type: Array,
+    of: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    validation: ['elementsNonEmpty']
+  },
+  message: {
+    type: String,
+    validation: []
+  }
+}
 
-const AccessInvite = definition.model({
-  name: 'AccessInvite',
-  contactOrUserItem: {},
-  relatedToAny: {
-    to: 'object',
-    readAccess: (params, {client, context, visibilityTest}) =>
-        visibilityTest || access.clientHasAdminAccess(client, params.objectType, params.object)
+const AccessInvitation = definition.model({
+  name: 'AccessInvitation',
+  contactOrUserProperty: {
+    extendedWith: ['object'],
+    ownerReadAccess: () => true,
+    ownerResetAccess: () => true,
+    readAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAnyAccess(client, params),
+    updateAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params),
+    resetAccess: (params, { client, context, visibilityTest }) =>
+        visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {
-    roles: {
-      type: Array,
-      of: {
-        type: String,
-        validation: ['nonEmpty']
-      },
-      validation: ['elementsNonEmpty']
-    },
-    message: {
-      type: String,
-      validation: []
-    }
+    ...invitationProperties
   },
   indexes: {
 
   }
 })
 
-module.exports = { Access, PublicAccess, AccessRequest, AccessInvite }
+definition.event({
+  name: 'userInvited',
+  async execute({ user, objectType, object, roles, message }) {
+    await AccessInvitation.create({
+      id: App.encodeIdentifier(['user_User', user, objectType, object]),
+      contactOrUserType: 'user_User', contactOrUser: user,
+      objectType, object,
+      roles, message
+    })
+  }
+})
+
+definition.event({
+  name: 'contactInvited',
+  async execute({ contactType, contact, objectType, object, roles, message }) {
+    await AccessInvitation.create({
+      id: App.encodeIdentifier([contactType, contact, objectType, object]),
+      contactOrUserType: contactType, contactOrUser: contact,
+      objectType, object,
+      roles, message
+    })
+  }
+})
+
+module.exports = { Access, PublicAccess, AccessRequest, AccessInvitation, invitationProperties }

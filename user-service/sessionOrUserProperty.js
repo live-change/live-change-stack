@@ -3,23 +3,10 @@ const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
 const { User } = require("./model.js")
 const { allCombinations } = require("./combinations.js")
+const { createIdentifiersProperties } = require('./utils.js')
 
 const pluralize = require('pluralize')
 
-function createIdentifiersProperties(keys) {
-  const identifiers = {}
-  if(keys) for(const key of keys) {
-    identifiers[key] = {
-      type: String,
-      validation: ['nonEmpty']
-    }
-    identifiers[key + 'Type'] = {
-      type: String,
-      validation: ['nonEmpty']
-    }
-  }
-  return identifiers
-}
 
 definition.processor(function(service, app) {
 
@@ -94,7 +81,7 @@ definition.processor(function(service, app) {
             access(params, context) {
               return config.ownerReadAccess ? config.ownerReadAccess(params, context) : true
             },
-            daoPath(params, {client, context}) {
+            daoPath(params, { client, context }) {
               const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
               for (const key of combination) {
                 owner.push(params[key + 'Type'], params[key])
@@ -124,8 +111,12 @@ definition.processor(function(service, app) {
         }
       }
 
+      const eventPrefix = ['sessionOrUser',
+         ...(extendedWith.map(p => p[0].toUpperCase()+p.slice(1)))
+      ].join('And') +'Owned'
+
       if(config.ownerSetAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Set'
+        const eventName = eventPrefix + modelName + 'Set'
         const actionName = 'setMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -164,7 +155,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.ownerUpdateAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Updated'
+        const eventName = eventPrefix + modelName + 'Updated'
         const actionName = 'updateMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -207,7 +198,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.ownerResetAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Reset'
+        const eventName = eventPrefix + modelName + 'Reset'
         const actionName = 'resetMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

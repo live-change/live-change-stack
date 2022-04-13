@@ -2,6 +2,10 @@ const definition = require("./definition.js")
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
 const { User } = require("./model.js")
+const { allCombinations } = require("./combinations.js")
+const { createIdentifiersProperties } = require('./utils.js')
+
+const pluralize = require('pluralize')
 
 definition.processor(function(service, app) {
 
@@ -10,7 +14,7 @@ definition.processor(function(service, app) {
 
     if(model.contactOrUserProperty) {
       console.log("MODEL " + modelName + " IS SESSION OR USER PROPERTY, CONFIG:", model.userProperty)
-      if (model.properties.owner) throw new Error('owner property already exists!!!')
+      if (model.properties.contactOrUser) throw new Error('owner property already exists!!!')
 
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
@@ -23,9 +27,16 @@ definition.processor(function(service, app) {
       const config = model.contactOrUserProperty
       const writeableProperties = modelProperties || config.writableProperties
 
+      if(model.propertyOf) throw new Error("model " + modelName + " already have owner")
       if(model.propertyOfAny) throw new Error("model " + modelName + " already have owner")
+
+      const extendedWith = config.extendedWith
+          ? (Array.isArray(config.extendedWith) ? config.extendedWith : [config.extendedWith])
+          : []
+
       model.propertyOfAny = {
-        ...config
+        ...config,
+        to: ['contactOrUser', ...extendedWith]
       }
 
       service.trigger({
@@ -56,7 +67,7 @@ definition.processor(function(service, app) {
               const mergeResult = await config.merge(contactProperty, userProperty)
               if(mergeResult && userProperty) {
                 emit({
-                  type: 'ownerOwned' + modelName + 'Updated',
+                  type: 'contactOrUserOwned' + modelName + 'Updated',
                   identifiers: {
                     ownerType: 'user_User',
                     owner: user
@@ -65,7 +76,7 @@ definition.processor(function(service, app) {
                 })
               } else {
                 emit({
-                  type: 'ownerOwned' + modelName + 'Set',
+                  type: 'contactOrUserOwned' + modelName + 'Set',
                   identifiers: {
                     ownerType: 'user_User',
                     owner: user
@@ -74,7 +85,7 @@ definition.processor(function(service, app) {
                 })
               }
               emit({
-                type: 'ownerOwned' + modelName + 'Reset',
+                type: 'contactOrUserOwned' + modelName + 'Reset',
                 identifiers: {
                   ownerType: contactType,
                   owner: contact
@@ -83,7 +94,7 @@ definition.processor(function(service, app) {
             } else {
               if(!userProperty) {
                 emit({
-                  type: 'ownerOwned' + modelName + 'Transferred',
+                  type: 'contactOrUserOwned' + modelName + 'Transferred',
                   from: {
                     ownerType: contactType,
                     owner: contact
@@ -99,19 +110,53 @@ definition.processor(function(service, app) {
         }
       })
 
-      if(config.ownerReadAccess) {
+      if(config.ownerReadAccess) { // single item view
         const viewName = 'my' + modelName
+        const identifiers = createIdentifiersProperties(extendedWith)
         service.views[viewName] = new ViewDefinition({
           name: viewName,
+          properties: {
+            ...identifiers
+          },
           access(params, context) {
             return context.client.user && (config.ownerReadAccess ? config.ownerReadAccess(params, context) : true)
           },
           daoPath(params, { client, context }) {
             const owner = ['user_User', client.user]
+            for(const key of extendedWith) {
+              owner.push(params[key+'Type'], params[key])
+            }
             const id = owner.map(p => JSON.stringify(p)).join(':')
             return modelRuntime().path(id)
           }
         })
+      }
+
+      if(config.ownerReadAccess && config.extendedWith) {
+        const extendedCombinations = [[]].concat(allCombinations(extendedWith).slice(0, -1))
+        for(const combination of extendedCombinations) {
+          const propsUpperCase = combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
+          const indexName = 'by' + (combination).map(prop => prop[0].toUpperCase() + prop.slice(1))
+          const viewName = 'my' + propsUpperCase.join('And') + pluralize(modelName)
+          const identifiers = createIdentifiersProperties(combination)
+          service.views[viewName] = new ViewDefinition({
+            name: viewName,
+            properties: {
+              ...identifiers,
+              ...App.rangeProperties,
+            },
+            access(params, context) {
+              return context.client.user && (config.ownerReadAccess ? config.ownerReadAccess(params, context) : true)
+            },
+            daoPath(params, { client, context }) {
+              const owner = ['user_User', client.user]
+              for (const key of combination) {
+                owner.push(params[key + 'Type'], params[key])
+              }
+              return modelRuntime().indexRangePath(indexName, owner, App.extractRange(params) )
+            }
+          })
+        }
       }
 
       if(config.ownerViews) {
@@ -133,8 +178,12 @@ definition.processor(function(service, app) {
         }
       }
 
+      const eventPrefix = ['contactOrUser',
+        ...(extendedWith.map(p => p[0].toUpperCase()+p.slice(1)))
+      ].join('And') +'Owned'
+
       if(config.ownerSetAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Set'
+        const eventName = eventPrefix + modelName + 'Set'
         const actionName = 'setMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -171,7 +220,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.ownerUpdateAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Updated'
+        const eventName = eventPrefix + modelName + 'Updated'
         const actionName = 'updateMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -212,7 +261,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.ownerResetAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Reset'
+        const eventName = eventPrefix + modelName + 'Reset'
         const actionName = 'resetMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

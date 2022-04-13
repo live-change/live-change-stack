@@ -4,6 +4,7 @@ const config = definition.config
 const { PasswordAuthentication, secretProperties } = require('./model.js')
 
 for(const contactType of config.contactTypes) {
+
   const contactTypeUpperCaseName = contactType[0].toUpperCase() + contactType.slice(1)
 
   const contactConfig = (typeof contactType == "string") ? { name: contactType } : contactType
