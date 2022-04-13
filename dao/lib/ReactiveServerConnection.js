@@ -3,6 +3,7 @@ const ObservableList = require("./ObservableList.js")
 const utils = require('./utils.js')
 const collectPointers = require('./collectPointers.js')
 const debug = require("debug")("reactive-dao")
+const debugPot = require("debug")("reactive-dao:pot")
 
 class PushObservableTrigger {
   constructor(po, what, more) {
@@ -28,44 +29,43 @@ class PushObservableTrigger {
         ),
         remove: (value) => {
           const valueJson = JSON.stringify(value)
-          this.removePointers(
-              this.findPointers(
-                  localList.list.filter(v => JSON.stringify(v) == valueJson)
-              )
-          )
+          const existingElements = localList.list.filter(v => JSON.stringify(v) == valueJson)
+          const oldPointers = this.findPointers(existingElements)
+          this.removePointers(oldPointers, [])
         },
         removeByField: (fieldName, value) => {
           const valueJson = JSON.stringify(value)
-          this.removePointers(
-              this.findPointers(
-                  localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson)
-              )
-          )
+          const existingElements = localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson)
+          const oldPointers = this.findPointers(existingElements)
+          this.removePointers(oldPointers, [])
         },
         update: (value, update) => {
           const valueJson = JSON.stringify(value)
-          this.replacePointers(
-              this.findPointers(
-                  localList.list.filter(v => JSON.stringify(v) == valueJson)
-              ),
-              this.findPointers(
-                  localList.list.filter(v => JSON.stringify(v) == valueJson).map(u => update)
-              )
-          )
+          const existingElements = localList.list.filter(v => JSON.stringify(v) == valueJson)
+          const oldPointers = this.findPointers(existingElements)
+          const newPointers = this.findPointers(existingElements.map(u => update))
+          this.replacePointers(oldPointers, newPointers)
         },
         updateByField: (fieldName, value, update) => {
           const valueJson = JSON.stringify(value)
-          this.replacePointers(
-              this.findPointers(
-                  localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson)
-              ),
-              this.findPointers(
-                  localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson).map(u => update)
-              )
+          const existingElements = localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson)
+          const oldPointers = this.findPointers(existingElements)
+          const newPointers = this.findPointers(existingElements.map(u => update))
+          this.replacePointers(oldPointers, newPointers)
+        },
+        putByField: (fieldName, value, update) => {
+          const valueJson = JSON.stringify(value)
+          const existingElements = localList.list.filter(v => JSON.stringify(v[fieldName]) == valueJson)
+          const oldPointers = this.findPointers(existingElements)
+          const newPointers = this.findPointers(
+              existingElements.length > 0 ? existingElements.map(u => update) : [ update ]
           )
+          console.log()
+          this.replacePointers(oldPointers, newPointers)
         }
       }
       this.observer = (signal, ...args) => {
+        debugPot("POT", this.what, "UPDATE SIGNAL", signal, args)
         if(this.pointerMethods[signal]) this.pointerMethods[signal](...args)
         if(localList[signal]) localList[signal](...JSON.parse(JSON.stringify(args)))
       }
@@ -74,6 +74,7 @@ class PushObservableTrigger {
     }
   }
   findPointers(value) {
+    debugPot("FIND POINTERS IN", value)
     let depsPointers = []
     let count = 0
     for(let dep of this.more) {
@@ -87,6 +88,7 @@ class PushObservableTrigger {
       what: pt,
       more: dep.more
     })
+    debugPot("FOUND POINTERS", allPointers)
     return allPointers
   }
   setPointers(allPointers) {
@@ -100,6 +102,7 @@ class PushObservableTrigger {
     this.commitPointersUpdate(added, removed)
   }
   replacePointers(oldPointers, newPointers) {
+    debugPot("REPLACE POINTERS", oldPointers, newPointers)
     let added = []
     let removed = []
     for(let pointer of newPointers) {
