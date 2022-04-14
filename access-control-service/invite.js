@@ -5,6 +5,30 @@ const config = definition.config
 const { Invite, invitationProperties } = require('./model.js')
 const access = require('./access.js')(definition)
 
+definition.event({
+  name: 'userInvited',
+  async execute({ user, objectType, object, roles, message }) {
+    await AccessInvitation.create({
+      id: App.encodeIdentifier(['user_User', user, objectType, object]),
+      contactOrUserType: 'user_User', contactOrUser: user,
+      objectType, object,
+      roles, message
+    })
+  }
+})
+
+definition.event({
+  name: 'contactInvited',
+  async execute({ contactType, contact, objectType, object, roles, message }) {
+    await AccessInvitation.create({
+      id: App.encodeIdentifier([contactType, contact, objectType, object]),
+      contactOrUserType: contactType, contactOrUser: contact,
+      objectType, object,
+      roles, message
+    })
+  }
+})
+
 for(const contactType of config.contactTypes) {
 
   const contactTypeUpperCaseName = contactType[0].toUpperCase() + contactType.slice(1)

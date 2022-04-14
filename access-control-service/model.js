@@ -4,6 +4,15 @@ const definition = require('./definition.js')
 const config = definition.config
 const access = require('./access.js')(definition)
 
+const rolesArrayType = {
+  type: Array,
+  of: {
+    type: String,
+    validation: ['nonEmpty']
+  },
+  validation: ['elementsNonEmpty']
+}
+
 const Access = definition.model({
   name: 'Access',
   sessionOrUserProperty: {
@@ -17,14 +26,7 @@ const Access = definition.model({
         visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {
-    roles: {
-      type: Array,
-      of: {
-        type: String,
-        validation: ['nonEmpty']
-      },
-      validation: ['elementsNonEmpty']
-    },
+    roles: rolesArrayType,
     lastUpdate: {
       type: Date
     }
@@ -41,30 +43,9 @@ const PublicAccess = definition.model({
         visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {
-    userRoles: {
-      type: Array,
-      of: {
-        type: String,
-        validation: ['nonEmpty']
-      },
-      validation: ['elementsNonEmpty']
-    },
-    sessionRoles: {
-      type: Array,
-      of: {
-        type: String,
-        validation: ['nonEmpty']
-      },
-      validation: ['elementsNonEmpty']
-    },
-    availableRoles: {
-      type: Array,
-      of: {
-        type: String,
-        validation: ['nonEmpty']
-      },
-      validation: ['elementsNonEmpty']
-    },
+    userRoles: rolesArrayType,
+    sessionRoles: rolesArrayType,
+    availableRoles: rolesArrayType,
     lastUpdate: {
       type: Date
     }
@@ -87,14 +68,7 @@ const AccessRequest = definition.model({
         visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {
-    roles: {
-      type: Array,
-      of: {
-        type: String,
-        validation: ['nonEmpty']
-      },
-      validation: ['elementsNonEmpty']
-    },
+    roles: rolesArrayType,
     message: {
       type: String,
       validation: []
@@ -105,14 +79,7 @@ const AccessRequest = definition.model({
 })
 
 const invitationProperties = {
-  roles: {
-    type: Array,
-    of: {
-      type: String,
-      validation: ['nonEmpty']
-    },
-    validation: ['elementsNonEmpty']
-  },
+  roles: rolesArrayType,
   message: {
     type: String,
     validation: []
@@ -140,28 +107,4 @@ const AccessInvitation = definition.model({
   }
 })
 
-definition.event({
-  name: 'userInvited',
-  async execute({ user, objectType, object, roles, message }) {
-    await AccessInvitation.create({
-      id: App.encodeIdentifier(['user_User', user, objectType, object]),
-      contactOrUserType: 'user_User', contactOrUser: user,
-      objectType, object,
-      roles, message
-    })
-  }
-})
-
-definition.event({
-  name: 'contactInvited',
-  async execute({ contactType, contact, objectType, object, roles, message }) {
-    await AccessInvitation.create({
-      id: App.encodeIdentifier([contactType, contact, objectType, object]),
-      contactOrUserType: contactType, contactOrUser: contact,
-      objectType, object,
-      roles, message
-    })
-  }
-})
-
-module.exports = { Access, PublicAccess, AccessRequest, AccessInvitation, invitationProperties }
+module.exports = { Access, PublicAccess, AccessRequest, AccessInvitation, invitationProperties, rolesArrayType }
