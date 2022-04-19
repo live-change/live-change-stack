@@ -24,6 +24,10 @@ module.exports = (definition) => {
     return true
   }
 
-  return { clientHasAnyAccess, clientHasAdminAccess, clientCanInvite, clientCanRequest }
+  function clientHasAccessRole(client, { objectType, object }, role) {
+    return true
+  }
+
+  return { clientHasAnyAccess, clientHasAdminAccess, clientCanInvite, clientCanRequest, clientHasAccessRole }
 
 }

@@ -10,7 +10,8 @@
     "security-service",
     "access-control-service",
     "image-service",
-    "user-identification-service"
+    "user-identification-service",
+    "peer-connection-service"
   ],
   "publishConfig": {
     "access": "public"

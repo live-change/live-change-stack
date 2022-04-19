@@ -1,8 +1,9 @@
-const app = require("@live-change/framework").app()
+const App = require("@live-change/framework")
+const app = App.app()
 const definition = require('./definition.js')
 const config = definition.config
 
-const { Invite, invitationProperties } = require('./model.js')
+const { AccessInvitation, invitationProperties } = require('./model.js')
 const access = require('./access.js')(definition)
 
 definition.event({
