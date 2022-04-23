@@ -84,8 +84,6 @@ export default defineConfig(async ({ command, mode }) => {
     },
     optimizeDeps: {
       include: [
-        '@live-change/vue-api',
-        '@live-change/vue-api-session',
         '@live-change/dao',
         '@live-change/dao-sockjs',
         '@live-change/dao-websocket',
