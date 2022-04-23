@@ -4,7 +4,7 @@
                                      top-0 z-1 border-right-1 surface-border select-none" style="width:280px">
       <div class="flex flex-column h-full">
         <div class="flex align-items-center px-5 flex-shrink-0" style="height:60px">
-          <img src="images/logo.svg" alt="Image" height="30">
+          <img src="/images/logo.svg" alt="Image" height="30">
         </div>
         <div class="overflow-y-auto">
           <ul class="list-none p-2 m-0">
@@ -64,7 +64,7 @@
                      v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'slidedown',
                                      leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                     <i class="pi pi-list mr-2"></i>
-                    <span class="font-medium">{{ database?.logs?.length }} INDEXES</span>
+                    <span class="font-medium">{{ database?.logs?.length }} LOGS</span>
                     <i class="pi pi-chevron-down ml-auto"></i>
                   </a>
                   <ul class="list-none py-0 pl-3 pr-0 m-0 hidden overflow-y-hidden transition-all
@@ -81,13 +81,6 @@
             </li>
           </ul>
         </div>
-        <div class="mt-auto">
-          <hr class="mb-3 mx-3 border-top-1 border-none surface-border" />
-          <a v-ripple class="m-3 flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100 transition-duration-150 transition-colors p-ripple">
-            <img src="images/blocks/avatars/circle/avatar-f-1.png" class="mr-2" style="width: 28px; height: 28px"/>
-            <span class="font-medium">Amy Elsner</span>
-          </a>
-        </div>
       </div>
     </div>
     <div class="min-h-screen flex flex-column relative flex-auto">
@@ -98,7 +91,6 @@
              v-styleclass="{ selector: '#app-sidebar-1', enterClass: 'hidden', enterActiveClass: 'fadeinleft', leaveToClass: 'hidden', leaveActiveClass: 'fadeoutleft', hideOnOutsideClick: true }">
             <i class="pi pi-bars text-4xl"></i>
           </a>
-
         </div>
       </div>
       <div v-if="viewType == 'simple'" class="p-5 flex flex-column flex-auto align-items-center">

@@ -1,8 +1,10 @@
 <template>
   <div class="surface-card p-4 shadow-2 border-round w-full">
-
     <div class="text-center mb-3">
-      <div v-if="tables.length > 0" class="text-900 text-3xl font-medium mb-3">Tables</div>
+      <div class="text-900 text-3xl font-medium mb-3">Database "{{ dbName }}"</div>
+    </div>
+    <div class="text-center mb-3">
+      <div v-if="tables.length > 0" class="text-900 text-2xl font-medium mb-3">Tables</div>
       <div v-else class="text-600 text-xl font-medium mb-3">
         There are no tables. Create first one.
       </div>
@@ -14,8 +16,7 @@
           <form v-if="tableRename == slotProps.data.id" @submit="ev => finishTableRename(ev, slotProps.data.id)">
             <InputText v-model="tableNewName" />
           </form>
-          <router-link v-else
-                       :to="tableLink(slotProps.data.id)">
+          <router-link v-else :to="tableLink(slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -42,7 +43,7 @@
 
 
     <div class="text-center mb-3 mt-5">
-      <div v-if="logs.length > 0" class="text-900 text-3xl font-medium mb-3">Logs</div>
+      <div v-if="logs.length > 0" class="text-900 text-2xl font-medium mb-3">Logs</div>
       <div v-else class="text-600 text-xl font-medium mb-3">
         There are no logs. Create first one.
       </div>
@@ -54,8 +55,7 @@
           <form v-if="logRename == slotProps.data.id" @submit="ev => finishLogRename(ev, slotProps.data.id)">
             <InputText v-model="logNewName" />
           </form>
-          <router-link v-else
-                       :to="{ name: 'db:table', params: { dbName, tableName: slotProps.data.id } }">
+          <router-link v-else :to="logLink(slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -82,7 +82,7 @@
 
 
     <div class="text-center mb-3 mt-5">
-      <div v-if="indexes.length > 0" class="text-900 text-3xl font-medium mb-3">Indexes</div>
+      <div v-if="indexes.length > 0" class="text-900 text-2xl font-medium mb-3">Indexes</div>
       <div v-else class="text-600 text-xl font-medium mb-3">
         There are no indexes.
       </div>
@@ -94,8 +94,7 @@
           <form v-if="indexRename == slotProps.data.id" @submit="ev => finishIndexRename(ev, slotProps.data.id)">
             <InputText v-model="indexNewName" />
           </form>
-          <router-link v-else
-                       :to="{ name: 'db:table', params: { dbName, tableName: slotProps.data.id } }">
+          <router-link v-else :to="indexLink(slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -319,7 +318,32 @@
           'table', JSON.stringify(table)
         ]
     } }
-    //return { name: 'db:table', params: { dbName, tableName: slotProps.data.id } }
+  }
+
+  function logLink(table) {
+    return { name: 'db:data', params: {
+        position: " ",
+        read: `db.logRange($.db,$.table,$.range)`,
+        write: false,
+        remove: false,
+        params: [
+          'db', JSON.stringify(dbName),
+          'table', JSON.stringify(table)
+        ]
+      } }
+  }
+
+  function indexLink(table) {
+    return { name: 'db:data', params: {
+        position: " ",
+        read: `db.indexRange($.db,$.table,$.range)`,
+        write: false,
+        remove: false,
+        params: [
+          'db', JSON.stringify(dbName),
+          'table', JSON.stringify(table)
+        ]
+      } }
   }
 
   const [ tables, indexes, logs ] = await Promise.all([

@@ -1,6 +1,6 @@
 const path = require('path')
 const vuePlugin = require('@vitejs/plugin-vue')
-import { defineConfig } from 'vite'
+import { defineConfig, searchForWorkspaceRoot } from 'vite'
 import findFreePorts from "find-free-ports"
 import { visualizer } from 'rollup-plugin-visualizer'
 import viteImages from 'vite-plugin-vue-images'
@@ -21,6 +21,12 @@ export default defineConfig(async ({ command, mode }) => {
     server: {
       hmr: {
         port: (await findFreePorts())[0]
+      },
+      fs: {
+        allow: [
+            searchForWorkspaceRoot(process.cwd()),
+            '../../../node_modules'
+        ],
       }
     },
     plugins: [
@@ -48,7 +54,15 @@ export default defineConfig(async ({ command, mode }) => {
     build: {
       minify: false,
       commonjsOptions: {
-        transformMixedEsModules: true
+        transformMixedEsModules: true,
+        include: [
+          /node_modules/,
+          /live-change-framework\/framework\//,
+          /live-change-framework\/uid\//,
+          /live-change-dao\/dao\//,
+          /live-change-dao\/dao-sockjs\//,
+          /live-change-dao\/dao-websocket\//,
+        ]
       }
     },
     ssr: {
@@ -86,23 +100,8 @@ export default defineConfig(async ({ command, mode }) => {
       alias: [
         { find: 'debug', replacement: 'debug/src/browser.js' },
         { find: 'universal-websocket-client', replacement: 'universal-websocket-client/browser.js' },
-        { find: 'sockjs-client', replacement: 'sockjs-client/dist/sockjs.min.js' },
-        { find: '@', replacement: path.resolve(__dirname, './src') },
-        { find: '#user', replacement: path.resolve(__dirname, '.') }
+        { find: 'sockjs-client', replacement: 'sockjs-client/dist/sockjs.min.js' }
       ],
-    },
-    resolvers: [{
-      fileToRequest(filePath) {
-        console.log('@@@', filePath);
-        if (filePath.startsWith(srcPath)) {
-          return `/@/${path.relative(srcPath, filePath)}`
-        }
-      },
-      requestToFile(publicPath) {
-        if (publicPath.startsWith('/@/')) {
-          return path.join(srcPath, publicPath.replace(/^\/@\//, ''))
-        }
-      },
-    }],
+    }
   }
 })

@@ -3,6 +3,7 @@
     "db",
     "db-client",
     "db-server",
+    "db-admin",
     "db-server-admin",
     "db-store-indexeddb",
     "db-store-level",
