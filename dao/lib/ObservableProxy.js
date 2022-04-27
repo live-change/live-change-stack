@@ -92,7 +92,6 @@ class ObservableProxy extends Observable {
 
   bindProperty(object, property) {
     if(this.isDisposed()) {
-      debugger
       this.respawn()
     }
     this.properties.push([object, property])
