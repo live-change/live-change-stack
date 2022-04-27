@@ -10,9 +10,9 @@
     "url": "https://github.com/live-change/live-change-dao/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.4.6",
+    "@live-change/dao": "0.4.6",
     "bufferutil": "^4.0.3",
-    "debug": "^4.3.2",
+    "debug": "^4.3.4",
     "supports-color": "^7.2.0",
     "universal-websocket-client": "^1.0.1",
     "utf-8-validate": "^5.0.4",

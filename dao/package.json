@@ -13,7 +13,7 @@
     "url": "https://github.com/live-change/live-change-dao.git"
   },
   "dependencies": {
-    "debug": "^4.3.2"
+    "debug": "^4.3.4"
   },
   "description": "live data access object",
   "devDependencies": {

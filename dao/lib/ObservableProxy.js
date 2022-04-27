@@ -91,13 +91,18 @@ class ObservableProxy extends Observable {
   }
 
   bindProperty(object, property) {
-    if(this.isDisposed()) this.respawn()
+    if(this.isDisposed()) {
+      debugger
+      this.respawn()
+    }
     this.properties.push([object, property])
-    if(this.observable) this.observable.bindProperty(object, property)
+    if(this.observable) {
+      this.observable.bindProperty(object, property)
+    }
   }
   unbindProperty(object, property) {
-    for(var i = 0; i < this.properties.length; i++) {
-      var prop = this.properties[i]
+    for(let i = 0; i < this.properties.length; i++) {
+      const prop = this.properties[i]
       if(prop[0] === object && prop[1] === property) {
         this.properties.splice(i, 1)
         if(this.observable) this.observable.unbindProperty(object, property)

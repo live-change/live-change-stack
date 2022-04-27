@@ -57,7 +57,7 @@ class DaoProxy extends EventEmitter {
       const newObservable = this.observables.get(spath)
       if(newObservable && newObservable !== observable) {
         observable.observable = newObservable
-      } else if(observable.observable.isDisposed()) {
+      } else if(!observable.observable || observable.observable.isDisposed()) {
         if(this.dao) {
           observable.observable = this.dao.observable(what)
         } else {
