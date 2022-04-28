@@ -1,5 +1,5 @@
 const {
-  defineAnyProperties, defineAnyIndex,
+  defineAnyProperties, defineAnyIndexes,
   processModelsAnyAnnotation
 } = require('./utilsAny.js')
 
@@ -18,7 +18,7 @@ module.exports = function(service, app) {
     context.reverseRelationWord = 'Owned'
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
-    defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
+    defineAnyIndexes(context.model, context.otherPropertyNames)
 
     if(config.sortBy) {
       for(const sortFields of config.sortBy) {
@@ -28,6 +28,7 @@ module.exports = function(service, app) {
 
     if(config.readAccess) {
       defineView(config, context)
+      // TODO: multiple views with all properties combinations
     }
     /// TODO: multiple views with limited fields
 

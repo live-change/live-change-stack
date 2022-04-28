@@ -88,7 +88,7 @@ class LiveDao extends LcDao.DaoProxy {
     this.disposed = true
     this.started = false
     for(const observation of this.credentialsObservations) {
-      observation.observable.unobserver(observation.observer)
+      observation.observable.unobserve(observation.observer)
     }
     super.dispose()
   }

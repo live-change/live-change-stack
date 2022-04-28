@@ -1,5 +1,5 @@
 const {
-  defineAnyProperties, defineAnyIndex, defineAnyIndexes,
+  defineAnyProperties, defineAnyIndexes,
   processModelsAnyAnnotation, generateAnyId
 } = require('./utilsAny.js')
 
