@@ -11,7 +11,8 @@
     "access-control-service",
     "image-service",
     "user-identification-service",
-    "peer-connection-service"
+    "peer-connection-service",
+    "online-service"
   ],
   "publishConfig": {
     "access": "public"

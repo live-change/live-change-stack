@@ -39,6 +39,9 @@ definition.processor(function(service, app) {
         to: ['contactOrUser', ...extendedWith]
       }
 
+      const transferEventName = ['contactOrUser', ...(extendedWith.map(e => e[0].toUpperCase() + e.slice(1)))]
+          .join('And') + 'Owned' + modelName + 'Transferred'
+
       service.trigger({
         name: 'contactConnected',
         properties: {
@@ -58,8 +61,14 @@ definition.processor(function(service, app) {
         async execute({ contactType, contact, user }, { service }, emit) {
           const contactPath = [contactType, contact]
           const contactPropertyId = contactPath.map(p => JSON.stringify(p)).join(':')
-          const contactProperty = await modelRuntime().get(contactPropertyId)
-          if(contactProperty) {
+          const range = {
+            gte: contactPropertyId + '', // '' because it can be not-extended
+            lte: contactPropertyId + ':\xFF'
+          }
+          const contactProperties = await modelRuntime().rangeGet(range)
+          /// TODO: list based merge method
+          for(const contactProperty of contactProperties) {
+            console.log("CONTACT PROPERTY FOUND!", contactProperty, "MERGE =", config.merge)
             const userPath = ['user_User', user]
             const userPropertyId = userPath.map(p => JSON.stringify(p)).join(':')
             const userProperty = await modelRuntime().get(userPropertyId)
@@ -69,8 +78,8 @@ definition.processor(function(service, app) {
                 emit({
                   type: 'contactOrUserOwned' + modelName + 'Updated',
                   identifiers: {
-                    ownerType: 'user_User',
-                    owner: user
+                    contactOrUserType: 'user_User',
+                    contactOrUser: user
                   },
                   data: mergeResult
                 })
@@ -78,8 +87,8 @@ definition.processor(function(service, app) {
                 emit({
                   type: 'contactOrUserOwned' + modelName + 'Set',
                   identifiers: {
-                    ownerType: 'user_User',
-                    owner: user
+                    contactOrUserType: 'user_User',
+                    contactOrUser: user
                   },
                   data: mergeResult
                 })
@@ -87,21 +96,28 @@ definition.processor(function(service, app) {
               emit({
                 type: 'contactOrUserOwned' + modelName + 'Reset',
                 identifiers: {
-                  ownerType: contactType,
-                  owner: contact
+                  contactOrUserType: contactType,
+                  contactOrUser: contact
                 }
               })
             } else {
               if(!userProperty) {
+                const extendedIdentifiers = {}
+                for(const key of extendedWith) {
+                  extendedIdentifiers[key+'Type'] = contactProperty[key+'Type']
+                  extendedIdentifiers[key] = contactProperty[key]
+                }
                 emit({
-                  type: 'contactOrUserOwned' + modelName + 'Transferred',
+                  type: transferEventName,
                   from: {
-                    ownerType: contactType,
-                    owner: contact
+                    contactOrUserType: contactType,
+                    contactOrUser: contact,
+                    ...extendedIdentifiers
                   },
                   to: {
-                    ownerType: 'user_User',
-                    owner: user
+                    contactOrUserType: 'user_User',
+                    contactOrUser: user,
+                    ...extendedIdentifiers
                   }
                 })
               }

@@ -142,7 +142,7 @@ class SelfObservable extends ReactiveDao.Observable {
     this.fireObserver(observer, 'set', this.observers.length)
   }
   unobserve(observer) {
-    console.log("UNOBSERVED")
+    console.log("ONLINE UNOBSERVED")
     this.observers.splice(this.observers.indexOf(observer), 1)
     this.fireObservers('set', this.observers.length)
     if(this.isUseless()) this.dispose()
