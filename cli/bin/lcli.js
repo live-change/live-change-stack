@@ -112,6 +112,14 @@ function ssrServerOptions(yargs) {
     describe: 'start internal api server',
     type: 'boolean'
   })
+  yargs.option('serverEntry', {
+    describe: 'front ssr entry file',
+    type: 'string'
+  })
+  yargs.option('templatePath', {
+    describe: 'front ssr entry file',
+    type: 'string'
+  })
 }
 
 const argv = require('yargs') // eslint-disable-line

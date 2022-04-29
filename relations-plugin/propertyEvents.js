@@ -45,7 +45,7 @@ function defineTransferredEvent(config, context, generateId) {
         ...properties.to,
         id: toId
       })
-      await modelRunntime().delete(fromId)
+      await modelRuntime().delete(fromId)
       return toId
     }
   })

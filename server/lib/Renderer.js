@@ -20,7 +20,7 @@ class Renderer {
       this.module = require(serverEntryPath)
       this.renderer = this.module.render
       this.sitemap = this.module.sitemap
-      const templatePath = path.resolve(this.root, 'dist/client/index.html')
+      const templatePath = path.resolve(this.root, './dist/client/index.html')
       this.template = await fs.promises.readFile(templatePath, { encoding: 'utf-8' })
     }
   }
@@ -104,7 +104,7 @@ class Renderer {
   async prepareTemplate(url) {
     let template = this.template
     if(this.settings.dev) {
-      const templatePath = path.resolve(this.root, 'index.html')
+      const templatePath = path.resolve(this.root, this.settings.templatePath || 'index.html')
       template = await fs.promises.readFile(templatePath, { encoding: 'utf-8' })
       template = await this.vite.transformIndexHtml(url, template)
     }
@@ -114,7 +114,7 @@ class Renderer {
   async getRenderFunction() {
     if(this.settings.dev) {
       /// Reload every request
-      const entryPath = path.resolve(this.root, 'src/entry-server.js')
+      const entryPath = path.resolve(this.root, this.settings.serverEntry || 'src/entry-server.js')
       return (await this.vite.ssrLoadModule(entryPath)).render
     } else {
       return this.renderer
@@ -124,7 +124,7 @@ class Renderer {
   async getSitemap() {
     if(this.settings.dev) {
       /// Reload every request
-      const entryPath = path.resolve(this.root, 'src/entry-server.js')
+      const entryPath = path.resolve(this.root, this.settings.serverEntry || 'src/entry-server.js')
       return (await this.vite.ssrLoadModule(entryPath)).sitemap
     } else {
       return this.sitemap
