@@ -1,6 +1,6 @@
 {
   "name": "@live-change/server",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Live Change Framework - server",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "@live-change/dao": "0.4.8",
     "@live-change/dao-sockjs": "0.4.8",
     "@live-change/db-server": "0.5.9",
-    "@live-change/framework": "0.6.2",
+    "@live-change/framework": "^0.6.3",
     "@live-change/sockjs": "^0.4.0-rc.1",
     "@live-change/uid": "0.6.0",
     "@live-change/vue3-ssr": "0.2.7",
