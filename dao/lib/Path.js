@@ -71,16 +71,17 @@ class Path {
     }
     return new Path(this.what, newMore, this.to, this.actions)
   }
-  action(paramsFunc) {
+  action(name, paramsFunc) {
     let newActions = this.actions ? this.actions.slice() : []
     const source = sourceProxy()
-    const actionObject = paramsFunc(source)
+    const actionObject = (paramsFunc || to)(source)
     const path = actionObject.slice(0, -1)
     const params = actionObject[actionObject.length - 1]
     let processedParams = processParams(params)
     const action = {
+      name: paramsFunc ? name : undefined,
       path,
-      params: { object: processedParams }
+      params: { object: processedParams },
     }
     newActions.push(action)
     return new Path(this.what, this.more, this.to, newActions)

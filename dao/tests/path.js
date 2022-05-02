@@ -49,9 +49,10 @@ test("Path", t => {
 
   t.test("tasks with delete actions", t => {
     t.plan(1)
-    const path = tasks({ }).action(task => deleteTask({ task: task.id }))
+    const path = tasks({ }).action('delete', task => deleteTask({ task: task.id }))
+    console.log(JSON.stringify(path))
     t.deepEqual(clean(path), {"what":["tasks",{}],"actions":[
-        {"path":["tasks"],"params":{"object":{"task":{"property":"id"}}}}
+        {"name":"delete","path":["tasks"],"params":{"object":{"task":{"property":"id"}}}}
       ]})
   })
 
