@@ -26,6 +26,7 @@ function resolve(schema) {
     return schema.map(resolve)
   }
   if(typeof schema == 'object') {
+    //console.log("RESOLVE", schema)
     if(schema.$toPath) return schema.$toPath()
     const out = {}
     for(const key in schema) out[key] = resolve(schema[key])
@@ -34,11 +35,24 @@ function resolve(schema) {
   return schema
 }
 
+function processParams(params) {
+  let processedParams = {}
+  for(const key in params) {
+    const param = params[key]
+    //console.log("PARAM", key, param)
+    const resolvedParam = resolve(param)
+    //console.log("RESOLVED PARAM", key, resolvedParam)
+    processedParams[key] = resolvedParam
+  }
+  return processedParams
+}
+
 class Path {
-  constructor(what, more = undefined, to = undefined) {
+  constructor(what, more = undefined, to = undefined, actions = undefined) {
     this.what = what
     this.more = more
     this.to = to
+    this.actions = actions
   }
   with(...funcs) {
     let newMore = this.more ? this.more.slice() : []
@@ -47,14 +61,7 @@ class Path {
       const fetchObject = func(source)
       const path = fetchObject.what.slice(0, -1)
       const params = fetchObject.what[fetchObject.what.length - 1]
-      let processedParams = {}
-      for(const key in params) {
-        const param = params[key]
-        //console.log("PARAM", key, param)
-        const resolvedParam = resolve(param)
-        //console.log("RESOLVED PARAM", key, resolvedParam)
-        processedParams[key] = resolvedParam
-      }
+      let processedParams = processParams(params)
       const more = {
         schema: [[...path, { object: processedParams }]],
         more: fetchObject.more,
@@ -62,7 +69,21 @@ class Path {
       }
       newMore.push(more)
     }
-    return new Path(this.what, newMore)
+    return new Path(this.what, newMore, this.to, this.actions)
+  }
+  action(paramsFunc) {
+    let newActions = this.actions ? this.actions.slice() : []
+    const source = sourceProxy()
+    const actionObject = paramsFunc(source)
+    const path = actionObject.slice(0, -1)
+    const params = actionObject[actionObject.length - 1]
+    let processedParams = processParams(params)
+    const action = {
+      path,
+      params: { object: processedParams }
+    }
+    newActions.push(action)
+    return new Path(this.what, this.more, this.to, newActions)
   }
   get(func) {
     const source = sourceProxy()
@@ -74,7 +95,7 @@ class Path {
   }
 
   bind(to) {
-    return new Path(this.what, this.more, to)
+    return new Path(this.what, this.more, to, this.actions)
   }
 }
 
