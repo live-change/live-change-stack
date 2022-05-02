@@ -6,6 +6,24 @@ debug.log = console.log.bind(console)
 
 const liveSymbol = Symbol('live')
 
+function createActionFunction(action, object) {
+  function getSource(ptr) {
+    throw new Error('not implemented')
+    /// TODO: implement
+  }
+  const objectParams = () => {
+    const params = collectPointers(object, [action.params], getSource)[0]
+    return params
+  }
+  const func = async (additionalParams) => {
+    const params = { ...additionalParams, ...objectParams() }
+    return api.request(action.path, params)
+  }
+  func.params = objectParams
+  func.path = action.path
+  return func
+}
+
 async function live(api, path, onUnmountedCb) {
   if(isRef(path)) {
     /// TODO: support path as ref/computed
@@ -72,17 +90,18 @@ async function live(api, path, onUnmountedCb) {
     return createObject(path.what, path.more)
   } else {
     const preFetchPaths = api.observable({ paths })
-    function bindResult(what, more, object, property, onError) {
+    function bindResult(what, more, actions, object, property, onError) {
       if(!what) throw new Error("what parameter required!")
       const observable = api.observable(what)
       const errorObserver = { error: onError }
-      if(more && more.some(m => m.to)) {
+      let dispose
+      if((more && more.some(m => m.to)) || actions) {
         const extendedObservable = new ExtendedObservableList(observable,
           newElement => {
             if(!newElement) return newElement
             const extendedElement = reactive({ ...newElement })
             const props = {}
-            for(const moreElement of more) {
+            if(more) for(const moreElement of more) {
               if(moreElement.to) {
                 const prop = {
                   bounds: [],
@@ -118,7 +137,8 @@ async function live(api, path, onUnmountedCb) {
                     const newArray = new Array(pointers.length)
                     const newBounds = new Array(pointers.length)
                     for(let i = 0; i < pointers.length; i++) {
-                      newBounds[i] = bindResult(pointers[i], moreElements.more, newArray, i, onError)
+                      newBounds[i] = bindResult(pointers[i], moreElement.more, moreElement.actions,
+                          newArray, i, onError)
                     }
                     prop.bounds = newBounds
                     oldBound.forEach(b => b.dispose())
@@ -132,7 +152,8 @@ async function live(api, path, onUnmountedCb) {
                       }
                       if(pointers[0]) {
                         prop.bounds = [
-                          bindResult(pointers[0], moreElement.more, extendedElement, moreElement.to, onError)
+                          bindResult(pointers[0], moreElement.more, moreElement.actions,
+                              extendedElement, moreElement.to, onError)
                         ]
                       }
                     }
@@ -140,6 +161,11 @@ async function live(api, path, onUnmountedCb) {
                 }
                 bindPointers(computePointers())
               }
+            }
+            if(actions) for(const action of actions) {
+              if(!action.name) continue
+              debug("BIND ACTION", action.name, "TO", object)
+              extendedElement[action.name] = createActionFunction(action, extendedElement)
             }
             extendedElement[liveSymbol] = props
             return extendedElement
@@ -172,26 +198,22 @@ async function live(api, path, onUnmountedCb) {
         )
         extendedObservable.bindProperty(object, property)
         observable.observe(errorObserver)
-        return {
-          what,
-          property,
-          dispose() {
-            debug("UNBIND PROPERTY", what, object, property)
-            extendedObservable.unbindProperty(object, property)
-            observable.unobserve(errorObserver)
-          }
+        dispose = () => {
+          debug("UNBIND PROPERTY", what, object, property)
+          extendedObservable.unbindProperty(object, property)
+          observable.unobserve(errorObserver)
         }
       } else {
         observable.bindProperty(object, property)
         observable.observe(errorObserver)
-        return {
-          what, property,
-          dispose() {
-            debug("UNBIND PROPERTY", what, object, property)
-            observable.unbindProperty(object, property)
-            observable.unobserve(errorObserver)
-          }
+        dispose = () => {
+          debug("UNBIND PROPERTY", what, object, property)
+          observable.unbindProperty(object, property)
+          observable.unobserve(errorObserver)
         }
+      }
+      return {
+        what, property, dispose
       }
     }
     const resultRef = ref()
@@ -203,7 +225,7 @@ async function live(api, path, onUnmountedCb) {
         error = msg
         reject(error)
       }
-      const bound = bindResult(path.what, path.more, resultRef, 'value', onError)
+      const bound = bindResult(path.what, path.more, path.actions, resultRef, 'value', onError)
       const pathsObserver = (signal, value) => {}
       preFetchPaths.observe(pathsObserver)
       onUnmountedCb(() => {
