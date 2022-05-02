@@ -23,6 +23,7 @@ function sortedArraysMerge(merge, ...arrays) {
       if(position < array.length && array[position].id == lowestId) {
         objects[arrayIndex] = array[position]
         positions[arrayIndex]++
+        incremented = true
       } else {
         objects[arrayIndex] = null
       }
@@ -62,20 +63,22 @@ function synchronizedList(options) {
   const locallyDeleted = ref([])
 
   function createSynchronizedElement(sourceData) {
+    console.log("CREATE SYNCHRONIZED", JSON.stringify(sourceData))
     const elementSource = ref(sourceData)
     const synchronizedElement = mapper(elementSource)
+    console.log("SYNC ELEMENT", synchronizedElement)
     synchronizedElement.source = elementSource
     synchronizedElement.id = sourceData.id
     return synchronizedElement
   }
   function synchronizeFromSource() {
-    //console.log("SYNCHRONIZE FROM SOURCE!")
+    console.log("SYNCHRONIZE FROM SOURCE!")
     let obsoleteLocallyAdded = new Set()
     let obsoleteLocallyDeleted = new Set()
     let newSynchronized = sortedArraysMerge(
       (synchronizedElement, sourceElement, locallyAddedElement, locallyDeletedElement) => {
 
-        /*console.log("MERGE ELEMENT", synchronizedElement)
+/*        console.log("MERGE ELEMENT", synchronizedElement)
         console.log("SOURCE ELEMENT", sourceElement)
         console.log("LOCALLY ADDED", locallyAddedElement)
         console.log("LOCALLY DELETED", locallyDeletedElement)*/
@@ -92,10 +95,11 @@ function synchronizedList(options) {
             return null // synchronized element locally
           }
           if(sourceElement) {
-            synchronizedElement.source.value = sourceElement
+            synchronizedElement.source = sourceElement
+            watch(() => synchronizedElement.source.value, v => console.log("DD",v))
             return synchronizedElement
           } else if(locallyAddedElement) {
-            synchronizedElement.source.value = locallyAddedElement
+            synchronizedElement.source = locallyAddedElement
             return synchronizedElement
           } else {
             return null // synchronized element deleted

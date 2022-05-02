@@ -115,6 +115,7 @@
     constructor(definition, component, data, property) {
       super(definition, component, data, property)
 
+      if(!this.data[this.property]) this.data[this.property] = {}
       this.object = this.data[this.property]
       this.properties = {}
 
@@ -246,6 +247,7 @@
       super(definition, component, data, property)
       this.elementDefinition = definition.of
       this.elements = []
+      if(!this.data[this.property]) this.data[this.property] = []
       this.object = this.data[this.property]
     }
     setProperty(name) {
@@ -268,7 +270,7 @@
       for(let i = 0; i < initialValue.length; i++) {
         let n = this.newElement(this.elements.length)
         n.reset(initialValue[i])
-        this.elements.push(n)
+        this.elements[i] = n
       }
       super.setValue(initialValue)
     }
@@ -299,6 +301,7 @@
     clearValidation() {
       super.clearValidation()
       for(let element of this.elements) {
+        console.log("CLEAR ELEMENT", element, 'OF', this.elements, "IN", this.property)
         element.clearValidation()
       }
     }
@@ -326,7 +329,7 @@
       this.data[this.property] = value
       if(!value) return;
       for(let i = 0; i < value.length; i++) {
-        if (this.elements[i]) {
+        if(this.elements[i]) {
           this.elements[i].setValue(value[i])
         } else {
           let n = this.newElement()

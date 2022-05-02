@@ -1,6 +1,16 @@
 import { computed, ref, watch } from "vue"
 import { useThrottleFn } from "@vueuse/core"
 
+function copy(value) {
+  let res = JSON.parse(JSON.stringify(value || {}))
+  if(value) for(const key in value) {
+    if(typeof value[key] == 'function') {
+      res[key] = value[key]
+    }
+  }
+  return res
+}
+
 function synchronized(options) {
   const {
     source,
@@ -17,7 +27,7 @@ function synchronized(options) {
   if(!source) throw new Error('source must be defined')
   if(!update) throw new Error('update function must be defined')
   if(recursive) {
-    const synchronizedValue = ref(JSON.parse(JSON.stringify(source.value || {})))
+    const synchronizedValue = ref(copy(source.value))
     const synchronizedJSON = computed(() => JSON.stringify(synchronizedValue.value))
     const lastLocalUpdate = ref(synchronized.value ? synchronizedValue.value[timeField] : '')
 
@@ -49,10 +59,17 @@ function synchronized(options) {
       onChange()
       if(autoSave) throttledSave()
     })
-    watch(() => source.value, sourceData => {
+    console.log("WATCH SOURCE VALUE", source.value)
+    watch(() => JSON.stringify(source.value), sourceJson => {
+      const sourceData = JSON.parse(sourceJson)
       if(sourceData) {
-        console.log("SRC DATA", sourceData)
-        lastLocalUpdate.value = sourceData[timeField]
+        //console.log("SRC DATA", JSON.stringify(sourceData))
+        //console.log("TIME", sourceData[timeField], '>', lastLocalUpdate.value)
+        if(sourceData[timeField] > lastLocalUpdate.value) {
+          lastLocalUpdate.value = sourceData[timeField]
+          synchronizedValue.value = copy(sourceData)
+        }
+
       }
     })
     return { value: synchronizedValue, save, changed }

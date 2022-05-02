@@ -124,6 +124,10 @@ class Api extends DaoProxy {
       }
       let fetch = { }
       globalFetch[serviceDefinition.name] = fetch
+      for(const actionName in serviceDefinition.actions) {
+        fetch[actionName] = (params) => [serviceDefinition.name, actionName, params]
+        fetch[actionName].definition = serviceDefinition.actions[actionName]
+      }
       for(const viewName in serviceDefinition.views) {
         fetch[viewName] = (params) => new Path([serviceDefinition.name, viewName, params])
         fetch[viewName].definition = serviceDefinition.views[viewName]
