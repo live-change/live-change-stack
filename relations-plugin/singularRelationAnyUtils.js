@@ -27,7 +27,7 @@ function defineObjectView(config, context) {
   const viewProperties = {}
   for (let i = 0; i < others.length; i++) {
     viewProperties[otherPropertyNames[i]] = new PropertyDefinition({
-      type: others[i],
+      type: 'String',
       validation: ['nonEmpty']
     })
     viewProperties[otherPropertyNames[i] + 'Type'] = new PropertyDefinition({
@@ -195,10 +195,10 @@ function defineResetAction(config, context) {
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
-      [modelPropertyName]: {
+      /*[modelPropertyName]: {
         type: model,
         validation: ['nonEmpty']
-      },
+      },*/
       ...identifiers
     },
     access: config.resetAccess || config.writeAccess,
