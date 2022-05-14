@@ -11,8 +11,11 @@
     "access-control-service",
     "image-service",
     "user-identification-service",
+    "identicon-service",
     "peer-connection-service",
-    "online-service"
+    "online-service",
+    "timer-service",
+    "notification-service"
   ],
   "publishConfig": {
     "access": "public"

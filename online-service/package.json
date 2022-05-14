@@ -9,5 +9,6 @@
     "test": "NODE_ENV=test blue-tape tests/*"
   },
   "author": "Michał Łaszczewski <michal@emikse.com>",
-  "license": "BSD-3-Clause"
+  "license": "BSD-3-Clause",
+  "gitHead": "37d229ac05adf5e045ae3dcc826c6945d5dc3670"
 }

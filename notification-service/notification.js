@@ -51,14 +51,14 @@ const Notification = definition.model({
         const mapper =
             (obj) => obj && obj.readState == 'new' && obj.user &&
                 ({ id: `${obj.user}_${obj.id}`, user: obj.user, to: obj.id })
-        await input.table('notifications_Notification').onChange(
+        await input.table('notification_Notification').onChange(
             (obj, oldObj) => output.change(obj && mapper(obj), oldObj && mapper(oldObj))
         )
       }
     },
     userUnreadNotificationsCount: { /// For counting
       function: async function(input, output) {
-        const unreadIndex = await input.index('notifications_Notification_userUnreadNotifications')
+        const unreadIndex = await input.index('notification_Notification_userUnreadNotifications')
         await unreadIndex.onChange(
             async (obj, oldObj) => {
               const user = (obj && obj.user) || (oldObj && oldObj.user)
@@ -79,14 +79,14 @@ const Notification = definition.model({
         const mapper =
             (obj) => obj.readState == 'new' && obj.session &&
                 ({ id: `${obj.session}_${obj.id}`, session: obj.session, to: obj.id })
-        await input.table('notifications_Notification').onChange(
+        await input.table('notification_Notification').onChange(
             (obj, oldObj) => output.change(obj && mapper(obj), oldObj && mapper(oldObj))
         )
       }
     },
     sessionUnreadNotificationsCount: { /// For counting
       function: async function(input, output) {
-        const unreadIndex = await input.index('notifications_Notification_sessionUnreadNotifications')
+        const unreadIndex = await input.index('notification_Notification_sessionUnreadNotifications')
         await unreadIndex.onChange(
             async (obj, oldObj) => {
               const session = (obj && obj.session) || (oldObj && oldObj.session)

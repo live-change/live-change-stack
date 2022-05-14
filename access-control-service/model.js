@@ -72,6 +72,9 @@ const AccessRequest = definition.model({
     message: {
       type: String,
       validation: []
+    },
+    lastUpdate: {
+      type: Date
     }
   },
   indexes: {
@@ -100,7 +103,10 @@ const AccessInvitation = definition.model({
         visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {
-    ...invitationProperties
+    ...invitationProperties,
+    lastUpdate: {
+      type: Date
+    }
   },
   indexes: {
 
