@@ -1,6 +1,6 @@
 {
   "name": "@live-change/cli",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Live Change Framework - command line interface",
   "main": "index.js",
   "scripts": {
@@ -28,8 +28,8 @@
     "@live-change/dao-sockjs": "0.4.8",
     "@live-change/dao-websocket": "0.4.10",
     "@live-change/db-server": "0.5.9",
-    "@live-change/framework": "0.6.3",
-    "@live-change/server": "0.6.3",
+    "@live-change/framework": "^0.6.4",
+    "@live-change/server": "^0.6.4",
     "@live-change/vue3-ssr": "0.2.9",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
