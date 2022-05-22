@@ -1,7 +1,7 @@
 <template>
   <div class="surface-card p-4 shadow-2 border-round w-full">
     <div class="text-center mb-3">
-      <div class="text-900 text-3xl font-medium mb-3">Database "{{ dbName }}"</div>
+      <div class="text-900 text-3xl font-medium mb-3">Database "{{ dbName }}" @ {{ dbApi }}</div>
     </div>
     <div class="text-center mb-3">
       <div v-if="tables.length > 0" class="text-900 text-2xl font-medium mb-3">Tables</div>

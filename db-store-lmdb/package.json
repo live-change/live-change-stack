@@ -25,7 +25,7 @@
     "tape": "^5.3.2"
   },
   "dependencies": {
-    "@live-change/dao": "0.4.6",
+    "@live-change/dao": "0.4.10",
     "@live-change/interval-tree": "^1.0.12",
     "napi-macros": "^2.0.0",
     "node-lmdb": "^0.9.6"
