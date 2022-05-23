@@ -165,7 +165,7 @@ function defineDeleteAction(config, context) {
 function defineSortIndex(context, sortFields) {
   if(!Array.isArray(sortFields)) sortFields = [sortFields]
   const sortFieldsUc = sortFields.map(fd => fd.slice(0, 1).toUpperCase() + fd.slice(1))
-  const indexName = 'by' + context.joinedOthersClassName + sortFieldsUc.join('')
+  const indexName = 'by' + context.joinedOthersClassName + 'And' + sortFieldsUc.join('And')
   const property = [...(context.otherPropertyNames.map(prop => [prop + 'Type', prop]).flat()), ...sortFields]
   console.log("DEFINE SORT INDEX", sortFields, "NAME", indexName, "PROP", property)
   context.model.indexes[indexName] = new IndexDefinition({

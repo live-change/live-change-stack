@@ -101,7 +101,9 @@ class ReaderModel {
             }
           })
         }
-    })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range }]
+    })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range },
+      this.modelName+'.indexRange'
+    ]
   }
 
   sortedIndexRangePath(index, range = {}, pathRange = null) {
@@ -152,7 +154,7 @@ class ReaderModel {
             let outputState = outputStates.get(oldObj.id)
             if(outputState) {
               outputState.refs --
-              //output.debug("INDEX DELETE", oldObj.id, "REFS", outputState.refs)
+              output.debug("INDEX DELETE", oldObj.id, "REFS", outputState.refs)
               if(outputState.refs <= 0) {
                 outputState.reader.unobserve(outputState.observer)
                 outputStates.delete(oldObj.id)
@@ -162,7 +164,9 @@ class ReaderModel {
           }
         })
       }
-    })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range }]
+    })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range },
+      this.modelName+'.sortedIndexRange'
+    ]
   }
 
   indexObjectPath(index, range = {}, pathRange = null) {
