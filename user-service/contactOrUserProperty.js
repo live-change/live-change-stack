@@ -107,6 +107,18 @@ definition.processor(function(service, app) {
                   extendedIdentifiers[key+'Type'] = contactProperty[key+'Type']
                   extendedIdentifiers[key] = contactProperty[key]
                 }
+                await service.trigger({
+                  type: 'contactOrUserOwned' + modelName + 'Moved',
+                  from: {
+                    contactOrUserType: contactType,
+                    contactOrUser: contact
+                  },
+                  to: {
+                    contactOrUserType: 'user_User',
+                    contactOrUser: user
+                  },
+                  ...extendedIdentifiers
+                })
                 emit({
                   type: transferEventName,
                   from: {
@@ -120,7 +132,7 @@ definition.processor(function(service, app) {
                     ...extendedIdentifiers
                   }
                 })
-              }
+              } // else ignore
             }
           }
         }

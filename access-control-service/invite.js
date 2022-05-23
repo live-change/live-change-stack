@@ -61,6 +61,47 @@ definition.event({
 })
 
 definition.trigger({
+  name: 'contactOrUserOwnedInvitationMoved',
+  properties: {
+    ...contactProperties,
+    from: {
+      contactOrUserType: {
+        type: String
+      },
+      contactOrUser: {
+        type: String
+      }
+    },
+    to: {
+      contactOrUserType: {
+        type: String
+      },
+      contactOrUser: {
+        type: String
+      }
+    },
+    objectType: {
+      type: String
+    },
+    object: {
+      type: String
+    }
+  },
+  async execute({ from, to, objectType, object }, { service }, emit) {
+    if(to.contactOrUserType == 'user_User') {
+      await service.trigger({
+        type: 'notify',
+        sessionOrUserType: 'user_User',
+        sessionOrUser: to.contactOrUser,
+        notificationType: 'accessControl_Invitation',
+        objectType,
+        object
+      })
+    }
+  }
+})
+
+definition.trigger({
   name: 'inviteWithMessageAuthenticated',
   waitForEvents: true,
   properties: {
@@ -144,10 +185,18 @@ for(const contactType of config.contactTypes) {
         [contactType]: contact,
       }))[0]
       if(contactData?.user) { // user exists
-        /// TODO: Trigger notification
+        const { user } = contactData
+        await service.trigger({
+          type: 'notify',
+          sessionOrUserType: 'user_User',
+          sessionOrUser: user,
+          notificationType: 'accessControl_Invitation',
+          objectType,
+          object
+        })
         emit({
           type: 'userInvited',
-          user: contactData.user,
+          user,
           objectType, object,
           ...invitationData
         })

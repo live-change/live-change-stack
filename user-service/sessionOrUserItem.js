@@ -10,7 +10,7 @@ definition.processor(function(service, app) {
   for(let modelName in service.models) {
     const model = service.models[modelName]
     if(model.sessionOrUserItem) {
-      if (model.properties.owner) throw new Error('user property already exists!!!')
+      if (model.properties.sessionOrUser) throw new Error('user property already exists!!!')
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
       const defaults = App.utils.generateDefault(model.properties)
@@ -26,8 +26,13 @@ definition.processor(function(service, app) {
       //console.log("USER ITEM", model)
 
       if(model.itemOfAny) throw new Error("model " + modelName + " already have owner")
+
+      const extendedWith = config.extendedWith
+          ? (Array.isArray(config.extendedWith) ? config.extendedWith : [config.extendedWith])
+          : []
       model.itemOfAny = {
-        ...config
+        ...config,
+        to: ['sessionOrUser', ...extendedWith]
       }
 
       /// TODO: merge on signedIn trigger
@@ -43,7 +48,7 @@ definition.processor(function(service, app) {
           properties: App.rangeProperties,
           daoPath(range, { client, context }) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
-            const path = modelRuntime().indexRangePath('byOwner', owner, range )
+            const path = modelRuntime().indexRangePath('bySessionOrUser', owner, range )
             return path
           }
         })
@@ -58,14 +63,14 @@ definition.processor(function(service, app) {
             properties: App.rangeProperties,
             daoPath(range, { client, context }) {
               const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
-              return modelRuntime().sortedIndexRangePath('byOwner' + sortFieldUc, owner, App.extractRange(range))
+              return modelRuntime().sortedIndexRangePath('bySsessionOrUser' + sortFieldUc, owner, App.extractRange(range))
             }
           })
         }
       }
 
       if(config.ownerCreateAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Created'
+        const eventName = 'sessionOrUserOwned' + modelName + 'Created'
         const actionName = 'createMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -84,11 +89,11 @@ definition.processor(function(service, app) {
             const entity = await modelRuntime().get(id)
             if(entity) throw 'exists'
             const identifiers = client.user ? {
-                  ownerType: 'user_User',
-                  owner: client.user,
+                  sessionOrUserType: 'user_User',
+                  sessionOrUser: client.user,
                 } : {
-                  ownerType: 'session_Session',
-                  owner: client.session,
+                  sessionOrUserType: 'session_Session',
+                  sessionOrUser: client.session,
                 }
             emit({
               type: eventName,
@@ -101,7 +106,7 @@ definition.processor(function(service, app) {
         })
       }
       if(config.ownerUpdateAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Updated'
+        const eventName = 'sessionOrUserOwned' + modelName + 'Updated'
         const actionName = 'updateMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -119,11 +124,11 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw 'not_found'
-            if(entity.ownerType == 'user_User') {
-              if(entity.owner != client.user) throw 'not_authorized'
+            if(entity.sessionOrUserType == 'user_User') {
+              if(entity.sessionOrUser != client.user) throw 'not_authorized'
             }
-            if(entity.ownerType == 'session_Session') {
-              if(entity.owner != client.session) throw 'not_authorized'
+            if(entity.sessionOrUserType == 'session_Session') {
+              if(entity.sessionOrUser != client.session) throw 'not_authorized'
             }
             let updateObject = {}
             for(const propertyName of writeableProperties) {
@@ -134,11 +139,11 @@ definition.processor(function(service, app) {
             const merged = App.utils.mergeDeep({}, entity, updateObject)
             await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             const identifiers = client.user ? {
-              ownerType: 'user_User',
-              owner: client.user,
+              sessionOrUserType: 'user_User',
+              sessionOrUser: client.user,
             } : {
-              ownerType: 'session_Session',
-              owner: client.session,
+              sessionOrUserType: 'session_Session',
+              sessionOrUser: client.session,
             }
             emit({
               type: eventName,
@@ -168,18 +173,18 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw 'not_found'
-            if(entity.ownerType == 'user_User') {
-              if(entity.owner != client.user) throw 'not_authorized'
+            if(entity.sessionOrUserType == 'user_User') {
+              if(entity.sessionOrUser != client.user) throw 'not_authorized'
             }
-            if(entity.ownerType == 'session_Session') {
-              if(entity.owner != client.session) throw 'not_authorized'
+            if(entity.sessionOrUserType == 'session_Session') {
+              if(entity.sessionOrUser != client.session) throw 'not_authorized'
             }
             const identifiers = client.user ? {
-              ownerType: 'user_User',
-              owner: client.user,
+              sessionOrUserType: 'user_User',
+              sessionOrUser: client.user,
             } : {
-              ownerType: 'session_Session',
-              owner: client.session,
+              sessionOrUserType: 'session_Session',
+              sessionOrUser: client.session,
             }
             emit({
               type: eventName,

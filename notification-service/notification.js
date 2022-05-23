@@ -3,10 +3,6 @@ const app = require("@live-change/framework").app()
 const definition = require('./definition.js')
 const config = definition.config
 
-const User = definition.foreignModel('users', 'User')
-const Session = definition.foreignModel('session', 'Session')
-
-
 const Notification = definition.model({
   name: "Notification",
   sessionOrUserItem: {
@@ -35,8 +31,8 @@ const Notification = definition.model({
       function: async function(input, output) {
         await input.table('notification_Notification')
             .map((obj) => obj && obj.readState == 'new' && ({
-              id: `"${obj.ownerType}":"${obj.owner}"_${obj.id}`,
-              ownerType: obj.ownerType, owner: obj.owner,
+              id: `"${obj.sessionOrUserType}":"${obj.sessionOrUser}"_${obj.id}`,
+              sessionOrUserType: obj.sessionOrUserType, sessionOrUser: obj.sessionOrUser,
               to: obj.id
             }))
             .to(output)
@@ -47,8 +43,8 @@ const Notification = definition.model({
         const unreadIndex = await input.index('notification_Notification_unreadNotifications')
         await unreadIndex.onChange(
             async (obj, oldObj) => {
-              const { ownerType, owner } = obj || oldObj
-              const group = `"${ownerType}":"${owner}"`
+              const { sessionOrUserType, sessionOrUser } = obj || oldObj
+              const group = `"${sessionOrUserType}":"${sessionOrUser}"`
               const prefix = group + '_'
               const count = await unreadIndex.count({ gt: prefix, lt: prefix + '\xFF' })
               output.put({
@@ -65,7 +61,7 @@ const Notification = definition.model({
 definition.event({
   name: "created",
   async execute({ notification, data }) {
-    await Notification.create(notification, { ...data, id: notification })
+    await Notification.create({ ...data, id: notification })
   }
 })
 
@@ -89,9 +85,9 @@ definition.event({
 
 definition.event({
   name: "allRead",
-  async execute({ ownerType, owner }) {
+  async execute({ sessionOrUserType, sessionOrUser }) {
     const update = { readState: 'read' }
-    const prefix = `"${ownerType}":"${owner}":"new"_`
+    const prefix = `"${sessionOrUserType}":"${sessionOrUser}":"new"_`
     console.log("MARK ALL AS READ PREFIX", prefix)
     await app.dao.request(['database', 'query'], app.databaseName, `(${
         async (input, output, { tableName, indexName, update, range }) => {
@@ -101,7 +97,7 @@ definition.event({
         }
     })`, {
       tableName: Notification.tableName,
-      indexName: Notification.tableName + "_byOwnerAndReadState",
+      indexName: Notification.tableName + "_bySessionOrUserAndReadState",
       update,
       range: {
         gte: prefix,
@@ -113,8 +109,8 @@ definition.event({
 
 definition.event({
   name: "allDeleted",
-  async execute({ ownerType, owner }) {
-    const prefix = `"${ownerType}":"${owner}"_`
+  async execute({ sessionOrUserType, sessionOrUser }) {
+    const prefix = `"${sessionOrUserType}":"${sessionOrUser}"_`
     console.log("MARK ALL AS READ PREFIX", prefix)
     await app.dao.request(['database', 'query'], app.databaseName, `(${
         async (input, output, { tableName, indexName, update, range }) => {
@@ -124,7 +120,7 @@ definition.event({
         }
     })`, {
       tableName: Notification.tableName,
-      indexName: Notification.tableName + "_byOwner",
+      indexName: Notification.tableName + "_bySessionOrUser",
       range: {
         gte: prefix,
         lte: prefix + "\xFF\xFF\xFF\xFF"
@@ -165,11 +161,11 @@ definition.view({
         ? ["user_User", client.user]
         : ["session_Session", client.session]
     if(!Number.isSafeInteger(range.limit)) range.limit = 100
-    const path = Notification.sortedIndexRangePath('byOwnerAndTime', prefix, range)
+    const path = Notification.sortedIndexRangePath('bySessionOrUserAndTime', prefix, range)
     /*const notifications = await app.dao.get(path)
     console.log("NOTIFICATIONS", path,
         "\n  RESULTS", notifications.length, notifications.map(m => m.id))*/
-    return Notification.sortedIndexRangePath('byOwnerAndTime', prefix, range)
+    return Notification.sortedIndexRangePath('bySessionOrUserAndTime', prefix, range)
   }
 })
 
@@ -192,11 +188,13 @@ definition.view({
 definition.trigger({
   name: "notify",
   properties: {
-    user: {
-      type: User,
+    sessionOrUserType: {
+      type: String,
+      validation: ['nonEmpty']
     },
-    session: {
-      type: Session,
+    sessionOrUser: {
+      type: String,
+      validation: ['nonEmpty']
     },
     notificationType: {
       type: String,
@@ -205,8 +203,8 @@ definition.trigger({
     ...config.fields
   },
   async execute(params , { service }, emit) {
-    const { user, session } = params
-    if(!user && !session) throw new Error("session or user required")
+    const { sessionOrUserType, sessionOrUser } = params
+    if(!sessionOrUserType || !sessionOrUser) throw new Error("session or user required")
     const notification = app.generateUid()
     const time = new Date()
     let data = {}
@@ -214,7 +212,7 @@ definition.trigger({
     emit({
       type: "created",
       notification,
-      data: { ...data, user, session, time, readState: 'new' }
+      data: { ...data, sessionOrUserType, sessionOrUser, time, readState: 'new' }
     })
     await app.trigger({
       type: 'notificationCreated',
@@ -230,8 +228,8 @@ async function notificationAccess({ notification }, { client, visibilityTest }) 
   const notificationRow = await Notification.get(notification)
   if(!notificationRow) throw 'notFound'
   return client.user
-      ? notificationRow.ownerType == 'user_User' && notificationRow.owner == client.user
-      : notificationRow.ownerType == 'session_Session' && notificationRow.owner == client.session
+      ? notificationRow.sessionOrUserType == 'user_User' && notificationRow.sessionOrUser == client.user
+      : notificationRow.sessionOrUserType == 'session_Session' && notificationRow.sessionOrUser == client.session
 }
 
 definition.action({
@@ -283,13 +281,13 @@ definition.action({
     return true
   },
   async execute({ notification, readState }, { client, service }, emit) {
-    const [ ownerType, owner ] = client.user
+    const [ sessionOrUserType, sessionOrUser ] = client.user
         ? [ 'user_User', client.user ]
         : [ 'session_Session', client.session ]
-    console.log("MARK ALL AS READ!!", ownerType, owner)
+    console.log("MARK ALL AS READ!!", sessionOrUserType, sessionOrUser)
     emit({
       type: "allRead",
-      ownerType, owner
+      sessionOrUserType, sessionOrUser
     })
   }
 })
@@ -319,13 +317,13 @@ definition.action({
     return true
   },
   async execute({ notification, readState }, { client, service }, emit) {
-    const [ ownerType, owner ] = client.user
+    const [ sessionOrUserType, sessionOrUser ] = client.user
         ? [ 'user_User', client.user ]
         : [ 'session_Session', client.session ]
-    console.log("DELETE ALL!!", ownerType, owner)
+    console.log("DELETE ALL!!", sessionOrUserType, sessionOrUser)
     emit({
       type: "allDeleted",
-      ownerType, owner
+      sessionOrUserType, sessionOrUser
     })
   }
 })
