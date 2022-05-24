@@ -68,11 +68,21 @@ definition.event({
 definition.event({
   name: "marked",
   async execute({ notification, state }) {
-    if(state === 'read'){
-      await Notification.update(notification, { state: state, readState: state })
-    } else {
-      await Notification.update(notification, { state })
-    }
+    await Notification.update(notification, { state })
+  }
+})
+
+definition.event({
+  name: "markedRead",
+  async execute({ notification }) {
+    await Notification.update(notification, { readState: 'read' })
+  }
+})
+
+definition.event({
+  name: "markedUnread",
+  async execute({ notification }) {
+    await Notification.update(notification, { readState: 'new' })
   }
 })
 
@@ -248,6 +258,38 @@ definition.action({
       type: "marked",
       notification,
       state
+    })
+  }
+})
+
+definition.action({
+  name: "markRead",
+  properties: {
+    notification: {
+      type: Notification
+    }
+  },
+  access: notificationAccess,
+  async execute({notification, state}, {client, service}, emit) {
+    emit({
+      type: "markedRead",
+      notification
+    })
+  }
+})
+
+definition.action({
+  name: "markUnread",
+  properties: {
+    notification: {
+      type: Notification
+    }
+  },
+  access: notificationAccess,
+  async execute({notification, state}, {client, service}, emit) {
+    emit({
+      type: "markedUnread",
+      notification
     })
   }
 })

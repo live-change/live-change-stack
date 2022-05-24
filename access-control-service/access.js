@@ -28,6 +28,11 @@ module.exports = (definition) => {
     return true
   }
 
-  return { clientHasAnyAccess, clientHasAdminAccess, clientCanInvite, clientCanRequest, clientHasAccessRole }
+  return {
+    clientHasAnyAccess, clientHasAdminAccess,
+    clientCanInvite,
+    clientCanRequest,
+    clientHasAccessRole
+  }
 
 }

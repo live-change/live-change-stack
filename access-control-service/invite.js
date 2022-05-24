@@ -31,6 +31,7 @@ definition.event({
       objectType, object, fromType, from
     }
     for(const propertyName in invitationProperties) data[propertyName] = params[propertyName]
+    await AccessInvitation.create(data)
   }
 })
 
@@ -147,6 +148,34 @@ definition.trigger({
       user, objectType, object, roles
     })
     return user
+  }
+})
+
+definition.action({
+  name: 'acceptInvitation',
+  waitForEvents: true,
+  properties: {
+    objectType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    object: {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  },
+  async execute({ objectType, object }, {client, service}, emit) {
+    if(!client.user) throw 'not_authorized'
+    const user = client.user
+    const invitation = App.encodeIdentifier(['user_User', user, objectType, object])
+    const invitationData = await AccessInvitation.get(invitation)
+    console.log("INVITATION", invitation, invitationData)
+    if(!invitationData) throw 'not_found'
+    const { roles } = invitationData
+    emit({
+      type: 'userInvitationAccepted',
+      user, objectType, object, roles
+    })
   }
 })
 
