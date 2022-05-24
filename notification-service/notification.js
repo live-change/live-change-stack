@@ -203,11 +203,11 @@ definition.trigger({
     ...config.fields
   },
   async execute(params , { service }, emit) {
-    const { sessionOrUserType, sessionOrUser } = params
+    const { sessionOrUserType, sessionOrUser, notificationType } = params
     if(!sessionOrUserType || !sessionOrUser) throw new Error("session or user required")
     const notification = app.generateUid()
     const time = new Date()
-    let data = {}
+    let data = { notificationType }
     for(const key in config.fields) data[key] = params[key]
     emit({
       type: "created",

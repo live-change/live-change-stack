@@ -21,25 +21,32 @@ const Session = definition.foreignModel('session', 'Session')
 
 definition.event({
   name: 'userInvited',
-  async execute({ user, objectType, object, roles, message }) {
-    await AccessInvitation.create({
-      id: App.encodeIdentifier([ 'user_User', user, objectType, object ]),
-      contactOrUserType: 'user_User', contactOrUser: user,
-      objectType, object,
-      roles, message
-    })
+  async execute(params) {
+    const { user, objectType, object, fromType, from } = params
+    const contactOrUserType = 'user_User'
+    const contactOrUser = user
+    const data = {
+      id: App.encodeIdentifier([ contactOrUserType, contactOrUser, objectType, object ]),
+      contactOrUserType, contactOrUser,
+      objectType, object, fromType, from
+    }
+    for(const propertyName in invitationProperties) data[propertyName] = params[propertyName]
   }
 })
 
 definition.event({
   name: 'contactInvited',
-  async execute({ contactType, contact, objectType, object, roles, message }) {
-    await AccessInvitation.create({
-      id: App.encodeIdentifier([ contactType, contact, objectType, object ]),
-      contactOrUserType: contactType, contactOrUser: contact,
-      objectType, object,
-      roles, message
-    })
+  async execute(params) {
+    const { contactType, contact, objectType, object, fromType, from } = params
+    const contactOrUserType = contactType
+    const contactOrUser = contact
+    const data = {
+      id: App.encodeIdentifier([ contactOrUserType, contactOrUser, objectType, object ]),
+      contactOrUserType, contactOrUser,
+      objectType, object, fromType, from
+    }
+    for(const propertyName in invitationProperties) data[propertyName] = params[propertyName]
+    await AccessInvitation.create(data)
   }
 })
 
@@ -88,14 +95,16 @@ definition.trigger({
     }
   },
   async execute({ from, to, objectType, object }, { service }, emit) {
+    const invitation = App.encodeIdentifier([from.contactOrUserType, from.contactOrUser, objectType, object])
+    const invitationData = await AccessInvitation.get(invitation)
     if(to.contactOrUserType == 'user_User') {
       await service.trigger({
+        ...invitationData,
         type: 'notify',
         sessionOrUserType: 'user_User',
         sessionOrUser: to.contactOrUser,
         notificationType: 'accessControl_Invitation',
-        objectType,
-        object
+        id: undefined
       })
     }
   }
@@ -175,9 +184,10 @@ for(const contactType of config.contactTypes) {
     access: (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientCanInvite(client, params),
     async execute(params, { client, service }, emit) {
+      const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
       const { [contactTypeName]: contact } = params
       const { objectType, object } = params
-      const invitationData = { }
+      const invitationData = { fromType, from }
       for(const propertyName in invitationProperties) invitationData[propertyName] = params[propertyName]
 
       const contactData = (await service.trigger({
@@ -192,22 +202,20 @@ for(const contactType of config.contactTypes) {
           sessionOrUser: user,
           notificationType: 'accessControl_Invitation',
           objectType,
-          object
+          object,
+          ...invitationData, id: undefined
         })
         emit({
           type: 'userInvited',
           user,
           objectType, object,
-          ...invitationData
+          ...invitationData, id: undefined
         })
       } else {
         // Authenticate with message because we will create account later
         const messageData = {
-          fromType: client.user ? 'user_User' : 'session_Session',
-          from: client.user ?? client.session,
           objectType, object,
-          roles: params.roles,
-          message: params.message
+          ...invitationData, id: undefined
         }
         await service.trigger({
           type: 'authenticateWithMessage',
@@ -223,7 +231,7 @@ for(const contactType of config.contactTypes) {
           contactType: contactTypeName + '_' + contactTypeUName,
           contact,
           objectType, object,
-          ...invitationData
+          ...invitationData, id: undefined
         })
       }
     }
