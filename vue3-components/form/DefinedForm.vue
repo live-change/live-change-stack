@@ -20,6 +20,8 @@
       if(!this.component) throw new Error("no component parameter")
 
       this.validators = []
+      this.barriers = []
+
       if(definition.validation) {
         let validations = Array.isArray(definition.validation) ? definition.validation : [definition.validation]
         const context = {
@@ -109,6 +111,14 @@
     clearValidation() {
       this.setError(null)
     }
+
+    async waitForBarriers(context) {
+      let promises = []
+      for(let barrier of this.barriers) {
+        promises.push(barrier(this.value, context))
+      }
+      await Promise.all(promises)
+    }
   }
 
   class FormObject extends FormValue {
@@ -196,6 +206,20 @@
       }
     }
 
+    async waitForBarriers(context) {
+      let promises = [ super.waitForBarriers(context).then(error => ['root', error]) ]
+      for(let propName in this.properties) {
+        if(context.parameters && context.parameters[propName]) continue;
+        promises.push(
+            this.properties[propName].waitForBarriers({
+              ...context,
+              propName: context.propName ? context.propName+'.'+propName : propName
+            })
+        )
+      }
+      await Promise.all(promises)
+    }
+
     getValue() {
       let obj = { ...this.value }
       for(let propName in this.properties) {
@@ -250,10 +274,12 @@
       if(!this.data[this.property]) this.data[this.property] = []
       this.object = this.data[this.property]
     }
+
     setProperty(name) {
       this.property = name
       this.object = this.data[this.property]
     }
+
     newElement(index) {
       if(this.elementDefinition.type == "Object") {
         return new FormObject(this.elementDefinition, this.component, this.object, index)
@@ -263,6 +289,7 @@
         return new FormValue(this.elementDefinition, this.component, this.object, index)
       }
     }
+
     reset(initialValue) {
       initialValue = initialValue || this.definition.defaultValue || []
       this.data[this.property] = new Array(initialValue.length)
@@ -274,12 +301,14 @@
       }
       super.setValue(initialValue)
     }
+
     afterError(initialValue) {
       if(this.definition.singleUse) return this.reset()
       for(let i = 0; i < this.elements.length; i++) {
         this.elements[i].afterError(initialValue && initialValue[i])
       }
     }
+
     validate(context) {
       let promises = [super.validate(context)]
       for(let propName in this.elements) {
@@ -298,12 +327,21 @@
         return anyError && results
       })
     }
+
     clearValidation() {
       super.clearValidation()
       for(let element of this.elements) {
         console.log("CLEAR ELEMENT", element, 'OF', this.elements, "IN", this.property)
         element.clearValidation()
       }
+    }
+
+    async waitForBarriers(context) {
+      let promises = [super.waitForBarriers(context)]
+      for(let propName in this.elements) {
+        promises.push(this.elements[propName].waitForBarriers({ ...context, propName: context.propName+'.'+propName }))
+      }
+      await Promise.all(promises)
     }
 
     getValue() {
@@ -405,12 +443,18 @@
           setFieldError: (name, value) => this.setFieldError(name, value),
           getValue: () => this.formRoot.getValue(),
           reset: () => this.reset(),
+
           addValidator: (propName, validator) => this.addValidator(propName, validator),
           removeValidator: (propName, validator) => this.addValidator(propName, validator),
           validateField: (propName) => this.validateField(propName),
           validate: () => this.validate(),
           clearFieldValidation: (propName) => this.clearFieldValidation(propName),
           clearValidation: () => this.clearValidation(),
+
+          addBarrier: (propName, validator) => this.addBarrier(propName, validator),
+          removeBarrier: (propName, validator) => this.removeBarrier(propName, validator),
+          waitForFieldBarriers: (propName) => this.waitForFieldBarriers(propName),
+          waitForBarriers: (propName) => this.waitForBarriers(),
 
           addElementToArray: (propName, initialValue) => this.addElementToArray(propName, initialValue),
           removeElementFromArray: (propName, index) => this.removeElementFromArray(propName, index)
@@ -483,6 +527,7 @@
         this.formRoot.reset(this.initialValues)
         //console.log("Form after reset", JSON.stringify(this.formRoot.getValue(), null, '  '))
       },
+
       addValidator(name, validator) {
         this.getNode(name).validators.push(validator)
       },
@@ -511,6 +556,24 @@
       clearValidation() {
         this.formRoot.clearValidation()
       },
+
+      waitForFieldBarriers(name, context) {
+        return this.getNode(name).waitForBarriers(this.getValidationContext(context))
+      },
+      waitForBarriers(context) {
+        return this.formRoot.waitForBarriers(this.getValidationContext(context))
+      },
+      addBarrier(name, barrier) {
+        this.getNode(name).barriers.push(barrier)
+      },
+      removeBarrier(name, barrier) {
+        let barriers = this.getNode(name).barriers
+        let id = barriers.indexOf(barrier)
+        if(id == -1) throw new Error("barrier not found")
+        barriers.splice(id)
+      },
+
+
       addElementToArray(propName, initialValue) {
         this.getNode(propName).addElement(initialValue)
       },

@@ -164,6 +164,7 @@
         const node = this.getNodeIfExists(name)
         if(node) node.unobserveError(observer)
       },
+
       addValidator(name, validator) {
         this.getNode(name).validators.push(validator)
       },
@@ -185,6 +186,20 @@
       clearValidation() {
         this.$refs.defined.clearValidation()
       },
+
+      waitForFieldBarriers(name, context) {
+        return this.$refs.defined.waitForFieldBarriers(name, context)
+      },
+      waitForBarriers(context) {
+        return this.$refs.defined.waitForBarriers(context)
+      },
+      addBarrier(name, validator) {
+        this.$refs.defined.addBarrier(name, validator)
+      },
+      removeBarrier(name, validator) {
+        this.$refs.defined.removeBarrier(name, validator)
+      },
+
       addElementToArray(propName, initialValue) {
         this.getNode(propName).addElement(initialValue)
       },
@@ -209,88 +224,94 @@
 
         analytics.emit('form', { service: this.service, action: this.action, parameters: analyticsParameters })
 
-        return this.validate({ parameters: {...this.parameters, ...additionalParameters} }).then(validationError => {
-          debug("VALIDATION ERROR?", validationError)
-          if(validationError) {
-            analytics.emit('formError', {
-              service: this.service, action: this.action, parameters: analyticsParameters, error: validationError
-            })
-            this.workingZone.finished(this.workingTask)
-            this.state = 'ready'
-            this.scrollToError()
-            return;
-          }
+        const barrierResult = await this.waitForBarriers({
+          parameters: { ...this.parameters, ...additionalParameters }
+        })
 
-          let parameters = this.$refs.defined.formRoot.getValue()
-          parameters = { ...parameters, ...this.parameters, ...(additionalParameters || {}), _commandId }
-          //console.trace("SUBMIT!")
-          debug("SUBMIT DATA:\n"+JSON.stringify(parameters, null, "  "))
+        const validationError = await this.validate({
+          parameters: { ...this.parameters, ...additionalParameters }
+        })
 
-          this.$emit("submit", { parameters })
-
-          return this.$api.request([this.service, this.action], parameters).then((result) => {
-            debug("DATA SUBMITED")
-            analytics.emit('formDone', {
-              service: this.service, action: this.action, parameters: analyticsParameters, error: validationError
-            })
-            if(this.resetOnDone) {
-              this.state = 'ready'
-              this.reset()
-            } else if(this.keepOnDone) {
-              this.state = 'ready'
-            } else {
-              this.state = 'done'
-            }
-            this.$emit('done', { result , parameters })
-            this.workingZone.finished(this.workingTask)
-          }).catch((error) => {
-            console.error("FORM ERROR", error)
-            analytics.emit('formError', {
-              service: this.service, action: this.action, parameters: analyticsParameters, error
-            })
-            this.$refs.defined.formRoot.afterError(this.initialValues)
-            if(error.properties) {
-              for(let propName in error.properties) {
-                let node = this.getNode(propName)
-                if(!node) {
-                  this.state = 'error'
-                  this.error = `protocol mismatch, field ${propName} not found`
-                  return
-                }
-                node.setError(error.properties[propName])
-                this.state = 'ready'
-              }
-              this.scrollToError()
-              this.workingZone.finished(this.workingTask)
-            } else if(this.ignoreError) {
-              if((typeof this.ignoreError) == 'function') {
-                if(this.ignoreError(error)) {
-                  this.workingZone.finished(this.workingTask)
-                } else {
-                  this.state = 'error'
-                  this.error = error
-                  this.workingZone.failed(this.workingTask, error)
-                }
-              } else if(Array.isArray(this.ignoreError)) {
-                if(this.ignoreError.indexOf(error) != -1) {
-                  this.workingZone.finished(this.workingTask)
-                } else {
-                  this.state = 'error'
-                  this.error = error
-                  this.workingZone.failed(this.workingTask, error)
-                }
-              } else {
-                this.workingZone.finished(this.workingTask)
-              }
-            } else if(this.externalErrorsProcessing) {
-              // ...
-            } else {
-              this.state = 'error'
-              this.error = error
-              this.workingZone.failed(this.workingTask, error)
-            }
-            this.$emit('error', { error, parameters, task: this.workingTask })
+        debug("VALIDATION ERROR?", validationError)
+        if(validationError) {
+          analytics.emit('formError', {
+            service: this.service, action: this.action, parameters: analyticsParameters, error: validationError
           })
+          this.workingZone.finished(this.workingTask)
+          this.state = 'ready'
+          this.scrollToError()
+          return;
+        }
+
+        let parameters = this.$refs.defined.formRoot.getValue()
+        parameters = { ...parameters, ...this.parameters, ...(additionalParameters || {}), _commandId }
+        //console.trace("SUBMIT!")
+        debug("SUBMIT DATA:\n"+JSON.stringify(parameters, null, "  "))
+
+        this.$emit("submit", { parameters })
+
+        return this.$api.request([this.service, this.action], parameters).then((result) => {
+          debug("DATA SUBMITED")
+          analytics.emit('formDone', {
+            service: this.service, action: this.action, parameters: analyticsParameters, error: validationError
+          })
+          if(this.resetOnDone) {
+            this.state = 'ready'
+            this.reset()
+          } else if(this.keepOnDone) {
+            this.state = 'ready'
+          } else {
+            this.state = 'done'
+          }
+          this.$emit('done', { result , parameters })
+          this.workingZone.finished(this.workingTask)
+        }).catch((error) => {
+          console.error("FORM ERROR", error)
+          analytics.emit('formError', {
+            service: this.service, action: this.action, parameters: analyticsParameters, error
+          })
+          this.$refs.defined.formRoot.afterError(this.initialValues)
+          if(error.properties) {
+            for(let propName in error.properties) {
+              let node = this.getNode(propName)
+              if(!node) {
+                this.state = 'error'
+                this.error = `protocol mismatch, field ${propName} not found`
+                return
+              }
+              node.setError(error.properties[propName])
+              this.state = 'ready'
+            }
+            this.scrollToError()
+            this.workingZone.finished(this.workingTask)
+          } else if(this.ignoreError) {
+            if((typeof this.ignoreError) == 'function') {
+              if(this.ignoreError(error)) {
+                this.workingZone.finished(this.workingTask)
+              } else {
+                this.state = 'error'
+                this.error = error
+                this.workingZone.failed(this.workingTask, error)
+              }
+            } else if(Array.isArray(this.ignoreError)) {
+              if(this.ignoreError.indexOf(error) != -1) {
+                this.workingZone.finished(this.workingTask)
+              } else {
+                this.state = 'error'
+                this.error = error
+                this.workingZone.failed(this.workingTask, error)
+              }
+            } else {
+              this.workingZone.finished(this.workingTask)
+            }
+          } else if(this.externalErrorsProcessing) {
+            // ...
+          } else {
+            this.state = 'error'
+            this.error = error
+            this.workingZone.failed(this.workingTask, error)
+          }
+          this.$emit('error', { error, parameters, task: this.workingTask })
         })
       },
       handleSubmitEvent(ev) {

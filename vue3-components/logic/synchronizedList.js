@@ -63,16 +63,16 @@ function synchronizedList(options) {
   const locallyDeleted = ref([])
 
   function createSynchronizedElement(sourceData) {
-    console.log("CREATE SYNCHRONIZED", JSON.stringify(sourceData))
+    //console.log("CREATE SYNCHRONIZED", JSON.stringify(sourceData))
     const elementSource = ref(sourceData)
     const synchronizedElement = mapper(elementSource)
-    console.log("SYNC ELEMENT", synchronizedElement)
+    //console.log("SYNC ELEMENT", synchronizedElement)
     synchronizedElement.source = elementSource
     synchronizedElement.id = sourceData.id
     return synchronizedElement
   }
   function synchronizeFromSource() {
-    console.log("SYNCHRONIZE FROM SOURCE!")
+    //console.log("SYNCHRONIZE FROM SOURCE!", source.value, "!!!")
     let obsoleteLocallyAdded = new Set()
     let obsoleteLocallyDeleted = new Set()
     let newSynchronized = sortedArraysMerge(

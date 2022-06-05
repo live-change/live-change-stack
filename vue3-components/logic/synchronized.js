@@ -59,7 +59,7 @@ function synchronized(options) {
       onChange()
       if(autoSave) throttledSave()
     })
-    console.log("WATCH SOURCE VALUE", source.value)
+    //console.log("WATCH SOURCE VALUE", source.value)
     watch(() => JSON.stringify(source.value), sourceJson => {
       const sourceData = JSON.parse(sourceJson)
       if(sourceData) {

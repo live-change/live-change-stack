@@ -239,6 +239,10 @@ class Api extends DaoProxy {
       reverse: !range.reverse
     }
   }
+
+  getServiceDefinition(serviceName) {
+    return this.metadata.api.value.services.find(s => s.name == serviceName)
+  }
 }
 
 export default Api
