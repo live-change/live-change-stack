@@ -1,8 +1,9 @@
 const app = require("@live-change/framework").app()
 const definition = require('./definition.js')
+const config = definition.config
 
-const storageDir = `./storage/images/`
-const uploadsDir = `./uploads/`
+const imagesPath = config.imagesPath || `./storage/images/`
+const uploadsPath = config.uploadsPath || `./storage/uploads/`
 
 const Image = definition.model({
   name: "Image",
@@ -48,6 +49,9 @@ const download = require('download')
 definition.action({
   name: "createEmptyImage",
   properties: {
+    image: {
+      type: Image
+    },
     name: {
       type: String,
       validation: ['nonEmpty']
@@ -66,10 +70,16 @@ definition.action({
     }
   },
   /// TODO: accessControl
-  async execute({ name, purpose, owner, ownerType }, { client, service }, emit) {
-    const image = app.generateUid()
+  async execute({ image, name, purpose, owner, ownerType }, { client, service }, emit) {
+    if(!image) {
+      image = app.generateUid()
+    } else {
+      // TODO: check id source session
+      const existing = await Image.get(image)
+      if (existing) throw 'already_exists'
+    }
 
-    const dir = `${storageDir}${image}`
+    const dir = `${imagesPath}${image}`
 
     emit({
       type: "ownerOwnedImageCreated",
@@ -93,6 +103,8 @@ definition.action({
   }
 })
 
+const Upload = definition.foreignModel('upload', 'Upload')
+
 definition.action({
   name: "uploadImage",
   properties: {
@@ -104,26 +116,26 @@ definition.action({
       properties: {
         width: { type: Number },
         height: { type: Number },
-        uploadId: { type: String }
+        upload: { type: Upload }
       }
     }
   },
   /// TODO: accessControl!
   waitForEvents: true,
   async execute({ image, original }, { client, service }, emit) {
-    const upload = await app.dao.get(['database', 'tableObject', app.databaseName, 'uploads', original.uploadId])
-    if(!upload) throw new Error("upload_not_found")
-    if(upload.state!='done') throw new Error("upload_not_done")
+    const uploadRow = await Upload.get(original.upload)
+    if(!uploadRow) throw new Error("upload_not_found")
+    if(uploadRow.state!='done') throw new Error("upload_not_done")
 
-    let extension = upload.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
+    let extension = uploadRow.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
     if(extension == 'jpg') extension = "jpeg"
-    const dir = `${storageDir}${image}`
+    const dir = `${imagesPath}${image}`
 
     emit({
       type: "ownerOwnedImageUpdated",
       image,
       data: {
-        fileName: upload.fileName,
+        fileName: uploadRow.fileName,
         original: {
           width: original.width,
           height: original.height,
@@ -133,8 +145,11 @@ definition.action({
       }
     })
 
-    await move(`${uploadsDir}${upload.id}`, `${dir}/original.${extension}`)
-    await app.dao.request(['database', 'delete'], app.databaseName, 'uploads', upload.id)
+    await move(`${uploadsPath}${uploadRow.id}`, `${dir}/original.${extension}`)
+    await app.trigger({
+      type: 'uploadUsed',
+      upload: uploadRow.id
+    })
 
     return image
   }
@@ -143,6 +158,9 @@ definition.action({
 definition.action({
   name: "createImage",
   properties: {
+    image: {
+      type: Image
+    },
     name: {
       type: String,
       validation: ['nonEmpty']
@@ -152,7 +170,7 @@ definition.action({
       properties: {
         width: { type: Number },
         height: { type: Number },
-        uploadId: { type: String }
+        upload: { type: Upload }
       }
     },
     purpose: {
@@ -170,16 +188,21 @@ definition.action({
   },
   /// TODO: accessControl!
   waitForEvents: true,
-  async execute({ name, original, purpose }, { client, service }, emit) {
-    const image = app.generateUid()
-    const upload = await app.dao.get(['database', 'tableObject', app.databaseName, 'uploads', original.uploadId])
+  async execute({ image, name, original, purpose, owner, ownerType }, { client, service }, emit) {
+    if(!image) {
+      image = app.generateUid()
+    } else {
+      // TODO: check id source session
+      const existing = await Image.get(image)
+      if (existing) throw 'already_exists'
+    }
+    const uploadRow = await Upload.get(original.upload)
+    if(!uploadRow) throw new Error("upload_not_found")
+    if(uploadRow.state!='done') throw new Error("upload_not_done")
 
-    if(!upload) throw new Error("upload_not_found")
-    if(upload.state!='done') throw new Error("upload_not_done")
-
-    let extension = upload.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
+    let extension = uploadRow.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
     if(extension == 'jpg') extension = "jpeg"
-    const dir = `${storageDir}${image}`
+    const dir = `${imagesPath}${image}`
 
     emit({
       type: "ownerOwnedImageCreated",
@@ -190,7 +213,7 @@ definition.action({
       data: {
         name,
         purpose,
-        fileName: upload.fileName,
+        fileName: uploadRow.fileName,
         original: {
           width: original.width,
           height: original.height,
@@ -204,8 +227,12 @@ definition.action({
     await mkdir(dir)
     await mkdir(`${dir}/originalCache`)
     await mkdir(`${dir}/cropCache`)
-    await move(`${uploadsDir}${upload.id}`, `${dir}/original.${extension}`)
-    await app.dao.request(['database', 'delete'], app.databaseName, 'uploads', upload.id)
+    await move(`${uploadsPath}${uploadRow.id}`, `${dir}/original.${extension}`)
+
+    await app.trigger({
+      type: 'uploadUsed',
+      upload: uploadRow.id
+    })
 
     return image
   }
@@ -228,29 +255,29 @@ definition.action({
         orientation: {type: Number}
       }
     },
-    uploadId: {type: String}
+    upload: {type: Upload}
   },
   /// TODO: accessControl!
   waitForEvents: true,
-  async execute({ image, crop, uploadId }, {client, service}, emit) {
+  async execute({ image, crop, upload }, {client, service}, emit) {
     const imageRow = await Image.get(image)
     if(!imageRow) throw new Error("not_found")
 
-    const upload = await app.dao.get(['database', 'tableObject', app.databaseName, 'uploads', uploadId])
+    const uploadRow = await Upload.get(upload)
 
-    console.log("UPLOAD CROP", upload)
+    console.log("UPLOAD CROP", uploadRow)
 
-    if(!upload) throw new Error("upload_not_found")
-    if(upload.state != 'done') throw new Error("upload_not_done")
+    if(!uploadRow) throw new Error("upload_not_found")
+    if(uploadRow.state != 'done') throw new Error("upload_not_done")
 
     console.log("CURRENT IMAGE ROW", image, imageRow)
     if(!imageRow.crop) { // first crop
-      const dir = `${storageDir}${image}`
-      let extension = upload.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
+      const dir = `${imagesPath}${image}`
+      let extension = uploadRow.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
       if(extension == 'jpg') extension = "jpeg"
 
-      await move(`${uploadsDir}${upload.id}`, `${dir}/crop.${extension}`)
-      await app.dao.request(['database', 'delete'], app.databaseName, 'uploads', upload.id)
+      await move(`${uploadsPath}${uploadRow.id}`, `${dir}/crop.${extension}`)
+      await app.dao.request(['database', 'delete'], app.databaseName, 'uploads', uploadRow.id)
 
       emit({
         type: "ownerOwnedImageUpdated",
@@ -264,8 +291,8 @@ definition.action({
     } else { // next crop - need to copy image
       const newImage = app.generateUid()
 
-      const dir = `${storageDir}${image}`
-      const newDir = `${storageDir}${newImage}`
+      const dir = `${imagesPath}${image}`
+      const newDir = `${imagesPath}${newImage}`
 
       await mkdir(newDir)
       await mkdir(`${newDir}/originalCache`)
@@ -273,11 +300,15 @@ definition.action({
       await move(`${dir}/original.${imageRow.original.extension}`,
           `${newDir}/original.${imageRow.original.extension}`)
 
-      let extension = upload.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
+      let extension = uploadRow.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
       if(extension == 'jpg') extension = "jpeg"
 
-      await move(`../../storage/uploads/${upload.id}`, `${newDir}/crop.${extension}`)
-      await app.dao.request(['database', 'delete'], app.databaseName, 'uploads', upload.id)
+      await move(`../../storage/uploads/${uploadRow.id}`, `${newDir}/crop.${extension}`)
+
+      await app.trigger({
+        type: 'uploadUsed',
+        upload: uploadRow.id
+      })
 
       const { owner, ownerType } = imageRow
 
@@ -290,7 +321,7 @@ definition.action({
         data: {
           name: imageRow.name,
           purpose: imageRow.purpose,
-          fileName: upload.fileName,
+          fileName: uploadRow.fileName,
           original: imageRow.original,
           crop
         }
@@ -333,8 +364,8 @@ definition.trigger({
   async execute({ name, purpose, url, cropped, owner, ownerType }, { service, client }, emit) {
     const image = app.generateUid()
 
-    const downloadPath = `${uploadsDir}download_${image}`
-    await download(url, uploadsDir, { filename: `download_${image}` })
+    const downloadPath = `${uploadsPath}download_${image}`
+    await download(url, uploadsPath, { filename: `download_${image}` })
 
     const metadata = await sharp(downloadPath).metadata()
 
@@ -376,7 +407,7 @@ definition.trigger({
       data
     })
 
-    const dir = `${storageDir}/${image}`
+    const dir = `${imagesPath}/${image}`
 
     await mkdir(dir)
     await mkdir(`${dir}/originalCache`)

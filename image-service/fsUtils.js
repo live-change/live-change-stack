@@ -1,3 +1,4 @@
+const fs = require('fs')
 
 function move(from, to) {
   return new Promise((resolve,reject) => {
