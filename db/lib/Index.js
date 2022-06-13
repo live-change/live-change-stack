@@ -403,16 +403,20 @@ class IndexWriter {
     this.index.update(id, ops)
   }
   change(obj, oldObj) {
-    //if(this.index.name == 'triggers_new') console.log("INDEX WRITE", obj, oldObj)
-    if(obj) {
-      if(oldObj && oldObj.id != obj.id) {
-        this.index.delete(oldObj.id)
-        this.index.put(obj)
+    try {
+      if (obj) {
+        if (oldObj && oldObj.id != obj.id) {
+          this.index.delete(oldObj.id)
+          this.index.put(obj)
+        } else {
+          this.index.put(obj)
+        }
       } else {
-        this.index.put(obj)
+        if (oldObj) this.index.delete(oldObj.id)
       }
-    } else {
-      if(oldObj) this.index.delete(oldObj.id)
+    } catch(error) {
+      console.error("ERROR", error, "ON CHANGE", oldObj, "=>", obj)
+      throw error
     }
   }
   get(id) {

@@ -3,7 +3,8 @@
                 class="config-editor" :highlight="highlight"
                 :style="{ height: (codeLines * 1.35) + 'em' }"
                 v-model="code"
-                :readonly="readOnly" line-numbers />
+                :readonly="readOnly" :line-numbers="codeLines > 1" />
+  <small v-if="editResult.error" class="p-error">{{ editResult.error }}</small>
 </template>
 
 <script setup>
@@ -23,23 +24,35 @@
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
 
-
-  const { initialCode, initialData, readOnly } = defineProps({
+  const props = defineProps({
     initialCode: {
       type: String
     },
     initialData: {
-      type: String
     },
     readOnly: {
       type: Boolean,
       default: false
+    },
+    env: {
+      type: Object
+    },
+    dbSugar: {
+      type: Object
     }
   })
 
-  const emit = defineEmits(['update:modelValue', 'result'])
+  const { readOnly, env, dbSugar } = props
 
-  const code = ref(initialCode !== undefined ? initialCode : stringify(initialData, null, "  "))
+  const emit = defineEmits(['result'])
+
+
+  const code = ref(props.initialCode !== undefined ? props.initialCode : stringify(props.initialData, null, "  "))
+
+  watch(() => props.initialCode, () => {
+    if(props.initialCode == code.value) return
+    code.value = props.initialCode !== undefined ? props.initialCode : stringify(props.initialData, null, "  ")
+  })
 
   function highlight(code) {
     return Prism.highlight(code, Prism.languages.js, "js")
@@ -47,13 +60,16 @@
 
   const codeLines = computed(() => code.value.split('\n').length)
 
-  const modified = computed(() => code.value != initialCode)
+  const modified = computed(() => code.value != props.initialCode)
 
   const editResult = computed(() => {
-    if(!modified.value && initialData) return { data: initialData, code: code.value }
+    if(!modified.value && props.initialData) return { data: props.initialData, code: code.value }
     try {
-      const $ = {}
-      const result = eval('(' + code.value + ')')
+      const $ = env || {}
+      const db = dbSugar || {}
+      console.log("COMPILE CODE", code.value)
+      const result = eval(`(${code.value})`)
+      if(result === false) return { data: false, code: code.value }
       if(result) return { data: result, code: code.value }
       return { error: 'empty' }
     } catch(e) {
@@ -66,7 +82,13 @@
     }
   })
 
+  function reset() {
+    code.value = props.initialCode !== undefined ? props.initialCode : stringify(props.initialData, null, "  ")
+  }
+
   watch(() => editResult.value, () => emit('result', editResult.value))
+
+  defineExpose({ reset })
 
 </script>
 

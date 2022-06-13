@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-web",
-  "version": "0.5.4",
+  "version": "0.5.10",
   "author": {
     "email": "michal@laszczewski.com",
     "name": "Michał Łaszczewski",
@@ -26,13 +26,13 @@
   "license": "MIT",
   "main": "index.js",
   "devDependencies": {
-    "tape": "^5.2.2"
+    "tape": "^5.3.2"
   },
   "dependencies": {
-    "@live-change/dao": "^0.2.16",
-    "@live-change/db": "^0.5.4",
-    "@live-change/db-store-rbtree": "^0.5.4",
-    "debug": "^4.3.1"
+    "@live-change/dao": "0.4.10",
+    "@live-change/db": "0.5.10",
+    "@live-change/db-store-rbtree": "^0.5.10",
+    "debug": "^4.3.4"
   },
   "gitHead": "af756efb8db9ba90d79774786201cffe9c2162cf"
 }

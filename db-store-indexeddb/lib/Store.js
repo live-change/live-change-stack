@@ -128,6 +128,7 @@ class RangeObservable extends ReactiveDao.ObservableList {
             this.fireObservers('putByField', 'id', id, object, true, oldObject)
             return
           } else if(this.list[i].id > id) {
+            if(i == this.list.length - 1) return // last element is bigger, do nothing
             this.list.splice(i + 1, 0, object)
             this.fireObservers('putByField', 'id', id, object, true, oldObject)
             const popped = this.list.pop()

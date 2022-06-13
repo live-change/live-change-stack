@@ -92,7 +92,7 @@ class RangeObservable extends ReactiveDao.ObservableList {
     const id = object.id
     if(this.range.gt && !(id > this.range.gt)) return
     if(this.range.lt && !(id < this.range.lt)) return
-    if(!this.range.reverse) {
+    if(!this.range.reverse) { /// NOT REVERSED:
       if(this.range.limit && this.list.length == this.range.limit) {
         for(let i = 0, l = this.list.length; i < l; i++) {
           if(this.list[i].id == id) {
@@ -110,14 +110,15 @@ class RangeObservable extends ReactiveDao.ObservableList {
       } else {
         this.putByField('id', object.id, object, false, oldObject)
       }
-    } else {
+    } else { /// REVERSED:
       if(this.range.limit && this.list.length == this.range.limit) {
-        for(let i = this.list.length-1; i >= 0; i--) {
+        for(let i = this.list.length - 1; i >= 0; i--) {
           if(this.list[i].id == id) {
             this.list.splice(i, 1, object)
             this.fireObservers('putByField', 'id', id, object, true, oldObject)
             return
           } else if(this.list[i].id > id) {
+            if(i == this.list.length - 1) return // last element is bigger, do nothing
             this.list.splice(i + 1, 0, object)
             this.fireObservers('putByField', 'id', id, object, true, oldObject)
             const popped = this.list.pop()

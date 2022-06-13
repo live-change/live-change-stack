@@ -19,6 +19,12 @@ const Database = require('@live-change/db').Database
 
 const debug = require('debug')('db-server')
 
+const {
+  SsrServer,
+  createLoopbackDao
+} = require("@live-change/server")
+const packageInfo = require("@live-change/db-server/package.json");
+
 class DatabaseStore {
   constructor(path, backend, options) {
     this.path = path
@@ -93,71 +99,111 @@ class Server {
     }
   }
   createDao(session) {
+    const packageInfo = require('@live-change/db-server/package.json')
+
+    const store = { /// Low level data access
+      type: 'local',
+          source: new ReactiveDao.SimpleDao({
+        methods: {
+          ...(profileLog.started
+              ? profileLog.profileFunctions(storeDao.localRequests(this))
+              : storeDao.localRequests(this))
+        },
+        values: {
+          ...storeDao.localReads(this)
+        }
+      })
+    }
+
+    const version = {
+      type: 'local',
+      source: new ReactiveDao.SimpleDao({
+        methods: {},
+        values: {
+          version: {
+            observable() {
+              return new ReactiveDao.ObservableValue(packageInfo.version)
+            },
+            async get() {
+              return packageInfo.version
+            }
+          }
+        }
+      })
+    }
+
+    const emptyServices = {
+      observable(parameters) {
+        return ReactiveDao.ObservableList([])
+      },
+      async get(parameters) {
+        return []
+      }
+    }
+    const sessionInfo = {
+      client: { session: 'dbRoot' },
+      services: []
+    }
+    const metadata = {
+      type: "local",
+      source: new ReactiveDao.SimpleDao({
+        methods: {},
+        values: {
+          serviceNames: emptyServices,
+          serviceDefinitions: emptyServices,
+          api: {
+            observable(parameters) {
+              ReactiveDao.ObservableValue(sessionInfo)
+            },
+            async get(parameters) {
+              return sessionInfo
+            }
+          }
+        }
+      })
+    }
+
     const scriptContext = new ScriptContext({
       /// TODO: script available routines
       console
     })
+    let database
     if(this.config.master) {
-      return new ReactiveDao(session, {
-        remoteUrl: this.config.master,
-        database: {
-          type: 'local',
-          source: new ReactiveDao.SimpleDao({
-            methods: {
-              ...(profileLog.started
-                  ? profileLog.profileFunctions(dbDao.remoteRequests(this))
-                  : dbDao.remoteRequests(this))
-            },
-            values: {
-              ...dbDao.localReads(this, scriptContext)
-            }
-          })
-        },
-        /*store: { /// Low level data access
-          type: 'remote',
-          generator: ReactiveDao.ObservableList
-        }*/
-        store: { /// Low level data access
-          type: 'local',
-          source: new ReactiveDao.SimpleDao({
-            methods: { // No write access to replica store
-            },
-            values: {
-              ...storeDao.localReads(this)
-            }
-          })
-        }
-      })
+      database = {
+        type: 'local',
+        source: new ReactiveDao.SimpleDao({
+          methods: {
+            ...(profileLog.started
+                ? profileLog.profileFunctions(dbDao.remoteRequests(this))
+                : dbDao.remoteRequests(this))
+          },
+          values: {
+            ...dbDao.localReads(this, scriptContext)
+          }
+        })
+      }
+
     } else {
-      return new ReactiveDao(session, {
-        database: {
-          type: 'local',
-          source: new ReactiveDao.SimpleDao({
-            methods: {
-              ...(profileLog.started
-                  ? profileLog.profileFunctions(dbDao.localRequests(this, scriptContext))
-                  : dbDao.localRequests(this, scriptContext))
-            },
-            values: {
-              ...dbDao.localReads(this, scriptContext)
-            }
-          })
-        },
-        store: { /// Low level data access
-          type: 'local',
-          source: new ReactiveDao.SimpleDao({
-            methods: {
-              ...(profileLog.started
-                  ? profileLog.profileFunctions(storeDao.localRequests(this))
-                  : storeDao.localRequests(this))
-            },
-            values: {
-              ...storeDao.localReads(this)
-            }
-          })
-        }
-      })
+      database = {
+        type: 'local',
+        source: new ReactiveDao.SimpleDao({
+          methods: {
+            ...(profileLog.started
+                ? profileLog.profileFunctions(dbDao.localRequests(this, scriptContext))
+                : dbDao.localRequests(this, scriptContext))
+          },
+          values: {
+            ...dbDao.localReads(this, scriptContext)
+          }
+        })
+      }
     }
+    return new ReactiveDao(session, {
+      remoteUrl: this.config.master,
+      database,
+      serverDatabase: database,
+      store, version, metadata
+    })
   }
   async initialize(initOptions = {}) {
     if(!this.config.temporary) {
@@ -265,8 +311,10 @@ class Server {
     await this.metadataSavePromise
   }
 
-  getHttp() {
-    if(!this.http) {
+  async getHttp() {
+    if(this.http) return this.http
+    if(this.httpPromise) return this.httpPromise
+    this.httpPromise = (async () => {
       const app = express()
       const sockJsServer = sockjs.createServer({ prefix: '/api/sockjs' })
       sockJsServer.on('connection', (conn) => {
@@ -282,18 +330,36 @@ class Server {
         this.apiServer.handleConnection(serverConnection)
       })
       sockJsServer.attach(server)
+
+      const ssrRoot = path.dirname(require.resolve("@live-change/db-admin/front/vite.config.js"))
+      const dev = await fs.promises.access(path.resolve(ssrRoot, './dist'), fs.constants.R_OK)
+          .then(r => false).catch(r => true)
+      if(dev) console.log("STARTING ADMIN IN DEV MODE!")
+      const manifest = dev ? null : require(path.resolve(ssrRoot, 'dist/client/ssr-manifest.json'))
+      const admin = new SsrServer(app, manifest, {
+        dev,
+        fastAuth: true,
+        root: ssrRoot,
+        daoFactory: async (credentials, ip) => {
+          return await createLoopbackDao(credentials, () => this.apiServer.daoFactory(credentials, ip))
+        }
+      })
+      admin.start()
+
       this.http = {
         app,
         sockJsServer,
         wsServer,
-        server
+        server,
+        admin
       }
-    }
-    return this.http
+      return this.http
+    })()
+    return this.httpPromise
   }
 
-  listen(...args) {
-    this.getHttp().server.listen(...args)
+  async listen(...args) {
+    (await this.getHttp()).server.listen(...args)
   }
 
   async close() {

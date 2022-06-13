@@ -1,10 +1,10 @@
 <template>
   <div class="surface-card p-4 shadow-2 border-round w-full">
-    <ConfirmPopup v-if="isMounted"></ConfirmPopup>
-    <Toast v-if="isMounted"></Toast>
-
     <div class="text-center mb-3">
-      <div v-if="tables.length > 0" class="text-900 text-3xl font-medium mb-3">Tables</div>
+      <div class="text-900 text-3xl font-medium mb-3">Database "{{ dbName }}" @ {{ dbApi }}</div>
+    </div>
+    <div class="text-center mb-3">
+      <div v-if="tables.length > 0" class="text-900 text-2xl font-medium mb-3">Tables</div>
       <div v-else class="text-600 text-xl font-medium mb-3">
         There are no tables. Create first one.
       </div>
@@ -16,8 +16,7 @@
           <form v-if="tableRename == slotProps.data.id" @submit="ev => finishTableRename(ev, slotProps.data.id)">
             <InputText v-model="tableNewName" />
           </form>
-          <router-link v-else
-                       :to="tableLink(slotProps.data.id)">
+          <router-link v-else :to="tableLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -44,7 +43,7 @@
 
 
     <div class="text-center mb-3 mt-5">
-      <div v-if="logs.length > 0" class="text-900 text-3xl font-medium mb-3">Logs</div>
+      <div v-if="logs.length > 0" class="text-900 text-2xl font-medium mb-3">Logs</div>
       <div v-else class="text-600 text-xl font-medium mb-3">
         There are no logs. Create first one.
       </div>
@@ -56,8 +55,7 @@
           <form v-if="logRename == slotProps.data.id" @submit="ev => finishLogRename(ev, slotProps.data.id)">
             <InputText v-model="logNewName" />
           </form>
-          <router-link v-else
-                       :to="{ name: 'db:table', params: { dbName, tableName: slotProps.data.id } }">
+          <router-link v-else :to="logLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -84,7 +82,7 @@
 
 
     <div class="text-center mb-3 mt-5">
-      <div v-if="indexes.length > 0" class="text-900 text-3xl font-medium mb-3">Indexes</div>
+      <div v-if="indexes.length > 0" class="text-900 text-2xl font-medium mb-3">Indexes</div>
       <div v-else class="text-600 text-xl font-medium mb-3">
         There are no indexes.
       </div>
@@ -96,8 +94,7 @@
           <form v-if="indexRename == slotProps.data.id" @submit="ev => finishIndexRename(ev, slotProps.data.id)">
             <InputText v-model="indexNewName" />
           </form>
-          <router-link v-else
-                       :to="{ name: 'db:table', params: { dbName, tableName: slotProps.data.id } }">
+          <router-link v-else :to="indexLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -128,6 +125,8 @@
 
   import ConfirmPopup from 'primevue/confirmpopup'
   import Toast from 'primevue/toast'
+
+  import { tableLink, logLink, indexLink } from "./links.js"
 
   const { dbApi, dbName } = defineProps({
     dbApi: {
@@ -165,8 +164,8 @@
       accept: async () => {
         workingZone.addPromise('deleteTable', (async () => {
           await dao.request([dbApi, 'deleteTable'], dbName, id)
+          toast.add({ severity:'info', summary: `Table ${id} deleted`, life: 1500 })
         })())
-        toast.add({ severity:'info', summary: `Table ${id} deleted`, life: 1500 })
       },
       reject: () => {
         toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
@@ -223,8 +222,8 @@
       accept: async () => {
         workingZone.addPromise('deleteLog', (async () => {
           await dao.request([dbApi, 'deleteLog'], dbName, id)
+          toast.add({ severity:'info', summary: `Log ${id} deleted`, life: 1500 })
         })())
-        toast.add({ severity:'info', summary: `Log ${id} deleted`, life: 1500 })
       },
       reject: () => {
         toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
@@ -279,8 +278,8 @@
       accept: async () => {
         workingZone.addPromise('deleteIndex', (async () => {
           await dao.request([dbApi, 'deleteIndex'], dbName, id)
+          toast.add({ severity:'info', summary: `Index ${id} deleted`, life: 1500 })
         })())
-        toast.add({ severity:'info', summary: `Index ${id} deleted`, life: 1500 })
       },
       reject: () => {
         toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
@@ -308,19 +307,6 @@
         toast.add({ severity: 'error', summary: `Index ${indexName} not renamed`, detail: error.message, life: 3000 })
       }
     })())
-  }
-
-  function tableLink(table) {
-    return { name: 'db:data', params: {
-        position: " ",
-        read: `['tableRange',$.db,$.table,$.range]`,
-        write: `[['put'],$.db,$.table,$.object]`,
-        params: [
-          'db', JSON.stringify(dbName),
-          'table', JSON.stringify(table)
-        ]
-    } }
-    //return { name: 'db:table', params: { dbName, tableName: slotProps.data.id } }
   }
 
   const [ tables, indexes, logs ] = await Promise.all([

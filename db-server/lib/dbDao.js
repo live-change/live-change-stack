@@ -810,38 +810,38 @@ function localReads(server, scriptContext) {
       }
     },
     query: {
-      observable: (dbName, code, params = {}) => {
+      observable: (dbName, code, params = {}, sourceName = 'query/query.js') => {
         if(!dbName) return new ReactiveDao.ObservableError("databaseNameRequired")
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
-        const queryFunction = scriptContext.run(code, 'userCode:query/query.js') /// TODO: log queries, more info here
+        const queryFunction = scriptContext.run(code, 'queryCode:' + sourceName) /// TODO: log queries, more info here
         return db.queryObservable(async (input, output) => {
           return queryFunction(input, output, params)
         })
       },
-      get: async (dbName, code, params = {}) => {
+      get: async (dbName, code, params = {}, sourceName = 'query/query.js') => {
         if(!dbName) throw new Error("databaseNameRequired")
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
-        const queryFunction = scriptContext.run(code, 'query')
+        const queryFunction = scriptContext.run(code, 'queryCode:' + sourceName)
         return db.queryGet((input, output) => queryFunction(input, output, params))
       }
     },
     queryObject: {
-      observable: (dbName, code, params = {}) => {
+      observable: (dbName, code, params = {}, sourceName = 'queryObject/query.js') => {
         if(!dbName) return new ReactiveDao.ObservableError("databaseNameRequired")
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
-        const queryFunction = scriptContext.run(code, `userCode:${dbName}/query.js`) /// TODO: log queries, more info here
+        const queryFunction = scriptContext.run(code, 'queryCode:' + sourceName) /// TODO: log queries, more info here
         return db.queryObjectObservable(async (input, output) => {
           return queryFunction(input, output, params)
         })
       },
-      get: async (dbName, code, params = {}) => {
+      get: async (dbName, code, params = {}, sourceName = 'queryObject/query.js') => {
         if(!dbName) throw new Error("databaseNameRequired")
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
-        const queryFunction = scriptContext.run(code, `userCode:${dbName}/query.js`)
+        const queryFunction = scriptContext.run(code, 'queryCode:' + sourceName)
         return db.queryObjectGet((input, output) => queryFunction(input, output, params))
       }
     }

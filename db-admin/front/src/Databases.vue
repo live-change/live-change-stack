@@ -4,7 +4,7 @@
     <Toast v-if="isMounted"></Toast>
 
     <div class="text-center mb-5">
-      <div class="text-900 text-3xl font-medium mb-3">Databases</div>
+      <div class="text-900 text-3xl font-medium mb-3">Databases @ {{ dbApi }}</div>
     </div>
 
     <DataTable :value="databases" responsiveLayout="scroll">
