@@ -63,8 +63,9 @@
   import { dbRequestSugar, dbViewSugar } from "./dbSugar.js";
 
   import { ref, reactive, computed, watch } from "vue"
+  import { toRefs } from "@vueuse/core"
 
-  const { modelValue } = defineProps({
+  const props = defineProps({
     modelValue: {
       type: Object,
       required: true
@@ -73,7 +74,16 @@
 
   const emit = defineEmits(['update:modelValue', 'update:read', 'update:write', 'update:remove'])
 
-  const path = reactive(modelValue)
+  const path = reactive(JSON.parse(JSON.stringify(props.modelValue)))
+
+  watch(() => props.modelValue, value => {
+    if(JSON.stringify(path) != JSON.stringify(value)) {
+      path.read = value.read
+      path.write = value.write
+      path.remove = value.remove
+      path.params = JSON.parse(JSON.stringify(value.params))
+    }
+  })
 
 
   function handleReadChange(result) {
@@ -112,10 +122,9 @@
     allParams.push(...extractParams(path.write))
     allParams.push(...extractParams(path.remove))
     for(const field of path.params) {
-      console.log("FD", field, "=>", extractParams(field[1]))
+      //console.log("FD", field, "=>", extractParams(field[1]))
       allParams.push(...extractParams(field[1]))
     }
-
     const paramsSet = new Set(allParams)
     paramsSet.delete('range')
     paramsSet.delete('object')
@@ -149,8 +158,12 @@
   })
 
   watch(() => output.value, value => {
-    console.log("EMIT OUTPUT!")
-    emit('update:modelValue', output.value)
+    if(JSON.stringify(props.modelValue) != JSON.stringify(value)) {
+      console.log("EMIT OUTPUT!", JSON.stringify(props.modelValue), JSON.stringify(value))
+      emit('update:modelValue', output.value)
+    } else {
+      console.log("DROP OUTPUT CHANGE", JSON.stringify(props.modelValue), JSON.stringify(value))
+    }
   })
 
   const readCompiled = computed(() => {

@@ -21,8 +21,8 @@
               </div>
               <ul class="list-none p-0 m-0 ml-3 overflow-hidden hidden" :id="`db-menu-${database.id}`">
                 <li>
-                  <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100
-                                       transition-duration-150 transition-colors p-ripple"
+                  <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
+                                      hover:surface-100 transition-duration-150 transition-colors p-ripple"
                      v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'slidedown',
                                      leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                     <i class="pi pi-table mr-2"></i>
@@ -32,35 +32,18 @@
                   <ul class="list-none py-0 pl-3 pr-0 m-0 hidden overflow-y-hidden transition-all
                                transition-duration-400 transition-ease-in-out">
                     <li v-for="table in database?.tables">
-                      <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
+                      <router-link
+                          :to="tableLink(database.id, table)"
+                          v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
                                            hover:surface-100 transition-duration-150 transition-colors p-ripple">
                         <span class="font-medium">{{ table }}</span>
-                      </a>
+                      </router-link>
                     </li>
                   </ul>
                 </li>
                 <li>
-                  <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100
-                                       transition-duration-150 transition-colors p-ripple"
-                     v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'slidedown',
-                                     leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
-                    <i class="pi pi-external-link mr-2"></i>
-                    <span class="font-medium">{{ database?.indexes?.length }} INDEXES</span>
-                    <i class="pi pi-chevron-down ml-auto"></i>
-                  </a>
-                  <ul class="list-none py-0 pl-3 pr-0 m-0 hidden overflow-y-hidden transition-all
-                               transition-duration-400 transition-ease-in-out">
-                    <li v-for="index in database?.indexes">
-                      <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
-                                           hover:surface-100 transition-duration-150 transition-colors p-ripple">
-                        <span class="font-medium">{{ index }}</span>
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-                <li>
-                  <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700 hover:surface-100
-                                       transition-duration-150 transition-colors p-ripple"
+                  <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
+                                     hover:surface-100 transition-duration-150 transition-colors p-ripple"
                      v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'slidedown',
                                      leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                     <i class="pi pi-list mr-2"></i>
@@ -70,10 +53,33 @@
                   <ul class="list-none py-0 pl-3 pr-0 m-0 hidden overflow-y-hidden transition-all
                                transition-duration-400 transition-ease-in-out">
                     <li v-for="log in database?.logs">
-                      <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
-                                           hover:surface-100 transition-duration-150 transition-colors p-ripple">
+                      <router-link
+                          :to="logLink(database.id, log)"
+                          v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
+                                          hover:surface-100 transition-duration-150 transition-colors p-ripple">
                         <span class="font-medium">{{ log }}</span>
-                      </a>
+                      </router-link>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
+                                     hover:surface-100 transition-duration-150 transition-colors p-ripple"
+                     v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'slidedown',
+                                     leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
+                    <i class="pi pi-external-link mr-2"></i>
+                    <span class="font-medium">{{ database?.indexes?.length }} INDEXES</span>
+                    <i class="pi pi-chevron-down ml-auto"></i>
+                  </a>
+                  <ul class="list-none py-0 pl-3 pr-0 m-0 hidden overflow-y-hidden transition-all
+                               transition-duration-400 transition-ease-in-out">
+                    <li v-for="index in database?.indexes">
+                      <router-link
+                          :to="indexLink(database.id, index)"
+                          v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
+                                          hover:surface-100 transition-duration-150 transition-colors p-ripple">
+                        <span class="font-medium">{{ index }}</span>
+                      </router-link>
                     </li>
                   </ul>
                 </li>
@@ -104,6 +110,7 @@
 </template>
 
 <script setup>
+  import { tableLink, logLink, indexLink } from "./links.js"
 
   const { dbApi } = defineProps({
     dbApi: {

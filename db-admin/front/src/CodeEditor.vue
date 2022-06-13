@@ -49,6 +49,11 @@
 
   const code = ref(props.initialCode !== undefined ? props.initialCode : stringify(props.initialData, null, "  "))
 
+  watch(() => props.initialCode, () => {
+    if(props.initialCode == code.value) return
+    code.value = props.initialCode !== undefined ? props.initialCode : stringify(props.initialData, null, "  ")
+  })
+
   function highlight(code) {
     return Prism.highlight(code, Prism.languages.js, "js")
   }

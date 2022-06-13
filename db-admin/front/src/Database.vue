@@ -16,7 +16,7 @@
           <form v-if="tableRename == slotProps.data.id" @submit="ev => finishTableRename(ev, slotProps.data.id)">
             <InputText v-model="tableNewName" />
           </form>
-          <router-link v-else :to="tableLink(slotProps.data.id)">
+          <router-link v-else :to="tableLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -55,7 +55,7 @@
           <form v-if="logRename == slotProps.data.id" @submit="ev => finishLogRename(ev, slotProps.data.id)">
             <InputText v-model="logNewName" />
           </form>
-          <router-link v-else :to="logLink(slotProps.data.id)">
+          <router-link v-else :to="logLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -94,7 +94,7 @@
           <form v-if="indexRename == slotProps.data.id" @submit="ev => finishIndexRename(ev, slotProps.data.id)">
             <InputText v-model="indexNewName" />
           </form>
-          <router-link v-else :to="indexLink(slotProps.data.id)">
+          <router-link v-else :to="indexLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
         </template>
@@ -125,6 +125,8 @@
 
   import ConfirmPopup from 'primevue/confirmpopup'
   import Toast from 'primevue/toast'
+
+  import { tableLink, logLink, indexLink } from "./links.js"
 
   const { dbApi, dbName } = defineProps({
     dbApi: {
@@ -305,45 +307,6 @@
         toast.add({ severity: 'error', summary: `Index ${indexName} not renamed`, detail: error.message, life: 3000 })
       }
     })())
-  }
-
-  function tableLink(table) {
-    return { name: 'db:data', params: {
-        position: " ",
-        read: `db.tableRange($.db,$.table,$.range)`,
-        write: `db.put($.db,$.table,$.object)`,
-        remove: `db.delete($.db,$.table,$.object.id)`,
-        params: [
-          'db', JSON.stringify(dbName),
-          'table', JSON.stringify(table)
-        ]
-    } }
-  }
-
-  function logLink(table) {
-    return { name: 'db:data', params: {
-        position: " ",
-        read: `db.logRange($.db,$.table,$.range)`,
-        write: false,
-        remove: false,
-        params: [
-          'db', JSON.stringify(dbName),
-          'table', JSON.stringify(table)
-        ]
-      } }
-  }
-
-  function indexLink(table) {
-    return { name: 'db:data', params: {
-        position: " ",
-        read: `db.indexRange($.db,$.table,$.range)`,
-        write: false,
-        remove: false,
-        params: [
-          'db', JSON.stringify(dbName),
-          'table', JSON.stringify(table)
-        ]
-      } }
   }
 
   const [ tables, indexes, logs ] = await Promise.all([

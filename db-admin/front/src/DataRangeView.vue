@@ -9,7 +9,7 @@
            class="surface-0 shadow-1 w-full">
 <!--        {{ JSON.stringify(row) }}-->
         <object-editor :currentData="JSON.stringify(row)"
-                       :write="write" :remove="remove"
+                       :write="props.write" :remove="props.remove"
                        :dbApi="dbApi" />
       </div>
     </div>
@@ -27,7 +27,7 @@
 
   import { dbViewSugar } from "./dbSugar.js"
 
-  const { dbApi, read, write, remove } = defineProps({
+  const props = defineProps({
     dbApi: {
       type: String,
       default: 'serverDatabase'
@@ -46,6 +46,7 @@
     }
   })
 
+  const { dbApi, read } = props
 
   const [ dataBuckets ] = await Promise.all([
     rangeBuckets((range, p) => [dbApi, ...JSON.parse(JSON.stringify(read({ range }, dbViewSugar)))])
