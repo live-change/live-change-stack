@@ -479,6 +479,7 @@
         let np = name.split('.')
         let node = this.formRoot
         for(let p of np) {
+          if(!p) continue
           if(node.properties) node = node.properties[p]
             else if(node.elements) node = node.elements[p]
           if(!node) throw new Error(`form field ${name} not found`)//return null
@@ -489,6 +490,7 @@
         let np = name.split('.')
         let node = this.formRoot
         for(let p of np) {
+          if(!p) continue
           if(node.properties) node = node.properties[p]
           else if(node.elements) node = node.elements[p]
           if(!node) return node
