@@ -530,6 +530,17 @@
         //console.log("Form after reset", JSON.stringify(this.formRoot.getValue(), null, '  '))
       },
 
+      getValidationContext(srcContext) {
+        const context = {
+          ...(srcContext || { parameters: this.parameters }),
+          ...this.provided,
+          source: this.definition,
+          props: this.formRoot.getValue(),
+          form: this
+        }
+        return context
+      },
+
       addValidator(name, validator) {
         this.getNode(name).validators.push(validator)
       },
@@ -539,18 +550,11 @@
         if(id == -1) throw new Error("validator not found")
         validators.splice(id)
       },
-      validateField(name) {
-        return this.getNode(name).validate(this.formRoot.properties, name, this.definition)
+      validateField(name, context) {
+        return this.getNode(name).validate(this.getValidationContext(context))
       },
       validate(context) {
-        context = {
-          ...(context || { parameters: this.parameters }),
-          ...this.provided,
-          source: this.definition,
-          props: this.formRoot.getValue(),
-          form: this
-        }
-        return this.formRoot.validate(context)
+        return this.formRoot.validate(this.getValidationContext(context))
       },
       clearFieldValidation(name) {
         this.getNode(name).clearValidation()
