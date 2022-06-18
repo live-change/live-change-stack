@@ -32,11 +32,11 @@ function fileExists(fn) {
 function delay(ms) {
   return new Promise((resolve, reject) => setTimeout(resolve, ms))
 }
-async function getImageMetadata(picture, version) {
+async function getImageMetadata(image, version) {
   for(let t = 0; t < 5; t++) {
-    const metadata = await Image.get(picture)
+    const metadata = await Image.get(image)
     console.log("MD", metadata)
-    if(metadata.original && metadata[version]) return metadata
+    if(metadata) return metadata
     await delay(200 * Math.pow(2, t))
   }
   return null
@@ -47,32 +47,32 @@ function sanitizeImageId(id) {
 }
 
 async function handleImageGet(req, res, params) {
-  const { picture, version } = params
-  const metadata = await getImageMetadata(picture, version)
-  console.log("PIC METADATA", picture, version, "=>", metadata)
+  const { image } = params
+  const metadata = await getImageMetadata(image)
+  console.log("PIC METADATA", image, "=>", metadata)
   if(!metadata) {
     res.status(404)
-    res.send("Picture not found")
+    res.send("Image " + image + " not found")
     return
   }
-  const imagePrefix = imagesPath + sanitizeImageId(picture) + '/' + version.replace(/[^a-zA-Z0-9-]/g,"_")
-  const sourceFilePath = path.resolve(imagePrefix + '.' + metadata.original.extension)
-  console.log("SOURCE PIC PATH", sourceFilePath)
+  const imagePrefix = imagesPath + sanitizeImageId(image) + '/'
+  const sourceFilePath = path.resolve(imagePrefix + 'original.' + metadata.extension)
+  console.log("SOURCE IMAGE PATH", sourceFilePath)
   if(!(await fileExists(sourceFilePath))) {
     res.status(404)
-    console.error("PICTURE FILE NOT FOUND", sourceFilePath)
-    res.send("Picture file not found")
+    console.error("IMAGE FILE NOT FOUND", sourceFilePath)
+    res.send("Image file not found")
     return
   }
 
   const kernel = "lanczos3"
 
   switch(params.type) {
-    case "auto": {
-      if(params.format && !isFormatsIdentical(params.format, metadata.original.extension)) {
-        console.log("CONVERTING PICTURE!", metadata.original.extension, params.format)
+    case "original": {
+      if(params.format && !isFormatsIdentical(params.format, metadata.extension)) {
+        console.log("CONVERTING IMAGE!", metadata.extension, params.format)
         const normalized = normalizeFormat(params.format)
-        const convertedFilePath = path.resolve(imagePrefix + '.' + normalized)
+        const convertedFilePath = path.resolve(imagePrefix + 'converted.' + normalized)
         if(!(await fileExists(convertedFilePath))) {
           await sharp(sourceFilePath).toFile(convertedFilePath)
         }
@@ -87,8 +87,8 @@ async function handleImageGet(req, res, params) {
         return
       }
       //if(width > metadata.original.width) return res.sendFile(sourceFilePath)
-      const normalized = normalizeFormat(params.format || metadata.original.extension)
-      const convertedFilePath = path.resolve(imagePrefix + `-width-${width}.${normalized}`)
+      const normalized = normalizeFormat(params.format || metadata.extension)
+      const convertedFilePath = path.resolve(imagePrefix + `width-${width}.${normalized}`)
       if(!(await fileExists(convertedFilePath))) {
         await sharp(sourceFilePath)
             .resize({
@@ -107,8 +107,8 @@ async function handleImageGet(req, res, params) {
         return
       }
       //if(height > metadata.original.height) return res.sendFile(sourceFilePath)
-      const normalized = normalizeFormat(params.format || metadata.original.extension)
-      const convertedFilePath = path.resolve(imagePrefix + `-height-${height}.${normalized}`)
+      const normalized = normalizeFormat(params.format || metadata.extension)
+      const convertedFilePath = path.resolve(imagePrefix + `height-${height}.${normalized}`)
       if(!(await fileExists(convertedFilePath))) {
         await sharp(sourceFilePath)
             .resize({
@@ -129,8 +129,8 @@ async function handleImageGet(req, res, params) {
       }
       //if(height > metadata.original.height) return res.sendFile(sourceFilePath)
       //if(width > metadata.original.width) return res.sendFile(sourceFilePath)
-      const normalized = normalizeFormat(params.format || metadata.original.extension)
-      const convertedFilePath = path.resolve(imagePrefix + `-rect-${width}-${height}.${normalized}`)
+      const normalized = normalizeFormat(params.format || metadata.extension)
+      const convertedFilePath = path.resolve(imagePrefix + `rect-${width}-${height}.${normalized}`)
       if(!(await fileExists(convertedFilePath))) {
         await sharp(sourceFilePath)
             .resize({
@@ -153,30 +153,34 @@ definition.endpoint({
   name: 'image',
   create() {
     const expressApp = express()
-    expressApp.get('/:image/:version/width-:width.:format',
+    expressApp.get('/:image/width-:width.:format',
         (req, res) => handleImageGet(req, res, { ...req.params, type: "width" })
     )
-    expressApp.get('/:image/:version/width-:width',
+    expressApp.get('/:image/width-:width',
         (req, res) => handleImageGet(req, res, { ...req.params, type: "width" })
     )
-    expressApp.get('/:image/:version/height-:height.:format',
+    expressApp.get('/:image/height-:height.:format',
         (req, res) => handleImageGet(req, res, { ...req.params, type: "height" })
     )
-    expressApp.get('/:image/:version/height-:height',
+    expressApp.get('/:image/height-:height',
         (req, res) => handleImageGet(req, res, { ...req.params, type: "height" })
     )
-    expressApp.get('/:image/:version/rect-:width-:height.:format',
+    expressApp.get('/:image/rect-:width-:height.:format',
         (req, res) => handleImageGet(req, res, { ...req.params, type: "rect" })
     )
-    expressApp.get('/:image/:version/rect-:width-:height',
+    expressApp.get('/:image/rect-:width-:height',
         (req, res) => handleImageGet(req, res, { ...req.params, type: "rect" })
     )
-    expressApp.get('/:image/:version.:format',
-        (req, res) => handleImageGet(req, res, { ...req.params, type: "auto" })
+    expressApp.get('/:image/.:format',
+        (req, res) => handleImageGet(req, res, { ...req.params, type: "original" })
     )
-    expressApp.get('/:image/:version',
-        (req, res) => handleImageGet(req, res, { ...req.params, type: "auto" })
+    expressApp.get('/:image',
+        (req, res) => handleImageGet(req, res, { ...req.params, type: "original" })
     )
+    expressApp.use('*', async (req, res) => {
+      res.writeHead(200, { "Content-Type": "text/plain" })
+      res.end("IMAGE!")
+    })
     return expressApp
   }
 })

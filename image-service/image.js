@@ -5,6 +5,19 @@ const config = definition.config
 const imagesPath = config.imagesPath || `./storage/images/`
 const uploadsPath = config.uploadsPath || `./storage/uploads/`
 
+const cropInfo = {
+  type: Object,
+  properties: {
+    originalImage: {
+      type: String
+    },
+    x: { type: Number },
+    y: { type: Number },
+    zoom: { type: Number, defaultValue: 1 },
+    orientation: { type: Number }
+  }
+}
+
 const Image = definition.model({
   name: "Image",
   itemOfAny: {
@@ -16,144 +29,34 @@ const Image = definition.model({
     fileName: {
       type: String
     },
-    original: {
-      type: Object,
-      properties: {
-        width: { type: Number },
-        height: { type: Number },
-        extension: { type: String }
-      }
+    width: {
+      type: Number,
+      validation: ['nonEmpty']
     },
-    crop: {
-      type: Object,
-      properties: {
-        x: { type: Number },
-        y: { type: Number },
-        width: { type: Number },
-        height: { type: Number },
-        zoom: { type: Number, defaultValue: 1 },
-        orientation: {type: Number}
-      }
+    height: {
+      type: Number,
+      validation: ['nonEmpty']
+    },
+    extension: {
+      type: String,
+      validation: ['nonEmpty']
     },
     purpose: {
       type: String,
       validation: ['nonEmpty']
-    }
+    },
+    crop: cropInfo
   }
 })
 
 const { move, copy, mkdir, rmdir } = require('./fsUtils')
+const fs = require('fs')
 const sharp = require('sharp')
 const download = require('download')
 
-definition.action({
-  name: "createEmptyImage",
-  properties: {
-    image: {
-      type: Image
-    },
-    name: {
-      type: String,
-      validation: ['nonEmpty']
-    },
-    purpose: {
-      type: String,
-      validation: ['nonEmpty']
-    },
-    ownerType: {
-      type: String,
-      validation: ['nonEmpty']
-    },
-    owner: {
-      type: String,
-      validation: ['nonEmpty']
-    }
-  },
-  /// TODO: accessControl
-  async execute({ image, name, purpose, owner, ownerType }, { client, service }, emit) {
-    if(!image) {
-      image = app.generateUid()
-    } else {
-      // TODO: check id source session
-      const existing = await Image.get(image)
-      if (existing) throw 'already_exists'
-    }
-
-    const dir = `${imagesPath}${image}`
-
-    emit({
-      type: "ownerOwnedImageCreated",
-      image,
-      identifiers: {
-        owner, ownerType
-      },
-      data: {
-        name, purpose,
-        fileName: null,
-        original: null,
-        crop: null
-      }
-    })
-
-    await mkdir(dir)
-    await mkdir(`${dir}/originalCache`)
-    await mkdir(`${dir}/cropCache`)
-
-    return image
-  }
-})
+fs.mkdirSync(imagesPath, { recursive: true })
 
 const Upload = definition.foreignModel('upload', 'Upload')
-
-definition.action({
-  name: "uploadImage",
-  properties: {
-    image: {
-      type: Image
-    },
-    original: {
-      type: Object,
-      properties: {
-        width: { type: Number },
-        height: { type: Number },
-        upload: { type: Upload }
-      }
-    }
-  },
-  /// TODO: accessControl!
-  waitForEvents: true,
-  async execute({ image, original }, { client, service }, emit) {
-    const uploadRow = await Upload.get(original.upload)
-    if(!uploadRow) throw new Error("upload_not_found")
-    if(uploadRow.state!='done') throw new Error("upload_not_done")
-
-    let extension = uploadRow.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
-    if(extension == 'jpg') extension = "jpeg"
-    const dir = `${imagesPath}${image}`
-
-    emit({
-      type: "ownerOwnedImageUpdated",
-      image,
-      data: {
-        fileName: uploadRow.fileName,
-        original: {
-          width: original.width,
-          height: original.height,
-          extension
-        },
-        crop: null
-      }
-    })
-
-    await move(`${uploadsPath}${uploadRow.id}`, `${dir}/original.${extension}`)
-    await app.trigger({
-      type: 'uploadUsed',
-      upload: uploadRow.id
-    })
-
-    return image
-  }
-})
 
 definition.action({
   name: "createImage",
@@ -165,13 +68,17 @@ definition.action({
       type: String,
       validation: ['nonEmpty']
     },
-    original: {
-      type: Object,
-      properties: {
-        width: { type: Number },
-        height: { type: Number },
-        upload: { type: Upload }
-      }
+    width: {
+      type: Number,
+      validation: ['nonEmpty']
+    },
+    height: {
+      type: Number,
+      validation: ['nonEmpty']
+    },
+    upload: {
+      type: Upload,
+      validation: ['nonEmpty']
     },
     purpose: {
       type: String,
@@ -184,11 +91,12 @@ definition.action({
     owner: {
       type: String,
       validation: ['nonEmpty']
-    }
+    },
+    crop: cropInfo
   },
   /// TODO: accessControl!
   waitForEvents: true,
-  async execute({ image, name, original, purpose, owner, ownerType }, { client, service }, emit) {
+  async execute({ image, name, width, height, upload, purpose, owner, ownerType, crop }, { client, service }, emit) {
     if(!image) {
       image = app.generateUid()
     } else {
@@ -196,7 +104,7 @@ definition.action({
       const existing = await Image.get(image)
       if (existing) throw 'already_exists'
     }
-    const uploadRow = await Upload.get(original.upload)
+    const uploadRow = await Upload.get(upload)
     if(!uploadRow) throw new Error("upload_not_found")
     if(uploadRow.state!='done') throw new Error("upload_not_done")
 
@@ -211,22 +119,13 @@ definition.action({
         owner, ownerType
       },
       data: {
-        name,
-        purpose,
+        name, purpose,
         fileName: uploadRow.fileName,
-        original: {
-          width: original.width,
-          height: original.height,
-          extension
-        },
-        crop: null,
-        owner: client.user
+        width, height, extension, crop
       }
     })
 
     await mkdir(dir)
-    await mkdir(`${dir}/originalCache`)
-    await mkdir(`${dir}/cropCache`)
     await move(`${uploadsPath}${uploadRow.id}`, `${dir}/original.${extension}`)
 
     await app.trigger({
@@ -235,100 +134,6 @@ definition.action({
     })
 
     return image
-  }
-})
-
-definition.action({
-  name: "cropImage",
-  properties: {
-    image: {
-      type: Image
-    },
-    crop: {
-      type: Object,
-      properties: {
-        x: {type: Number},
-        y: {type: Number},
-        width: {type: Number},
-        height: {type: Number},
-        zoom: {type: Number, defaultValue: 1},
-        orientation: {type: Number}
-      }
-    },
-    upload: {type: Upload}
-  },
-  /// TODO: accessControl!
-  waitForEvents: true,
-  async execute({ image, crop, upload }, {client, service}, emit) {
-    const imageRow = await Image.get(image)
-    if(!imageRow) throw new Error("not_found")
-
-    const uploadRow = await Upload.get(upload)
-
-    console.log("UPLOAD CROP", uploadRow)
-
-    if(!uploadRow) throw new Error("upload_not_found")
-    if(uploadRow.state != 'done') throw new Error("upload_not_done")
-
-    console.log("CURRENT IMAGE ROW", image, imageRow)
-    if(!imageRow.crop) { // first crop
-      const dir = `${imagesPath}${image}`
-      let extension = uploadRow.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
-      if(extension == 'jpg') extension = "jpeg"
-
-      await move(`${uploadsPath}${uploadRow.id}`, `${dir}/crop.${extension}`)
-      await app.dao.request(['database', 'delete'], app.databaseName, 'uploads', uploadRow.id)
-
-      emit({
-        type: "ownerOwnedImageUpdated",
-        image,
-        data: {
-          crop
-        }
-      })
-
-      return image
-    } else { // next crop - need to copy image
-      const newImage = app.generateUid()
-
-      const dir = `${imagesPath}${image}`
-      const newDir = `${imagesPath}${newImage}`
-
-      await mkdir(newDir)
-      await mkdir(`${newDir}/originalCache`)
-      await mkdir(`${newDir}/cropCache`)
-      await move(`${dir}/original.${imageRow.original.extension}`,
-          `${newDir}/original.${imageRow.original.extension}`)
-
-      let extension = uploadRow.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
-      if(extension == 'jpg') extension = "jpeg"
-
-      await move(`../../storage/uploads/${uploadRow.id}`, `${newDir}/crop.${extension}`)
-
-      await app.trigger({
-        type: 'uploadUsed',
-        upload: uploadRow.id
-      })
-
-      const { owner, ownerType } = imageRow
-
-      emit({
-        type: "ownerOwnedImageCreated",
-        image,
-        identifiers: {
-          owner, ownerType
-        },
-        data: {
-          name: imageRow.name,
-          purpose: imageRow.purpose,
-          fileName: uploadRow.fileName,
-          original: imageRow.original,
-          crop
-        }
-      })
-
-      return newImage
-    }
   }
 })
 
@@ -361,7 +166,7 @@ definition.trigger({
     }
   },
   waitForEvents: true,
-  async execute({ name, purpose, url, cropped, owner, ownerType }, { service, client }, emit) {
+  async execute({ name, purpose, url, owner, ownerType }, { service, client }, emit) {
     const image = app.generateUid()
 
     const downloadPath = `${uploadsPath}download_${image}`
@@ -369,53 +174,44 @@ definition.trigger({
 
     const metadata = await sharp(downloadPath).metadata()
 
-    let data = {
-      name,
-      purpose,
-      fileName: url.split('/').pop(),
-      original: {
-        width: metadata.width,
-        height: metadata.height,
-        extension: metadata.format
-      },
-      crop: null
-    }
-
-    if(cropped) {
-      data.crop = {
-        x: 0,
-        y: 0,
-        width: metadata.width,
-        height: metadata.height,
-        zoom: 1,
-        orientation: 0
-      }
-    }
-
-    emit({
-      type: "ImageCreated",
-      image,
-      data
-    })
-
     emit({
       type: "ownerOwnedImageCreated",
       image,
       identifiers: {
         owner, ownerType
       },
-      data
+      data: {
+        name, purpose,
+        fileName: url.split('/').pop(),
+        width: metadata.width,
+        height: metadata.height,
+        extension: metadata.format,
+        crop: null
+      }
     })
 
     const dir = `${imagesPath}/${image}`
 
     await mkdir(dir)
-    await mkdir(`${dir}/originalCache`)
-    await mkdir(`${dir}/cropCache`)
     await move(downloadPath, `${dir}/original.${metadata.format}`)
-    if(cropped) await copy(`${dir}/original.${metadata.format}`, `${dir}/crop.${metadata.format}`)
 
     return image
+  }
+})
+
+definition.view({
+  name: 'image',
+  properties: {
+    image: {
+      type: Image,
+      validation: ['nonEmpty']
+    }
+  },
+  returns: {
+    type: Image
+  },
+  daoPath({ image }, { client, context }) {
+    return Image.path( image )
   }
 })
 

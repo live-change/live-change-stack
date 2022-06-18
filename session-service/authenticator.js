@@ -20,7 +20,7 @@ definition.authenticator({
       if(config.createSessionOnUpdate) {
         session = createHmac('sha256', config.sessionHmacSecret || 'secret')
             .update(credentials.sessionKey)
-            .digest('base64').slice(0, 32)
+            .digest('base64').slice(0, 32).replace(/\//g, '_')
       } else {
         const createResult = await app.triggerService(definition.name, {
           type: "createSessionKeyIfNotExists",

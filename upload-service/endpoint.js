@@ -11,6 +11,8 @@ const fs = require('fs')
 
 const express = require("express")
 
+fs.mkdirSync(uploadsPath, { recursive: true })
+
 const { Upload } = require("./model.js")
 
 async function setStreamInfo(info) {
