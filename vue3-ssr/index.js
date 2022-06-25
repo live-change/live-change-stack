@@ -1,5 +1,5 @@
 import { getCurrentInstance, onUnmounted } from 'vue'
-import { live as d3live, RangeBuckets } from '@live-change/dao-vue3'
+import { live as d3live, fetch as d3fetch, RangeBuckets } from '@live-change/dao-vue3'
 
 function api(context) {
   context = context || getCurrentInstance().appContext
@@ -20,6 +20,10 @@ function actions(context) {
 
 function live(path) {
   return d3live(api(), path)
+}
+
+function fetch(path) {
+  return d3fetch(api(), path)
 }
 
 async function rangeBuckets(pathFunction, options, app = getCurrentInstance()) {
@@ -64,4 +68,4 @@ function uid(context) {
   return api(context).uid
 }
 
-export { path, api, view, actions, live, client, uid, rangeBuckets, reverseRange }
+export { path, api, view, actions, live, fetch, client, uid, rangeBuckets, reverseRange }

@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/live-change/live-change-framework-vue3",
   "dependencies": {
-    "@live-change/dao": "0.4.10",
+    "@live-change/dao": "0.4.12",
     "@live-change/uid": "0.6.5",
     "debug": "^4.3.4"
   }
