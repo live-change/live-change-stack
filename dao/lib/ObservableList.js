@@ -65,7 +65,7 @@ class ObservableList extends Observable {
       if(i == l) this.list.push(element)
     } else {
       let i
-      for(i = this.list.length-1; i >= 0; i--) {
+      for(i = this.list.length - 1; i >= 0; i--) {
         if(this.list[i][field] == value) {
           oldElement = this.list[i]
           this.list.splice(i, 1, element)

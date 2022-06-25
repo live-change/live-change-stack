@@ -1,6 +1,6 @@
 import reactiveMixin from './lib/reactiveMixin.js'
 import reactivePrefetchMixin from './lib/reactivePrefetchMixin.js'
-import live from './lib/live.js'
+import { live, fetch } from './lib/live.js'
 import ReactiveObservableList from './lib/ReactiveObservableList.js'
 import RangeBuckets from './lib/RangeBuckets.js'
 
@@ -14,6 +14,6 @@ const ReactiveDaoVue = {
 }
 
 //// TODO: rename reactive to live
-export { ReactiveDaoVue, reactiveMixin, reactivePrefetchMixin, ReactiveObservableList, RangeBuckets, live }
+export { ReactiveDaoVue, reactiveMixin, reactivePrefetchMixin, ReactiveObservableList, RangeBuckets, live, fetch }
 
 export default ReactiveDaoVue
