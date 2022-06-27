@@ -69,7 +69,7 @@ definition.event({
 })
 
 definition.trigger({
-  name: 'contactOrUserOwnedInvitationMoved',
+  name: 'contactOrUserOwnedAccessInvitationMoved',
   properties: {
     ...contactProperties,
     from: {
@@ -98,6 +98,14 @@ definition.trigger({
   async execute({ from, to, objectType, object }, { service }, emit) {
     const invitation = App.encodeIdentifier([from.contactOrUserType, from.contactOrUser, objectType, object])
     const invitationData = await AccessInvitation.get(invitation)
+    console.error("MOVED!!!", {
+      ...invitationData,
+      type: 'notify',
+      sessionOrUserType: 'user_User',
+      sessionOrUser: to.contactOrUser,
+      notificationType: 'accessControl_Invitation',
+      id: undefined
+    })
     if(to.contactOrUserType == 'user_User') {
       await service.trigger({
         ...invitationData,

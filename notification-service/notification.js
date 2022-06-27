@@ -165,7 +165,6 @@ definition.view({
     }
   },
   autoSlice: true,
-  access: (params, { client }) => !!client.user, // only for logged in
   async daoPath(range, {client, service}, method) {
     const prefix = client.user
         ? ["user_User", client.user]
