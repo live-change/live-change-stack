@@ -6,7 +6,7 @@ const Image = definition.foreignModel('image', 'Image')
 const defaultFields = {
   name: {
     type: String,
-    validation: ['nonEmpty']
+    //validation: ['nonEmpty']
   },
   image: {
     type: Image

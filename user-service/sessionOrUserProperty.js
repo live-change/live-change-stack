@@ -137,11 +137,11 @@ definition.processor(function(service, app) {
             const data = App.utils.mergeDeep({}, defaults, newObject)
             await App.validation.validate(data, validators, { source: action, action, service, app, client })
             const identifiers = client.user ? {
-              ownerType: 'user_User',
-              owner: client.user,
+              sessionOrUserType: 'user_User',
+              sessionOrUser: client.user,
             } : {
-              ownerType: 'session_Session',
-              owner: client.session,
+              sessionOrUserType: 'session_Session',
+              sessionOrUser: client.session,
             }
             emit({
               type: eventName,
@@ -180,11 +180,11 @@ definition.processor(function(service, app) {
             const merged = App.utils.mergeDeep({}, entity, updateObject)
             await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             const identifiers = client.user ? {
-              ownerType: 'user_User',
-              owner: client.user,
+              sessionOrUserType: 'user_User',
+              sessionOrUser: client.user,
             } : {
-              ownerType: 'session_Session',
-              owner: client.session,
+              sessionOrUserType: 'session_Session',
+              sessionOrUser: client.session,
             }
             emit({
               type: eventName,
@@ -211,11 +211,11 @@ definition.processor(function(service, app) {
             const entity = await modelRuntime().get(id)
             if (!entity) throw 'not_found'
             const identifiers = client.user ? {
-              ownerType: 'user_User',
-              owner: client.user,
+              sessionOrUserType: 'user_User',
+              sessionOrUser: client.user,
             } : {
-              ownerType: 'session_Session',
-              owner: client.session,
+              sessionOrUserType: 'session_Session',
+              sessionOrUser: client.session,
             }
             emit({
               type: eventName,
