@@ -238,9 +238,9 @@ class Database {
       const params = config.parameters
       index = new Index(this, name, code, params, config)
       try {
-        debug("STARTING INDEX", name)
+        debug("STARTING INDEX", name, "IN DATABASE", this.name)
         await index.startIndex()
-        debug("STARTED INDEX", name)
+        debug("STARTED INDEX", name, "IN DATABASE", this.name)
       } catch(error) {
         console.error("INDEX", name, "ERROR", error, "CODE:\n", code)
         console.error("DELETING INDEX", name)
