@@ -1,6 +1,6 @@
 {
   "name": "@live-change/online-service",
-  "version": "0.2.38",
+  "version": "0.2.39",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,5 +10,5 @@
   },
   "author": "Michał Łaszczewski <michal@emikse.com>",
   "license": "BSD-3-Clause",
-  "gitHead": "be1924699748fe7abcddabf207f9290e734bac6b"
+  "gitHead": "d30c93533192fb0d3b620929c61c5d04568beae0"
 }

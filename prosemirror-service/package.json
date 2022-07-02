@@ -1,6 +1,6 @@
 {
   "name": "@live-change/prosemirror-service",
-  "version": "0.2.38",
+  "version": "0.2.39",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -28,5 +28,5 @@
     "progress-stream": "^2.0.0",
     "prosemirror-model": "^1.18.1"
   },
-  "gitHead": "48b13d32478da797b31f73ed1d6f4271cd68b574"
+  "gitHead": "d30c93533192fb0d3b620929c61c5d04568beae0"
 }
