@@ -34,6 +34,10 @@ import DaoCache from "./lib/DaoCache.js"
 rd.DaoCache = DaoCache
 export { DaoCache }
 
+import InboxReader from "./lib/InboxReader.js"
+rd.InboxReader = InboxReader
+export { InboxReader }
+
 import ReactiveConnection from "./lib/ReactiveConnection.js"
 rd.ReactiveConnection = ReactiveConnection
 export { ReactiveConnection }

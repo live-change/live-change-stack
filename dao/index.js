@@ -55,6 +55,9 @@ Dao.DaoProxy = DaoProxy
 const DaoCache = require("./lib/DaoCache.js")
 Dao.DaoCache = DaoCache
 
+const InboxReader = require("./lib/InboxReader.js")
+Dao.InboxReader = InboxReader
+
 const Path = require("./lib/Path.js")
 Dao.Path = Path
 
