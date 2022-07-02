@@ -1,6 +1,6 @@
 {
   "name": "@live-change/upload-service",
-  "version": "0.2.22",
+  "version": "0.2.38",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -23,8 +23,8 @@
   "dependencies": {
     "@live-change/framework": "0.6.5",
     "@live-change/relations-plugin": "0.6.5",
-    "progress-stream": "^2.0.0",
-    "pluralize": "8.0.0"
+    "pluralize": "8.0.0",
+    "progress-stream": "^2.0.0"
   },
   "gitHead": "48b13d32478da797b31f73ed1d6f4271cd68b574"
 }
