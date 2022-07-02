@@ -10,12 +10,14 @@
     "security-service",
     "access-control-service",
     "image-service",
+    "upload-service",
     "user-identification-service",
     "identicon-service",
     "peer-connection-service",
     "online-service",
     "timer-service",
-    "notification-service"
+    "notification-service",
+    "prosemirror-service"
   ],
   "publishConfig": {
     "access": "public"
