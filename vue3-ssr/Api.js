@@ -154,6 +154,8 @@ class Api extends DaoProxy {
     api.globals.$actions = this.actions
     api.globals.$fetch = this.fetch
 
+    api.windowId = this.settings.windowId || api.uid()
+
     for(const glob of this.globalInstances) {
       this.installInstanceProperties(glob)
     }

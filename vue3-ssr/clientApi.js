@@ -41,6 +41,7 @@ function clientApi(settings = {}) {
   api.setup({
     ssr: true,
     cache: true,
+    ...settings,
     createReactiveObject(definition) {
       //console.log("CREATE REACTIVE OBJECT", definition)
       return createReactiveObject(definition, reactiveMixin(api), reactivePrefetchMixin(api) )

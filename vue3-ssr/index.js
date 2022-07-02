@@ -1,33 +1,34 @@
 import { getCurrentInstance, onUnmounted } from 'vue'
 import { live as d3live, fetch as d3fetch, RangeBuckets } from '@live-change/dao-vue3'
+import { InboxReader } from '@live-change/dao'
 
-function api(context) {
+function useApi(context) {
   context = context || getCurrentInstance().appContext
   return context.config.globalProperties.$lc
 }
 
 function path(context) {
-  return api(context).fetch
+  return useApi(context).fetch
 }
 
 function view(context) {
-  return api(context).view
+  return useApi(context).view
 }
 
 function actions(context) {
-  return api(context).actions
+  return useApi(context).actions
 }
 
 function live(path) {
-  return d3live(api(), path)
+  return d3live(useApi(), path)
 }
 
 function fetch(path) {
-  return d3fetch(api(), path)
+  return d3fetch(useApi(), path)
 }
 
 async function rangeBuckets(pathFunction, options, app = getCurrentInstance()) {
-  const lc = api()
+  const lc = useApi()
   const extendedPathFunction = (range) => pathFunction(range, lc.fetch)
   const buckets = new RangeBuckets(lc, extendedPathFunction, options)
   if(app) {
@@ -60,12 +61,33 @@ function reverseRange(range) {
   }
 }
 
+function inboxReader(pathFunction, callback, start = '', options = {}) {
+  const {
+    bucketSize = 32,
+    context = getCurrentInstance().appContext
+  } = options
+  const api = useApi(context)
+  return new InboxReader((position, bucketSize) => {
+    const path = pathFunction(position, bucketSize)
+    console.log("OBSERVE PATH", path)
+    return api.observable(path)
+  }, callback, start, bucketSize)
+}
+
 function client(context) {
-  return api(context).client
+  return useApi(context).client
 }
 
 function uid(context) {
-  return api(context).uid
+  return useApi(context).uid
 }
 
-export { path, api, view, actions, live, fetch, client, uid, rangeBuckets, reverseRange }
+const api = useApi
+
+export {
+  path, live, fetch,
+  useApi, api,
+  view, actions, client, uid,
+  rangeBuckets, reverseRange,
+  inboxReader
+}

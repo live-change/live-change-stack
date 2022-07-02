@@ -7,6 +7,7 @@ async function serverApi(dao, settings = {}) {
   const api = new Api(dao)
   api.setup({
     ssr: true,
+    ...settings,
     createReactiveObject(definition) {
       return createReactiveObject(definition, reactiveMixin(api)/*, reactivePrefetchMixin(api)*/ )
     }
