@@ -14,7 +14,10 @@ RUN npm install -g subleveldown
 
 COPY package.json .
 RUN npm install -g @live-change/db-server@`echo "console.log(require('./package.json').version)" | node`
+RUN npm install -g @live-change/db-client@`echo "console.log(require('./package.json').version)" | node`
 RUN rm package.json
+
+RUN cd /usr/local/lib/node_modules/@live-change/db-server/node_modules/@live-change/db-admin/; npm run build
 
 EXPOSE 9417
 

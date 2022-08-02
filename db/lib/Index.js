@@ -19,6 +19,14 @@ class ObjectReader extends ChangeStream {
   }
   onChange(cb) {
     this.callbacks.push(cb)
+    return {
+      dispose() {
+        const callbackIndex = this.callbacks.indexOf(cb)
+        if(callbackIndex == -1) throw new Error('Observer double dispose')
+        this.callbacks.splice(callbackIndex, 1)
+        /// TODO: dispose or ignore reader somehow if no callbacks
+      }
+    }
   }
   async change(obj, oldObj, id, timestamp) {
     for(const callback of this.callbacks) await callback(obj, oldObj, id, timestamp)
@@ -40,6 +48,14 @@ class RangeReader extends ChangeStream {
   }
   async onChange(cb) {
     this.callbacks.push(cb)
+    return {
+      dispose() {
+        const callbackIndex = this.callbacks.indexOf(cb)
+        if(callbackIndex == -1) throw new Error('Observer double dispose')
+        this.callbacks.splice(callbackIndex, 1)
+        /// TODO: dispose or ignore reader somehow if no callbacks
+      }
+    }
   }
   async change(obj, oldObj, id, timestamp) {
     for(const callback of this.callbacks) await callback(obj, oldObj, id, timestamp)
@@ -47,7 +63,6 @@ class RangeReader extends ChangeStream {
   async get() {
     return await (await this.tableReader.table).rangeGet(this.range)
   }
-  dispose() {}
 }
 
 class TableReader extends ChangeStream {

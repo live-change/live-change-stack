@@ -87,6 +87,12 @@ class Reader extends ChangeStream {
     this.#observers.push(observer)
     ;(await this.#observable).observe(observer)
     await observer.readPromise()
+    observer.dispose = async function() {
+      const observerIndex = this.#observers.indexOf(observer)
+      if(observerIndex == -1) throw new Error('Observer double dispose')
+      this.#observers.splice(observerIndex, 1)
+      ;(await this.#observable).unobserve(observer)
+    }
     return observer
   }
   async unobserve(observer) {
