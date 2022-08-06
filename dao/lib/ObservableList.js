@@ -18,6 +18,7 @@ class ObservableList extends Observable {
   }
 
   set(list) {
+    this.handleError(null)
     if(list === this.list) return
     try {
       if (JSON.stringify(list) == JSON.stringify(this.list)) return
@@ -30,26 +31,32 @@ class ObservableList extends Observable {
   }
 
   push(value) {
+    this.handleError(null)
     this.list.push(value)
     this.fireObservers('push', value)
   }
   unshift(value) {
+    this.handleError(null)
     this.list.unshift(value)
     this.fireObservers('unshift', value)
   }
   pop() {
+    this.handleError(null)
     this.list.pop()
     this.fireObservers('pop')
   }
   shift() {
+    this.handleError(null)
     this.list.shift()
     this.fireObservers('shift')
   }
   splice(at, del, ...values) {
+    this.handleError(null)
     this.list.splice(at, del, ...values)
     this.fireObservers('splice', at, del, ...values)
   }
   putByField(field, value, element, reverse = false, oldElement) {
+    this.handleError(null)
     if(!reverse) {
       let i, l
       for(i = 0, l = this.list.length; i < l; i++) {
@@ -80,6 +87,7 @@ class ObservableList extends Observable {
     this.fireObservers('putByField', field, value, element, reverse, oldElement)
   }
   remove(exact) {
+    this.handleError(null)
     let json = JSON.stringify(exact)
     for(let i = 0, l = this.list.length; i < l; i++) {
       if(JSON.stringify(this.list[i]) == json) this.list.splice(i, 1)
@@ -87,6 +95,7 @@ class ObservableList extends Observable {
     this.fireObservers('remove', exact)
   }
   removeByField(field, value, oldElement) {
+    this.handleError(null)
     let json = JSON.stringify(value)
     for(let i = 0, l = this.list.length; i < l; i++) {
       if(JSON.stringify(this.list[i][field]) == json) {
@@ -99,8 +108,9 @@ class ObservableList extends Observable {
     this.fireObservers('removeByField', field, value, oldElement)
   }
   removeBy(fields) {
+    this.handleError(null)
     let jsonf = []
-    for(var k in fields) {
+    for(let k in fields) {
       jsonf.push([k, JSON.stringify(fields[k])])
     }
     for(let i = 0, l = this.list.length; i < l; i++) {
@@ -118,6 +128,7 @@ class ObservableList extends Observable {
   }
 
   update(exact, element) {
+    this.handleError(null)
     let json = JSON.stringify(exact)
     for(let i = 0, l = this.list.length; i < l; i++) {
       if(JSON.stringify(this.list[i]) == json) this.list.splice(i, 1, element)
@@ -125,6 +136,7 @@ class ObservableList extends Observable {
     this.fireObservers('update', exact, element)
   }
   updateByField(field, value, element) {
+    this.handleError(null)
     let json = JSON.stringify(value)
     for(let i = 0, l = this.list.length; i < l; i++) {
       if(JSON.stringify(this.list[i][field]) == json) this.list.splice(i, 1, element)
@@ -132,6 +144,7 @@ class ObservableList extends Observable {
     this.fireObservers('updateByField', field, value, element)
   }
   updateBy(fields, element) {
+    this.handleError(null)
     let jsonf = []
     for(const k in fields) {
       jsonf.push([k, JSON.stringify(fields[k])])

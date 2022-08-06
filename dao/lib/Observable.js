@@ -35,7 +35,7 @@ class Observable {
 
   handleError(error) {
     let handled = false
-    for (var observer of this.errorObservers) {
+    for (let observer of this.errorObservers) {
       handled = true
       observer(error)
     }
