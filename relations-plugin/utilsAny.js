@@ -117,8 +117,26 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
   }
 }
 
+function addAccessControlAnyParents(context) {
+  const { modelRuntime } = context
+  context.model.accessControlParents = async (id) => {
+    const data = await modelRuntime().get(id)
+    return context.otherPropertyNames.map(otherPropertyName => {
+      const objectType = data[otherPropertyName + 'Type']
+      const object = data[otherPropertyName]
+      return { objectType, object }
+    }).filter(parent => parent.object && parent.objectType)
+  }
+  context.model.accessControlParentsSource = context.otherPropertyNames.map(
+    otherPropertyName => ({
+      property: otherPropertyName
+    })
+  )
+}
+
 module.exports = {
   extractTypeAndIdParts, extractIdentifiersWithTypes, defineAnyProperties,
   defineAnyIndex, defineAnyIndexes,
-  processModelsAnyAnnotation, generateAnyId
+  processModelsAnyAnnotation, generateAnyId,
+  addAccessControlAnyParents
 }

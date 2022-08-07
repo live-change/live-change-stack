@@ -1,6 +1,6 @@
 const {
   defineProperties, defineIndex,
-  processModelsAnnotation, generateId
+  processModelsAnnotation, generateId, addAccessControlParents
 } = require('./utils.js')
 
 const { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } = require('./propertyEvents.js')
@@ -16,6 +16,7 @@ module.exports = function(service, app) {
     context.reverseRelationWord = 'Owned'
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
+    addAccessControlParents(context)
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
     if(config.readAccess) {

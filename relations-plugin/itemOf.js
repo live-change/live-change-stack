@@ -1,6 +1,6 @@
 const {
   defineProperties, defineIndex,
-  processModelsAnnotation
+  processModelsAnnotation, addAccessControlParents
 } = require('./utils.js')
 
 const {
@@ -18,6 +18,7 @@ module.exports = function(service, app) {
     context.reverseRelationWord = 'Owned'
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
+    addAccessControlParents(context)
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
     if(config.sortBy) {

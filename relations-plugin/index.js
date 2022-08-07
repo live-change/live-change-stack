@@ -1,3 +1,5 @@
+const entity = require('./entity.js')
+
 const propertyOf = require('./propertyOf.js')
 const itemOf = require('./itemOf.js')
 
@@ -11,6 +13,7 @@ const boundTo = require('./boundTo.js')
 const boundToAny = require('./boundToAny.js')
 
 const processors = [
+  entity,
   propertyOf, itemOf,
   propertyOfAny, itemOfAny,
   relatedTo, relatedToAny,

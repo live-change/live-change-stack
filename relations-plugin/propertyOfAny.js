@@ -1,6 +1,6 @@
 const {
   defineAnyProperties, defineAnyIndexes,
-  processModelsAnyAnnotation, generateAnyId
+  processModelsAnyAnnotation, generateAnyId, addAccessControlAnyParents
 } = require('./utilsAny.js')
 
 const {
@@ -19,6 +19,7 @@ module.exports = function(service, app) {
     context.partialReverseRelationWord = 'Owned'
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
+    addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames)
 
     if(config.readAccess) {
