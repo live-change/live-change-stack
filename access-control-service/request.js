@@ -43,6 +43,12 @@ definition.action({
   access: (params, { client, context, visibilityTest }) =>
       visibilityTest || access.clientCanInvite(client, params),
   async execute({ objectType, object, sessionOrUserType, sessionOrUser, roles }, { client, service }, emit) {
+    const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
+    if(!myRoles.includes('administrator')) {
+      for(const requestedRole of roles) {
+        if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+      }
+    }
     const request = App.encodeIdentifier([ sessionOrUserType, sessionOrUser, objectType, object ])
     const requestData = await AccessRequest.get(request)
     if(!requestData) throw 'not_found'

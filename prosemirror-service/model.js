@@ -8,6 +8,8 @@ const { Step } = require('prosemirror-transform')
 
 const Document = definition.model({
   name: 'Document',
+  itemOfAny: {
+  },
   properties: {
     type: {
       type: String

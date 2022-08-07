@@ -39,7 +39,7 @@ const PublicAccess = definition.model({
     to: 'object',
     readAccess: (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientHasAnyAccess(client, params),
-    writeAccess: (params, { client, context, visibilityTest }) =>
+    writeAccess: async (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientHasAdminAccess(client, params)
   },
   properties: {

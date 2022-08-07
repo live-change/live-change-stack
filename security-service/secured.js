@@ -1,5 +1,18 @@
 const definition = require('./definition.js')
-const { getClientKeysObject, getClientKeysStrings, multiKeyIndexQuery } = require('./utils.js')
+const { getClientKeysObject, getClientKeysStrings, multiKeyIndexQuery, fastMultiKeyIndexQuery } = require('./utils.js')
+const { Ban } = require('./ban.js')
+
+async function getBans(client, actions) {
+  const keys = []
+  for(const action of actions) {
+    keys.push(...getClientKeysStrings(client, action + ':'))
+  }
+  const bans = fastMultiKeyIndexQuery(keys, 'security_Ban_actionBans', Ban.tableName)
+}
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 definition.processor(function(service, app) {
 
@@ -7,28 +20,40 @@ definition.processor(function(service, app) {
     const action = service.actions[actionName]
     if(!action.secured) continue
     const config = action.secured
+    const actions = config.actions || actionName
 
-    console.log("SECURED", service.name, action.name)
+    console.log("SECURED ACTION", service.name, action.name)
 
     const oldExec = action.execute
     action.execute = async (...args) => {
       const [ properties, context, emit ] = args
       const { client } = context
-      oldExec.apply(action, args)
-    }
+      const bans = await getBans(client, actions)
 
-    /// TODO: detect bans, block actions
-    /// TODO: detect associated events
-    /// TODO: report security violation if succeded
-    /// TODO: report security violation if failed - another event
-    /// TODO: additional validation based on ban type(captcha)
-    /// TODO: additional delay based on ban type
+      if(bans.find(ban => ban.type == 'block')) {
+        /// TODO: report security violation if failed
+        throw 'securityBlock'
+      }
+
+      if(bans.find(ban => ban.type == 'delay')) {
+        await sleep(3000)
+      }
+
+      /// TODO: additional delay based on ban type
+
+      /// TODO: report security violation if succeded - another event
+
+      /// TODO: additional validation based on ban type(captcha)
+
+      return oldExec.apply(action, args)
+    }
   }
 
   for(let triggerName in service.actions) {
     const trigger = service.actions[triggerName]
     if(!trigger.secured) continue
     const config = trigger.secured
+    const actions = config.actions || triggerName
 
     console.log("SECURED TRIGGER", service.name, trigger.name)
 
@@ -36,15 +61,27 @@ definition.processor(function(service, app) {
     trigger.execute = async (...args) => {
       const [ properties, context, emit ] = args
       const { client, ...otherProperties } = properties
-      oldExec.apply(trigger, args)
-    }
+      const bans = await getBans(client, actions)
 
-    /// TODO: detect bans, block triggers
-    /// TODO: detect associated events
-    /// TODO: report security violation if succeded
-    /// TODO: report security violation if failed - another event
-    /// TODO: additional validation based on ban type(captcha)
-    /// TODO: additional delay based on ban type
+      if(bans.find(ban => ban.type == 'block')) throw 'securityBlock'
+
+      if(bans.find(ban => ban.type == 'block')) {
+        /// TODO: report security violation if failed
+        throw 'securityBlock'
+      }
+
+      if(bans.find(ban => ban.type == 'delay')) {
+        await sleep(3000)
+      }
+
+      /// TODO: additional delay based on ban type
+
+      /// TODO: report security violation if succeded - another event
+
+      /// TODO: additional validation based on ban type(captcha)
+
+      return oldExec.apply(trigger, args)
+    }
   }
 
 })

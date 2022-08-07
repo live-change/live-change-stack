@@ -221,6 +221,14 @@ for(const contactType of config.contactTypes) {
     access: (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientCanInvite(client, params),
     async execute(params, { client, service }, emit) {
+      const { roles } = params
+      const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
+      if(!myRoles.includes('administrator')) {
+        for(const requestedRole of roles) {
+          if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+        }
+      }
+
       const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
       const { [contactTypeName]: contact } = params
       const { objectType, object } = params
