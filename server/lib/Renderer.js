@@ -16,11 +16,11 @@ class Renderer {
     if(this.settings.dev) {
       await this.setupVite()
     } else {
-      const serverEntryPath = path.resolve(this.root, './dist/server/entry-server.js')
+      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/entry-server.js')
       this.module = require(serverEntryPath)
       this.renderer = this.module.render
       this.sitemap = this.module.sitemap
-      const templatePath = path.resolve(this.root, './dist/client/index.html')
+      const templatePath = path.resolve(this.root, this.settings.templatePath ?? './dist/client/index.html')
       this.template = await fs.promises.readFile(templatePath, { encoding: 'utf-8' })
     }
   }
@@ -37,7 +37,7 @@ class Renderer {
           usePolling: true,
           interval: 100
         }
-      }
+      },
     })
   }
 

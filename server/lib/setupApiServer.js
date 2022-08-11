@@ -17,8 +17,8 @@ async function setupApiServer(settings) {
       : { runCommands: false, handleEvents: false, indexSearch: false })
 
   if(settings.initScript) {
-    const initScript = require(await services.resolve(settings.initScript))
-    await initScript(services.getServicesObject())
+    const initScript = await import(await services.resolve(settings.initScript))
+    await (initScript.default || initScript)(services.getServicesObject())
   }
 
   const apiServerConfig = {

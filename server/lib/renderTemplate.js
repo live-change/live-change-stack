@@ -11,7 +11,7 @@ function renderTemplate(source, replacements) {
   for(const { key, position } of fragments) {
     output.push(
       source.slice(start, position),
-      replacements[key] 
+      replacements[key]
     )
     start = position + key.length
   }
