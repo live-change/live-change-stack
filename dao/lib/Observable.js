@@ -35,6 +35,7 @@ class Observable {
 
   handleError(error) {
     let handled = false
+    if(!error) return true /// ignore null errors!
     for (let observer of this.errorObservers) {
       handled = true
       observer(error)
@@ -98,6 +99,8 @@ class Observable {
 
     const waitPromise = new Promise((resolve, reject) => {
       errorObserver = (error) => {
+        console.log("ERROR SIGNAL", error)
+        console.trace("WEER")
         if(resultObserver) this.unobserve(resultObserver)
         resultObserver = undefined
         if(errorObserver) this.uncatch(errorObserver)
