@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db",
-  "version": "0.5.15",
+  "version": "0.5.16",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
   },
   "homepage": "https://github.com/live-change/live-change-db",
   "devDependencies": {
-    "@live-change/db-store-level": "^0.5.15",
-    "@live-change/db-store-lmdb": "^0.5.15",
+    "@live-change/db-store-level": "^0.5.16",
+    "@live-change/db-store-lmdb": "^0.5.16",
     "minimist": ">=1.2.3",
     "rimraf": "^3.0.2",
     "sockjs": "^0.3.24",
