@@ -27,6 +27,8 @@
     "@live-change/secret-link-service": "0.2.41",
     "@live-change/vue3-components": "0.2.14",
     "@live-change/vue3-ssr": "0.2.14",
+    "@vitejs/plugin-vue": "^2.3.1",
+    "@vitejs/plugin-vue-jsx": "^1.3.10",
     "@vueuse/core": "^9.1.0",
     "codeceptjs-assert": "^0.0.5",
     "compression": "^1.7.4",
@@ -53,8 +55,6 @@
   },
   "devDependencies": {
     "@live-change/codeceptjs-helper": "0.6.8",
-    "@vitejs/plugin-vue": "^2.3.1",
-    "@vitejs/plugin-vue-jsx": "^1.3.10",
     "@wdio/selenium-standalone-service": "^7.20.8",
     "codeceptjs": "^3.3.4",
     "generate-password": "1.7.0",
