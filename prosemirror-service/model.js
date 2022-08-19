@@ -8,7 +8,7 @@ const { Step } = require('prosemirror-transform')
 
 const Document = definition.model({
   name: 'Document',
-  itemOfAny: {
+  propertyOfAny: {
   },
   properties: {
     type: {

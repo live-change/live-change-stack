@@ -70,7 +70,7 @@ async function renderEmail(data) {
     if(toText !== null) {
       email.text = htmlToText(messageElement.outerHTML)
       if(messageElement.tagName == 'PRE') {
-        indentation = email.text.match(/^ */)[0]
+        const indentation = email.text.match(/^ */)[0]
         const indentationRegex = new RegExp('\n' + indentation, 'g')
         email.text = email.text.slice(indentation.length).replace(indentationRegex, '\n')
       }

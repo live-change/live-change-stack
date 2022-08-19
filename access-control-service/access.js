@@ -1,4 +1,4 @@
-const { parents, parentsSourcesMap } = require('./accessControlParents.js')
+const { parents, parentsSources } = require('./accessControlParents.js')
 const App = require('@live-change/framework')
 const app = App.app()
 
@@ -15,6 +15,16 @@ module.exports = (definition) => {
     canInvite = (roles, client, { objectType, object }) => roles.length > 0,
     canRequest = (roles, client, { objectType, object }) => false
   } = config
+
+  function testRoles(requiredRoles, clientRoles) {
+    for(const requiredRolesOption of requiredRoles) {
+      if(
+        (Array.isArray(requiredRolesOption) ? requiredRolesOption : [requiredRolesOption])
+          .every(role => clientRoles.includes(role))
+      ) return true
+    }
+    return false
+  }
 
   async function clientHasAnyAccess(client, { objectType, object, objects }) {
     return checkRoles(client, { objectType, object, objects }, hasAny)
@@ -38,7 +48,7 @@ module.exports = (definition) => {
 
   function clientHasAccessRoles(client, { objectType, object, objects }, roles) {
     return checkRoles(client, { objectType, object, objects },
-      (clientRoles) => roles.every(role => clientRoles.includes(role))
+      (clientRoles) => testRoles(requiredRoles, roles)
     )
   }
 
@@ -98,7 +108,10 @@ module.exports = (definition) => {
 
   /// QUERIES:
 
-  function dbAccessFunctions({ input, publicAccessTable, accessTable, updateRoles, isLoaded }) {
+  function dbAccessFunctions({
+      input, publicAccessTable, accessTable, updateRoles, isLoaded,
+      client, parentsSourcesMap, output
+    }) {
     async function treeNode(objectType, object) {
       const node = {
         objectType, object,
@@ -119,7 +132,7 @@ module.exports = (definition) => {
       })
 
       const sessionAccessObject = accessTable.object(
-        `session_Session:${JSON.stringify(client.session)}:${JSON.stringify(objectType)}:${JSON.stringify(object)}`
+        `"session_Session":${JSON.stringify(client.session)}:${JSON.stringify(objectType)}:${JSON.stringify(object)}`
       )
       sessionAccessObserver = sessionAccessObject && sessionAccessObject.onChange((accessData, oldAccessData) => {
         node.sessionRoles = accessData?.roles ?? []
@@ -127,10 +140,10 @@ module.exports = (definition) => {
       })
 
       const userAccessObject = client.user && accessTable.object(
-        `user_User:${JSON.stringify(client.user)}:${JSON.stringify(objectType)}:${JSON.stringify(object)}`
+        `"user_User":${JSON.stringify(client.user)}:${JSON.stringify(objectType)}:${JSON.stringify(object)}`
       )
       userAccessObserver = userAccessObject && userAccessObject.onChange((accessData, oldAccessData) => {
-        node.sessionRoles = accessData?.roles ?? []
+        node.userRoles = accessData?.roles ?? []
         if(isLoaded()) updateRoles()
       })
 
@@ -187,9 +200,12 @@ module.exports = (definition) => {
         let loaded = false
 
         const { treeNode, computeNodeRoles } =
-          eval(dbAccessFunctions)({ input, publicAccessTable, accessTable, updateRoles, isLoaded: () => loaded })
+          eval(dbAccessFunctions)({
+            input, publicAccessTable, accessTable, updateRoles, isLoaded: () => loaded,
+            client, parentsSourcesMap, output
+          })
 
-        let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object))
+        let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object, client))
 
         const outputObjectId = `${JSON.stringify(client.session)}:${JSON.stringify(client.user)}:` +
                                objects.map( obj => `${JSON.stringify(objectType)}:${JSON.stringify(object)}`)
@@ -216,7 +232,7 @@ module.exports = (definition) => {
         await updateRoles()
       }
     })`, {
-      objectType, object, parentsSourcesMap, client,
+      objectType, object, parentsSourcesMap: parentsSources, client,
       accessTableName: Access.tableName, publicAccessTableName: PublicAccess.tableName,
       dbAccessFunctions: `(${dbAccessFunctions})`
     }]
@@ -233,9 +249,12 @@ module.exports = (definition) => {
         let loaded = false
 
         const { treeNode, computeNodeRoles } =
-          eval(dbAccessFunctions)({ input, publicAccessTable, accessTable, updateRoles, isLoaded: () => loaded })
+          eval(dbAccessFunctions)({
+            input, publicAccessTable, accessTable, updateRoles, isLoaded: () => loaded,
+            client, parentsSourcesMap, output,
+          })
 
-        let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object))
+        let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object, client))
         const accesses = []
         async function updateRoles() {
           const roots = await Promise.all(rolesTreesRoots)
@@ -264,8 +283,9 @@ module.exports = (definition) => {
         await updateRoles()
       }
     })`, {
-      objects, parentsSourcesMap, client,
+      objects, parentsSourcesMap: parentsSources, client,
       accessTableName: Access.tableName, publicAccessTableName: PublicAccess.tableName,
+      dbAccessFunctions: `(${dbAccessFunctions})`
     }]
   }
 
@@ -282,6 +302,7 @@ module.exports = (definition) => {
   }
 
   return {
+    testRoles,
     clientHasAnyAccess, clientHasAdminAccess,
     clientCanInvite,
     clientCanRequest,

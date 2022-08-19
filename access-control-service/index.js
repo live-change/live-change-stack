@@ -6,5 +6,6 @@ require('./model.js')
 require('./invite.js')
 require('./request.js')
 require('./view.js')
+require('./accessControl.js')
 
 module.exports = definition
