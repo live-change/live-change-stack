@@ -29,6 +29,7 @@ function defineView(config, context) {
       }
     },
     access: config.readAccess,
+    accessControl: config.readAccessControl || config.writeAccessControl,
     daoPath(properties, { client, context }) {
       const idParts = extractIdParts(otherPropertyNames, properties)
       const range = extractRange(properties)
@@ -51,6 +52,7 @@ function defineCreateAction(config, context) {
       ...(model.properties)
     },
     access: config.createAccess || config.writeAccess,
+    accessControl: config.createAccessControl || config.writeAccessControl,
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -86,6 +88,7 @@ function defineUpdateAction(config, context) {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
+    accessControl: config.updateAccessControl || config.writeAccessControl,
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -127,6 +130,7 @@ function defineDeleteAction(config, context) {
       ...(model.properties)
     },
     access: config.deleteAccess || config.writeAccess,
+    accessControl: config.deleteAccessControl || config.writeAccessControl,
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,

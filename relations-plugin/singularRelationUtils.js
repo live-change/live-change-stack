@@ -22,7 +22,8 @@ function defineView(config, context) {
     returns: {
       type: model,
     },
-    access: config.access,
+    access: config.readAccess,
+    accessControl: config.readAccessControl || config.writeAccessControl,
     daoPath(properties, { client, context }) {
       const idParts = extractIdParts(otherPropertyNames, properties)
       const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]

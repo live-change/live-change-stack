@@ -21,6 +21,7 @@ function defineView(config, context) {
       type: model,
     },
     access: config.access,
+    accessControl: config.readAccessControl || config.writeAccessControl,
     daoPath(properties, { client, context }) {
       const id = properties[modelName]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
@@ -85,6 +86,7 @@ function defineCreateAction(config, context) {
       ...(model.properties)
     },
     access: config.createAccess || config.writeAccess,
+    accessControl: config.createAccessControl || config.writeAccessControl,
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -119,6 +121,7 @@ function defineUpdateAction(config, context) {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
+    accessControl: config.updateAccessControl || config.writeAccessControl,
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -153,6 +156,7 @@ function defineDeleteAction(config, context) {
       ...(model.properties)
     },
     access: config.deleteAccess || config.writeAccess,
+    accessControl: config.deleteAccessControl || config.writeAccessControl,
     skipValidation: true,
     waitForEvents: true,
     async execute(properties, { client, service }, emit) {

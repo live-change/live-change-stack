@@ -102,10 +102,20 @@ class App {
     processors = processors.filter(function(item, pos, self) {
       return self.indexOf(item) == pos
     })
+    processors = processors.map(p => {
+      if(typeof p == 'function') {
+        return {
+          process: p
+        }
+      } else {
+        return p
+      }
+    })
+    processors.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
     //console.log("RUNNING PROCESSORS", processors.length)
     for(let processor of processors) {
-      //console.log("PROCESSOR", processor)
-      processor(sourceService, this)
+      //console.log("PROCESSOR", processor.toString())
+      processor.process(sourceService, this)
     }
   }
 

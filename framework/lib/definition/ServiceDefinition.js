@@ -140,7 +140,13 @@ class ServiceDefinition {
   }
 
   processor(processor) {
-    this.processors.push(processor)
+    if(typeof processor == "function") {
+      this.processors.push({
+        process: processor
+      })
+    } else {
+      this.processors.push(processor)
+    }
   }
 
   authenticator(authenticator) {

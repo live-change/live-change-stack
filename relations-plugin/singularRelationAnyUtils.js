@@ -45,7 +45,8 @@ function defineObjectView(config, context) {
     returns: {
       type: model,
     },
-    access: config.access,
+    access: config.readAccess,
+    accessControl: config.readAccessControl || config.writeAccessControl,
     daoPath(properties, { client, context }) {
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
       const id = typeAndIdParts.length > 1 ? typeAndIdParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
@@ -100,6 +101,7 @@ function defineSetAction(config, context) {
       ...(model.properties)
     },
     access: config.setAccess || config.writeAccess,
+    accessControl: config.setAccessControl || config.writeAccessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -131,6 +133,7 @@ function defineUpdateAction(config, context) {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
+    accessControl: config.updateAccessControl || config.writeAccessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -165,6 +168,7 @@ function defineSetOrUpdateAction(config, context) {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
+    accessControl: config.setAccessControl || config.writeAccessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -202,6 +206,7 @@ function defineResetAction(config, context) {
       ...identifiers
     },
     access: config.resetAccess || config.writeAccess,
+    accessControl: config.resetAccessControl || config.writeAccessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
     async execute(properties, {client, service}, emit) {
