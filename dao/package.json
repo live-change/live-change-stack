@@ -21,7 +21,7 @@
     "supports-color": "^7.2.0"
   },
   "directories": {},
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "main": "index.js",
   "browsernpm ": "browser.js",
   "maintainers": [
