@@ -13,6 +13,7 @@ class SockJsConnection extends Connection {
   initialize() {
     this.connection = new SockJS(this.url)
     const connection = this.connection
+    console.log("INITIALIZE SOCKJS!", this.url)
     connection.onopen = (function () {
       if (connection.readyState === SockJS.CONNECTING) return setTimeout(connection.onopen, 230)
       this.handleConnect()

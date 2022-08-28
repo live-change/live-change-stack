@@ -1,10 +1,11 @@
 
 class InboxReader {
-  constructor(observableFunction, callback, start = '', bucketSize = 32) {
+  constructor(observableFunction, callback, start = '', bucketSize = 32, idField = 'id') {
     this.observableFunction = observableFunction
     this.position = start
     this.callback = callback
     this.bucketSize = bucketSize
+    this.idField = idField
 
     this.observable = null
     this.queue = []
@@ -28,8 +29,8 @@ class InboxReader {
           this.handleMessage(message)
         }
       } else if(signal == 'push') {
-        const [message] = args
-        this.handleMessage(message)
+        const [...messages] = args
+        for(const message of messages) this.handleMessage(message)
       } else {
         console.error("INBOX READER SIGNAL NOT HANDLED", signal)
       }
@@ -56,8 +57,8 @@ class InboxReader {
   }
 
   handleMessage(message) {
-    if(message.id <= this.position) return // ignore
-    this.position = message.id
+    if(message[this.idField] <= this.position) return // ignore
+    this.position = message[this.idField]
     this.queue.push(message)
   }
 
