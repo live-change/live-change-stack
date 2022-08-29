@@ -30,15 +30,15 @@ class ObservableList extends Observable {
     }
   }
 
-  push(value) {
+  push(...values) {
     this.handleError(null)
-    this.list.push(value)
-    this.fireObservers('push', value)
+    this.list.push(values)
+    this.fireObservers('push', ...values)
   }
-  unshift(value) {
+  unshift(...values) {
     this.handleError(null)
-    this.list.unshift(value)
-    this.fireObservers('unshift', value)
+    this.list.unshift(...values)
+    this.fireObservers('unshift', ...values)
   }
   pop() {
     this.handleError(null)

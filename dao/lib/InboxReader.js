@@ -1,11 +1,13 @@
 
 class InboxReader {
-  constructor(observableFunction, callback, start = '', bucketSize = 32, idField = 'id') {
+  constructor(observableFunction, callback, start = '', bucketSize = 32, idField = 'id',
+              positionFilterCallback = (n, curr) => n > curr ) {
     this.observableFunction = observableFunction
     this.position = start
     this.callback = callback
     this.bucketSize = bucketSize
     this.idField = idField
+    this.positionFilterCallback = positionFilterCallback
 
     this.observable = null
     this.queue = []
@@ -57,7 +59,7 @@ class InboxReader {
   }
 
   handleMessage(message) {
-    if(message[this.idField] <= this.position) return // ignore
+    if(!this.positionFilterCallback(message[this.idField], this.position)) return // ignore
     this.position = message[this.idField]
     this.queue.push(message)
   }
