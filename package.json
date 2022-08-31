@@ -7,10 +7,22 @@
     "user-service",
     "email-service",
     "message-authentication-service",
+    "password-authentication-service",
+    "secret-code-service",
     "secret-link-service",
+    "security-service",
+    "access-control-service",
+    "image-service",
+    "upload-service",
+    "user-identification-service",
+    "identicon-service",
+    "peer-connection-service",
+    "online-service",
     "timer-service",
     "notification-service",
-    "user-identification-service"
+    "prosemirror-service",
+    "pages-service",
+    "urls-service"
   ],
   "devDependencies": {
   }

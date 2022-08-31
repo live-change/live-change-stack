@@ -17,7 +17,9 @@
     "online-service",
     "timer-service",
     "notification-service",
-    "prosemirror-service"
+    "prosemirror-service",
+    "pages-service",
+    "urls-service"
   ],
   "publishConfig": {
     "access": "public"
