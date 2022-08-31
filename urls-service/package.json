@@ -1,6 +1,6 @@
 {
-  "name": "@live-change/prosemirror-service",
-  "version": "0.2.41",
+  "name": "@live-change/urls-service",
+  "version": "0.2.43",
   "description": "",
   "main": "index.js",
   "scripts": {
