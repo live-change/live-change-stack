@@ -118,7 +118,10 @@ function defineUpdateAction(config, context) {
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
-      ...(model.properties)
+      ...(model.properties),
+      [modelPropertyName]: {
+        type: modelPropertyName
+      }
     },
     access: config.updateAccess || config.writeAccess,
     accessControl: config.updateAccessControl || config.writeAccessControl,
@@ -153,7 +156,10 @@ function defineDeleteAction(config, context) {
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
-      ...(model.properties)
+      ...(model.properties),
+      [modelPropertyName]: {
+        type: modelPropertyName
+      }
     },
     access: config.deleteAccess || config.writeAccess,
     accessControl: config.deleteAccessControl || config.writeAccessControl,
@@ -205,7 +211,7 @@ module.exports = function(service, app) {
       otherPropertyNames, modelName, writeableProperties, annotation
     }
 
-    if (config.readAccess) {
+    if (config.readAccess || config.readAccessControl || config.writeAccessControl) {
       defineView(config, context)
     }
     /// TODO: multiple views with limited fields
@@ -214,15 +220,15 @@ module.exports = function(service, app) {
     defineUpdatedEvent(config, context)
     defineDeletedEvent(config, context)
 
-    if (config.createAccess || config.writeAccess) {
+    if (config.createAccess || config.writeAccess || config.createAccessControl || config.writeAccessControl) {
       defineCreateAction(config, context)
     }
 
-    if (config.updateAccess || config.writeAccess) {
+    if (config.updateAccess || config.writeAccess || config.updateAccessControl || config.writeAccessControl) {
       defineUpdateAction(config, context)
     }
 
-    if (config.deleteAccess || config.writeAccess) {
+    if (config.deleteAccess || config.writeAccess || config.deleteAccessControl || config.writeAccessControl) {
       defineDeleteAction(config, context)
     }
 

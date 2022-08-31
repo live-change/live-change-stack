@@ -15,7 +15,7 @@
     "name": "Michał Łaszczewski",
     "url": "https://www.viamage.com/"
   },
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/live-change/live-change-framework/issues"
   },
@@ -24,9 +24,9 @@
     "@live-change/dao": "0.5.1",
     "@live-change/dao-sockjs": "0.5.1",
     "@live-change/db-server": "0.5.13",
-    "@live-change/framework": "^0.6.9",
+    "@live-change/framework": "0.6.9",
     "@live-change/sockjs": "0.4.1",
-    "@live-change/uid": "^0.6.9",
+    "@live-change/uid": "0.6.9",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "express-static-gzip": "2.1.7",

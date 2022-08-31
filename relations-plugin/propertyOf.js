@@ -19,7 +19,7 @@ module.exports = function(service, app) {
     addAccessControlParents(context)
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
-    if(config.readAccess) {
+    if(config.readAccess || config.readAccessControl || config.writeAccessControl) {
       defineView({ ...config, access: config.readAccess }, context)
     }
     if(config.views) {
@@ -33,19 +33,20 @@ module.exports = function(service, app) {
     defineTransferredEvent(config, context, generateId)
     defineResetEvent(config, context, generateId)
 
-    if(config.setAccess || config.writeAccess) {
+    if(config.setAccess || config.writeAccess || config.setAccessControl || config.writeAccessControl) {
       defineSetAction(config, context)
     }
 
-    if(config.updateAccess || config.writeAccess) {
+    if(config.updateAccess || config.writeAccess || config.updateAccessControl || config.writeAccessControl) {
       defineUpdateAction(config, context)
     }
 
-    if((config.setAccess && config.updateAccess) || config.writeAccess) {
+    if((config.setAccess && config.updateAccess) || config.writeAccess
+      || config.setOrUpdateAccessControl || config.writeAccessControl) {
       defineSetOrUpdateAction(config, context)
     }
 
-    if(config.resetAccess || config.writeAccess) {
+    if(config.resetAccess || config.writeAccess || config.resetAccessControl || config.writeAccessControl) {
       defineResetAction(config, context);
     }
   })

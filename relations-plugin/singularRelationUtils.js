@@ -46,6 +46,7 @@ function defineSetAction(config, context) {
       ...(model.properties)
     },
     access: config.setAccess || config.writeAccess,
+    accessControl: config.setAccessControl || config.writeAccessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -77,6 +78,7 @@ function defineUpdateAction(config, context) {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
+    accessControl: config.updateAccessControl || config.writeAccessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -111,6 +113,7 @@ function defineSetOrUpdateAction(config, context) {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
+    accessControl: config.updateAccessControl || config.writeAccessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -147,6 +150,7 @@ function defineResetAction(config, context) {
       }
     },
     access: config.resetAccess || config.writeAccess,
+    accessControl: config.resetAccessControl || config.writeAccessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
     async execute(properties, { client, service }, emit) {

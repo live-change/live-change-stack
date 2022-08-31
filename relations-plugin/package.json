@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/live-change/live-change-framework.git"
   },
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/live-change/live-change-framework/issues"
   },
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.6.9",
+    "@live-change/framework": "0.6.9",
     "pluralize": "8.0.0"
   }
 }

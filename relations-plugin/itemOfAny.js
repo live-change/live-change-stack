@@ -27,7 +27,7 @@ module.exports = function(service, app) {
       }
     }
 
-    if(config.readAccess) {
+    if(config.readAccess || config.readAccessControl || config.writeAccessControl) {
       defineView(config, context)
       // TODO: multiple views with all properties combinations
     }
@@ -38,15 +38,15 @@ module.exports = function(service, app) {
     defineTransferredEvent(config, context)
     defineDeletedEvent(config, context)
 
-    if(config.createAccess || config.writeAccess) {
+    if(config.createAccess || config.writeAccess || config.createAccessControl || config.writeAccessControl) {
       defineCreateAction(config, context)
     }
 
-    if(config.updateAccess || config.writeAccess) {
+    if(config.updateAccess || config.writeAccess || config.updateAccessControl || config.writeAccessControl) {
       defineUpdateAction(config, context)
     }
 
-    if(config.deleteAccess || config.writeAccess) {
+    if(config.deleteAccess || config.writeAccess || config.deleteAccessControl || config.writeAccessControl) {
       defineDeleteAction(config, context)
     }
   })

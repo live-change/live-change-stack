@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/live-change/live-change-framework.git"
   },
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "bugs": {
     "url": "https://github.com/live-change/live-change-framework/issues"
   },
