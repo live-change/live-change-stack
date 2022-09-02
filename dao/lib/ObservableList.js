@@ -32,7 +32,7 @@ class ObservableList extends Observable {
 
   push(...values) {
     this.handleError(null)
-    this.list.push(values)
+    this.list.push(...values)
     this.fireObservers('push', ...values)
   }
   unshift(...values) {
