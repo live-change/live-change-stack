@@ -2,8 +2,12 @@ const App = require("@live-change/framework")
 const app = App.app()
 
 const definition = require('./definition.js')
+const config = definition.config
 
 const { Document, StepsBucket, schemas } = require("./model.js")
+
+const { testLatency } = config
+const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 definition.view({
   name: 'document',
@@ -16,7 +20,8 @@ definition.view({
   returns: {
     type: Document
   },
-  daoPath({ document }, { client, context }) {
+  async daoPath({ document }, { client, context }) {
+    if(testLatency) await sleep(testLatency)
     return Document.path( document )
   }
 })
@@ -36,7 +41,8 @@ definition.view({
       type: StepsBucket
     }
   },
-  daoPath(props, { client, context }) {
+  async daoPath(props, { client, context }) {
+    if(testLatency) await sleep(testLatency)
     const path = StepsBucket.rangePath([props.document], App.extractRange(props))
     console.log("PATH", path)
     return path
@@ -64,6 +70,7 @@ definition.action({
     }
   },
   async execute({ document, type, purpose, content }, { client, service }, emit) {
+    if(testLatency) await sleep(testLatency)
     if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
     const documentData = await Document.get(document)
     if(documentData) throw new Error('document already exists')
@@ -100,6 +107,7 @@ definition.action({
   },
   queuedBy: (command) => command.client.document,
   async execute({ document, type, version, steps, window }, { client, service }, emit) {
+    if(testLatency) await sleep(testLatency)
     if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
     const documentData = await Document.get(document)
     if(!documentData) throw new Error('document not found')

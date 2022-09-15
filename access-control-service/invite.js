@@ -221,7 +221,10 @@ for(const contactType of config.contactTypes) {
     access: (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientCanInvite(client, params),
     async execute(params, { client, service }, emit) {
+      const { [contactTypeName]: contact } = params
+      const { objectType, object } = params
       const { roles } = params
+
       const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
       if(!myRoles.includes('administrator')) {
         for(const requestedRole of roles) {
@@ -230,8 +233,6 @@ for(const contactType of config.contactTypes) {
       }
 
       const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
-      const { [contactTypeName]: contact } = params
-      const { objectType, object } = params
       const invitationData = { fromType, from }
       for(const propertyName in invitationProperties) invitationData[propertyName] = params[propertyName]
 
