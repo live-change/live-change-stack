@@ -4,12 +4,10 @@ USER root
 RUN npm -g config set user root
 
 RUN npm install -g encoding-down
-RUN npm install -g level-rocksdb
 RUN npm install -g leveldown
 RUN npm install -g levelup
 RUN npm install -g memdown
 RUN npm install -g node-lmdb
-RUN npm install -g rocksdb
 RUN npm install -g subleveldown
 
 COPY package.json .
