@@ -1,6 +1,6 @@
 {
   "name": "@live-change/access-control-service",
-  "version": "0.2.45",
+  "version": "0.2.46",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -23,5 +23,5 @@
   "dependencies": {
     "@live-change/framework": "0.6.11"
   },
-  "gitHead": "aded4481299d6f56450603608cf1b0ec199156c5"
+  "gitHead": "aab9b222492335dda687dcf4a1c2794ec4fa610f"
 }
