@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.6.10",
+    "@live-change/framework": "0.6.11",
     "@live-change/pattern": "0.2.1",
     "@live-change/pattern-db": "^0.2.2",
     "nodemailer": "^6.7.2"
   },
-  "gitHead": "8db9a604d14d85f750056ce9c3b7bb859aface27"
+  "gitHead": "aded4481299d6f56450603608cf1b0ec199156c5"
 }

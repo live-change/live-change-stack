@@ -21,12 +21,12 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.6.10",
+    "@live-change/framework": "0.6.11",
     "got": "^11.8.3",
     "html-to-text": "8.1.0",
     "inline-css": "3.0.0",
     "jsdom": "^18.1.1",
     "nodemailer": "^6.7.2"
   },
-  "gitHead": "8db9a604d14d85f750056ce9c3b7bb859aface27"
+  "gitHead": "aded4481299d6f56450603608cf1b0ec199156c5"
 }

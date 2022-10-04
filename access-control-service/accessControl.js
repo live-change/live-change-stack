@@ -52,9 +52,10 @@ definition.processor({
           (objectType && object) ? [{ objectType, object }] : []
         )
         if(objects.length == 0) {
-          throw new Error('no objects for access control to work')
+          throw new Error('no objects for access control to work in view ' + viewName)
         }
-        const accessible = access.clientHasAccessRoles(client, { objects }, config.roles)
+        console.log("OBJECTS", objects)
+        const accessible = await access.clientHasAccessRoles(client, { objects }, config.roles)
         if(!accessible) throw 'notAuthorized'
         return oldGet.apply(view, args)
       }
@@ -103,6 +104,7 @@ definition.processor({
           rolesObservable.observe(rolesObserver)
           oldRespawn.apply(observableProxy)
         }
+        return observableProxy
       }
     }
 

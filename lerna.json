@@ -19,7 +19,7 @@
     "notification-service",
     "prosemirror-service",
     "pages-service",
-    "urls-service"
+    "url-service"
   ],
   "publishConfig": {
     "access": "public"

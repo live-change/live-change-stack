@@ -48,7 +48,7 @@ module.exports = (definition) => {
 
   function clientHasAccessRoles(client, { objectType, object, objects }, roles) {
     return checkRoles(client, { objectType, object, objects },
-      (clientRoles) => testRoles(requiredRoles, roles)
+      (clientRoles) => testRoles(roles, clientRoles)
     )
   }
 
@@ -208,21 +208,20 @@ module.exports = (definition) => {
         let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object, client))
 
         const outputObjectId = `${JSON.stringify(client.session)}:${JSON.stringify(client.user)}:` +
-                               objects.map( obj => `${JSON.stringify(objectType)}:${JSON.stringify(object)}`)
+                               objects.map( obj => `${JSON.stringify(obj.objectType)}:${JSON.stringify(obj.object)}`)
                                  .join(':')
         let oldOutputObject = null
         async function updateRoles() {
           const roots = await Promise.all(rolesTreesRoots)
-          const accesses = roots.map(root => computeNodeRoles(root))
-          const firstAccess = accesses.shift()
-          let roles = firstAccess.roles
-          for(const access of accesses) {
-            roles = roles.filter(role => access.roles.includes(role))
+          const accessesRoles = roots.map(root => computeNodeRoles(root))
+          const firstAccessRoles = accessesRoles.shift()
+          let roles = firstAccessRoles
+          for(const accessRoles of accessesRoles) {
+            roles = roles.filter(role => accessRoles.includes(role))
           }
-          const accessControlRoles = computeNodeRoles()
           const outputObject = {
             id: outputObjectId,
-            roles: Array.from(new Set([...accessControlRoles, ...client.roles]))
+            roles: Array.from(new Set([...roles, ...client.roles]))
           }
           output.change(outputObject, oldOutputObject)
           oldOutputObject = outputObject
@@ -232,7 +231,7 @@ module.exports = (definition) => {
         await updateRoles()
       }
     })`, {
-      objectType, object, parentsSourcesMap: parentsSources, client,
+      objects, parentsSourcesMap: parentsSources, client,
       accessTableName: Access.tableName, publicAccessTableName: PublicAccess.tableName,
       dbAccessFunctions: `(${dbAccessFunctions})`
     }]
