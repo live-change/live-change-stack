@@ -21,6 +21,13 @@ function defineView(config, context) {
       validation: ['nonEmpty']
     })
   }
+  const accessControl = config.readAccessControl || config.writeAccessControl
+  if(typeof accessControl == 'object') {
+    accessControl.objects = accessControl.objects ?? ((params) => otherPropertyNames.map(name => ({
+      objectType: params[name + 'Type'],
+      object: params[name]
+    })))
+  }
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
   service.views[viewName] = new ViewDefinition({
     name: viewName,
@@ -34,8 +41,8 @@ function defineView(config, context) {
         type: model
       }
     },
-    access: config.readAccess,
-    accessControl: config.readAccessControl || config.writeAccessControl,
+    access: config.readAccess || config.writeAccess,
+    accessControl,
     daoPath(properties, { client, context }) {
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
       const range = extractRange(properties)

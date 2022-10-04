@@ -39,7 +39,7 @@ async function update(changes, service, app, force) {
       indexName = generateTableName(indexName)
     }
 
-    debug("CREATE INDEX", indexName)
+    debug("CREATE INDEX", indexName, index)
 
     const options = {
       multi: index.multi || false
@@ -235,23 +235,22 @@ async function update(changes, service, app, force) {
 
   debug("CHECKING DATABASE INTEGRITY...")
   const indexes = await dao.get(['database', 'indexesList', database])
-  for(const indexName in service.indexes) {
-    const fullIndexName = generateTableName(indexName)
-    if(!indexes.includes(fullIndexName)) {
-      debug("index", fullIndexName, "not found! creating...")
-      await createIndex(null, indexName, service.index[indexName])
-    }
-  }
   for(const modelName in service.models) {
     const tableName = generateTableName(modelName)
     const model = service.models[modelName]
     for(const indexName in model.indexes) {
       const fullIndexName = tableName + '_' + indexName
       if(!indexes.includes(fullIndexName)) {
-        debug("I", indexes)
         debug("table ", modelName, " index", fullIndexName, "not found! creating...")
         await createIndex(generateTableName(modelName), indexName, model.indexes[indexName])
       }
+    }
+  }
+  for(const indexName in service.indexes) {
+    const fullIndexName = generateTableName(indexName)
+    if(!indexes.includes(fullIndexName)) {
+      debug("index", fullIndexName, "not found! creating...")
+      await createIndex(null, indexName, service.indexes[indexName])
     }
   }
 }

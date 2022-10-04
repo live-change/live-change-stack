@@ -22,9 +22,11 @@ module.exports = function(service, app) {
     addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames)
 
-    if(config.readAccess) {
-      defineObjectView({ ...config, access: config.readAccess }, context)
-      defineRangeViews({ ...config, access: config.readAccess }, context)
+    if(config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl) {
+      defineObjectView(config, context)
+    }
+    if(config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl) {
+      defineRangeViews(config, context)
     }
     if(config.views) {
       for(const view of config.views) {

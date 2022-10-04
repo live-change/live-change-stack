@@ -35,6 +35,13 @@ function defineObjectView(config, context) {
       validation: ['nonEmpty']
     })
   }
+  const accessControl = config.singleAccessControl || config.readAccessControl || config.writeAccessControl
+  if(typeof accessControl == 'object') {
+    accessControl.objects = accessControl.objects ?? ((params) => otherPropertyNames.map(name => ({
+      objectType: params[name + 'Type'],
+      object: params[name]
+    })))
+  }
   const viewName = config.name || ((config.prefix ? (config.prefix + joinedOthersClassName) : joinedOthersPropertyName) +
       context.reverseRelationWord + modelName + (config.suffix || ''))
   service.views[viewName] = new ViewDefinition({
@@ -45,8 +52,8 @@ function defineObjectView(config, context) {
     returns: {
       type: model,
     },
-    access: config.readAccess,
-    accessControl: config.readAccessControl || config.writeAccessControl,
+    access: config.singleAccess || config.readAccess,
+    accessControl,
     daoPath(properties, { client, context }) {
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
       const id = typeAndIdParts.length > 1 ? typeAndIdParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
@@ -73,9 +80,8 @@ function defineRangeViews(config, context) {
         ...identifiers,
         ...App.rangeProperties,
       },
-      access(params, context) {
-        return config.access ? config.access(params, context) : true
-      },
+      access: config.listAccess || config.readAccess,
+      accessControl: config.listAccessControl || config.readAccessControl || config.writeAccessControl,
       daoPath(params, { client, context }) {
         const owner = []
         for (const key of combination) {

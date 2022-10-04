@@ -16,8 +16,6 @@ const {
   setupApiServer,
   setupApiSockJs,
   setupApiWs,
-  setupDbServer,
-  setupDbClient,
   setupApp,
   setupApiEndpoints
 
@@ -217,7 +215,7 @@ const argv = require('yargs') // eslint-disable-line
 async function apiServer(argv) {
   const { apiPort, apiHost } = argv
 
-  const apiServer = await setupApiServer(argv, dbServer)
+  const apiServer = await setupApiServer(argv)
 
   const expressApp = express()
 

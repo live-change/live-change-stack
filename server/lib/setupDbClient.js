@@ -3,7 +3,7 @@ const ReactiveDao = require("@live-change/dao")
 const ReactiveDaoWebsocket = require("@live-change/dao-websocket")
 
 function setupDbClient(argv, env = process.env) {
-  config = {
+  const config = {
     url: env.DB_URL,
     name: env.DB_NAME,
     requestTimeout: (+env.DB_REQUEST_TIMEOUT),

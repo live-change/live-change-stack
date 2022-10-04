@@ -27,7 +27,7 @@ module.exports = function(service, app) {
       }
     }
 
-    if(config.readAccess || config.readAccessControl || config.writeAccessControl) {
+    if(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl) {
       defineView(config, context)
       // TODO: multiple views with all properties combinations
     }

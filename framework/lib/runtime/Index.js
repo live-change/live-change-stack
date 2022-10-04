@@ -1,4 +1,5 @@
 const ReactiveDao = require("@live-change/dao")
+const utils = require("../utils.js");
 
 class Index {
 
@@ -13,10 +14,14 @@ class Index {
     return ['database', 'indexObject', this.service.databaseName, this.dbIndexName, id]
   }
 
-  rangePath(range = {}) {
-    if(typeof range != 'object') {
-      const str = range.toString()
-      return this.rangePath({ gte: str, lte: str+'\xFF\xFF\xFF\xFF' })
+  rangePath(range = {}, pathRange = null) {
+    if(typeof range != 'object' || Array.isArray(range)) {
+      const values = Array.isArray(range) ? range : [range]
+      const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
+      if(pathRange) {
+        return this.rangePath(utils.prefixRange(pathRange, prefix, prefix))
+      }
+      return this.rangePath({ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
     if(Array.isArray(range)) this.rangePath(range.join(','))
     return ['database', 'indexRange', this.service.databaseName, this.dbIndexName, range]

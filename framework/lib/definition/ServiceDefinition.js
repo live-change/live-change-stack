@@ -105,7 +105,7 @@ class ServiceDefinition {
   index(definition) {
     const index = new IndexDefinition(definition)
     this.indexes[index.name] = index
-    return createIndexProxy(this, model)
+    return createIndexProxy(this, index)
   }
 
   foreignIndex(serviceName, indexName) {
