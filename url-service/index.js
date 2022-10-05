@@ -70,9 +70,7 @@ async function generateUrl(props, emit) {
   const suffix = props.suffix || ''
   const randomCharacters = props.charset ? charsets[props.charset] : charsets.all
   let randomPathLength = props.length || defaultRandomPathLength
-  const group = props.group
   let maxLength = props.maxLength || 125
-  maxLength -= group.length
   const sufixLength = 15
   let path = ''
   let random = false
@@ -164,7 +162,7 @@ async function generateUrl(props, emit) {
     if(existingCanonical) {
       emit({
         type: 'targetOwnedRedirectCreated',
-        redirect: url,
+        redirect: app.generateUid(),
         identifiers: {
           targetType: props.targetType,
           target: props.target,
@@ -220,7 +218,7 @@ definition.trigger({
       type: Number
     },
     redirect: {
-      type: String
+      type: Boolean
     },
     charset: {
       type: String
@@ -263,7 +261,7 @@ definition.action({
       type: Number
     },
     redirect: {
-      type: String
+      type: Boolean
     },
     charset: {
       type: String
@@ -307,7 +305,7 @@ definition.action({
       validation: ['nonEmpty']
     },
     redirect: {
-      type: String
+      type: Boolean
     }
   },
   accessControl: {
@@ -329,8 +327,8 @@ definition.action({
     if(redirect) {
       url = app.generateUid()
       emit({
-        type: 'targetOwnedCanonicalCreated',
-        redirect: url,
+        type: 'targetOwnedRedirectCreated',
+        redirect: app.generateUid(),
         identifiers: {
           targetType, target,
         },

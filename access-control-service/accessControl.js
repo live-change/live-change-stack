@@ -1,6 +1,6 @@
 const definition = require('./definition.js')
 const App = require("@live-change/framework")
-const { ObservableValue, ObservableList, ObservableProxy } = require("@live-change/dao")
+const { ObservableValue, ObservableList, ObservableProxy, ObservablePromiseProxy } = require("@live-change/dao")
 const app = App.app()
 const access = require('./access.js')(definition)
 
@@ -20,9 +20,10 @@ definition.processor({
         const [ properties, context, emit ] = args
         const { client } = context
 
+        const { objectType, object } = properties
         const objects = [].concat(
-          config.objects ? config.objects(properties) : [],
-          (objectType && object) ? [{ objectType, object }] : []
+          config.objects ? config.objects(properties) :
+            ((objectType && object) ? [{ objectType, object }] : [])
         )
         if(objects.length == 0) {
           throw new Error('no objects for access control to work')
@@ -48,8 +49,8 @@ definition.processor({
         const { client } = context
         const { objectType, object } = properties
         const objects = [].concat(
-          config.objects ? config.objects(properties) : [],
-          (objectType && object) ? [{ objectType, object }] : []
+          config.objects ? config.objects(properties) :
+            ((objectType && object) ? [{ objectType, object }] : [])
         )
         if(objects.length == 0) {
           throw new Error('no objects for access control to work in view ' + viewName)
@@ -64,8 +65,8 @@ definition.processor({
         const { client } = context
         const { objectType, object } = properties
         const objects = [].concat(
-          config.objects ? config.objects(properties) : [],
-          (objectType && object) ? [{ objectType, object }] : []
+          config.objects ? config.objects(properties) :
+            ((objectType && object) ? [{ objectType, object }] : [])
         )
         if(objects.length == 0) {
           throw new Error('no objects for access control to work')
@@ -88,8 +89,12 @@ definition.processor({
           if(newAccessible !== accessible) {
             if(newAccessible === true /*&& !valueObservable*/) {
               valueObservable = oldObservable.apply(view, args)
+              if(valueObservable.then) {
+                valueObservable = new ObservablePromiseProxy(valueObservable)
+              }
             }
-            observableProxy.setTarget(accessible ? valueObservable : errorObservable)
+            observableProxy.setTarget(newAccessible ? valueObservable : errorObservable)
+            accessible = newAccessible
           }
         }
         rolesObservable.observe(rolesObserver)

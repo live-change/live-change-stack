@@ -214,6 +214,7 @@ module.exports = (definition) => {
         async function updateRoles() {
           const roots = await Promise.all(rolesTreesRoots)
           const accessesRoles = roots.map(root => computeNodeRoles(root))
+          output.debug(outputObjectId, "Accesses roles:", accessesRoles)
           const firstAccessRoles = accessesRoles.shift()
           let roles = firstAccessRoles
           for(const accessRoles of accessesRoles) {
