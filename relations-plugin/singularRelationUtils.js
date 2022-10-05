@@ -1,6 +1,8 @@
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } = App
-const { extractIdentifiers, extractObjectData, generateId, extractIdParts} = require("./utils.js")
+const {
+  extractIdentifiers, extractObjectData, generateId, extractIdParts, prepareAccessControl
+} = require("./utils.js")
 
 function defineView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
@@ -14,6 +16,8 @@ function defineView(config, context) {
   }
   const viewName = config.name || ((config.prefix ? (config.prefix + joinedOthersClassName) : joinedOthersPropertyName) +
       'Owned' + modelName + (config.suffix || ''))
+  const accessControl = config.readAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -22,8 +26,8 @@ function defineView(config, context) {
     returns: {
       type: model,
     },
-    access: config.readAccess,
-    accessControl: config.readAccessControl || config.writeAccessControl,
+    access: config.readAccess || config.writeAccess,
+    accessControl,
     daoPath(properties, { client, context }) {
       const idParts = extractIdParts(otherPropertyNames, properties)
       const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
@@ -36,17 +40,19 @@ function defineView(config, context) {
 function defineSetAction(config, context) {
   const {
     service, app, model,  defaults,
-    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Set'
   const actionName = 'set' + joinedOthersClassName + 'Owned' + modelName
+  const accessControl = config.setAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
     },
     access: config.setAccess || config.writeAccess,
-    accessControl: config.setAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -68,17 +74,19 @@ function defineSetAction(config, context) {
 function defineUpdateAction(config, context) {
   const {
     service, app, model, modelRuntime,
-    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
   const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  const accessControl = config.updateAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
-    accessControl: config.updateAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -103,10 +111,12 @@ function defineUpdateAction(config, context) {
 function defineSetOrUpdateAction(config, context) {
   const {
     service, app, model, defaults, modelRuntime,
-    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
   const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  const accessControl = config.updateAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
@@ -137,10 +147,12 @@ function defineSetOrUpdateAction(config, context) {
 function defineResetAction(config, context) {
   const {
     service, modelRuntime, modelPropertyName,
-    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
+    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Reset'
   const actionName = 'reset' + joinedOthersClassName + 'Owned' + modelName
+  const accessControl = config.resetAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
@@ -150,7 +162,7 @@ function defineResetAction(config, context) {
       }
     },
     access: config.resetAccess || config.writeAccess,
-    accessControl: config.resetAccessControl || config.writeAccessControl,
+    accessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
     async execute(properties, { client, service }, emit) {

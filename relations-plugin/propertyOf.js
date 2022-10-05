@@ -19,8 +19,8 @@ module.exports = function(service, app) {
     addAccessControlParents(context)
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
-    if(config.readAccess || config.readAccessControl || config.writeAccessControl) {
-      defineView({ ...config, access: config.readAccess }, context)
+    if(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl) {
+      defineView({ ...config }, context)
     }
     if(config.views) {
       for(const view of config.views) {

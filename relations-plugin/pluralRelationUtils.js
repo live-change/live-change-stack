@@ -1,6 +1,6 @@
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } = App
-const { extractIdParts, extractRange, extractIdentifiers, extractObjectData } = require("./utils.js")
+const { extractIdParts, extractRange, extractIdentifiers, extractObjectData, prepareAccessControl } = require("./utils.js")
 
 const pluralize = require('pluralize')
 
@@ -16,6 +16,8 @@ function defineView(config, context) {
     })
   }
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
+  const accessControl = config.readAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -42,17 +44,19 @@ function defineView(config, context) {
 function defineCreateAction(config, context) {
   const {
     service, app, model,  defaults, modelPropertyName, modelRuntime,
-    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
   const actionName = 'set' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const accessControl = config.createAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
     },
     access: config.createAccess || config.writeAccess,
-    accessControl: config.createAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -78,10 +82,12 @@ function defineCreateAction(config, context) {
 function defineUpdateAction(config, context) {
   const {
     service, app, model, modelRuntime, modelPropertyName,
-    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
   const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const accessControl = config.updateAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
@@ -120,17 +126,19 @@ function defineUpdateAction(config, context) {
 function defineDeleteAction(config, context) {
   const {
     service, app, model, modelRuntime, modelPropertyName,
-    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
   const actionName = 'delete' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const accessControl = config.deleteAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
     },
     access: config.deleteAccess || config.writeAccess,
-    accessControl: config.deleteAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,

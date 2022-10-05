@@ -1,6 +1,6 @@
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } = App
-const { extractTypeAndIdParts, extractIdentifiersWithTypes, generateAnyId } = require("./utilsAny.js")
+const { extractTypeAndIdParts, extractIdentifiersWithTypes, generateAnyId, prepareAccessControl } = require("./utilsAny.js")
 const { extractObjectData } = require("./utils.js")
 const { allCombinations } = require("./combinations.js")
 
@@ -36,12 +36,7 @@ function defineObjectView(config, context) {
     })
   }
   const accessControl = config.singleAccessControl || config.readAccessControl || config.writeAccessControl
-  if(typeof accessControl == 'object') {
-    accessControl.objects = accessControl.objects ?? ((params) => otherPropertyNames.map(name => ({
-      objectType: params[name + 'Type'],
-      object: params[name]
-    })))
-  }
+  prepareAccessControl(accessControl, otherPropertyNames)
   const viewName = config.name || ((config.prefix ? (config.prefix + joinedOthersClassName) : joinedOthersPropertyName) +
       context.reverseRelationWord + modelName + (config.suffix || ''))
   service.views[viewName] = new ViewDefinition({
@@ -67,6 +62,8 @@ function defineRangeViews(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
   const identifierCombinations = allCombinations(otherPropertyNames).slice(0, -1)
+  const accessControl = config.listAccessControl || config.readAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames)
   for(const combination of identifierCombinations) {
     const propsUpperCase = combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
     const indexName = 'by' + combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
@@ -81,7 +78,7 @@ function defineRangeViews(config, context) {
         ...App.rangeProperties,
       },
       access: config.listAccess || config.readAccess,
-      accessControl: config.listAccessControl || config.readAccessControl || config.writeAccessControl,
+      accessControl,
       daoPath(params, { client, context }) {
         const owner = []
         for (const key of combination) {
@@ -101,13 +98,15 @@ function defineSetAction(config, context) {
 
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Set'
   const actionName = 'set' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const accessControl = config.setAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
     },
     access: config.setAccess || config.writeAccess,
-    accessControl: config.setAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -133,13 +132,15 @@ function defineUpdateAction(config, context) {
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
   const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const accessControl = config.updateAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
-    accessControl: config.updateAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -168,13 +169,15 @@ function defineSetOrUpdateAction(config, context) {
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
   const actionName = 'setOrUpdate' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const accessControl = config.setOrUpdateAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
-    accessControl: config.setAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -202,6 +205,8 @@ function defineResetAction(config, context) {
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Reset'
   const actionName = 'reset' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const accessControl = config.resetAccessControl || config.writeAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames)
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
@@ -212,7 +217,7 @@ function defineResetAction(config, context) {
       ...identifiers
     },
     access: config.resetAccess || config.writeAccess,
-    accessControl: config.resetAccessControl || config.writeAccessControl,
+    accessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
     async execute(properties, {client, service}, emit) {

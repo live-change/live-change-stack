@@ -134,9 +134,19 @@ function addAccessControlAnyParents(context) {
   )
 }
 
+function prepareAccessControl(accessControl, names) {
+  if(typeof accessControl == 'object') {
+    accessControl.objects = accessControl.objects ?? ((params) => names.map(name => ({
+      objectType: params[name + 'Type'],
+      object: params[name]
+    })))
+  }
+}
+
 module.exports = {
   extractTypeAndIdParts, extractIdentifiersWithTypes, defineAnyProperties,
   defineAnyIndex, defineAnyIndexes,
   processModelsAnyAnnotation, generateAnyId,
-  addAccessControlAnyParents
+  addAccessControlAnyParents,
+  prepareAccessControl
 }
