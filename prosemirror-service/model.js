@@ -75,10 +75,12 @@ async function getDocument(documentId, documentType) {
     if(!documentData) {
       return null
     }
+    const lastStepsBucket = await StepsBucket.rangePath([documentId], { reverse: true, limit: 1 })?.[0] ?? null
     document = {
       type: documentData.type,
       content: schema.nodeFromJSON(documentData.content),
       version: documentData.version,
+      lastStepsBucket,
       schema
     }
     openDocuments.set(documentId, document)
@@ -105,19 +107,22 @@ definition.event({
       openDocument.content = step.apply(openDocument.content).doc
       openDocument.version ++
     }
+    const bucket = {
+      id: App.encodeIdentifier([document, openDocument.version.toFixed().padStart(10, '0')]),
+      window, sessionOrUserType, sessionOrUser, timestamp: new Date(),
+      steps
+    }
+    console.log("DOC EDITED", bucket)
+    openDocument.lastStepsBucket = bucket
     await Promise.all([
       Document.update(document, {
         content: openDocument.content.toJSON(),
         version: openDocument.version,
         lastModified: timestamp
       }),
-      StepsBucket.create({
-        id: App.encodeIdentifier([document, openDocument.version.toFixed().padStart(10, '0')]),
-        window, sessionOrUserType, sessionOrUser, timestamp: new Date(),
-        steps
-      })
+      StepsBucket.create(bucket)
     ])
   }
 })
 
-module.exports = { Document, StepsBucket, schemas }
+module.exports = { Document, StepsBucket, schemas, getDocument }
