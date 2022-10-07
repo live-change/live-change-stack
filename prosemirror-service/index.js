@@ -163,8 +163,9 @@ definition.action({
       console.log("DOC DATA", documentData)
       console.log("CONTINUATION", documentData.lastStepsBucket, sessionOrUserType, sessionOrUser)
       if(!documentData.lastStepsBucket
-        || documentData.lastStepsBucket.sessionOrUserType != sessionOrUserType
-        || documentData.lastStepsBucket.sessionOrUser != sessionOrUser) {
+          || documentData.lastStepsBucket.sessionOrUserType != sessionOrUserType
+          || documentData.lastStepsBucket.sessionOrUser != sessionOrUser
+          || documentData.lastStepsBucket.window != window) {
         console.log("CONTINUATION IGNORED!!")
         return [] // ignore, client will rebase
       }
