@@ -6,6 +6,8 @@ const LRU = require('lru-cache')
 const { Schema } = require('prosemirror-model')
 const { Step } = require('prosemirror-transform')
 
+const { snapshotAfterSteps = 230 } = config
+
 const Document = definition.model({
   name: 'Document',
   propertyOfAny: {
@@ -53,6 +55,29 @@ const StepsBucket = definition.model({
   }
 })
 
+const Snapshot = definition.model({
+  name: 'Snapshot',
+  properties: {
+    document: {
+      type: String
+    },
+    version: {
+      type: Number
+    },
+    content: {
+      type: Object
+    },
+    timestamp: {
+      type: Date
+    }
+  },
+  indexes: {
+    list: {
+      property: ['document', 'version']
+    }
+  }
+})
+
 const schemas = {}
 for(const typeName in config.documentTypes) {
   const spec = config.documentTypes[typeName]
@@ -75,12 +100,16 @@ async function getDocument(documentId, documentType) {
     if(!documentData) {
       return null
     }
-    const lastStepsBucket = await StepsBucket.rangePath([documentId], { reverse: true, limit: 1 })?.[0] ?? null
+    const [lastStepsBucket, lastSnapshot] = await Promise.all([
+      StepsBucket.rangeGet([documentId], { reverse: true, limit: 1 }).then(x => x?.[0] ?? null),
+      Snapshot.rangeGet([documentId], { reverse: true, limit: 1 }).then(x => x?.[0] ?? null)
+    ])
     document = {
       type: documentData.type,
       content: schema.nodeFromJSON(documentData.content),
       version: documentData.version,
       lastStepsBucket,
+      lastSnapshot,
       schema
     }
     openDocuments.set(documentId, document)
@@ -92,7 +121,10 @@ async function getDocument(documentId, documentType) {
 definition.event({
   name: "documentCreated",
   async execute({ document, documentType, purpose, content, created, lastModified }) {
-    await Document.create({ id: document, type: documentType, purpose, content, created, lastModified, version: 0 })
+    const version = 0
+    await Document.create({ id: document, type: documentType, purpose, content, created, lastModified, version })
+    await Snapshot.create({ id: App.encodeIdentifier([document, version.toFixed().padStart(10, '0')]),
+        document, version, content, timestamp: lastModified })
   }
 })
 
@@ -112,17 +144,75 @@ definition.event({
       window, sessionOrUserType, sessionOrUser, timestamp: new Date(),
       steps
     }
-    console.log("DOC EDITED", bucket)
+    //console.log("DOC EDITED", bucket)
+    const content =  openDocument.content.toJSON()
     openDocument.lastStepsBucket = bucket
-    await Promise.all([
+    const promises = [
       Document.update(document, {
-        content: openDocument.content.toJSON(),
+        content,
         version: openDocument.version,
         lastModified: timestamp
       }),
       StepsBucket.create(bucket)
-    ])
+    ]
+    if(openDocument.lastSnapshot.version < openDocument.version - snapshotAfterSteps) {
+      openDocument.lastSnapshot = {
+        id: App.encodeIdentifier([document, openDocument.version.toFixed().padStart(10, '0')]),
+        document, version: openDocument.version, content, timestamp
+      }
+      promises.push(Snapshot.create(openDocument.lastSnapshot))
+    }
+    await Promise.all(promises)
   }
 })
 
-module.exports = { Document, StepsBucket, schemas, getDocument }
+async function readVersion(document, documentType, version) {
+  const schema = schemas[documentType]
+  const snapshot = await Snapshot.rangePath([document], {
+    reverse: true, limit: 1, lte: version.toFixed().padStart(10, '0')
+  })?.[0]
+  if(!snapshot) throw 'not_found'
+  let content = schema.nodeFromJSON(snapshot.content)
+  let current = snapshot.version
+  while(current < version) {
+    const stepsBuckets = await StepsBucket.rangePath([document], {
+      gt: current.toFixed().padStart(10, '0')
+    })
+    for(const stepsBucket of stepsBuckets) {
+      for(const stepJson of stepsBucket.steps) {
+        const step = Step.fromJSON(schemas[snapshot.type], stepJson)
+        content = step.apply(content).doc
+        current ++
+        if(current == version) return {
+          content,
+          timestamp: stepsBuckets.timestamp
+        }
+      }
+    }
+  }
+}
+
+definition.event({
+  name: "snapshotTaken",
+  async execute({ snapshot: id, document, documentType, version }) {
+    const openDocument = await getDocument(document, documentType)
+    if(!openDocument) throw new Error('critical error - document not found') /// impossible
+    if(openDocument.version < version)
+      throw new Error('critical error - document version is lower than snapshot version') /// impossible
+    const existing = Snapshot.get(id)
+    if(existing) return id
+    if(openDocument.version == version) {
+      const content = openDocument.content
+      const snapshot = { id, document, version, content, timestamp: openDocument.lastModified }
+      await Snapshot.create(snapshot)
+      if(version > openDocument.lastSnapshot.version) openDocument.lastSnapshot = snapshot
+    } else {
+      const { content, timestamp } = readVersion(document, documentType, version)
+      const snapshot = { id, document, version, content, timestamp }
+      await Snapshot.create(snapshot)
+      if(version > openDocument.lastSnapshot.version) openDocument.lastSnapshot = snapshot
+    }
+  }
+})
+
+module.exports = { Document, StepsBucket, schemas, getDocument, readVersion }

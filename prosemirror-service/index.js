@@ -49,6 +49,53 @@ definition.view({
   }
 })
 
+definition.view({
+  name: 'snapshot',
+  properties: {
+    document: {
+      type: Document,
+      validation: ['nonEmpty']
+    },
+    version: {
+      type: Number
+    }
+  },
+  async daoPath({ document, version }, { client, context }) {
+    return Snapshot.path( App.encodeIdentifier([props.document,version.toFixed().padStart(10, '0')]) )
+  }
+})
+
+definition.view({
+  name: 'snapshots',
+  properties: {
+    document: {
+      type: Document,
+      validation: ['nonEmpty']
+    },
+    ...App.rangeProperties
+  },
+  async daoPath({ document, version }, { client, context }) {
+    return Snapshot.indexRangePath( [document], App.extractRange(props) )
+  }
+})
+
+definition.view({
+  name: 'snapshots',
+  properties: {
+    document: {
+      type: Document,
+      validation: ['nonEmpty']
+    },
+    version: {
+      type: Number
+    }
+  },
+  async daoPath({ document, version }, { client, context }) {
+    Snapshot.limitedRangePath([props.document], { limit: 10 })
+    return Snapshot.path( App.encodeIdentifier([props.document,version.toFixed().padStart(10, '0')]) )
+  }
+})
+
 definition.action({
   name: 'createDocument',
   waitForEvents: true,
@@ -160,8 +207,8 @@ definition.action({
     const [sessionOrUserType, sessionOrUser] =
       client.user ? ['user_User', client.user] : ['session_Session', client.session]
     if(continuation) {
-      console.log("DOC DATA", documentData)
-      console.log("CONTINUATION", documentData.lastStepsBucket, sessionOrUserType, sessionOrUser)
+      //console.log("DOC DATA", documentData)
+      //console.log("CONTINUATION", documentData.lastStepsBucket, sessionOrUserType, sessionOrUser)
       if(!documentData.lastStepsBucket
           || documentData.lastStepsBucket.sessionOrUserType != sessionOrUserType
           || documentData.lastStepsBucket.sessionOrUser != sessionOrUser
@@ -181,5 +228,70 @@ definition.action({
     return 'processed'
   }
 })
+
+definition.action({
+  name: 'takeSnapshot',
+  waitForEvents: true,
+  properties: {
+    document: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    type: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    version: {
+      type: Number
+    },
+  },
+  queuedBy: (command) => command.client.document,
+  async execute({ document, type, version }, { client, service }, emit) {
+    if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
+    const documentData = await getDocument(document, type)
+    if(!documentData) throw new Error('document not found')
+    if(typeof version != 'number') version = documentData.version
+    const snapshot = App.encodeIdentifier([document, version.toFixed().padStart(10, '0')])
+    emit({
+      type: 'snapshotTaken',
+      snapshot,
+      document, documentType: type, version
+    })
+    return snapshot
+  }
+})
+
+definition.trigger({
+  name: 'takeSnapshot',
+  waitForEvents: true,
+  properties: {
+    document: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    type: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    version: {
+      type: Number
+    },
+  },
+  queuedBy: (command) => command.client.document,
+  async execute({ document, type, version }, { client, service }, emit) {
+    if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
+    const documentData = await getDocument(document, type)
+    if(!documentData) throw new Error('document not found')
+    if(typeof version != 'number') version = documentData.version
+    const snapshot = App.encodeIdentifier([document, version.toFixed().padStart(10, '0')])
+    emit({
+      type: 'snapshotTaken',
+      snapshot,
+      document, documentType: type, version
+    })
+    return snapshot
+  }
+})
+
 
 module.exports = definition
