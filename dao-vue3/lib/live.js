@@ -1,4 +1,4 @@
-import { ref, onUnmounted, getCurrentInstance, unref, reactive, isRef } from 'vue'
+import { ref, onUnmounted, getCurrentInstance, unref, reactive, isRef, shallowRef, watch, computed } from 'vue'
 import { collectPointers, ExtendedObservableList } from '@live-change/dao'
 import nodeDebug from 'debug'
 const debug = nodeDebug('dao-vue3')
@@ -76,8 +76,32 @@ async function fetch(api, path) {
 
 async function live(api, path, onUnmountedCb) {
   if(isRef(path)) {
-    /// TODO: support path as ref/computed
-    throw new Error('reactive paths not implemented')
+    if(typeof window == 'undefined') return fetch(api, path.value)
+    let liveRef = shallowRef()
+    let onUnmountedCallbacks = []
+    let oldPath = null
+    let updatePromise = null
+    async function update() {
+      const newPath = path.value
+      if(JSON.stringify(newPath) == oldPath) return
+      if(!updatePromise) updatePromise = (async () => {
+        const newUnmountedCallbacks = []
+        let newLive = null
+        if(path.value) {
+          newLive = await live(api, newPath, (cb) => newUnmountedCallbacks.push(cb))
+        }
+        for(const callback of onUnmountedCallbacks) callback()
+        liveRef.value = newLive
+        onUnmountedCallbacks = newUnmountedCallbacks
+        oldPath = JSON.stringify(newPath)
+      })()
+      await updatePromise
+      await update()
+    }
+    await update()
+    watch(() => path.value, () => update())
+    const result = computed(() => liveRef.value?.value)
+    return result
   }
 
   if(!onUnmountedCb && typeof window != 'undefined') {
