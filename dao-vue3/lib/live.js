@@ -94,8 +94,8 @@ async function live(api, path, onUnmountedCb) {
         liveRef.value = newLive
         onUnmountedCallbacks = newUnmountedCallbacks
         oldPath = JSON.stringify(newPath)
-      })()
-      await updatePromise
+      })().then(() => updatePromise = null)
+      if(updatePromise) await updatePromise
       await update()
     }
     await update()
