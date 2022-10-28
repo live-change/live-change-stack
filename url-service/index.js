@@ -44,7 +44,9 @@ definition.view({
   },
   daoPath(params, { client, service }, method) {
     const { targetType, domain, path } = params
-    return UrlToTarget.rangePath({ targetType, domain, path }, App.extractRange(params))
+    const dp = UrlToTarget.rangePath([ targetType, domain, path ], App.extractRange(params))
+    //console.log("URLS PATH", params, '=>', dp)
+    return dp
   }
 })
 

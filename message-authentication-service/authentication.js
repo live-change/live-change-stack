@@ -53,6 +53,11 @@ const Authentication = definition.model({
       validation: ['nonEmpty'],
       options: ['created', 'used']
     }
+  },
+  indexes: {
+    byContact: {
+      property: ['contactType', 'contact']
+    }
   }
 })
 

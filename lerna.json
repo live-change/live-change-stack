@@ -18,7 +18,7 @@
     "timer-service",
     "notification-service",
     "prosemirror-service",
-    "pages-service",
+    "content-service",
     "url-service"
   ],
   "publishConfig": {

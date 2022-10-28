@@ -21,7 +21,6 @@ const Canonical = definition.model({
   name: 'Canonical',
   propertyOfAny: {
     readAccessControl: { /// everyone can read canonical urls
-      roles: urlReaderRoles
     },
     resetAccessControl: {
       roles: urlWriterRoles
@@ -63,7 +62,7 @@ const UrlToTarget = definition.index({
   name: 'Urls',
   function: async function(input, output) {
     const urlMapper = urlType => ({targetType, domain, path, target}) =>
-      ({ id: `"${targetType}":"${domain}":${JSON.stringify(path)}:"${urlType}"_"${target}"`, target, urlType })
+      ({ id: `"${targetType}":${JSON.stringify(domain)}:${JSON.stringify(path)}_"${target}"`, target, type: urlType })
     const redirectMapper = urlMapper('redirect')
     const canonicalMapper = urlMapper('canonical')
     await input.table('url_Redirect').onChange(

@@ -85,7 +85,7 @@ definition.processor({
         const rolesObservable = app.dao.observable(rolesPath)
         const rolesObserver = (signal, value) => {
           const accessObject = rolesObservable.getValue()
-          const newAccessible = access.testRoles(config.roles, accessObject.roles)
+          const newAccessible = accessObject ? access.testRoles(config.roles, accessObject.roles) : false
           if(newAccessible !== accessible) {
             if(newAccessible === true /*&& !valueObservable*/) {
               valueObservable = oldObservable.apply(view, args)

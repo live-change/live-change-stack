@@ -21,6 +21,7 @@
     "timer-service",
     "notification-service",
     "prosemirror-service",
+    "content-service",
     "pages-service",
     "url-service"
   ],
