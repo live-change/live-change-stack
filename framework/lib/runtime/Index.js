@@ -35,12 +35,12 @@ class Index {
     return this.service.dao.get(this.path(id), ReactiveDao.ObservableValue)
   }
 
-  rangeObservable(range) {
-    return this.service.dao.observable(this.rangePath(range), ReactiveDao.ObservableList)
+  rangeObservable(range, pathRange = null) {
+    return this.service.dao.observable(this.rangePath(range, pathRange), ReactiveDao.ObservableList)
   }
 
-  async rangeGet(range) {
-    return this.service.dao.get(this.path(range), ReactiveDao.ObservableList)
+  async rangeGet(range, pathRange = null) {
+    return this.service.dao.get(this.rangePath(range, pathRange), ReactiveDao.ObservableList)
   }
 
 }

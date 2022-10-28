@@ -96,6 +96,7 @@ class SsrServer {
     })
     this.express.use('*', async (req, res) => {
       const url = req.originalUrl
+      const host = req.get('host')
       const clientIp = getIp(req)
 
       const credentials = readCredentials(req)
@@ -109,7 +110,7 @@ class SsrServer {
 
         for(let retry = 0; retry < 3; retry ++) {
           try {
-            html = await this.renderer.renderPage({ url, dao, clientIp, credentials, windowId, version })
+            html = await this.renderer.renderPage({ url, host, dao, clientIp, credentials, windowId, version })
             break
           } catch(e) {
             error = e

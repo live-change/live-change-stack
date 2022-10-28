@@ -3,16 +3,17 @@ const {
   processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData
 } = require('./utils.js')
 const App = require("@live-change/framework")
+const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
 
 const annotation = 'entity'
 
 function defineView(config, context) {
-  const { service, modelRuntime, modelName, others, model } = context
-  const viewName = (config.prefix || '' ) + modelName + (config.suffix || '')
+  const { service, modelRuntime, modelPropertyName, modelName, others, model } = context
+  const viewName = (config.prefix || '' ) + (config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
-      [modelName]: {
+      [modelPropertyName]: {
         type: model,
         validation: ['nonEmpty']
       }
@@ -23,7 +24,7 @@ function defineView(config, context) {
     access: config.access,
     accessControl: config.readAccessControl || config.writeAccessControl,
     daoPath(properties, { client, context }) {
-      const id = properties[modelName]
+      const id = properties[modelPropertyName]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
       return path
     }
@@ -204,11 +205,10 @@ module.exports = function(service, app) {
 
     const writeableProperties = modelProperties || config.writeableProperties
     //console.log("PPP", others)
-    const otherPropertyNames = others.map(other => other.slice(0, 1).toLowerCase() + other.slice(1))
 
     const context = {
       service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
-      otherPropertyNames, modelName, writeableProperties, annotation
+      modelName, writeableProperties, annotation
     }
 
     if (config.readAccess || config.readAccessControl || config.writeAccessControl) {
