@@ -1,6 +1,6 @@
 {
   "name": "@live-change/session-service",
-  "version": "0.2.50",
+  "version": "0.2.51",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,5 +25,5 @@
     "@live-change/relations-plugin": "0.6.14",
     "pluralize": "8.0.0"
   },
-  "gitHead": "aab9b222492335dda687dcf4a1c2794ec4fa610f"
+  "gitHead": "8d09f0f01547edd2c1321a8d7341e33aff4c562d"
 }
