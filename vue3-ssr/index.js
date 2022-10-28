@@ -82,6 +82,11 @@ function uid(context) {
   return useApi(context).uid
 }
 
+function serviceDefinition(service, context = getCurrentInstance().appContext) {
+  const api = useApi(context)
+  return [...api.metadata.api.value.services].find(x => x.name == service)
+}
+
 const api = useApi
 
 export {
@@ -89,5 +94,6 @@ export {
   useApi, api,
   view, actions, client, uid,
   rangeBuckets, reverseRange,
-  inboxReader
+  inboxReader,
+  serviceDefinition
 }

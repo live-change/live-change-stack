@@ -190,7 +190,7 @@ class Api extends DaoProxy {
       { what: ['metadata', 'api'] },
       { what: ['version', 'version'] }
     ]}))
-    console.log("PREFETCH WAIT!")
+    //console.log("PREFETCH WAIT!")
     // const apiPromise = this.apiObservable.wait()
     // apiPromise.then(res => console.log("API RES", res))
     // const versionPromise = this.versionObservable.wait()
@@ -198,7 +198,7 @@ class Api extends DaoProxy {
     // if(this.apiObservable.getValue() === undefined) preFetchPromises.push(apiPromise)
     // if(this.versionObservable.getValue() === undefined) preFetchPromises.push(versionPromise)
     await Promise.all(preFetchPromises)
-    console.log("PREFETCHED", this.metadata.api, this.metadata.version)
+    //console.log("PREFETCHED", this.metadata.api, this.metadata.version)
     for(const afterPreFetch of this.afterPreFetch) {
       afterPreFetch()
     }
