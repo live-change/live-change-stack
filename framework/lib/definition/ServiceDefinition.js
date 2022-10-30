@@ -25,7 +25,7 @@ function createModelProxy(definition, model) {
 }
 
 function createForeignModelProxy(definition, model) {
-  let fk = model.serviceName + "_" + model.modelName
+  let fk = model.serviceName + "_" + model.name
   return new Proxy(model, {
     get(target, prop, receiver) {
       const runtime  = definition._runtime
@@ -91,7 +91,7 @@ class ServiceDefinition {
   }
 
   model(definition) {
-    const model = new ModelDefinition(definition)
+    const model = new ModelDefinition(definition, this.name)
     this.models[model.name] = model
     return createModelProxy(this, model)
   }

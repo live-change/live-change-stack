@@ -1,5 +1,9 @@
 const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
+const app = App.app()
+const { allCombinations } = require("./combinations.js");
+const {
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
+} = App
 
 function extractIdParts(otherPropertyNames, properties) {
   const idParts = []
@@ -52,6 +56,16 @@ function defineIndex(model, what, props) {
     property: props
   })
 }
+function defineIndexes(model, props, types) {
+  const propCombinations = allCombinations(Object.keys(props))
+  for(const propCombination of propCombinations) {
+    const upperCaseProps = propCombination.map(id => {
+      const prop = props[id]
+      return prop[0].toUpperCase() + prop.slice(1)
+    })
+    defineIndex(model, upperCaseProps.join('And'), propCombination.map(id => types[id]))
+  }
+}
 
 function processModelsAnnotation(service, app, annotation, multiple, cb) {
   if (!service) throw new Error("no service")
@@ -93,12 +107,12 @@ function processModelsAnnotation(service, app, annotation, multiple, cb) {
 
         console.log("MODEL " + modelName + " IS " + annotation + " " + config.what)
 
-        const others = (Array.isArray(config.what) ? config.what : [config.what])
-            .map(other => other.name ? other.name : other)
+        const what = (Array.isArray(config.what) ? config.what : [config.what])
+        const others = what.map(other => other.getTypeName ? other.getTypeName() : (other.name ? other.name : other))
 
         const writeableProperties = modelProperties || config.writeableProperties
         //console.log("PPP", others)
-        const otherPropertyNames = others.map(other => other.slice(0, 1).toLowerCase() + other.slice(1))
+        const otherPropertyNames = what.map(other => other.name ? other.name : other)
         const joinedOthersPropertyName = otherPropertyNames[0] +
             (others.length > 1 ? ('And' + others.slice(1).join('And')) : '')
         const joinedOthersClassName = others.join('And')
@@ -142,7 +156,96 @@ function prepareAccessControl(accessControl, names, types) {
   }
 }
 
+function defineDeleteByOwnerEvents(config, context, generateId) {
+  const {
+    service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
+  } = context
+  for(const propertyName of otherPropertyNames) {
+    const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
+    service.events[eventName] = new EventDefinition({
+      name: eventName,
+      async execute({owner}) {
+        const runtime = modelRuntime()
+        const tableName = runtime.tableName
+        const prefix = JSON.stringify(owner)
+        const indexName = tableName + '_by' + propertyName[0].toUpperCase() + propertyName.slice(1)
+        const bucketSize = 128
+        let bucket
+        do {
+          bucket = await app.dao.get(['database', 'indexRange', app.databaseName, indexName, {
+            gte: prefix + ':',
+            lte: prefix + '_\xFF\xFF\xFF\xFF',
+            limit: bucketSize
+          }])
+          const deletePromises = bucket.map(({to}) => runtime.delete(to))
+          await Promise.all(deletePromises)
+        } while (bucket.length == bucketSize)
+      }
+    })
+  }
+}
+
+function defineParentDeleteTriggers(config, context) {
+  const {
+    service, modelRuntime, modelPropertyName, identifiers, others,
+    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model,
+    reverseRelationWord
+  } = context
+  for(const index in others) {
+    const otherType = others[index]
+    const propertyName = otherPropertyNames[index]
+    const triggerName = 'delete' + otherType[0].toUpperCase() + otherType.slice(1)
+    if(!service.triggers[triggerName]) service.triggers[triggerName] = []
+    service.triggers[triggerName].push(new TriggerDefinition({
+      name: triggerName,
+      properties: {
+        object: {
+          type: String
+        }
+      },
+      async execute({ object }, {client, service}, emit) {
+        const tableName = modelRuntime().tableName
+        const prefix = JSON.stringify(object)
+        const indexName = tableName + 'by' + propertyName[0].toUpperCase() + propertyName.slice(1)
+        const bucketSize = 32
+        let found = false
+        let bucket
+        do {
+          bucket = await app.dao.get(['database', 'indexRange', app.databaseName, indexName, {
+            gte: prefix + ':',
+            lte: prefix + '_\xFF\xFF\xFF\xFF',
+            limit: bucketSize
+          }])
+          if(bucket.length > 0) found = true
+          const deleteTriggerPromises = bucket.map(({to}) => [
+            service.trigger({
+              type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+              objectType: service.name+'_'+modelName,
+              object: to
+            }),
+            service.trigger({
+              type: 'deleteObject',
+              objectType: service.name+'_'+modelName,
+              object: to
+            })
+          ]).flat()
+          await Promise.all(deleteTriggerPromises)
+        } while (bucket.length == bucketSize)
+        if(found) {
+          const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
+          emit({
+            type: eventName,
+            owner: object
+          })
+        }
+        await Promise.all(promises)
+      }
+    }))
+  }
+}
+
 module.exports = {
-  extractIdParts, extractIdentifiers, extractObjectData, defineProperties, defineIndex,
-  processModelsAnnotation, generateId, addAccessControlParents, prepareAccessControl
+  extractIdParts, extractIdentifiers, extractObjectData, defineProperties, defineIndex, defineIndexes,
+  processModelsAnnotation, generateId, addAccessControlParents, prepareAccessControl,
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers
 }

@@ -1,6 +1,7 @@
 const {
-  defineProperties, defineIndex,
-  processModelsAnnotation, addAccessControlParents
+  defineProperties, defineIndexes,
+  processModelsAnnotation, addAccessControlParents,
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers
 } = require('./utils.js')
 
 const {
@@ -19,7 +20,7 @@ module.exports = function(service, app) {
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
     addAccessControlParents(context)
-    defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
+    defineIndexes(context.model, context.otherPropertyNames, context.others)
 
     if(config.sortBy) {
       for(const sortFields of config.sortBy) {
@@ -36,6 +37,7 @@ module.exports = function(service, app) {
     defineUpdatedEvent(config, context)
     defineTransferredEvent(config, context)
     defineDeletedEvent(config, context)
+    defineDeleteByOwnerEvents(config, context)
 
     if(config.createAccess || config.writeAccess || config.createAccessControl || config.writeAccessControl) {
       defineCreateAction(config, context)
@@ -48,5 +50,7 @@ module.exports = function(service, app) {
     if(config.deleteAccess || config.writeAccess || config.deleteAccessControl || config.writeAccessControl) {
       defineDeleteAction(config, context)
     }
+
+    if(!config.customDeleteTrigger) defineParentDeleteTriggers(config, context)
   })
 }

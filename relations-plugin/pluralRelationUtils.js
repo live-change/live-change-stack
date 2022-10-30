@@ -151,6 +151,18 @@ function defineDeleteAction(config, context) {
       if(JSON.stringify(entityIdParts) != JSON.stringify(idParts)) {
         throw new Error('not_authorized')
       }
+      await Promise.all([
+        service.trigger({
+          type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+          objectType: service.name+'_'+modelName,
+          object: id
+        }),
+        service.trigger({
+          type: 'deleteObject',
+          objectType: service.name+'_'+modelName,
+          object: id
+        })
+      ])
       emit({
         type: eventName,
         [modelPropertyName]: id

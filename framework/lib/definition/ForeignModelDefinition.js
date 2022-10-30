@@ -4,17 +4,17 @@ class ForeignModelDefinition {
 
   constructor(serviceName, modelName) {
     this.serviceName = serviceName
-    this.modelName = modelName
+    this.name = modelName
   }
 
   getTypeName() {
-    return this.serviceName+':'+this.modelName
+    return this.serviceName+':'+this.name
   }
 
   toJSON() {
     return {
       serviceName: this.serviceName,
-      modelName: this.modelName
+      modelName: this.name
     }
   }
 

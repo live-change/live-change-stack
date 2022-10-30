@@ -1,6 +1,7 @@
 const {
   defineAnyProperties, defineAnyIndexes,
-  processModelsAnyAnnotation, generateAnyId, addAccessControlAnyParents
+  processModelsAnyAnnotation, generateAnyId, addAccessControlAnyParents,
+  defineDeleteByOwnerEvents, defineParentDeleteTrigger
 } = require('./utilsAny.js')
 
 const {
@@ -10,6 +11,7 @@ const {
 const {
   defineObjectView, defineRangeViews, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
 } = require('./singularRelationAnyUtils.js')
+const {defineResetByOwner} = require("./propertyEvents");
 
 module.exports = function(service, app) {
   processModelsAnyAnnotation(service, app, 'propertyOfAny', false, (config, context) => {
@@ -38,6 +40,7 @@ module.exports = function(service, app) {
     defineUpdatedEvent(config, context, generateAnyId)
     defineTransferredEvent(config, context, generateAnyId)
     defineResetEvent(config, context, generateAnyId)
+    defineDeleteByOwnerEvents(config, context, generateAnyId)
 
     if(config.setAccess || config.writeAccess || config.setAccessControl || config.writeAccessControl) {
       defineSetAction(config, context)
@@ -55,6 +58,8 @@ module.exports = function(service, app) {
     if(config.resetAccess || config.writeAccess || config.resetAccessControl || config.writeAccessControl) {
       defineResetAction(config, context);
     }
+
+    if(!config.customDeleteTrigger) defineParentDeleteTrigger(config, context)
 
   })
 }

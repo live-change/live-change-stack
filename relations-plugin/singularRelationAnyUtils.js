@@ -225,6 +225,18 @@ function defineResetAction(config, context) {
       const id = generateAnyId(otherPropertyNames, properties)
       const entity = await modelRuntime().get(id)
       if (!entity) throw new Error('not_found')
+      await Promise.all([
+        service.trigger({
+          type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+          objectType: service.name+'_'+modelName,
+          object: id
+        }),
+        service.trigger({
+          type: 'deleteObject',
+          objectType: service.name+'_'+modelName,
+          object: id
+        })
+      ])
       emit({
         type: eventName,
         identifiers

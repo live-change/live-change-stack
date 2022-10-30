@@ -3,7 +3,8 @@ const utils = require("../utils.js")
 
 class ModelDefinition {
 
-  constructor(definition) {
+  constructor(definition, serviceName) {
+    this.serviceName = serviceName
     this.properties = {}
     for(let key in definition) this[key] = definition[key]
     if(definition.properties) {
@@ -18,7 +19,7 @@ class ModelDefinition {
   }
 
   getTypeName() {
-    return this.name
+    return this.serviceName + '_' + this.name
   }
 
   createAndAddProperty(name, definition) {

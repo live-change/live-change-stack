@@ -1,6 +1,7 @@
 const {
   defineAnyProperties, defineAnyIndexes,
-  processModelsAnyAnnotation, addAccessControlAnyParents
+  processModelsAnyAnnotation, addAccessControlAnyParents, generateAnyId, defineDeleteByOwnerEvents,
+  defineParentDeleteTrigger
 } = require('./utilsAny.js')
 
 const {
@@ -37,6 +38,7 @@ module.exports = function(service, app) {
     defineUpdatedEvent(config, context)
     defineTransferredEvent(config, context)
     defineDeletedEvent(config, context)
+    defineDeleteByOwnerEvents(config, context, generateAnyId)
 
     if(config.createAccess || config.writeAccess || config.createAccessControl || config.writeAccessControl) {
       defineCreateAction(config, context)
@@ -49,5 +51,7 @@ module.exports = function(service, app) {
     if(config.deleteAccess || config.writeAccess || config.deleteAccessControl || config.writeAccessControl) {
       defineDeleteAction(config, context)
     }
+
+    if(!config.customDeleteTrigger) defineParentDeleteTrigger(config, context)
   })
 }

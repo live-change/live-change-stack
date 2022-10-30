@@ -1,6 +1,7 @@
 const {
-  defineProperties, defineIndex,
-  processModelsAnnotation, generateId, addAccessControlParents
+  defineProperties, defineIndexes,
+  processModelsAnnotation, generateId, addAccessControlParents,
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers
 } = require('./utils.js')
 
 const { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } = require('./propertyEvents.js')
@@ -17,7 +18,7 @@ module.exports = function(service, app) {
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
     addAccessControlParents(context)
-    defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
+    defineIndexes(context.model, context.otherPropertyNames, context.others)
 
     if(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl) {
       defineView({ ...config }, context)
@@ -32,6 +33,7 @@ module.exports = function(service, app) {
     defineUpdatedEvent(config, context, generateId)
     defineTransferredEvent(config, context, generateId)
     defineResetEvent(config, context, generateId)
+    defineDeleteByOwnerEvents(config, context)
 
     if(config.setAccess || config.writeAccess || config.setAccessControl || config.writeAccessControl) {
       defineSetAction(config, context)
@@ -49,5 +51,7 @@ module.exports = function(service, app) {
     if(config.resetAccess || config.writeAccess || config.resetAccessControl || config.writeAccessControl) {
       defineResetAction(config, context);
     }
+
+    if(!config.customDeleteTrigger) defineParentDeleteTriggers(config, context)
   })
 }
