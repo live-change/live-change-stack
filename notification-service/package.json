@@ -1,6 +1,6 @@
 {
   "name": "@live-change/notification-service",
-  "version": "0.2.52",
+  "version": "0.3.0",
   "description": "",
   "main": "index.js",
   "scripts": {
