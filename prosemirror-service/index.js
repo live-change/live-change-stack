@@ -3,19 +3,38 @@ const app = App.app()
 
 const definition = require('./definition.js')
 const config = definition.config
+const {
+  readerRoles = ['writer'],
+  writerRoles = ['writer'],
+  testLatency
+} = config
 
-const { Document, StepsBucket, schemas, getDocument } = require("./model.js")
+const writerAccessControl = {
+  roles: writerRoles,
+  objects: p => [{ objectType: p.targetType, object: p.target }]
+}
 
-const { testLatency } = config
+const readerAccessControl = {
+  roles: readerRoles,
+  objects: p => [{ objectType: p.targetType, object: p.target }]
+}
+
+const { Document, StepsBucket, Snapshot, schemas, getDocument } = require("./model.js")
+
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
 definition.view({
   name: 'document',
+  accessControl: readerAccessControl,
   properties: {
-    document: {
-      type: Document,
+    targetType: {
+      type: String,
       validation: ['nonEmpty']
-    }
+    },
+    target: {
+      type: String,
+      validation: ['nonEmpty']
+    },
   },
   returns: {
     type: Document
@@ -28,9 +47,14 @@ definition.view({
 
 definition.view({
   name: 'steps',
+  accessControl: readerAccessControl,
   properties: {
-    document: {
-      type: Document,
+    targetType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    target: {
+      type: String,
       validation: ['nonEmpty']
     },
     ...App.rangeProperties
@@ -43,7 +67,9 @@ definition.view({
   },
   async daoPath(props, { client, context }) {
     if(testLatency) await sleep(testLatency)
-    const path = StepsBucket.rangePath([props.document], App.extractRange(props))
+    const { targetType, target } = props
+    const document = App.encodeIdentifier([targetType, target])
+    const path = StepsBucket.rangePath([document], App.extractRange(props))
     console.log("PATH", path)
     return path
   }
@@ -51,56 +77,57 @@ definition.view({
 
 definition.view({
   name: 'snapshot',
+  accessControl: readerAccessControl,
   properties: {
-    document: {
-      type: Document,
+    targetType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    target: {
+      type: String,
       validation: ['nonEmpty']
     },
     version: {
       type: Number
     }
   },
-  async daoPath({ document, version }, { client, context }) {
-    return Snapshot.path( App.encodeIdentifier([props.document,version.toFixed().padStart(10, '0')]) )
+  async daoPath({ targetType, target, version }, { client, context }) {
+    const document = App.encodeIdentifier([targetType, target])
+    return Snapshot.path( App.encodeIdentifier([document,version.toFixed().padStart(10, '0')]) )
   }
 })
 
 definition.view({
   name: 'snapshots',
+  accessControl: readerAccessControl,
   properties: {
-    document: {
-      type: Document,
+    targetType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    target: {
+      type: String,
       validation: ['nonEmpty']
     },
     ...App.rangeProperties
   },
-  async daoPath({ document, version }, { client, context }) {
+  async daoPath({ targetType, target, version }, { client, context }) {
+    const document = App.encodeIdentifier([targetType, target])
     return Snapshot.indexRangePath( [document], App.extractRange(props) )
-  }
-})
-
-definition.view({
-  name: 'snapshots',
-  properties: {
-    document: {
-      type: Document,
-      validation: ['nonEmpty']
-    },
-    version: {
-      type: Number
-    }
-  },
-  async daoPath({ document, version }, { client, context }) {
-    Snapshot.limitedRangePath([props.document], { limit: 10 })
-    return Snapshot.path( App.encodeIdentifier([props.document,version.toFixed().padStart(10, '0')]) )
   }
 })
 
 definition.action({
   name: 'createDocument',
+  accessControl: writerAccessControl,
   waitForEvents: true,
+  queuedBy: ['targetType', 'target'],
   properties: {
-    document: {
+    targetType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    target: {
       type: String,
       validation: ['nonEmpty']
     },
@@ -116,9 +143,11 @@ definition.action({
       type: Object
     }
   },
-  async execute({ document, type, purpose, content }, { client, service }, emit) {
+  queuedBy: (command) => [command.targetType, command.target],
+  async execute({ targetType, target, type, purpose, content }, { client, service }, emit) {
     if(testLatency) await sleep(testLatency)
     if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
+    const document = App.encodeIdentifier([targetType, target])
     const documentData = await Document.get(document)
     if(documentData) throw new Error('document already exists')
     emit({
@@ -127,16 +156,22 @@ definition.action({
     })
     return {
       id: document,
-      type, purpose, content, version: 0
+      type, purpose, content, version: 1
     }
   }
 })
 
 definition.action({
   name: 'createDocumentIfNotExists',
+  accessControl: writerAccessControl,
   waitForEvents: true,
+  queuedBy: ['targetType', 'target'],
   properties: {
-    document: {
+    targetType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    target: {
       type: String,
       validation: ['nonEmpty']
     },
@@ -152,9 +187,11 @@ definition.action({
       type: Object
     }
   },
-  async execute({ document, type, purpose, content }, { client, service }, emit) {
+  queuedBy: (command) => [command.targetType, command.target],
+  async execute({ targetType, target, type, purpose, content }, { client, service }, emit) {
     if(testLatency) await sleep(testLatency)
     if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
+    const document = App.encodeIdentifier([targetType, target])
     const documentData = await Document.get(document)
     if(documentData) {
       return documentData
@@ -165,18 +202,24 @@ definition.action({
     })
     return {
       id: document,
-      type, purpose, content, version: 0
+      type, purpose, content, version: 1
     }
   }
 })
 
 definition.action({
-  name: 'doSteps',
+  name: 'edit',
+  accessControl: writerAccessControl,
   waitForEvents: true,
+  queuedBy: ['targetType', 'target'],
   properties: {
-    document: {
+    targetType: {
       type: String,
       validation: ['nonEmpty']
+    },
+    target: {
+      type: String,
+        validation: ['nonEmpty']
     },
     type: {
       type: String,
@@ -197,27 +240,31 @@ definition.action({
       type: Boolean
     }
   },
-  queuedBy: (command) => command.client.document,
-  async execute({ document, type, version, steps, window, continuation }, { client, service }, emit) {
+  queuedBy: (command) => [command.targetType, command.target],
+  async execute({ targetType, target, type, version, steps, window, continuation }, { client, service }, emit) {
     if(testLatency) await sleep(testLatency)
     if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
-    const documentData = await getDocument(document, type)
-    if(!documentData) throw new Error('document not found')
-    if(documentData.version != version) return 'ignored'
+    const document = App.encodeIdentifier([targetType, target])
+    const openDocument = await getDocument(document, type)
+    if(!openDocument) throw new Error('document not found')
+    console.log("EDIT DOCUMENT", openDocument.version, 'WITH', version)
+    if(openDocument.version != version) {
+      console.error("WRONG VERSION", openDocument.version, '!=', version)
+      return 'rejected'
+    }
     const [sessionOrUserType, sessionOrUser] =
       client.user ? ['user_User', client.user] : ['session_Session', client.session]
     if(continuation) {
       //console.log("DOC DATA", documentData)
       //console.log("CONTINUATION", documentData.lastStepsBucket, sessionOrUserType, sessionOrUser)
-      if(!documentData.lastStepsBucket
-          || documentData.lastStepsBucket.sessionOrUserType != sessionOrUserType
-          || documentData.lastStepsBucket.sessionOrUser != sessionOrUser
-          || documentData.lastStepsBucket.window != window) {
+      if(!openDocument.lastStepsBucket
+          || openDocument.lastStepsBucket.sessionOrUserType != sessionOrUserType
+          || openDocument.lastStepsBucket.sessionOrUser != sessionOrUser
+          || openDocument.lastStepsBucket.window != window) {
         console.log("CONTINUATION IGNORED!!")
-        return [] // ignore, client will rebase
+        return 'rejected' // ignore, client will rebase
       }
     }
-
     emit({
       type: 'documentEdited',
       document, documentType: type, version, steps, window,
@@ -225,15 +272,21 @@ definition.action({
       sessionOrUser,
       timestamp: new Date()
     })
-    return 'processed'
+    return 'saved'
   }
 })
 
 definition.action({
   name: 'takeSnapshot',
+  accessControl: writerAccessControl,
   waitForEvents: true,
+  queuedBy: ['targetType', 'target'],
   properties: {
-    document: {
+    targetType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    target: {
       type: String,
       validation: ['nonEmpty']
     },
@@ -245,9 +298,10 @@ definition.action({
       type: Number
     },
   },
-  queuedBy: (command) => command.client.document,
-  async execute({ document, type, version }, { client, service }, emit) {
+  queuedBy: (command) => [command.targetType, command.target],
+  async execute({ targetType, target, type, version }, { client, service }, emit) {
     if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
+    const document = App.encodeIdentifier([targetType, target])
     const documentData = await getDocument(document, type)
     if(!documentData) throw new Error('document not found')
     if(typeof version != 'number') version = documentData.version
@@ -264,12 +318,17 @@ definition.action({
 definition.trigger({
   name: 'takeSnapshot',
   waitForEvents: true,
+  queuedBy: ['targetType', 'target'],
   properties: {
-    document: {
+    targetType: {
       type: String,
       validation: ['nonEmpty']
     },
-    type: {
+    target: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    documentType: {
       type: String,
       validation: ['nonEmpty']
     },
@@ -277,17 +336,19 @@ definition.trigger({
       type: Number
     },
   },
-  queuedBy: (command) => command.client.document,
-  async execute({ document, type, version }, { client, service }, emit) {
-    if(!schemas[type]) throw new Error(`schema not found for document type ${type}`)
-    const documentData = await getDocument(document, type)
+  queuedBy: (command) => [command.targetType, command.target],
+  async execute({ targetType, target, documentType, version }, { client, service }, emit) {
+    if(!schemas[documentType]) throw new Error(`schema not found for document type ${documentType}`)
+    const document = App.encodeIdentifier([targetType, target])
+    const documentData = await getDocument(document, documentType)
     if(!documentData) throw new Error('document not found')
     if(typeof version != 'number') version = documentData.version
+    if(version > documentData.version) throw new Error("version not found")
     const snapshot = App.encodeIdentifier([document, version.toFixed().padStart(10, '0')])
     emit({
       type: 'snapshotTaken',
       snapshot,
-      document, documentType: type, version
+      document, documentType, version
     })
     return snapshot
   }

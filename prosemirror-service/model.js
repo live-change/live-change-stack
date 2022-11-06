@@ -121,7 +121,7 @@ async function getDocument(documentId, documentType) {
 definition.event({
   name: "documentCreated",
   async execute({ document, documentType, purpose, content, created, lastModified }) {
-    const version = 0
+    const version = 1
     await Document.create({ id: document, type: documentType, purpose, content, created, lastModified, version })
     await Snapshot.create({ id: App.encodeIdentifier([document, version.toFixed().padStart(10, '0')]),
         document, version, content, timestamp: lastModified })
@@ -199,7 +199,8 @@ definition.event({
     if(!openDocument) throw new Error('critical error - document not found') /// impossible
     if(openDocument.version < version)
       throw new Error('critical error - document version is lower than snapshot version') /// impossible
-    const existing = Snapshot.get(id)
+    const existing = await Snapshot.get(id)
+    console.log("SNAP", existing, openDocument.version, version)
     if(existing) return id
     if(openDocument.version == version) {
       const content = openDocument.content
