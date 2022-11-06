@@ -103,6 +103,7 @@ function defineCreateAction(config, context) {
         [modelPropertyName]: id,
         data
       })
+      return id
     }
   })
   const action = service.actions[actionName]

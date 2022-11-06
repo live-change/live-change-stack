@@ -24,6 +24,12 @@ function extractIdentifiersWithTypes(otherPropertyNames, properties) {
 }
 
 function generateAnyId(otherPropertyNames, properties) {
+  console.log("GEN ID", otherPropertyNames, properties, '=>',
+    otherPropertyNames
+      .map(p => [p+'Type', p])
+      .flat()
+      .map(p => JSON.stringify(properties[p])).join(':'))
+
   return otherPropertyNames
       .map(p => [p+'Type', p])
       .flat()

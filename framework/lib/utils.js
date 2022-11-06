@@ -190,7 +190,10 @@ function generateDefault(properties) {
 function prefixRange({ gt, lt, gte, lte, limit, reverse }, prefix, from = "") {
   function getPrefix(id) {
     if(id.length > from.length) {
-      if(id.slice(0, from.length) != from) throw new Error("id does not match prefix")
+      if(id.slice(0, from.length) != from) {
+        console.error("ID:", id, "does not start with", from)
+        throw new Error("id does not match prefix")
+      }
       id = id.slice(from.length)
     }
     if(id === '') return `${prefix}:`
