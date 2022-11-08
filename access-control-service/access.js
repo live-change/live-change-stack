@@ -9,7 +9,7 @@ module.exports = (definition) => {
 
   const config = definition?.config?.access ?? {}
 
-  const {
+  const { /// TODO: per type access config
     hasAny = (roles, client, { objectType, object }) => roles.length > 0,
     isAdmin = (roles, client, { objectType, object }) => roles.includes('administrator'),
     canInvite = (roles, client, { objectType, object }) => roles.length > 0,
@@ -68,8 +68,8 @@ module.exports = (definition) => {
     ])
     let roles = []
     if(publicAccessData) {
-      roles.push(...publicAccessData.sessionRoles)
-      if(client.user) roles.push(...publicAccessData.userRoles)
+      roles.push(...(publicAccessData.sessionRoles ?? []))
+      if(client.user) roles.push(...(publicAccessData.userRoles ?? []))
     }
     if(sessionAccess) roles.push(...sessionAccess.roles)
     if(userAccess) roles.push(...userAccess.roles)
