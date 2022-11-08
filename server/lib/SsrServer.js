@@ -105,21 +105,22 @@ class SsrServer {
         const dao = await this.createDao(credentials, clientIp)
         const version = this.version
 
-        let html
+        let result
         let error
 
         for(let retry = 0; retry < 3; retry ++) {
           try {
-            html = await this.renderer.renderPage({ url, host, dao, clientIp, credentials, windowId, version })
+            result = await this.renderer.renderPage({ url, host, dao, clientIp, credentials, windowId, version })
             break
           } catch(e) {
             error = e
           }
         }
-        if(html) {
-          res.status(200)
+        if(result) {
+          const { html, response } = result
+          res.status(response?.status || 200)
           writeCredentials(res, credentials)
-          res.set({
+          res.set(response?.headers ?? {
             'Content-Type': 'text/html'
           })
           res.end(html)

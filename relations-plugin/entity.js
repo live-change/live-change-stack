@@ -7,6 +7,14 @@ const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, E
 
 const annotation = 'entity'
 
+function entityAccessControl({service, modelName, modelPropertyName}, accessControl) {
+  if(!accessControl) return undefined
+  return {
+    objects: p => [{ objectType: service.name + '_' + modelName, object: p[modelPropertyName]}],
+    ...accessControl
+  }
+}
+
 function defineView(config, context) {
   const { service, modelRuntime, modelPropertyName, modelName, others, model } = context
   const viewName = (config.prefix || '' ) + (config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
@@ -22,7 +30,7 @@ function defineView(config, context) {
       type: model,
     },
     access: config.access,
-    accessControl: config.readAccessControl || config.writeAccessControl,
+    accessControl: entityAccessControl(context, config.readAccessControl || config.writeAccessControl),
     daoPath(properties, { client, context }) {
       const id = properties[modelPropertyName]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
@@ -87,7 +95,7 @@ function defineCreateAction(config, context) {
       ...(model.properties)
     },
     access: config.createAccess || config.writeAccess,
-    accessControl: config.createAccessControl || config.writeAccessControl,
+    accessControl: entityAccessControl(context, config.createAccessControl || config.writeAccessControl),
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -126,7 +134,7 @@ function defineUpdateAction(config, context) {
       }
     },
     access: config.updateAccess || config.writeAccess,
-    accessControl: config.updateAccessControl || config.writeAccessControl,
+    accessControl: entityAccessControl(context, config.updateAccessControl || config.writeAccessControl),
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -164,7 +172,7 @@ function defineDeleteAction(config, context) {
       }
     },
     access: config.deleteAccess || config.writeAccess,
-    accessControl: config.deleteAccessControl || config.writeAccessControl,
+    accessControl: entityAccessControl(context, config.deleteAccessControl || config.writeAccessControl),
     skipValidation: true,
     waitForEvents: true,
     async execute(properties, { client, service }, emit) {

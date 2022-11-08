@@ -45,7 +45,7 @@ class Renderer {
     const { url, dao, clientIp, credentials, windowId, version } = params
 
     const render = await this.getRenderFunction()
-    const { html: appHtml, modules, data, meta } = await render(params)
+    const { html: appHtml, modules, data, meta, response } = await render(params)
 
     const preloadLinks = this.renderPreloadLinks(modules)
 
@@ -69,7 +69,7 @@ class Renderer {
       '<!--app-data-->': (meta.bodyAppend || '') + '\n' + appDataScript
     })
 
-    return html
+    return { html, response }
   }
 
   renderPreloadLink(file) {
