@@ -255,6 +255,7 @@ class CountObservable extends ReactiveDao.ObservableValue {
   }
 
   async deleteObject(object) {
+    if(!object) return
     const id = object.id
     if(this.range.gt && !(id > this.range.gt)) return
     if(this.range.lt && !(id < this.range.lt)) return
