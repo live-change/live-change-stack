@@ -83,7 +83,7 @@ class Path {
         }
         newMore.push(more)
       } else if(fetchObject.$toPath) { /// sourceProxy returned
-        console.log("FETCH OBJECT PROXY", fetchObject)
+        //console.log("FETCH OBJECT PROXY", fetchObject)
         const schema = JSON.parse(JSON.stringify(fetchObject.$toPath(), (key, value) => {
           if(value instanceof Path) {
             const path = value.what.slice(0, -1)

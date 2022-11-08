@@ -631,22 +631,34 @@ class ReactiveServerConnection extends EventEmitter {
         }
         return dataPromise.then(result => {
           if(!resultsMap.has(key)) {
-            results.push({
+            const resultInfo = {
               what,
               data: result
-            })
-            resultsMap.set(key, result)
+            }
+            results.push(resultInfo)
+            resultsMap.set(key, resultInfo)
           }
           if(path.more) {
             return fetchMore(result, path.more).then(m=>result)
           } else return Promise.resolve(result)
+        }).catch(error => {
+          if(!resultsMap.has(key)) {
+            const resultInfo = {
+              what,
+              error: error
+            }
+            results.push(resultInfo)
+            resultsMap.set(key, resultInfo)
+          }
         })
       } else if(path.schema) {
         return fetchDeps(undefined, path.schema).then(pointers => {
           //console.log("PTRS", pointers)
           return Promise.all(pointers.map(pointer => fetch({ what: pointer }))).then(results => {
+            const error = results.find(r => r.error)
+            if(error) return error
             if (path.more) {
-              return fetchMore(results, path.more).then(m=>results)
+              return fetchMore(results.map(r => r.data), path.more).then(m=>results)
             } else return Promise.resolve(results)
           })
         })
