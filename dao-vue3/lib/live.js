@@ -32,7 +32,7 @@ async function fetch(api, path) {
   const preFetchMap = new Map(preFetchPaths.map((res) => [JSON.stringify(res.what), res] ))
   function createObject(what, more) {
     const res = preFetchMap.get(JSON.stringify(what))
-    console.log("PREFETCH", what, "RES", res, "MORE", more)
+    debug("PREFETCH", what, "RES", res, "MORE", more)
     if(res.error) throw new Error(res.error)
     const data = res.data
     if(data && more) {
@@ -78,9 +78,9 @@ async function fetch(api, path) {
 async function live(api, path, onUnmountedCb) {
   if(isRef(path)) {
     if(typeof window == 'undefined') {
-      console.log("FETCH", path.value)
+      debug("FETCH", path.value)
       const data = await fetch(api, path.value)
-      console.log("FETCHED", data)
+      debug("FETCHED", data)
       return data
     }
     let liveRef = shallowRef()
