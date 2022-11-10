@@ -14,6 +14,7 @@ module.exports.validation = require('./lib/utils/validation.js')
 module.exports.rangeProperties = module.exports.utils.rangeProperties
 module.exports.encodeIdentifier = module.exports.utils.encodeIdentifier
 module.exports.extractRange = module.exports.utils.extractRange
+module.exports.isomorphic = module.exports.utils.isomorphic
 
 
 module.exports.ActionDefinition = require('./lib/definition/ActionDefinition.js')

@@ -20,20 +20,21 @@ module.exports = function(service, app) {
     if(view.skipValidation) continue
     const validators = getValidators(view, service, view)
     if(Object.keys(validators).length > 0) {
-      if (view.read && !view.fetch) {
-        const oldRead = view.read
-        view.read = async (...args) => {
+      if (view.observable) {
+        const oldObservable = view.observable
+        view.observable = async (...args) => {
           const context = args[1]
           return validate(args[0], validators, { source: view, view, service, app, ...context }).then(() =>
-              oldRead.apply(view, args)
+              oldObservable.apply(view, args)
           )
         }
-      } else {
-        const oldFetch = view.fetch
-        view.fetch = async (...args) => {
+      }
+      if(view.get) {
+        const oldGet = view.get
+        view.get = async (...args) => {
           const context = args[1]
           return validate(args[0], validators, { source: view, view, service, app, ...context }).then(() =>
-              oldFetch.apply(view, args)
+              oldGet.apply(view, args)
           )
         }
       }

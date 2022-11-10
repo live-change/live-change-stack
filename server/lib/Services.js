@@ -117,7 +117,7 @@ class Services {
   async update() {
     await Promise.all(this.serviceDefinitions.map(defn => {
       if(!defn.processed) {
-        app.processServiceDefinition(defn, [ ...app.defaultProcessors ])
+        app.processServiceDefinition(defn)
         defn.processed = true
       }
       return app.updateService(defn)
@@ -128,7 +128,7 @@ class Services {
     await Promise.all(this.plugins.map(plugin => plugin(app, this)))
     this.services = await Promise.all(this.serviceDefinitions.map(defn => {
       if(!defn.processed) {
-        app.processServiceDefinition(defn, [ ...app.defaultProcessors ])
+        app.processServiceDefinition(defn)
         defn.processed = true
       }
       return app.startService(defn, startOptions)

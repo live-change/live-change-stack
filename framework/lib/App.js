@@ -25,7 +25,7 @@ const indexCode = require("./processors/indexCode.js")
 
 const databaseUpdater = require("./updaters/database.js")
 
-const accessControlFilter = require("./clientSideFilters/accessControlFilter.js")
+const accessControlFilter = require("./clientSideFilters/accessFilter.js")
 const clientSideFilter = require("./clientSideFilters/clientSideFilter.js")
 
 const commandExecutor = require("./processes/commandExecutor.js")
@@ -186,10 +186,20 @@ class App {
   }
 
   async clientSideDefinition( service, client, filters ) {
-    let definition = JSON.parse(JSON.stringify(service.definition.toJSON()))
+    if(!service.clientSideDefinition) {
+      service.clientSideDefinition = JSON.stringify(service.definition.toJSON(), (key, value) => {
+        if (value && typeof value == 'object' && value.function && value.isomorphic) return {
+          function: value.function.toString(),
+          isomorphic: value.isomorphic
+        }
+        return value
+      })
+    }
+    let definition = JSON.parse(service.clientSideDefinition)
     delete definition.use
     if(!filters) filters = this.defaultClientSideFilters
     for(let filter of filters) await filter(service, definition, this, client)
+    for(let filter of service.definition.clientSideFilters) await filter(service, definition, this, client)
     return definition
   }
 

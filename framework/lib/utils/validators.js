@@ -34,6 +34,9 @@ let validators = {
   minLength: ({ length }) => (value) => value.length < length ? 'tooShort' : undefined,
   maxLength: ({ length }) => (value) => value.length > length ? 'tooLong' : undefined,
 
+  number: () => (value) => isNaN(value) ? 'notANumber' : undefined,
+  integer: () => (value) => !Number.isInteger(value) ? 'notAnInteger' : undefined,
+
   elementsNonEmpty: (settings) => (value) => {
     if(!value) return
     for(let el of value) {

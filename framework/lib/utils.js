@@ -267,9 +267,22 @@ function extractRange(properties) {
   }
 }
 
+function isomorphic( v ) {
+  if(typeof v == 'function') {
+    return {
+      isomorphic: true,
+      function: v
+    }
+  }
+  return {
+    isomorphic: true,
+    value: v
+  }
+}
+
 module.exports = {
   typeName, toJSON, setDifference, mapDifference, crudChanges,
   getProperty, setProperty, getField, setField, isObject, mergeDeep, generateDefault,
   prefixRange, rangeProperties, fieldListToFieldsObject,
-  encodeIdentifier, extractRange
+  encodeIdentifier, extractRange, isomorphic
 }
