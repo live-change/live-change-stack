@@ -12,6 +12,7 @@ const {
 
 
 const { Content, Session, schemas, getDocument } = require("./model.js")
+const { Metadata } = require("./metadata.js")
 const Snapshot = definition.foreignModel("prosemirror", "Snapshot")
 
 definition.view({

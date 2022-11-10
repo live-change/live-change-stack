@@ -55,10 +55,10 @@ const Page = definition.model({
   name: 'Page',
   entity: {
     readAccessControl: {
-      roles: ['reader']
+      roles: contentReaderRoles
     },
     writeAccessControl: {
-      roles: ['writer']
+      roles: contentWriterRoles
     },
   },
 })
