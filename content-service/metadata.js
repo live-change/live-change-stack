@@ -65,23 +65,24 @@ const Metadata = definition.model({
   properties: {
     title: {
       type: String,
-      softValidation: ['nonEmpty', { name: 'maxLength', params: { maxLength: 64 } }]
+      validation: ['nonEmpty', { name: 'maxLength', params: { length: 64 } }]
     },
     description: {
       type: String,
-      softValidation: ['nonEmpty', { name: 'maxLength', params: { maxLength: 155 } }]
+      input: 'textarea',
+      softValidation: ['nonEmpty', { name: 'maxLength', params: { length: 155 } }]
     },
     og: {
       type: Object,
       properties: {
         title: {
           type: String,
-          softValidation: ['nonEmpty', { name: 'maxLength', params: { maxLength: 60 } }]
+          softValidation: ['nonEmpty', { name: 'maxLength', params: { length: 60 } }]
         },
         description: {
           type: String,
           input: 'textarea',
-          softValidation: ['nonEmpty', { name: 'maxLength', params: { maxLength: 65 } }]
+          softValidation: ['nonEmpty', { name: 'maxLength', params: { length: 65 } }]
         },
         image: {
           type: 'Image',
@@ -108,49 +109,55 @@ const Metadata = definition.model({
         },*/
         type: {
           type: String,
+          input: 'select',
           softValidation: ['nonEmpty'],
+          defaultValue: 'website',
           options: [
-            'music.song', 'music.album', 'music.playlist', 'music.radio_station',
-            'video.movie', 'video.episode', 'video.tv_show', 'video.other',
+            'website',
             'article',
             'book',
             'profile',
-            'website'
+            'music.song', 'music.album', 'music.playlist', 'music.radio_station',
+            'video.movie', 'video.episode', 'video.tv_show', 'video.other'
           ]
         },
         music: {
-          if: App.isomorphic(({ props }) => props.og.type.split('.')[0] === 'music'),
+          if: App.isomorphic(({ props }) =>
+            ['music.radio_station', 'music.playlist', 'music.album', 'music.song'].includes(props?.og?.type)
+          ),
           type: Object,
           properties: {
             duration: {
-              if: App.isomorphic(({ props }) => ['music.album', 'music.song'].includes(props.og.type)),
+              if: App.isomorphic(({ props }) => ['music.album', 'music.song'].includes(props?.og?.type)),
               ...durationType
             },
             song: {
-              if: App.isomorphic(({ props }) => ['music.album', 'music.playlist'].includes(props.og.type)),
+              if: App.isomorphic(({ props }) => ['music.album', 'music.playlist'].includes(props?.og?.type)),
               ...musicSongsType
             },
             album: {
-              if: App.isomorphic(({ props }) => props.og.type === 'music.song'),
+              if: App.isomorphic(({ props }) => props?.og?.type === 'music.song'),
               ...musicSongsType  /// music.song list is compatible with music.album list
             },
             musician: {
-              if: App.isomorphic(({ props }) => ['music.album', 'music.song'].includes(props.og.type)),
+              if: App.isomorphic(({ props }) => ['music.album', 'music.song'].includes(props?.og?.type)),
               ...urlArrayType
             },
             releaseDate: {
-              if: App.isomorphic(({ props }) => props.og.type === 'music.album'),
+              if: App.isomorphic(({ props }) => props?.og?.type === 'music.album'),
               type: Date,
             },
             creator: {
-              if: App.isomorphic(({ props }) => ['music.radio_station', 'music.playlist'].includes(props.og.type)),
+              if: App.isomorphic(({ props }) => ['music.radio_station', 'music.playlist'].includes(props?.og?.type)),
               ...urlArrayType
             },
           },
           softValidation: ['nonEmpty']
         },
         video: {
-          if: App.isomorphic(({ props }) => props.og.type.split('.')[0] === 'video'),
+          if: App.isomorphic(({ props }) =>
+            ['video.movie', 'video.episode', 'video.tv_show', 'video.other'].includes(props?.og?.type)
+          ),
           type: Object,
           properties: {
             actor: {
@@ -174,13 +181,13 @@ const Metadata = definition.model({
             },
             tag: tagsType,
             series: {
-              if: App.isomorphic(({ props }) => props.og.type === 'video.tv_show'),
+              if: App.isomorphic(({ props }) => props?.og?.type === 'video.tv_show'),
               ...urlType
             }
           }
         },
         article: {
-          if: App.isomorphic(({ props }) => props.og.type === 'article'),
+          if: App.isomorphic(({ props }) => props?.og?.type === 'article'),
           type: Object,
           properties: {
             publishedTime: {
@@ -200,7 +207,7 @@ const Metadata = definition.model({
           }
         },
         profile: {
-          if: App.isomorphic(({ props }) => props.og.type === 'profile'),
+          if: App.isomorphic(({ props }) => props?.og?.type === 'profile'),
           type: Object,
           properties: {
             firstName: {
