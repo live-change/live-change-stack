@@ -49,13 +49,16 @@ function synchronizedList(options) {
     timeSource = () => (new Date()).toISOString(),
     onChange = () => {},
     onSave = () => {},
+    onSaveError = (e) => { console.error("SAVE ERROR", e) },
+    resetOnError = true,
     recursive = false,
     throttle = 300,
     autoSave = true,
     mapper = source => synchronized({
-        source, update: updateAction, identifiers: { ...identifiers, ...objectIdentifiers(source.value) }, timeField, timeSource,
-        recursive, throttle, autoSave, onSave, onChange
-      })
+      source, update: updateAction, identifiers: { ...identifiers, ...objectIdentifiers(source.value) },
+      timeField, timeSource,
+      recursive, throttle, autoSave, onSave, onSaveError, resetOnError, onChange
+    })
   } = options
   if(!source) throw new Error('source must be defined')
   const synchronizedList = ref([])

@@ -14,6 +14,9 @@ export { synchronized }
 import { synchronizedList } from "./synchronizedList.js"
 export { synchronizedList }
 
+import { defaultData, validateData } from "./data.js"
+export { defaultData, validateData }
+
 function registerLogicComponents(app) {
   app.component("loading", Loading)
   app.component("loading-zone", LoadingZone)

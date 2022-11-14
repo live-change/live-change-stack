@@ -20,6 +20,8 @@ function synchronized(options) {
     timeSource = () => (new Date()).toISOString(),
     onChange = () => {},
     onSave = () => {},
+    onSaveError = (e) => { console.error("SAVE ERROR", e) },
+    resetOnError = true,
     recursive = false,
     throttle = 300,
     autoSave = true
@@ -49,8 +51,14 @@ function synchronized(options) {
       // console.log("LAST REMOTE UPDATE", ((source.value && source.value[timeField]) ?? ''))
       // console.log("SOURCE JSON", JSON.stringify(source.value))
       // console.log("SYNCHRONIZED JSON", JSON.stringify(synchronizedValue.value))
-      await update({ ...data, [timeField]: lastLocalUpdate.value, ...identifiers })
-      onSave()
+      try {
+        await update({ ...data, [timeField]: lastLocalUpdate.value, ...identifiers })
+        try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
+      } catch(e) {
+        if(resetOnError) synchronizedValue.value = copy(source.value)
+        console.error("SAVE ERROR", e)
+        onSaveError(e)
+      }
       return true
     }
     const throttledSave = throttle ? useThrottleFn(save, throttle) : save
@@ -83,8 +91,14 @@ function synchronized(options) {
          || ( ((local.value && local.value[timeField]) ?? '')
            <= ((source.value && source.value[timeField]) ?? ''))) return false // identical, no need to save
       const data = JSON.parse(JSON.stringify(local.value))
-      await update({ ...data, ...identifiers })
-      onSave()
+      try {
+        await update({...data, ...identifiers})
+        try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
+      } catch(e) {
+        if(resetOnError) synchronizedValue.value = source.value
+        console.error("SAVE ERROR", e)
+        onSaveError(e)
+      }
       return true
     }
     const throttledSave = throttle ? useThrottleFn(save, throttle) : save
