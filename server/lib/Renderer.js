@@ -42,7 +42,7 @@ class Renderer {
   }
 
   async renderPage(params) {
-    const { url, dao, clientIp, credentials, windowId, version } = params
+    const { url, headers, dao, clientIp, credentials, windowId, version } = params
 
     const render = await this.getRenderFunction()
     const { html: appHtml, modules, data, meta, response } = await render(params)

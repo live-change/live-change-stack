@@ -42,13 +42,13 @@ async function validate(props, validators, context) {
   let propErrors = {}
   for(let propName in validators) {
     let errors = (await propPromises[propName]).filter(e=>!!e)
-    console.log("EERRS",propName, errors)
+    //console.log("EERRS",propName, errors)
     if(errors.length > 0) {
-      console.log("ERRS", propName)
+      //console.log("ERRS", propName)
       propErrors[propName] = errors[0]
     }
   }
-  console.log("PROP ERRORS", propErrors)
+  //console.log("PROP ERRORS", propErrors)
   if(Object.keys(propErrors).length > 0) throw { properties: propErrors }
 }
 
