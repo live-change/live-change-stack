@@ -1,6 +1,6 @@
 {
   "name": "@live-change/timer-service",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.7.4"
+    "@live-change/framework": "0.7.5"
   },
   "gitHead": "8d09f0f01547edd2c1321a8d7341e33aff4c562d"
 }
