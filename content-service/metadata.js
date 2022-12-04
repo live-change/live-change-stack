@@ -175,7 +175,7 @@ const Metadata = definition.model({
             },
             director: urlArrayType,
             writer: urlArrayType,
-            durationType: durationType,
+            duration: durationType,
             releaseDate: {
               type: Date,
             },
@@ -199,7 +199,7 @@ const Metadata = definition.model({
             expirationTime: {
               type: Date,
             },
-            author: urlType,
+            author: urlArrayType,
             section: {
               type: String
             },
@@ -223,6 +223,20 @@ const Metadata = definition.model({
               type: String,
               options: ['male', 'female']
             }
+          }
+        },
+        book: {
+          if: App.isomorphic(({ props }) => props?.og?.type === 'book'),
+          type: Object,
+          properties: {
+            author: urlArrayType,
+            isbn: {
+              type: String
+            },
+            releaseDate: {
+              type: Date
+            },
+            tag: tagsType
           }
         }
       }

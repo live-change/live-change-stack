@@ -39,8 +39,11 @@ definition.view({
   returns: {
     type: Document
   },
-  async daoPath({ document }, { client, context }) {
+  async daoPath(props, { client, context }) {
     if(testLatency) await sleep(testLatency)
+    const { targetType, target } = props
+    const document = App.encodeIdentifier([targetType, target])
+    //console.log("DOCUMENT DAO PATH", Document.path( document ))
     return Document.path( document )
   }
 })
