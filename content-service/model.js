@@ -4,7 +4,7 @@ const definition = require('./definition.js')
 
 const config = definition.config
 const {
-  contentReaderRoles = ['reader'],
+  contentReaderRoles = ['reader', 'writer'],
   contentWriterRoles = ['writer']
 } = config
 

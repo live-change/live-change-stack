@@ -56,6 +56,8 @@ definition.processor({
           throw new Error('no objects for access control to work in view ' + viewName)
         }
         console.log("OBJECTS", objects)
+        /*console.log("CLIENT", client)
+        console.log("ROLES", config.roles)*/
         const accessible = await access.clientHasAccessRoles(client, { objects }, config.roles)
         if(!accessible) throw 'notAuthorized'
         return oldGet.apply(view, args)
