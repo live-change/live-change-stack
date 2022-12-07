@@ -57,7 +57,7 @@ export function validateData(definition, data, validationType = 'validation',
     const propertyErrors = {}
     for(let i = 0; i < data.length; i++) {
       const error = validateData(definition.of, data[i], validationType, context,
-        propName ? propName + '.' + name : name, props)
+        propName ? propName + '.' + i : i, props)
       const name = '' + i
       if(error) {
         if(error.propertyErrors) {
