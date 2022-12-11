@@ -23,7 +23,8 @@
     "prosemirror-service",
     "content-service",
     "pages-service",
-    "url-service"
+    "url-service",
+    "blog-service"
   ],
   "devDependencies": {
   }

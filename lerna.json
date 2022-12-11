@@ -19,7 +19,8 @@
     "notification-service",
     "prosemirror-service",
     "content-service",
-    "url-service"
+    "url-service",
+    "blog-service"
   ],
   "publishConfig": {
     "access": "public"
