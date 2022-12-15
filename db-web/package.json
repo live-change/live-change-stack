@@ -29,8 +29,8 @@
     "tape": "^5.3.2"
   },
   "dependencies": {
-    "@live-change/dao": "0.5.7",
-    "@live-change/db": "^0.5.19",
+    "@live-change/dao": "0.5.8",
+    "@live-change/db": "0.5.19",
     "@live-change/db-store-rbtree": "^0.5.19",
     "debug": "^4.3.4"
   },
