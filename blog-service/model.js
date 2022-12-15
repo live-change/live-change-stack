@@ -32,8 +32,7 @@ const Post = definition.model({
   },
   properties: {
     publishedTime: {
-      type: Date,
-      validation: ['nonEmpty', 'date']
+      type: Date
     }
   }
 })
