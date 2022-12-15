@@ -1,6 +1,6 @@
 {
   "name": "@live-change/blog-service",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -28,5 +28,5 @@
     "progress-stream": "^2.0.0",
     "prosemirror-model": "^1.18.1"
   },
-  "gitHead": "8d09f0f01547edd2c1321a8d7341e33aff4c562d"
+  "gitHead": "23a3455a94f5b0dd6d8032f20cf25e9af459332c"
 }
