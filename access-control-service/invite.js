@@ -270,7 +270,7 @@ for(const contactType of config.contactTypes) {
           messageData,
           action: 'inviteWithMessage',
           actionProperties: { objectType, object },
-          targetPage: { name: 'access:invitationAccepted', objectType, object }
+          targetPage: { name: 'access:invitationAccepted', params: { objectType, object } }
         })
         emit({
           type: 'contactInvited',
