@@ -1,6 +1,6 @@
 {
   "name": "@live-change/relations-plugin",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.7.7",
+    "@live-change/framework": "^0.7.8",
     "pluralize": "8.0.0"
   }
 }
