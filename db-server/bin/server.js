@@ -162,7 +162,7 @@ async function serve(argv) {
 
   const ssrRoot = path.dirname(require.resolve("@live-change/db-admin/front/vite.config.js"))
 
-  const http = server.getHttp()
+  const http = await server.getHttp()
   const { app } = http
 
   const dev = await fs.promises.access(path.resolve(ssrRoot, './dist'), fs.constants.R_OK)
@@ -174,10 +174,11 @@ async function serve(argv) {
     fastAuth: true,
     root: ssrRoot,
     daoFactory: async (credentials, ip) => {
-      return await createLoopbackDao(credentials, () => this.apiServer.daoFactory(credentials, ip))
+      return await createLoopbackDao(credentials, () => server.apiServer.daoFactory(credentials, ip))
     }
   })
   admin.start()
+  http.server.listen(port, host)
 
   if(verbose) console.info(`server started!`)
   await db.profileLog.end(profileOp)
