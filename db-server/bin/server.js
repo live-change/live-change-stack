@@ -10,6 +10,11 @@ const db = require("@live-change/db")
 const profileOutput = require("../lib/profileOutput.js")
 const { performance } = require('perf_hooks')
 
+const {
+  SsrServer,
+  createLoopbackDao
+} = require("@live-change/server")
+
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
 })
@@ -154,7 +159,26 @@ async function serve(argv) {
   await server.initialize()
   if(verbose) console.info(`database initialized!`)
   if(verbose) console.info(`listening on: ${argv.host}:${argv.port}`)
-  server.listen(port, host)
+
+  const ssrRoot = path.dirname(require.resolve("@live-change/db-admin/front/vite.config.js"))
+
+  const http = server.getHttp()
+  const { app } = http
+
+  const dev = await fs.promises.access(path.resolve(ssrRoot, './dist'), fs.constants.R_OK)
+    .then(r => false).catch(r => true)
+  if(dev) console.log("STARTING ADMIN IN DEV MODE!")
+  const manifest = dev ? null : require(path.resolve(ssrRoot, 'dist/client/ssr-manifest.json'))
+  const admin = new SsrServer(app, manifest, {
+    dev,
+    fastAuth: true,
+    root: ssrRoot,
+    daoFactory: async (credentials, ip) => {
+      return await createLoopbackDao(credentials, () => this.apiServer.daoFactory(credentials, ip))
+    }
+  })
+  admin.start()
+
   if(verbose) console.info(`server started!`)
   await db.profileLog.end(profileOp)
 }

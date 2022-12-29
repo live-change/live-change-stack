@@ -19,10 +19,6 @@ const Database = require('@live-change/db').Database
 
 const debug = require('debug')('db-server')
 
-const {
-  SsrServer,
-  createLoopbackDao
-} = require("@live-change/server")
 const packageInfo = require("@live-change/db-server/package.json");
 
 class DatabaseStore {
@@ -331,27 +327,11 @@ class Server {
       })
       sockJsServer.attach(server)
 
-      const ssrRoot = path.dirname(require.resolve("@live-change/db-admin/front/vite.config.js"))
-      const dev = await fs.promises.access(path.resolve(ssrRoot, './dist'), fs.constants.R_OK)
-          .then(r => false).catch(r => true)
-      if(dev) console.log("STARTING ADMIN IN DEV MODE!")
-      const manifest = dev ? null : require(path.resolve(ssrRoot, 'dist/client/ssr-manifest.json'))
-      const admin = new SsrServer(app, manifest, {
-        dev,
-        fastAuth: true,
-        root: ssrRoot,
-        daoFactory: async (credentials, ip) => {
-          return await createLoopbackDao(credentials, () => this.apiServer.daoFactory(credentials, ip))
-        }
-      })
-      admin.start()
-
       this.http = {
         app,
         sockJsServer,
         wsServer,
-        server,
-        admin
+        server
       }
       return this.http
     })()
