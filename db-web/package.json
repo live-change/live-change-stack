@@ -30,8 +30,8 @@
   },
   "dependencies": {
     "@live-change/dao": "0.5.8",
-    "@live-change/db": "^0.5.22",
-    "@live-change/db-store-rbtree": "^0.5.22",
+    "@live-change/db": "0.5.22",
+    "@live-change/db-store-rbtree": "0.5.22",
     "debug": "^4.3.4"
   },
   "gitHead": "af756efb8db9ba90d79774786201cffe9c2162cf"

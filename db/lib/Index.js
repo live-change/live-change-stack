@@ -180,6 +180,7 @@ class TableReader extends ChangeStream {
       if(!this.opLog) this.opLog = this.isLog ? (await this.table).data : (await this.table).opLog
       //console.log("READ OP LOG", this.prefix, key, opLogBatchSize)
       this.opLogObservableRange = { gt: key, limit: opLogBatchSize }
+      //console.log("READ OP LOG", this.prefix, "RANGE", JSON.stringify(this.opLogObservableRange))
       this.opLogObservable = this.opLog.rangeObservable(this.opLogObservableRange)
       /// NEXT TICK BECAUSE IT CAN FINISH BEFORE EVENT START xD
       process.nextTick(() => this.opLogObservable.observe(this))
@@ -245,7 +246,7 @@ class TableReader extends ChangeStream {
       const next = this.opLogBuffer.shift()
       lastKey = next.id
       if(this.isLog) {
-        await this.change(next, null, next, next.id)
+        await this.change(next, null, next.id, next.id)
       } else {
         const op = next.operation
         //if(this.prefix == 'table_triggers') console.log("HANDLE OP LOG OPERATION", next)

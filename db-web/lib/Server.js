@@ -89,8 +89,12 @@ class Server {
     })
   }
   async initialize(initOptions = {}) {
-    const jsonStr = localStorage[`${this.config.dbPrefix || ''}_lcdb`]
-    this.metadata = jsonStr && JSON.parse(jsonStr)
+    if(initOptions.metadata) {
+      this.metadata = initOptions.metadata
+    } else {
+      const jsonStr = localStorage[`${this.config.dbPrefix || ''}_lcdb`]
+      this.metadata = jsonStr && JSON.parse(jsonStr)
+    }
     if(!this.metadata) {
       this.metadata = {
         databases: {
@@ -123,6 +127,7 @@ class Server {
         this.saveMetadata()
       },
       (name) => dbStore.deleteStore(name),
+      dbName,
       (context) => new ScriptContext(context)
     )
     database.onAutoRemoveIndex = (name, uid) => {

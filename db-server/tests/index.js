@@ -183,11 +183,17 @@ test("index", t => {
     let results = await client.get(['database', 'indexRange', 'index.test', 'eventsByType', {}])
     t.equal(results.length, events.length, 'query result')
 
-    const newEvent = { id: '7', name: 'henry' }
+    const newEvent = { type: 'new', value: 'henry' }
     events.push(newEvent)
     await client.request(['database', 'putLog'], 'index.test', 'events', newEvent)
+    console.log("EVENTS LOGGED:\n  ",
+      (await client.get(['database', 'logRange', 'index.test', 'events', {}]))
+        .map(e => JSON.stringify(e)).join('\n'))
+
     await delay(100)
     results = await client.get(['database', 'indexRange', 'index.test', 'eventsByType', {}])
+    console.log("RESULTS", results.map(r => r.id))
+    console.log("EVENTS", events.map(e => e.type+'_'+e.id))
     t.deepEqual(results.length, events.length)
   })
 
