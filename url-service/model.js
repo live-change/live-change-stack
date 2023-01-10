@@ -62,7 +62,11 @@ const UrlToTarget = definition.index({
   name: 'Urls',
   function: async function(input, output) {
     const urlMapper = urlType => ({targetType, domain, path, target}) =>
-      ({ id: `"${targetType}":${JSON.stringify(domain)}:${JSON.stringify(path)}_"${target}"`, target, type: urlType })
+      ({
+        id: `"${targetType}":${JSON.stringify(domain)}:${JSON.stringify(path)}_"${target}"`,
+        target, domain, path,
+        type: urlType
+      })
     const redirectMapper = urlMapper('redirect')
     const canonicalMapper = urlMapper('canonical')
     await input.table('url_Redirect').onChange(
@@ -74,4 +78,24 @@ const UrlToTarget = definition.index({
   }
 })
 
-module.exports = { Canonical, Redirect, UrlToTarget }
+const UrlToTargetWithoutDomain = definition.index({
+  name: 'UrlsWithoutDomain',
+  function: async function(input, output) {
+    const urlMapper = urlType => ({targetType, domain, path, target}) =>
+      ({
+        id: `"${targetType}":${JSON.stringify(path)}_"${target}"`,
+        target, domain, path,
+        type: urlType
+      })
+    const redirectMapper = urlMapper('redirect')
+    const canonicalMapper = urlMapper('canonical')
+    await input.table('url_Redirect').onChange(
+      (obj, oldObj) => output.change(obj && redirectMapper(obj), oldObj && redirectMapper(oldObj))
+    )
+    await input.table('url_Canonical').onChange(
+      (obj, oldObj) => output.change(obj && canonicalMapper(obj), oldObj && canonicalMapper(oldObj))
+    )
+  }
+})
+
+module.exports = { Canonical, Redirect, UrlToTarget, UrlToTargetWithoutDomain }

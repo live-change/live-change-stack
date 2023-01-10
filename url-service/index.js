@@ -14,7 +14,7 @@ const {
   urlWriterRoles = ['writer']
 } = config
 
-const { Canonical, Redirect, UrlToTarget } = require("./model.js")
+const { Canonical, Redirect, UrlToTarget, UrlToTargetWithoutDomain } = require("./model.js")
 
 definition.view({
   name: "urlsByTargetAndPath",
@@ -45,6 +45,60 @@ definition.view({
   daoPath(params, { client, service }, method) {
     const { targetType, domain, path } = params
     const dp = UrlToTarget.rangePath([ targetType, domain, path ], App.extractRange(params))
+    //console.log("URLS PATH", params, '=>', dp)
+    return dp
+  }
+})
+
+definition.view({
+  name: "urlsByTargetType",
+  properties: {
+    targetType: {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  },
+  returns: {
+    type: Object,
+    properties: {
+      urlType: {
+        type: String,
+      },
+      target: {
+        type: String
+      }
+    }
+  },
+  daoPath(params, { client, service }, method) {
+    const { targetType } = params
+    const dp = UrlToTargetWithoutDomain.rangePath([ targetType ], App.extractRange(params))
+    //console.log("URLS PATH", params, '=>', dp)
+    return dp
+  }
+})
+
+definition.view({
+  name: "urlsByTargetTypeAndDomain",
+  properties: {
+    targetType: {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  },
+  returns: {
+    type: Object,
+    properties: {
+      urlType: {
+        type: String,
+      },
+      target: {
+        type: String
+      }
+    }
+  },
+  daoPath(params, { client, service }, method) {
+    const { targetType, domain } = params
+    const dp = UrlToTarget.rangePath([ targetType, domain ], App.extractRange(params))
     //console.log("URLS PATH", params, '=>', dp)
     return dp
   }

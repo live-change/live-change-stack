@@ -133,13 +133,14 @@ definition.trigger({
     }
   },
   async execute({ contactType, contact, session, objectType, object }, { service }, emit) {
+    console.error("INVITE WITH MESSAGE AUTHENTICATED", { contactType, contact, session, objectType, object })
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     /// Load invitation
     const invitation = App.encodeIdentifier([ contactType + '_' + contactTypeUpperCase, contact, objectType, object ])
     console.log("INVITATION", invitation)
     const invitationData = await AccessInvitation.get(invitation)
     if(!invitationData) throw 'not_found'
-    const { roles } = invitation
+    const { roles } = invitationData
     /// Create account and sign-in:
     const user = app.generateUid()
     await service.trigger({
@@ -270,7 +271,7 @@ for(const contactType of config.contactTypes) {
           messageData,
           action: 'inviteWithMessage',
           actionProperties: { objectType, object },
-          targetPage: { name: 'access:invitationAccepted', params: { objectType, object } }
+          targetPage: { name: 'accessControl:invitationAccepted', params: { objectType, object } }
         })
         emit({
           type: 'contactInvited',
