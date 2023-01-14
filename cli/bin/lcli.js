@@ -145,7 +145,7 @@ const argv = require('yargs') // eslint-disable-line
   }, async (argv) => {
     argv = {
       ...argv,
-      withServices: true, updateServices: true,
+      withApi: true, withServices: true, updateServices: true,
       withDb: true, dbBackend: 'mem', createDb: true
     }
     await setupApp({ ...argv, uidBorders: '[]' })
@@ -251,15 +251,6 @@ async function ssrServer(argv, dev) {
     })
     expressApp.use('/api', apiProxy)
     console.log("PROXY /api to", target)
-  }
-
-  if(argv.createDb) {
-    const list = await app.dao.get(['database', 'databasesList'])
-    console.log("existing databases:", list.join(', '))
-    console.log("creating database", app.databaseName)
-    await app.dao.request(['database', 'createDatabase'], app.databaseName, {
-      storage: { noMetaSync: true, noSync: true }
-    }).catch(err => 'exists')
   }
 
   let apiServer

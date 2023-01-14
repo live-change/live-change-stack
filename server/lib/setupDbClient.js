@@ -6,7 +6,7 @@ function setupDbClient(argv, env = process.env) {
   const config = {
     url: env.DB_URL,
     name: env.DB_NAME,
-    requestTimeout: (+env.DB_REQUEST_TIMEOUT),
+    requestTimeout: env.DB_REQUEST_TIMEOUT && +env.DB_REQUEST_TIMEOUT,
     cache: env.DB_CACHE == "YES",
     //unobserveDebug: env.UNOBSERVE_DEBUG == "YES",
   }
@@ -18,7 +18,7 @@ function setupDbClient(argv, env = process.env) {
     connectionSettings: {
       queueRequestsWhenDisconnected: true,
       requestSendTimeout: 2000,
-      requestTimeout: this.requestTimeout,
+      requestTimeout: config.requestTimeout,
       queueActiveRequestsOnDisconnect: false,
       autoReconnectDelay: 200,
       logLevel: 1,

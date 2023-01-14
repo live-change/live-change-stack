@@ -8,6 +8,15 @@ const app = require("@live-change/framework").app()
 async function setupApiServer(settings) {
   const { services: config, withServices, updateServices } = settings
 
+  if(settings.createDb) {
+    const list = await app.dao.get(['database', 'databasesList'])
+    console.log("existing databases:", list.join(', '))
+    console.log("creating database", app.databaseName)
+    await app.dao.request(['database', 'createDatabase'], app.databaseName, {
+      storage: { noMetaSync: true, noSync: true }
+    }).catch(err => 'exists')
+  }
+
   const services = new Services(config)
 
   await services.loadServices()
