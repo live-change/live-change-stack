@@ -58,7 +58,7 @@ async function update(changes, service, app, force) {
                 let at = obj
                 for(const p of property) at = at && at[p]
                 if(at === undefined) return []
-                if(Array.isArray(at)) return at.map(v => JSON.strigify(v))
+                if(Array.isArray(at)) return at.map(v => JSON.stringify(v))
                 return [at]
               }
               await input.table(table).onChange((obj, oldObj) => {
@@ -78,7 +78,7 @@ async function update(changes, service, app, force) {
                 }
               })
             }
-        })`, { property: index.property.slice('.'), table })
+        })`, { property: index.property.split('.'), table })
       } else {
         if(!table) throw new Error("only function indexes are possible without table")
         const properties = (Array.isArray(index.property) ? index.property : [index.property]).map(p => p.split('.'))
@@ -136,9 +136,9 @@ async function update(changes, service, app, force) {
         const tableName = generateTableName(change.name)
         debug("DELETE TABLE")
         const model = change.model
-        for(let indexName in model.indexes) {
-          let indexName = change.name
-          indexName = tableName + '_' + indexName
+        for(let indexKey in model.indexes) {
+          const indexName = tableName + '_' + indexKey
+          debug("DELETE INDEX", indexName, indexKey)
           try {
             await dao.request(['database', 'deleteIndex'], database, indexName)
           } catch(e) {
