@@ -29,7 +29,10 @@ class Observable {
     if(signal == 'error') {
       let error = args[0]
       handled = this.handleError(error) || handled
-      if(!handled) debug("Unhandled observable error: "+ (error.message || error))
+      if(!handled) {
+        debug("Unhandled observable error: "+ (error.message || error.stack || error))
+        debug("Error: ", error)
+      }
     }
   }
 

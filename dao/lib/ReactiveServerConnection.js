@@ -430,6 +430,9 @@ class ReactiveServerConnection extends EventEmitter {
     try {
       const serialized = JSON.stringify(message)
       this.connection.write(serialized)
+      if(message.signal == 'error') {
+        debug("sending error", JSON.stringify(message, null, 2))
+      }
     } catch (error) {
       console.error("MESSAGE SERIALIZATION ERROR", error, "\nMessage: ", message)
     }
@@ -583,7 +586,7 @@ class ReactiveServerConnection extends EventEmitter {
   }
 
   handleGetMore(requestId, paths) {
-    //console.log("REQ", requestId)
+    //console.log("REQ", requestId, paths)
     let fetchMap = new Map()
     let resultsMap = new Map()
     let results = []

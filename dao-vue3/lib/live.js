@@ -57,6 +57,7 @@ async function fetch(api, path) {
         }
       } else {
         for(const moreElement of more) {
+          debug("MORE ELEMENT", moreElement)
           if(moreElement.to) {
             const pointers = collectPointers(data, moreElement.schema,
               (what) => preFetchMap.get(JSON.stringify(what)))

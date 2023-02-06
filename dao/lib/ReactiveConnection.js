@@ -448,7 +448,7 @@ class Connection extends EventEmitter {
   }
 
   dispose() {
-    console.log("DISPOSE REACTIVE CONNECTION")
+    debug("DISPOSE REACTIVE CONNECTION")
     this.finished = true
     for(const timeout of this.activeTimeouts) clearTimeout(timeout)
   }

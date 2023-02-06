@@ -3,7 +3,7 @@ const ObservablePromiseProxy = require("./ObservablePromiseProxy.js")
 const ObservableError = require("./ObservableError.js")
 const debug = require("debug")("reactive-dao")
 
-const errorMapper = e => ''+(e.stack || e.message || e)
+const errorMapper = e => ''+(e.stack || e.message || (typeof e == 'object' ? JSON.stringify(e) : e))
 
 class SimpleDao {
 
