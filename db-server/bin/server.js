@@ -34,7 +34,7 @@ function serverOptions(yargs) {
   yargs.option('host', {
     describe: 'bind host',
     type: 'string',
-    default: '0.0.0.0'
+    default: '::'
   })
   yargs.option('master', {
     describe: 'replicate from master',

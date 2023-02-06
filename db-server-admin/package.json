@@ -30,9 +30,9 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
-    "@live-change/dao": "^0.5.8",
-    "@live-change/dao-sockjs": "^0.5.8",
-    "@live-change/dao-vue": "^0.5.8",
+    "@live-change/dao": "^0.5.9",
+    "@live-change/dao-sockjs": "^0.5.9",
+    "@live-change/dao-vue": "^0.5.9",
     "core-js": "^3.6.5",
     "javascript-stringify": "^2.0.1",
     "moment": "^2.29.1",
