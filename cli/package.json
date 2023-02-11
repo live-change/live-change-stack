@@ -1,6 +1,6 @@
 {
   "name": "@live-change/cli",
-  "version": "0.7.11",
+  "version": "0.7.12",
   "description": "Live Change Framework - command line interface",
   "main": "index.js",
   "scripts": {
@@ -28,8 +28,8 @@
     "@live-change/dao-sockjs": "0.5.9",
     "@live-change/dao-websocket": "0.5.9",
     "@live-change/db-server": "0.5.23",
-    "@live-change/framework": "0.7.11",
-    "@live-change/server": "0.7.11",
+    "@live-change/framework": "^0.7.12",
+    "@live-change/server": "^0.7.12",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "http-proxy-middleware": "2.0.6",
