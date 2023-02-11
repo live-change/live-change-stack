@@ -42,7 +42,7 @@ class Renderer {
   }
 
   async renderPage(params) {
-    const { url, headers, dao, clientIp, credentials, windowId, version } = params
+    const { url, headers, dao, clientIp, credentials, windowId, version, now } = params
 
     const render = await this.getRenderFunction()
     const { html: appHtml, modules, data, meta, response } = await render(params)
@@ -53,10 +53,11 @@ class Renderer {
         `    window.__DAO_CACHE__= ${serialize(data, { isJSON: true })}\n`+
         (this.settings.fastAuth ? ''
           : `    window.__CREDENTIALS__= ${serialize(credentials, { isJSON: true })}\n`)+
-            `    window.__VERSION__ = ${serialize(version, { isJSON: true })}\n`+
-            `    window.__WINDOW_ID__ = ${serialize(windowId, { isJSON: true })}\n`+
-            `    console.error("SOFTWARE VERSION:" + window.__VERSION__)\n`+
-            `</script>\n`
+        `    window.__VERSION__ = ${serialize(version, { isJSON: true })}\n`+
+        `    window.__WINDOW_ID__ = ${serialize(windowId, { isJSON: true })}\n`+
+        `    window.__NOW__ = ${serialize(now, { isJSON: true })}\n`+
+        `    console.error("SOFTWARE VERSION:" + window.__VERSION__)\n`+
+        `</script>\n`
 
     const template = await this.prepareTemplate(url)
 

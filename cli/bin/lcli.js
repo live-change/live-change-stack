@@ -5,6 +5,7 @@ const path = require('path')
 const SegfaultHandler = require('segfault-handler')
 const http = require("http")
 const { createProxyMiddleware } = require('http-proxy-middleware')
+const { readFile } = require('fs').promises
 
 const app = require("@live-change/framework").app()
 
@@ -116,6 +117,14 @@ function ssrServerOptions(yargs) {
   })
   yargs.option('templatePath', {
     describe: 'front ssr entry file',
+    type: 'string'
+  })
+  yargs.option('version', {
+    describe: 'server version',
+    type: 'string'
+  })
+  yargs.option('versionFile', {
+    describe: 'server version file',
     type: 'string'
   })
 }
@@ -241,6 +250,8 @@ async function ssrServer(argv, dev) {
 
   const manifest = dev ? null : require(path.resolve(ssrRoot, 'dist/client/ssr-manifest.json'))
 
+  if(argv.versionFile) argv.version = await readFile(argv.versionFile, 'utf8')
+
   if(!argv.withApi) {
     const apiServerHost = (argv.apiHost == '0.0.0.0' ? 'localhost' : argv.apiHost) + ':' + argv.apiPort
     const target = `http://${apiServerHost}/`
@@ -263,6 +274,7 @@ async function ssrServer(argv, dev) {
   }
 
   console.log("ENDPOINTS INSTALLED! CREATING SSR SERVER!")
+
 
   const ssrServer = new SsrServer(expressApp, manifest, {
     ...argv,

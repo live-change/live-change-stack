@@ -39,10 +39,10 @@ async function setupApiServer(settings) {
           values: {
             version: {
               observable() {
-                return new Dao.ObservableValue(process.env.VERSION)
+                return new Dao.ObservableValue(settings.version || process.env.VERSION)
               },
               async get() {
-                return process.env.VERSION
+                return settings.version || process.env.VERSION
               }
             }
           }

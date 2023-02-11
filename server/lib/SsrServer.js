@@ -109,8 +109,9 @@ class SsrServer {
 
         for(let retry = 0; retry < 3; retry ++) {
           try {
+            const now = Date.now()
             result = await this.renderer.renderPage({
-              url, headers: req.headers, dao, clientIp, credentials, windowId, version
+              url, headers: req.headers, dao, clientIp, credentials, windowId, version, now
             })
             break
           } catch(e) {
