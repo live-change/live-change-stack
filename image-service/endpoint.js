@@ -86,7 +86,7 @@ async function handleImageGet(req, res, params) {
         res.send("Bad parameter value")
         return
       }
-      if(width >= metadata.original.width) return res.sendFile(sourceFilePath)
+      if(width >= metadata.width) return res.sendFile(sourceFilePath)
       const normalized = normalizeFormat(params.format || metadata.extension)
       const convertedFilePath = path.resolve(imagePrefix + `width-${width}.${normalized}`)
       if(!(await fileExists(convertedFilePath))) {
@@ -106,7 +106,7 @@ async function handleImageGet(req, res, params) {
         res.send("Bad parameter value")
         return
       }
-      if(height >= metadata.original.height) return res.sendFile(sourceFilePath)
+      if(height >= metadata.height) return res.sendFile(sourceFilePath)
       const normalized = normalizeFormat(params.format || metadata.extension)
       const convertedFilePath = path.resolve(imagePrefix + `height-${height}.${normalized}`)
       if(!(await fileExists(convertedFilePath))) {
@@ -127,15 +127,15 @@ async function handleImageGet(req, res, params) {
         res.send("Bad parameter value")
         return
       }
-      if(height > metadata.original.height) {
-        width = Math.round(width * metadata.original.height / height)
-        height = metadata.original.height
+      if(height > metadata.height) {
+        width = Math.round(width * metadata.height / height)
+        height = metadata.height
       }
-      if(width > metadata.original.width) {
-        height = Math.round(height * metadata.original.width / width)
-        width = metadata.original.width
+      if(width > metadata.width) {
+        height = Math.round(height * metadata.width / width)
+        width = metadata.width
       }
-      if(width == metadata.original.width && height == metadata.original.height) return res.sendFile(sourceFilePath)
+      if(width == metadata.width && height == metadata.height) return res.sendFile(sourceFilePath)
       const normalized = normalizeFormat(params.format || metadata.extension)
       const convertedFilePath = path.resolve(imagePrefix + `rect-${width}-${height}.${normalized}`)
       if(!(await fileExists(convertedFilePath))) {
