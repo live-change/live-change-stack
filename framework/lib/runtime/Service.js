@@ -52,7 +52,8 @@ class Service {
 
     this.triggers = {}
     for(let triggerName in this.definition.triggers) {
-      this.triggers[triggerName] = new TriggerHandler( this.definition.triggers[triggerName], this )
+      this.triggers[triggerName] = this.definition.triggers[triggerName]
+        .map(trigger => new TriggerHandler( trigger, this ))
     }
 
     this.events = {}
