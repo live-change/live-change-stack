@@ -10,22 +10,31 @@ function promiseMap(promise, fn) {
 function prepareReactiveDaoDefinition(config, clientData) {
   if(!clientData.roles) throw new Error("no roles")
   let dao = {}
+  let staticDefinitions = []
   if(config.remote) {
-    const remote = config.remote(clientData)
-    for (let remoteName of remote) {
+    const remotes = config.remote(clientData)
+    for (let remoteName in remotes) {
+      const remote = remotes[remoteName]
       dao[remoteName] = {
         type: "remote",
         generator: ReactiveDao.ObservableList,
         ...remote
       }
+      if(remote.definition) {
+        staticDefinitions.push(remote.definition)
+      }
     }
   }
   if(config.local) {
-    const local = config.local(clientData)
-    for (let localName in local) {
+    const locals = config.local(clientData)
+    for (let localName in locals) {
+      const local = locals[localName]
       dao[localName] = {
         type: "local",
-        source: local[localName]
+        source: local
+      }
+      if(local.definition) {
+        staticDefinitions.push(local.definition)
       }
     }
   }
@@ -109,6 +118,10 @@ function prepareReactiveDaoDefinition(config, clientData) {
       }
     }
     if(config.shareDefinition) {
+      const definitionsPromise = Promise.all([
+        ...(config.services.map(service => service.app.clientSideDefinition(service, clientData))),
+        ...staticDefinitions
+      ])
       dao['metadata'] = {
         type: "local",
         source: new ReactiveDao.SimpleDao({
@@ -125,32 +138,26 @@ function prepareReactiveDaoDefinition(config, clientData) {
             serviceDefinitions: {
               observable(parameters) {
                 return new ReactiveDao.ObservablePromiseProxy(
-                    Promise.all(
-                      config.services.map(service => service.app.clientSideDefinition(service, clientData))
-                    ).then(x => new ReactiveDao.ObservableValue(x))
+                  definitionsPromise.then(x => new ReactiveDao.ObservableValue(x))
                 )
                 /*let definitions = config.services.map(s => s.definition.toJSON())
                 return new ReactiveDao.ObservableValue(definitions)*/
               },
               async get(parameters) {
-                return Promise.all(config.services.map(s => s.app.clientSideDefinition(s, clientData)))
+                return definitionsPromise
               }
             },
             api: {
               observable(parameters) {
                 return new ReactiveDao.ObservablePromiseProxy(
-                  Promise.all(
-                    config.services.map(service => service.app.clientSideDefinition(service, clientData))
-                  ).then(services => new ReactiveDao.ObservableValue({
+                  definitionsPromise.then(services => new ReactiveDao.ObservableValue({
                     client: { ...clientData, sessionKey: undefined },
                     services
                   }))
                 )
               },
               async get(parameters) {
-                return Promise.all(
-                  config.services.map(service => service.app.clientSideDefinition(service, clientData))
-                ).then(services => ({
+                return definitionsPromise.then(services => ({
                   client: { ...clientData, sessionKey: undefined },
                   services
                 }))
@@ -167,7 +174,8 @@ function prepareReactiveDaoDefinition(config, clientData) {
 
 class RTCMSDao extends ReactiveDao {
   constructor(config, clientData) {
-    super(clientData.sessionId, prepareReactiveDaoDefinition(config, clientData))
+    console.log("CD", clientData)
+    super(clientData, prepareReactiveDaoDefinition(config, clientData))
     //console.log("Created dao with clientData",clientData)
     if( !clientData.roles ) throw new Error("NO ROLES!!")
   }

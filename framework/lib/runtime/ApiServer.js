@@ -12,13 +12,13 @@ class ApiServer {
     this.reactiveServer = new LcDao.ReactiveServer(
       (credentials, connection) => {
         const ip = getIp(connection)
-        if(this.config.fastAuth) {
+        if(!credentials && this.config.fastAuth) {
           if(typeof this.config.fastAuth == 'function') {
             credentials = this.config.fastAuth(connection)
           } else {
             const cookies = cookie.parse(connection.headers.cookie || '')
             const sessionKey = cookies.sessionKey
-            if(!sessionKey) throw new Error('session key undefined')
+            if(!sessionKey) return null // noFastAuth
             credentials = { sessionKey }
           }
         }
@@ -44,7 +44,7 @@ class ApiServer {
       if(authenticator.prepareCredentials) {
         await authenticator.prepareCredentials(credentials, this.config)
       }
-    }     
+    }
     const dao = new this.DaoConstructor({ ...this.config, authenticators: allAuthenticators }, { ...credentials })
     await dao.start()
     return dao

@@ -24,9 +24,9 @@
   },
   "homepage": "https://github.com/live-change/live-change-framework",
   "dependencies": {
-    "@live-change/dao": "0.5.9",
-    "@live-change/dao-sockjs": "0.5.9",
-    "@live-change/dao-websocket": "0.5.9",
+    "@live-change/dao": "0.5.10",
+    "@live-change/dao-sockjs": "0.5.10",
+    "@live-change/dao-websocket": "0.5.10",
     "@live-change/db-server": "0.5.23",
     "@live-change/framework": "^0.7.15",
     "@live-change/server": "^0.7.15",

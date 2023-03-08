@@ -3,7 +3,7 @@ const Dao = require("@live-change/dao")
 const { connection } = require("websocket")
 const Services = require('../lib/Services.js')
 const app = require("@live-change/framework").app()
-
+const DaoWebsocket = require("@live-change/dao-websocket")
 
 async function setupApiServer(settings) {
   const { services: config, withServices, updateServices } = settings
@@ -68,6 +68,10 @@ async function setupApiServer(settings) {
       return {
         ...(typeof services.config.remote === 'function' ? services.config.remote(credentials) : services.config.remote)
       }
+    },
+    protocols: {
+      'ws': DaoWebsocket.client,
+      ...(services.config.protocols)
     },
     shareDefinition: true,
     logErrors: true,
