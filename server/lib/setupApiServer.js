@@ -46,7 +46,8 @@ async function setupApiServer(settings) {
               }
             }
           }
-        })
+        }),
+        ...(typeof services.config.local === 'function' ? services.config.local(credentials) : services.config.local)
       }
       if(settings.dbAccess) {
         local.serverDatabase = {
@@ -62,6 +63,11 @@ async function setupApiServer(settings) {
         }
       }
       return local
+    },
+    remote(credentials) {
+      return {
+        ...(typeof services.config.remote === 'function' ? services.config.remote(credentials) : services.config.remote)
+      }
     },
     shareDefinition: true,
     logErrors: true,

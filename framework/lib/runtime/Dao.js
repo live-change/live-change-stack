@@ -11,11 +11,12 @@ function prepareReactiveDaoDefinition(config, clientData) {
   if(!clientData.roles) throw new Error("no roles")
   let dao = {}
   if(config.remote) {
-    const remoteList = config.remote(clientData)
-    for (let remote of remoteList) {
-      dao[remote.name] = {
+    const remote = config.remote(clientData)
+    for (let remoteName of remote) {
+      dao[remoteName] = {
         type: "remote",
-        generator: remote.generator || ReactiveDao.ObservableList
+        generator: ReactiveDao.ObservableList,
+        ...remote
       }
     }
   }

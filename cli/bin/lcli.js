@@ -127,6 +127,10 @@ function ssrServerOptions(yargs) {
     describe: 'server version file',
     type: 'string'
   })
+  yargs.option('spa', {
+    describe: 'start in spa mode - without ssr',
+    type: 'boolean'
+  })
 }
 
 const argv = require('yargs') // eslint-disable-line
@@ -166,7 +170,15 @@ const argv = require('yargs') // eslint-disable-line
     startOptions(yargs)
   }, async (argv) => {
     await setupApp({ ...argv, uidBorders: '[]' })
-    await ssrServer({ ...argv, uidBorders: '[]' }, false)
+    await server({ ...argv, uidBorders: '[]' }, false)
+  })
+  .command('server', 'start server', (yargs) => {
+    ssrServerOptions(yargs)
+    apiServerOptions(yargs)
+    startOptions(yargs)
+  }, async (argv) => {
+    await setupApp({ ...argv, uidBorders: '[]' })
+    await server({ ...argv, uidBorders: '[]' }, false)
   })
   .command('ssrDev', 'start ssr server in development mode', (yargs) => {
     ssrServerOptions(yargs)
@@ -174,7 +186,7 @@ const argv = require('yargs') // eslint-disable-line
     startOptions(yargs)
   }, async (argv) => {
     await setupApp({ ...argv, uidBorders: '[]' })
-    await ssrServer({ ...argv, uidBorders: '[]' }, true)
+    await server({ ...argv, uidBorders: '[]' }, true)
   })
   .command('dev', 'shortcut for ssrDev --withApi --withServices --updateServices', (yargs) => {
     ssrServerOptions(yargs)
@@ -186,7 +198,7 @@ const argv = require('yargs') // eslint-disable-line
       withApi: true, withServices: true, updateServices: true
     }
     await setupApp({ ...argv, uidBorders: '[]' })
-    await ssrServer({ ...argv, uidBorders: '[]' }, true)
+    await server({ ...argv, uidBorders: '[]' }, true)
   })
   .command('memDev', 'shortcut for dev --withDb --dbBackend mem --createDb', (yargs) => {
     ssrServerOptions(yargs)
@@ -199,7 +211,7 @@ const argv = require('yargs') // eslint-disable-line
       withDb: true, dbBackend: 'mem', createDb: true
     }
     await setupApp({ ...argv, uidBorders: '[]' })
-    await ssrServer({ ...argv, uidBorders: '[]' }, true)
+    await server({ ...argv, uidBorders: '[]' }, true)
   })
   .command('localDev', 'shortcut for dev --withDb --createDb', (yargs) => {
     ssrServerOptions(yargs)
@@ -212,7 +224,7 @@ const argv = require('yargs') // eslint-disable-line
       withDb: true, createDb: true
     }
     await setupApp({ ...argv, uidBorders: '[]' })
-    await ssrServer({ ...argv, uidBorders: '[]' }, true)
+    await server({ ...argv, uidBorders: '[]' }, true)
   })
   .option('verbose', {
     alias: 'v',
@@ -239,7 +251,7 @@ async function apiServer(argv) {
   console.log('Listening on port ' + apiPort)
 }
 
-async function ssrServer(argv, dev) {
+async function server(argv, dev) {
   const { ssrRoot, ssrPort, ssrHost, apiHost, apiPort } = argv
 
   const fastAuth = true
@@ -248,7 +260,7 @@ async function ssrServer(argv, dev) {
 
   //expressApp.use('/static', express.static(path.resolve(ssrRoot, 'public')))
 
-  const manifest = dev ? null : require(path.resolve(ssrRoot, 'dist/client/ssr-manifest.json'))
+  const manifest = (dev || argv.spa) ? null : require(path.resolve(ssrRoot, 'dist/client/ssr-manifest.json'))
 
   if(argv.versionFile) argv.version = await readFile(argv.versionFile, 'utf8')
 
@@ -273,8 +285,7 @@ async function ssrServer(argv, dev) {
     await setupApiEndpoints(expressApp, apiServer)
   }
 
-  console.log("ENDPOINTS INSTALLED! CREATING SSR SERVER!")
-
+  console.log("ENDPOINTS INSTALLED! CREATING WEB SERVER!")
 
   const ssrServer = new SsrServer(expressApp, manifest, {
     ...argv,
@@ -282,17 +293,18 @@ async function ssrServer(argv, dev) {
     fastAuth,
     root: ssrRoot || '.',
     ...(apiServer
-      ? {
-        daoFactory: async (credentials, ip) => {
-          return await createLoopbackDao(credentials, () => apiServer.daoFactory(credentials, ip))
+        ? {
+          daoFactory: async (credentials, ip) => {
+            return await createLoopbackDao(credentials, () => apiServer.daoFactory(credentials, ip))
+          }
         }
-      }
-      : {
-        apiHost, apiPort
-      }
+        : {
+          apiHost, apiPort
+        }
     )
   })
   await ssrServer.start()
+
 
   console.log("SSR INSTALLED! CREATING HTTP SERVER!")
 

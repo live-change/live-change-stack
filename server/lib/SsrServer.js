@@ -17,7 +17,9 @@ class SsrServer {
 
     this.version = settings.version || 'unknown'
     this.express = express
-    this.renderer = new Renderer(manifest, settings)
+    if(!this.settings.spa || this.settings.dev) {
+      this.renderer = new Renderer(manifest, settings)
+    }
 
     this.instanceId = encodeNumber(hashCode(
       `ssr${process.pid}${require("os").hostname()} ${process.cwd()}/${process.argv.join(' ')}`))
@@ -27,12 +29,14 @@ class SsrServer {
   }
 
   async start() {
-    await this.renderer.start()
+    if(this.renderer) {
+      await this.renderer.start()
+    }
 
     if(this.settings.dev) {
       this.express.use(this.renderer.vite.middlewares)
     } else {
-      const staticPath = path.resolve(this.root, 'dist/client')
+      const staticPath = path.resolve(this.root, this.settings.spa ? 'dist/spa' : 'dist/client')
       this.express.use('/', expressStaticGzip(staticPath, {
         //enableBrotli: true,
         index: false,
@@ -95,6 +99,14 @@ class SsrServer {
       this.renderer.renderSitemap({ dao, clientIp }, res)
     })
     this.express.use('*', async (req, res) => {
+      if(this.settings.spa) {
+        if(this.settings.dev) {
+          res.sendFile(path.resolve(this.root, 'index.html'))
+        } else {
+          res.sendFile(path.resolve(this.root, 'dist/spa/index.html'))
+        }
+        return;
+      }
       const url = req.originalUrl
       const clientIp = getIp(req)
 
