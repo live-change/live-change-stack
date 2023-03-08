@@ -419,7 +419,8 @@ class ReactiveServerConnection extends EventEmitter {
 
     if(this.settings.fastAuth) {
       try {
-        this.handleDaoPromise(this.daoFactory(this.credentials, this.connection, this))
+        const promise = this.daoFactory(this.credentials, this.connection, this)
+        if(promise) this.handleDaoPromise(promise)
       } catch(error) {
         return this.handleDaoFactoryError(error)
       }
