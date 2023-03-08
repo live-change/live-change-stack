@@ -23,6 +23,9 @@ class Api extends DaoProxy {
       $validators: this.validators
     }
     this.globalInstances = []
+    this.readyPromise = new Promise(resolve => {
+      this.resolveReadyPromise = resolve
+    })
   }
 
   setup(settings = this.settings) {
@@ -71,12 +74,13 @@ class Api extends DaoProxy {
     const client = computed(() => {
       return api?.value?.client
     })
-    watch(() => api, (api) => {
+    watch(() => api.value, (api) => {
       console.log("API CHANGE!", api)
       if(!api) return
       console.log("API CHANGE!", api)
-      api.generateServicesApi()
+      this.generateServicesApi()
     })
+    console.log("SETUP API", api.value)
     this.metadata = {
       api, version,
       softwareVersion,
@@ -158,6 +162,12 @@ class Api extends DaoProxy {
 
     for(const glob of this.globalInstances) {
       this.installInstanceProperties(glob)
+    }
+
+    if(api.resolveReadyPromise) {
+      console.trace("RESOLVE READY PROMISE")
+      api.resolveReadyPromise()
+      api.resolveReadyPromise = null
     }
   }
 

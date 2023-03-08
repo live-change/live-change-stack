@@ -5,7 +5,11 @@ import SockJsConnection from '@live-change/dao-sockjs'
 import Api from "./Api.js"
 
 function clientApi(settings = {}) {
-  const dao = new lcdao.Dao(window.__CREDENTIALS__, {
+  let credentials = window.__DAO_CACHE__ ? window.__CREDENTIALS__ : undefined
+  if(settings.credentials) {
+    credentials = { ...credentials, ...settings.credentials }
+  }
+  const dao = new lcdao.Dao(credentials, {
     remoteUrl: document.location.protocol + '//' + document.location.host + "/api/sockjs",
     protocols: {
       'sockjs': SockJsConnection
@@ -39,7 +43,7 @@ function clientApi(settings = {}) {
 
   const api = new Api(dao)
   api.setup({
-    ssr: true,
+    ssr: (typeof window == "undefined") || !!window.__DAO_CACHE__,
     cache: true,
     ...settings,
     createReactiveObject(definition) {
@@ -50,7 +54,9 @@ function clientApi(settings = {}) {
   for(const plugin of (settings.use || [])) {
     plugin(api)
   }
-  api.generateServicesApi()
+  if(!!window.__DAO_CACHE__) {
+    api.generateServicesApi()
+  }
 
   return api
 }
