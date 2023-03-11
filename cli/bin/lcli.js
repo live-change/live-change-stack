@@ -127,9 +127,13 @@ function ssrServerOptions(yargs) {
     describe: 'server version file',
     type: 'string'
   })
-  yargs.option('spa', {
-    describe: 'start in spa mode - without ssr',
+  yargs.option('plugin', {
+    describe: 'start in plugin mode - without ssr, and with vite mode plugin',
     type: 'boolean'
+  })
+  yargs.option('mode', {
+    describe: 'vite mode',
+    type: 'string'
   })
 }
 
@@ -188,14 +192,14 @@ const argv = require('yargs') // eslint-disable-line
     await setupApp({ ...argv, uidBorders: '[]' })
     await server({ ...argv, uidBorders: '[]' }, true)
   })
-  .command('dev', 'shortcut for ssrDev --withApi --withServices --updateServices', (yargs) => {
+  .command('dev', 'shortcut for ssrDev --withApi --withServices --updateServices --createDb', (yargs) => {
     ssrServerOptions(yargs)
     apiServerOptions(yargs)
     startOptions(yargs)
   }, async (argv) => {
     argv = {
       ...argv,
-      withApi: true, withServices: true, updateServices: true
+      withApi: true, withServices: true, updateServices: true, createDb: true,
     }
     await setupApp({ ...argv, uidBorders: '[]' })
     await server({ ...argv, uidBorders: '[]' }, true)
@@ -279,9 +283,6 @@ async function server(argv, dev) {
   let apiServer
   if(argv.withApi) {
     apiServer = await setupApiServer({ ...argv, fastAuth })
-  }
-
-  if(argv.withApi) {
     await setupApiEndpoints(expressApp, apiServer)
   }
 

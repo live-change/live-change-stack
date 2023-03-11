@@ -28,6 +28,7 @@ class Renderer {
   async setupVite() {
     this.vite = await require('vite').createServer({
       root: this.root,
+      mode: this.settings.mode,
       logLevel: 'info', //isTest ? 'error' : 'info',
       server: {
         middlewareMode: true,
