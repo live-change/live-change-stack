@@ -5,12 +5,12 @@ import SockJsConnection from '@live-change/dao-sockjs'
 import Api from "./Api.js"
 
 function clientApi(settings = {}) {
-  let credentials = window.__DAO_CACHE__ ? window.__CREDENTIALS__ : undefined
+  let credentials = settings.credentials ?? (window.__DAO_CACHE__ ? window.__CREDENTIALS__ : undefined)
   if(settings.credentials) {
     credentials = { ...credentials, ...settings.credentials }
   }
   const dao = new lcdao.Dao(credentials, {
-    remoteUrl: document.location.protocol + '//' + document.location.host + "/api/sockjs",
+    remoteUrl: settings.remoteUrl || document.location.protocol + '//' + document.location.host + "/api/sockjs",
     protocols: {
       'sockjs': SockJsConnection
     },

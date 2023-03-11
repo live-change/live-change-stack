@@ -165,7 +165,6 @@ class Api extends DaoProxy {
     }
 
     if(api.resolveReadyPromise) {
-      console.trace("RESOLVE READY PROMISE")
       api.resolveReadyPromise()
       api.resolveReadyPromise = null
     }
