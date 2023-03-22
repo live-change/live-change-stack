@@ -5,20 +5,32 @@ import SockJsConnection from '@live-change/dao-sockjs'
 import Api from "./Api.js"
 
 function clientApi(settings = {}) {
-  let credentials = settings.credentials ?? (window.__DAO_CACHE__ ? window.__CREDENTIALS__ : undefined)
+  let credentials = window.__DAO_CACHE__ ? window.__CREDENTIALS__ : undefined
   if(settings.credentials) {
-    credentials = { ...credentials, ...settings.credentials }
+    credentials = {
+      ...credentials,
+      ...(typeof settings.credentials == 'function' ? settings.credentials(credentials) : settings.credentials)
+    }
   }
+  const local = {}
+  for(const key in settings.local) {
+    local[key] = {
+      type: 'local',
+      source: settings.local[key]
+    }
+  }
+
   const dao = new lcdao.Dao(credentials, {
     remoteUrl: settings.remoteUrl || document.location.protocol + '//' + document.location.host + "/api/sockjs",
     protocols: {
       'sockjs': SockJsConnection
     },
 
-    ...settings,
+    ...local,
 
     connectionSettings: {
-      fastAuth: !window.hasOwnProperty('__CREDENTIALS__'),
+      fastAuth: (!settings.credentials && window.hasOwnProperty('__DAO_CACHE__'))
+        && !window.hasOwnProperty('__CREDENTIALS__'),
 
       queueRequestsWhenDisconnected: true,
       requestSendTimeout: Infinity,

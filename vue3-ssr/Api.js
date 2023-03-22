@@ -26,6 +26,8 @@ class Api extends DaoProxy {
     this.readyPromise = new Promise(resolve => {
       this.resolveReadyPromise = resolve
     })
+
+    this.servicesDefinitions = ref()
   }
 
   setup(settings = this.settings) {
@@ -108,7 +110,7 @@ class Api extends DaoProxy {
     }
     //console.trace("GENERATE API SERVICES!")
     //console.log("GENERATE SERVICES API", apiInfo)
-    const definitions = apiInfo?.services
+    const definitions = [...(apiInfo?.services ?? []), ...(this.settings.localDefinitions ?? [])]
     if(JSON.stringify(definitions) == JSON.stringify(api.servicesApiDefinitions)) return
     if(!definitions) throw new Error("API DEFINITIONS NOT FOUND! UNABLE TO GENERATE API!")
     api.uidGenerator = uidGenerator(
@@ -116,6 +118,7 @@ class Api extends DaoProxy {
       , 1, '[]')
     //console.log("GENERATE API DEFINITIONS", definitions)
     api.servicesApiDefinitions = definitions
+    api.servicesDefinitions.value = definitions
     let globalViews = {}
     let globalFetch = (...args) => new Path(...args)
     let globalActions = {}

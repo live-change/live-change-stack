@@ -92,16 +92,16 @@
       },
       serviceDefinition() {
         if(this.serviceDefinitionSource) {
-          if(typeof this.serviceDefinitionSource == 'string') {
-            const definition = this.$api.metadata.serviceDefinitions.value
+          if(typeof this.servicesDefinitionSource == 'string') {
+            const definition = this.$api.serviceDefinitions.value
                 .find(service => service.name == this.serviceDefinitionSource)
             return definition
           } else {
             return this.serviceDefinitionSource
           }
         }
-        if(!this.$api.metadata.api?.value?.services) return
-        const definition = this.$api.metadata.api?.value?.services.find(service => service.name == this.service)
+        if(!this.$api.servicesDefinitions.value) return
+        const definition = this.$api.servicesDefinitions.value.find(service => service.name == this.service)
         return definition
       },
       actionDefinition() {

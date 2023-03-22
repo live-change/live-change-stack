@@ -71,16 +71,17 @@
 
     reset(initialValue) {
       if(this.definition.type) {
-        let defaultValue = this.definition.defaulValue || null
-        if(!defaultValue) {
+        let defaultValue = this.definition.defaultValue
+        if(defaultValue === undefined) {
           switch(this.definition.type) {
             case "String" : defaultValue = ""; break;
             case "Object" : defaultValue = {}; break;
             case "Number" : defaultValue = 0; break;
             case "Array"  : defaultValue = []; break;
+            default: defaultValue = null
           }
         }
-        this.setValue(initialValue || defaultValue)
+        this.setValue(initialValue ?? defaultValue)
       } else {
         this.setValue(initialValue)
       }
@@ -273,11 +274,30 @@
       this.elements = []
       if(!this.data[this.property]) this.data[this.property] = []
       this.object = this.data[this.property]
+      this.unwatch = watch(() => this.data[this.property], () => {
+        this.object = this.data[this.property]
+        while(this.elements.length > this.object.length) {
+          this.elements.pop()
+        }
+        while(this.elements.length < this.object.length) {
+          this.elements.push(this.newElement(this.elements.length))
+        }
+      }, { deep: true })
     }
 
     setProperty(name) {
+      if(this.unwatch) this.unwatch()
       this.property = name
       this.object = this.data[this.property]
+      this.unwatch = watch(() => this.data[this.property], () => {
+        this.object = this.data[this.property]
+        while(this.elements.length > this.object.length) {
+          this.elements.pop()
+        }
+        while(this.elements.length < this.object.length) {
+          this.elements.push(this.newElement(this.elements.length))
+        }
+      }, { deep: true })
     }
 
     newElement(index) {
