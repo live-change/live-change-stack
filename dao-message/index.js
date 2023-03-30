@@ -12,23 +12,25 @@ class MessageConnection extends Connection {
   }
 
   initialize() {
-    this.target.onmessage = event => {
-      debug("MSG IN:", data)
+    this.target.addEventListener('message', (event) => {
+      debug("MSG IN:", event.data)
       this.handleMessage(event.data)
-    }
-    this.target.onerror = event => {
+    })
+    this.target.addEventListener('error', (event) => {
       console.error("Worker", this.url, "error", event)
-    }
-    this.target.onmessageerror = event => {
+    })
+    this.target.addEventListener('messageerror', (event) => {
       console.error("Worker", this.url, "message error", event)
-    }
-    this.target.onunhandledrejection = event => {
+    })
+    this.target.addEventListener('unhandledrejection', (event) => {
       console.error("Worker", this.url, "unhandled rejection", event)
-    }
+    })
+    this.handleConnect()
+    console.log("MESSAGE CONNECTED", this.url)
   }
 
   send(message) {
-    debug("MSG OUT:", data)
+    debug("MSG OUT:", message)
     this.target.postMessage(message)
   }
 
