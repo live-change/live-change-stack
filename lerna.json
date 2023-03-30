@@ -2,6 +2,7 @@
   "packages": [
     "dao",
     "dao-websocket",
+    "dao-message",
     "dao-sockjs",
     "dao-vue",
     "dao-vue3"
