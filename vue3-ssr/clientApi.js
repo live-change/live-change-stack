@@ -2,6 +2,7 @@ import { createReactiveObject } from '@live-change/vue3-components'
 import * as lcdao from '@live-change/dao'
 import { reactiveMixin, reactivePrefetchMixin, ReactiveObservableList } from '@live-change/dao-vue3'
 import SockJsConnection from '@live-change/dao-sockjs'
+import MessageConnection from '@live-change/dao-message'
 import Api from "./Api.js"
 
 function clientApi(settings = {}) {
@@ -20,13 +21,31 @@ function clientApi(settings = {}) {
     }
   }
 
+  const remote = {}
+  for(const key in settings.remote) {
+    remote[key] = settings.remote[key]
+  }
+
+  for(const key in settings.worker) {
+    remote[key] = {
+      type: 'remote',
+      url: key,
+      protocol: 'message',
+      settings: {
+        target: settings.worker[key]
+      }
+    }
+  }
+
   const dao = new lcdao.Dao(credentials, {
     remoteUrl: settings.remoteUrl || document.location.protocol + '//' + document.location.host + "/api/sockjs",
     protocols: {
-      'sockjs': SockJsConnection
+      'sockjs': SockJsConnection,
+      'message': MessageConnection
     },
 
     ...local,
+    ...remote,
 
     connectionSettings: {
       fastAuth: (!settings.credentials && window.hasOwnProperty('__DAO_CACHE__'))
