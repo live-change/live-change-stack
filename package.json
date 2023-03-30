@@ -7,7 +7,9 @@
     "dao",
     "dao-sockjs",
     "dao-websocket",
+    "dao-message",
     "dao-vue",
-    "dao-vue3"
+    "dao-vue3",
+    "dao-message"
   ]
 }

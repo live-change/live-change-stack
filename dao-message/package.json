@@ -1,5 +1,5 @@
 {
-  "name": "@live-change/dao-vue",
+  "name": "@live-change/dao-message",
   "version": "0.5.10",
   "author": {
     "email": "m8@em8.pl",
@@ -10,9 +10,18 @@
     "url": "https://github.com/live-change/live-change-dao/issues"
   },
   "dependencies": {
-    "@live-change/dao": "0.5.10"
+    "@live-change/dao": "0.5.10",
+    "debug": "^4.3.4",
+    "supports-color": "^7.2.0"
   },
-  "description": "Vue.js integration for live-change dao",
+  "devDependencies": {
+    "babel-loader": "^6.2.5",
+    "babel-plugin-transform-react-jsx": "*",
+    "babel-preset-es2015": "*",
+    "better-assert": "github:devinrhode2/better-assert-browser",
+    "mocha": "^9.0.0"
+  },
+  "description": "live-change dao sockjs transport",
   "directories": {},
   "homepage": "https://github.com/live-change/live-change-dao",
   "license": "BSD-3-Clause",

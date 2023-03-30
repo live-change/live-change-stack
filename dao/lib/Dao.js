@@ -4,6 +4,15 @@ const ReactiveConnection = require("./ReactiveConnection.js")
 const ObservableList = require("./ObservableList.js")
 const debug = require('debug')('dao')
 
+function isConstructor(f) {
+  try {
+    Reflect.construct(String, [], f);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
 class Dao extends EventEmitter {
   constructor(credentials, definition) {
     super()
@@ -25,10 +34,11 @@ class Dao extends EventEmitter {
     const protocol = this.definition.protocols[proto]
     if(!protocol) throw new Error("Protocol "+proto+" not supported")
     debug("connecting to "+url)
-    try {
-      connection = new protocol(this.credentials, url, this.definition.connectionSettings)
-    } catch(e) {
-      connection = protocol(this.credentials, url, this.definition.connectionSettings)
+
+    if(isConstructor(protocol)) {
+      connection = new protocol(this.credentials, url, defn.settings ?? this.definition.connectionSettings)
+    } else {
+      connection = protocol(this.credentials, url, defn.settings ?? this.definition.connectionSettings)
     }
     this.connections.set(connectionId, connection)
 
