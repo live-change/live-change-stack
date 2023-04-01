@@ -293,8 +293,14 @@ class CountObservable extends ReactiveDao.ObservableValue {
 }
 
 class Store {
-  constructor() {
+  constructor(options = {}) {
     this.tree = createTree()
+
+    const {
+      serialization = JSON
+    } = options
+    this.serialization = serialization
+
     this.objectObservables = new Map()
     this.rangeObservables = new Map()
     this.countObservables = new Map()
@@ -306,7 +312,7 @@ class Store {
     const json = this.tree.get(key)
     if(!json) return Promise.resolve(null)
     try {
-      const obj = JSON.parse(json)
+      const obj = this.serialization.parse(json)
       return Promise.resolve(obj)
     } catch(e) {
       return Promise.reject(e)
@@ -338,7 +344,7 @@ class Store {
           if(range.gte && cursor.key < range.gte) break;
           if((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
             // key in range, skip keys outside range
-            data.push(JSON.parse(cursor.value))
+            data.push(this.serialization.parse(cursor.value))
           }
           cursor.prev()
         }
@@ -353,7 +359,7 @@ class Store {
           if(range.lte && cursor.key > range.lte) break;
           if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
             // key in range, skip keys outside range
-            data.push(JSON.parse(cursor.value))
+            data.push(this.serialization.parse(cursor.value))
           }
           cursor.next()
         }
@@ -470,7 +476,7 @@ class Store {
         const key = keys[i]
         const json = tree.get(key)
         try {
-          const obj = JSON.parse(json)
+          const obj = this.serialization.parse(json)
           this.tree = this.tree.remove(key)
           const rangeObservables = this.rangeObservablesTree.search([key, key])
           for (const rangeObservable of rangeObservables) {
@@ -488,11 +494,11 @@ class Store {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
     const oldObjectJson = this.tree.get(id)
-    const oldObject = oldObjectJson && JSON.parse(oldObjectJson)
+    const oldObject = oldObjectJson && this.serialization.parse(oldObjectJson)
     if(oldObjectJson) {
       this.tree = this.tree.remove(id)
     }
-    this.tree = this.tree.insert(id, JSON.stringify(object))
+    this.tree = this.tree.insert(id, this.serialization.stringify(object))
     const objectObservable = this.objectObservables.get(id)
     if (objectObservable) objectObservable.set(object, oldObject)
     const rangeObservables = this.rangeObservablesTree.search([id, id])
@@ -518,7 +524,7 @@ class Store {
     let object = null
     try {
       const json = this.tree.get(id)
-      object = json ? JSON.parse(json) : null
+      object = json ? this.serialization.parse(json) : null
       this.tree = this.tree.remove(id)
     } catch(e) {
       console.error("FAILED REMOVE OF", id, e)

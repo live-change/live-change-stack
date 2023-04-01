@@ -87,14 +87,20 @@ class Server {
       })
     }
     for(let backend of config.backends || []) {
+      if(typeof backend == 'string') {
+        backend = { backend }
+      }
       this.backends[backend.name] = createBackend(backend)
+      if(!this.backends.default) {
+        this.backends.default = this.backends[backend.name]
+      }
     }
     if(!this.backends.default) {
       throw new Error("No default backend configured")
     }
     if(!this.backends.memory) {
       this.backends.memory = createBackend({
-        name: "mem"
+        backend: "memory"
       })
     }
 

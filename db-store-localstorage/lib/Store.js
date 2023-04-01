@@ -221,13 +221,18 @@ class RangeObservable extends ReactiveDao.ObservableList {
 }
 
 class Store {
-  constructor(dbName, storeName, type) {
+  constructor(dbName, storeName, type, options = {}) {
     if(!dbName) throw new Error("dbName argument is required")
     if(!storeName) throw new Error("storeName argument is required")
     if(!type) throw new Error("type argument is required")
 
     this.dbName = dbName
     this.storeName = storeName
+
+    const {
+      serialization = JSON
+    } = options
+    this.serialization = serialization
 
     this.prefix = `lcdb/${dbName}/${storeName}/`
 
@@ -303,7 +308,7 @@ class Store {
   async objectGet(id) {
     if(!id) throw new Error("key is required")
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    return JSON.parse(await this.storage.getItem(this.prefix + id) || 'null')
+    return this.serialization.parse(await this.storage.getItem(this.prefix + id) || 'null')
   }
 
   objectObservable(key) {
@@ -329,7 +334,7 @@ class Store {
       return true
     }).slice(0, limit)
     const objects = (await this.storage.getValues(keys))
-      .map(json => JSON.parse(json))
+      .map(json => this.serialization.parse(json))
       .sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
     if(range.reverse) objects.reverse()
     return objects
@@ -385,8 +390,8 @@ class Store {
   async put(object) {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    const oldObject = JSON.parse(await this.storage.getItem(this.prefix + id) || 'null')
-    await this.storage.setItem(this.prefix + id, JSON.stringify(object))
+    const oldObject = this.serialization.parse(await this.storage.getItem(this.prefix + id) || 'null')
+    await this.storage.setItem(this.prefix + id, this.serialization.stringify(object))
     const objectObservable = this.objectObservables.get(id)
     if(objectObservable) objectObservable.set(object, oldObject)
     const rangeObservables = this.rangeObservablesTree.search([id, id])
@@ -399,7 +404,7 @@ class Store {
 
   async delete(id) {
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    const object = JSON.parse(await this.storage.getItem(this.prefix + id))
+    const object = this.serialization.parse(await this.storage.getItem(this.prefix + id))
     await this.storage.removeItem(this.prefix + id)
     const objectObservable = this.objectObservables.get(id)
     if(objectObservable) objectObservable.set(null)

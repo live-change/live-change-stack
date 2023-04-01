@@ -566,16 +566,18 @@ class DatabaseConnection {
     packet.writeUInt32BE(requestId, 1)
     this.websocket.send(packet)
   }
-
 }
 
-
-
 class Store {
-  constructor(connection, databaseName, storeName) {
+  constructor(connection, databaseName, storeName, options = {}) {
     this.connection = connection
     this.databaseName = databaseName
     this.storeName = storeName
+
+    const {
+      serialization = JSON
+    } = options
+    this.serialization = serialization
 
     this.objectObservables = new Map()
     this.rangeObservables = new Map()
@@ -585,7 +587,7 @@ class Store {
   objectGet(id) {
     if(!id) throw new Error("id is required")
     return this.connection.get(this.databaseName, this.storeName, id)
-        .then(result => result && ({ id, ...JSON.parse(result) }))
+        .then(result => result && ({ id, ...this.serialization.parse(result) }))
   }
 
   objectObservable(id) {
@@ -593,7 +595,7 @@ class Store {
     const observableValue = new ReactiveDao.ObservableValue()
     const onValue = (value) => {
       if(debug) console.log("OBJ", id, "ON VALUE", value)
-      observableValue.set(value && { id, ...JSON.parse(value) })
+      observableValue.set(value && { id, ...this.serialization.parse(value) })
       return !observableValue.isDisposed()
     }
     const onError = (error) => {
@@ -624,7 +626,7 @@ class Store {
   async rangeGet(range) {
     if(!range) throw new Error("range not defined")
     const rawResults = await this.connection.getRange(this.databaseName, this.storeName, range)
-    return rawResults.map(({ key, value }) => ({ id: key, ...JSON.parse(value) }))
+    return rawResults.map(({ key, value }) => ({ id: key, ...this.serialization.parse(value) }))
   }
 
   rangeObservable(range) {
@@ -640,16 +642,16 @@ class Store {
       if(changesMode) {
         if(found) {
           if(last) {
-            observableList.push({ id: key, ...JSON.parse(value)})
+            observableList.push({ id: key, ...this.serialization.parse(value)})
           } else {
-            const obj = { id: key, ...JSON.parse(value)}
+            const obj = { id: key, ...this.serialization.parse(value)}
             observableList.putByField('id', key, obj, range.reverse)
           }
         } else {
           observableList.removeByField('id', key)
         }
       } else if(found) {
-        results.push({ id: key, ...JSON.parse(value) })
+        results.push({ id: key, ...this.serialization.parse(value) })
       } else {
         console.error("non existing object in initial read!")
       }
@@ -730,14 +732,14 @@ class Store {
     if(debug) console.log("PUT!!!", object)
     if(!id) throw new Error("ID must not be empty string!")
     const putResult = await this.connection.put(this.databaseName, this.storeName, id,
-        JSON.stringify({ ...object, id: undefined }))
-    return putResult ? { id, ...JSON.parse(putResult) } : null
+        this.serialization.stringify({ ...object, id: undefined }))
+    return putResult ? { id, ...this.serialization.parse(putResult) } : null
   }
 
   async delete(id) {
     if(!id) throw new Error("ID must not be empty string!")
     const deleteResult = await this.connection.delete(this.databaseName, this.storeName, id)
-    return deleteResult ? { id, ...JSON.parse(deleteResult) } : null
+    return deleteResult ? { id, ...this.serialization.parse(deleteResult) } : null
   }
 
   async close() {

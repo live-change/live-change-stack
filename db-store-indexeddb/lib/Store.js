@@ -222,12 +222,23 @@ class RangeObservable extends ReactiveDao.ObservableList {
 }
 
 class Store {
-  constructor(dbName, storeName) {
+  constructor(dbName, storeName, options = {}) {
     if(!dbName) throw new Error("dbName argument is required")
     if(!storeName) throw new Error("storeName argument is required")
 
     this.dbName = dbName
     this.storeName = storeName
+
+    this.serialization = {
+      stringify: x => x,
+      parse: x => x
+    }
+    if(options.serialization) {
+      this.serialization = {
+        stringify: x => ({ id: x.id, data: options.serialization.stringify(x) }),
+        parse: x => options.serialization.parse(x.data)
+      }
+    }
 
     this.finished = false
 
@@ -316,7 +327,8 @@ class Store {
   async objectGet(id) {
     if(!id) throw new Error("key is required")
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    return await this.db.get(this.storeName, id) || null
+    const json = await this.db.get(this.storeName, id) || null
+    return json && this.serialization.parse(json)
   }
 
   objectObservable(key) {
@@ -349,7 +361,8 @@ class Store {
         if (range.gt && cursor.key <= range.gt) break
         if (range.gte && cursor.key < range.gte) break
         if ((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
-          data.push(cursor.value)
+          const json = cursor.value
+          data.push(this.serialization.parse(json))
         }
         cursor = await cursor.continue()
       }
@@ -360,7 +373,8 @@ class Store {
         if(range.lt && cursor.key >= range.lt) break
         if(range.lte && cursor.key > range.lte) break
         if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
-          data.push(cursor.value)
+          const json = cursor.value
+          data.push(this.serialization.parse(json))
         }
         cursor = await cursor.continue()
         //console.log("CURSOR C", cursor)
@@ -425,7 +439,8 @@ class Store {
         if ((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
           count++
           const id = cursor.key
-          const object = cursor.value
+          const json = cursor.value
+          const object = this.serialization.parse(json)
           last = id
           await cursor.delete()
 
@@ -447,7 +462,8 @@ class Store {
         if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
           count++
           const id = cursor.key
-          const object = cursor.value
+          const json = cursor.value
+          const object = this.serialization.parse(json)
           last = id
           await cursor.delete()
 
@@ -468,9 +484,11 @@ class Store {
   async put(object) {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    const oldObject = await this.db.get(this.storeName, id)
+    const oldObjectJson = await this.db.get(this.storeName, id)
+    const oldObject = oldObjectJson ? this.serialization.parse(oldObjectJson) : null
     console.log("PUT", object)
-    await this.db.put(this.storeName, object)
+    const json = this.serialization.stringify(object)
+    await this.db.put(this.storeName, json)
     const objectObservable = this.objectObservables.get(id)
     if(objectObservable) objectObservable.set(object, oldObject)
     const rangeObservables = this.rangeObservablesTree.search([id, id])
@@ -483,7 +501,8 @@ class Store {
 
   async delete(id) {
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    const object = await this.db.get(this.storeName, id)
+    const json = await this.db.get(this.storeName, id)
+    const object = json ? this.serialization.parse(json) : null
     await this.db.delete(this.storeName, id)
     const objectObservable = this.objectObservables.get(id)
     if(objectObservable) objectObservable.set(null)

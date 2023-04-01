@@ -210,7 +210,7 @@ class RangeObservable extends ReactiveDao.ObservableList {
 }
 
 class Store {
-  constructor(level) {
+  constructor(level, options = {}) {
     this.level = level
     this.objectObservables = new Map()
     this.rangeObservables = new Map()

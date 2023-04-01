@@ -1,5 +1,5 @@
 function createBackend(config) {
-  if(config.backend == 'mem') {
+  if(config.backend == 'mem' || config.backend == 'memory') {
     return {
       Store: require('@live-change/db-store-rbtree'),
       createDb(path, options) {
@@ -14,7 +14,7 @@ function createBackend(config) {
         db.close()
       },
       createStore(db, name, options) {
-        return new this.Store()
+        return new this.Store(options)
       },
       closeStore(store) {
       },

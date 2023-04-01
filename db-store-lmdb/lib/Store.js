@@ -308,9 +308,15 @@ class CountObservable extends ReactiveDao.ObservableValue {
 }
 
 class Store {
-  constructor(env, db) {
+  constructor(env, db, options = {}) {
     this.env = env
     this.lmdb = db
+
+    const {
+      serialization = JSON
+    } = options
+    this.serialization = serialization
+
     this.objectObservables = new Map()
     this.rangeObservables = new Map()
     this.countObservables = new Map()
@@ -403,7 +409,7 @@ class Store {
           const key = keys[i]
           const json = txn.getString(this.lmdb, key)
           try {
-            const obj = JSON.parse(json)
+            const obj = this.serialization.parse(json)
             //obj.id = found
             data[i] = obj
           } catch(e) {
@@ -490,7 +496,7 @@ class Store {
           const key = keys[i]
           const json = txn.getString(this.lmdb, key)
           try {
-            const obj = JSON.parse(json)
+            const obj = this.serialization.parse(json)
             txn.del(this.lmdb, key)
             const objectObservable = this.objectObservables.get(key)
             if(objectObservable) objectObservable.set(null)
@@ -586,8 +592,8 @@ class Store {
     const txn = this.env.beginTxn()
     try {
       const json = txn.getString(this.lmdb, id)
-      oldObject = json ? JSON.parse(json) : null
-      txn.putString(this.lmdb, id, JSON.stringify(object), { noOverwrite: false })
+      oldObject = json ? this.serialization.parse(json) : null
+      txn.putString(this.lmdb, id, this.serialization.stringify(object), { noOverwrite: false })
     } catch(err) {
       console.log("ERROR WHILE PUTTING OBJECT", id)
       console.error(err)

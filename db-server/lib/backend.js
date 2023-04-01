@@ -90,7 +90,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
         await store.clear()
       }
     }
-  } else if(name == 'mem') {
+  } else if(name == 'mem' || name == 'memory') {
     return {
       Store: require('@live-change/db-store-rbtree'),
       createDb(path, options) {
@@ -103,7 +103,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       async deleteDb(db) {
       },
       createStore(db, name, options) {
-        return new this.Store()
+        return new this.Store(options)
       },
       closeStore(store) {
       },
@@ -139,8 +139,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
             db.openDbi({
               name,
               create: true
-            })
-        )
+            }), options)
       },
       closeStore(store) {
         store.lmdb.close()
@@ -181,7 +180,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
           if(err == 'exists') console.log("database", db, "store", name, "already exists")
             else console.error("CREATE STORE ERROR", err)
         })
-        return new Store(connection, db, name)
+        return new Store(connection, db, name, options)
       },
       closeStore(store) {
         return store.close()
