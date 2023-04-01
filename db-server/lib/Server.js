@@ -19,37 +19,48 @@ const Database = require('@live-change/db').Database
 
 const debug = require('debug')('db-server')
 
-const packageInfo = require("@live-change/db-server/package.json");
-
 class DatabaseStore {
-  constructor(path, backend, options) {
+  constructor(path, backends, options) {
     this.path = path
-    this.backend = backend
-    this.options = options
+    this.backends = backends
     this.stores = new Map()
-    this.db = backend.createDb(path, options)
+
+    this.dbs = {}
+    this.dbs.default = this.backends.default.createDb(path, options)
   }
   close() {
-    return this.backend.closeDb(this.db)
+    for(let key in this.dbs) {
+      return this.backends[key].closeDb(this.dbs[key])
+    }
   }
   delete() {
-    return this.backend.deleteDb(this.db)
+    for(let key in this.dbs) {
+      return this.backends[key].deleteDb(this.dbs[key])
+    }
   }
   getStore(name, options = {}) {
     let store = this.stores.get(name)
     if(store) return store
-    store = this.backend.createStore(this.db, name, options)
+    const backendName = options.backend ?? (options.memory ? 'memory' : 'default')
+    if(!this.backends[backendName]) {
+      throw new Error(`db ${path} backend ${backendName} not configured`)
+    }
+    if(!this.dbs[backendName]) {
+      this.dbs[backendName] = this.backends[backendName].createDb(this.path, options)
+    }
+    store = this.backends[backendName].createStore(this.dbs[backendName], name, options)
+    store.backendName = backendName
     this.stores.set(name, store)
     return store
   }
   closeStore(name) {
     let store = this.stores.get(name)
     if(!store) return;
-    return this.backend.closeStore(store)
+    return this.backends[store.backendName].closeStore(store)
   }
   deleteStore(name) {
     let store = this.getStore(name)
-    return this.backend.deleteStore(store)
+    return this.backends[store.backendName].deleteStore(store)
   }
 }
 
