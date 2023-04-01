@@ -1,38 +1,23 @@
 const test = require('tape')
-const lmdb = require('node-lmdb')
-const rimraf = require("rimraf")
-const fs = require('fs')
 
+require('fake-indexeddb/auto.js')
+const idb = require('idb')
 const Store = require('../lib/Store.js')
-
-const dbPath = `./test.nr.db`
-rimraf.sync(dbPath)
-fs.mkdirSync(dbPath)
-const env = new lmdb.Env();
-env.open({
-  // Path to the environment
-  path: dbPath,
-  // Maximum number of databases
-  maxDbs: 10
-})
-const dbi = env.openDbi({
-  name: "test",
-  create: true
-})
 
 test("store non-reactive properties", t => {
   t.plan(3)
 
   let store
-
   t.test("create store", async t => {
     t.plan(1)
-    store = new Store(env, dbi)
+    store = new Store('test-non-reactive', 'test', 'local')
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    await store.open()
     t.pass('store created')
   })
 
-  t.test("non reactive operations", async t => {
-    t.plan(19)
+  t.test("non reactive operations", t => {
+    t.plan(15)
 
     t.test("put value", async t => {
       t.plan(1)
@@ -60,22 +45,10 @@ test("store non-reactive properties", t => {
       t.deepEqual(values, [ { v: 1, id: 'a' }, { v: 2, id: 'b' }, { v: 3, id: 'c' } ], 'range read' )
     })
 
-    t.test("count range [a,c]", async t => {
-      t.plan(1)
-      let values = await store.countGet({ gte: 'a', lte: 'c' })
-      t.deepEqual(values, 3, 'range count' )
-    })
-
     t.test("get reverse range [c,a]", async t => {
       t.plan(1)
       let values = await store.rangeGet({ gte: 'a', lte: 'c', reverse: true })
       t.deepEqual(values, [ { v: 3, id: 'c' }, { v: 2, id: 'b' },  { v: 1, id: 'a' } ], 'range read' )
-    })
-
-    t.test("count reverse range [a,c]", async t => {
-      t.plan(1)
-      let values = await store.countGet({ gte: 'a', lte: 'c', reverse: true })
-      t.deepEqual(values, 3, 'range count' )
     })
 
     t.test("get range [a,c] with limit 2", async t => {
@@ -84,22 +57,10 @@ test("store non-reactive properties", t => {
       t.deepEqual(values, [ { v: 1, id: 'a' }, { v: 2, id: 'b' } ], 'range read' )
     })
 
-    t.test("count range [a,c] with limit 2", async t => {
-      t.plan(1)
-      let values = await store.countGet({ gte: 'a', lte: 'c', limit: 2 })
-      t.deepEqual(values, 2, 'range read' )
-    })
-
     t.test("get reverse range [c,a] with limit 2", async t => {
       t.plan(1)
       let values = await store.rangeGet({ gte: 'a', lte: 'c', reverse: true, limit: 2 })
       t.deepEqual(values, [ { v: 3, id: 'c' }, { v: 2, id: 'b' } ], 'range read' )
-    })
-
-    t.test("get reverse count [c,a] with limit 2", async t => {
-      t.plan(1)
-      let values = await store.countGet({ gte: 'a', lte: 'c', reverse: true, limit: 2 })
-      t.deepEqual(values, 2, 'range read' )
     })
 
     t.test("get range (a,c]", async t => {
@@ -151,16 +112,9 @@ test("store non-reactive properties", t => {
     })
   })
 
-  t.test("close and remove database", async t => {
-    t.plan(1)
-    dbi.close()
-    env.close()
-    await new Promise ((resolve, reject) => {
-      rimraf(dbPath, (err) => {
-        if(err) return t.fail(err)
-        t.pass('removed')
-        resolve()
-      })
-    })
+  t.test("close database", async t => {
+    await store.close()
+    t.pass('closed')
+    t.end()
   })
 })

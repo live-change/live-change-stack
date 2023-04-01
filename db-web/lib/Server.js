@@ -8,34 +8,47 @@ const ReactiveDao = require("@live-change/dao")
 const Database = require('@live-change/db').Database
 
 class DatabaseStore {
-  constructor(path, backend, options) {
+  constructor(path, backends, options) {
     this.path = path
-    this.backend = backend
+    this.backends = backends
     this.stores = new Map()
 
-    this.db = backend.createDb(path, options)
+    this.dbs = {}
+    this.dbs.default = this.backends.default.createDb(path, options)
   }
   close() {
-    return this.backend.closeDb(this.db)
+    for(let key in this.dbs) {
+      return this.backends[key].closeDb(this.dbs[key])
+    }
   }
   delete() {
-    return this.backend.deleteDb(this.db)
+    for(let key in this.dbs) {
+      return this.backends[key].deleteDb(this.dbs[key])
+    }
   }
   getStore(name, options = {}) {
     let store = this.stores.get(name)
     if(store) return store
-    store = this.backend.createStore(this.db, name, options)
+    const backendName = options.backend ?? (options.memory ? 'memory' : 'default')
+    if(!this.backends[backendName]) {
+      throw new Error(`db ${path} backend ${backendName} not configured`)
+    }
+    if(!this.dbs[backendName]) {
+      this.dbs[backendName] = this.backends[backendName].createDb(this.path, options)
+    }
+    store = this.backends[backendName].createStore(this.dbs[backendName], name, options)
+    store.backendName = backendName
     this.stores.set(name, store)
     return store
   }
   closeStore(name) {
     let store = this.stores.get(name)
     if(!store) return;
-    return this.backend.closeStore(store)
+    return this.backends[store.backendName].closeStore(store)
   }
   deleteStore(name) {
     let store = this.getStore(name)
-    return this.backend.deleteStore(store)
+    return this.backends[store.backendName].deleteStore(store)
   }
 }
 
@@ -48,7 +61,26 @@ class Server {
 
     this.databasesListObservable = new ReactiveDao.ObservableList([])
 
-    this.backend = createBackend(config)
+    this.backends = {}
+    if(config.backend && !this.backends.default) { // backward compatibility
+      this.backends.default = createBackend({
+        name: config.backend,
+        url: config.backendUrl,
+        maxDbs: config.maxDbs,
+        maxDbSize: config.maxDbSize,
+      })
+    }
+    for(let backend of config.backends || []) {
+      this.backends[backend.name] = createBackend(backend)
+    }
+    if(!this.backends.default) {
+      throw new Error("No default backend configured")
+    }
+    if(!this.backends.memory) {
+      this.backends.memory = createBackend({
+        name: "mem"
+      })
+    }
 
     this.metadataSavePromise = null
   }
@@ -116,7 +148,10 @@ class Server {
     const dbPath = `${this.config.dbPrefix || ''}_lcdb`
     let dbStore = this.databaseStores.get(dbName)
     if(!dbStore) {
-      dbStore = new DatabaseStore(dbPath, this.backend, dbConfig.storage)
+      const backend = this.backends[dbConfig.backend?.name ?? dbConfig.backend ?? 'default']
+      dbStore = new DatabaseStore(dbPath, { ...this.backends, default: backend },
+        typeof dbConfig.backend == 'object' ? dbConfig.backend : dbConfig.storage
+      )
       this.databaseStores.set(dbName, dbStore)
     }
     const database = new Database(

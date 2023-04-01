@@ -24,7 +24,7 @@
     "tape": "^5.3.2"
   },
   "dependencies": {
-    "@live-change/dao": "^0.5.10",
+    "@live-change/dao": "0.5.14",
     "@live-change/interval-tree": "^1.0.12",
     "functional-red-black-tree": "^1.0.1"
   },

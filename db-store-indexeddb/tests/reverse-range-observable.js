@@ -11,7 +11,7 @@ test("store reverse range observable", t => {
 
   t.test("create store", async t => {
     t.plan(1)
-    store = new Store('test-reverse-range-observable')
+    store = new Store('test-reverse-range-observable', 'test')
     await store.open()
     t.pass('store created')
   })
@@ -39,12 +39,17 @@ test("store reverse range observable", t => {
     if(nextValueResolve) nextValueResolve(rangeObservable.list)
   }
 
-  t.test("observe reverse range [z,a]", async t => {
+  t.test("observe reverse range [z,a]", t => {
     t.plan(6)
     rangeObservable = store.rangeObservable({ gte: 'a', lte: 'z', reverse: true })
     rangeObservable.observe(rangeObserver)
-    let values = await getNextValue()
-    t.deepEqual(values, [ { v: 3, id: 'c' }, { v: 1, id: 'a' } ], 'range value' )
+    let values
+
+    t.test("get values", async t => {
+      t.plan(1)
+      values = await getNextValue()
+      t.deepEqual(values, [{v: 3, id: 'c'}, {v: 1, id: 'a'}], 'range value')
+    })
 
     t.test("remove object 'a' from observed range", async t => {
       t.plan(1)
@@ -81,12 +86,16 @@ test("store reverse range observable", t => {
     })
   })
 
-  t.test("observe reverse range (d, a)", async t => {
+  t.test("observe reverse range (d, a)", t => {
     t.plan(6)
     rangeObservable = store.rangeObservable({ gt: 'a', lt: 'd', reverse: true })
     rangeObservable.observe(rangeObserver)
-    let values = await getNextValue()
-    t.deepEqual(values, [ { v: 3, id: 'c' }, { v: 5, id: 'b' } ], 'range value' )
+    let values
+    t.test("get values", async t => {
+      t.plan(1)
+      values = await getNextValue()
+      t.deepEqual(values, [ { v: 3, id: 'c' }, { v: 5, id: 'b' } ], 'range value' )
+    })
 
     t.test("remove object 'd' outside observed range", async t => {
       t.plan(1)

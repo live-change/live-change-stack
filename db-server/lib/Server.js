@@ -66,7 +66,26 @@ class Server {
 
     this.apiServer = new ReactiveDao.ReactiveServer((sessionId) => this.createDao(sessionId))
 
-    this.backend = createBackend(config)
+    this.backends = {}
+    if(config.backend && !this.backends.default) { // backward compatibility
+      this.backends.default = createBackend({
+        name: config.backend,
+        url: config.backendUrl,
+        maxDbs: config.maxDbs,
+        maxDbSize: config.maxDbSize,
+      })
+    }
+    for(let backend of config.backends || []) {
+      this.backends[backend.name] = createBackend(backend)
+    }
+    if(!this.backends.default) {
+      throw new Error("No default backend configured")
+    }
+    if(!this.backends.memory) {
+      this.backends.memory = createBackend({
+        name: "mem"
+      })
+    }
 
     if(this.config.master) {
       this.masterDao = new ReactiveDao('app', {
@@ -269,7 +288,10 @@ class Server {
     let dbStore = this.databaseStores.get(dbName)
     if(!dbStore) {
       debug("CREATE DB", dbPath, dbConfig.storage)
-      dbStore = new DatabaseStore(dbPath, this.backend, dbConfig.storage)
+      const backend = this.backends[dbConfig.backend?.name ?? dbConfig.backend ?? 'default']
+      dbStore = new DatabaseStore(dbPath, { ...this.backends, default: backend },
+        typeof dbConfig.backend == 'object' ? dbConfig.backend : dbConfig.storage
+      )
       this.databaseStores.set(dbName, dbStore)
     }
     const database = new Database(

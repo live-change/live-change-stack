@@ -11,7 +11,7 @@ test("store limited range observable", t => {
 
   t.test("create store", async t => {
     t.plan(1)
-    store = new Store('test-limited-range-observable')
+    store = new Store('test-limited-range-observable', 'test')
     await store.open()
     t.pass('store created')
   })
@@ -46,12 +46,18 @@ test("store limited range observable", t => {
     if(nextValueResolve) nextValueResolve(rangeObservable.list)
   }
 
-  t.test("observe range [b_0,b_9]", async t => {
+  t.test("observe range [b_0,b_9]", t => {
     t.plan(7)
     rangeObservable = store.rangeObservable({ gte: 'b_0', lte: 'b_9', limit: 5 })
     rangeObservable.observe(rangeObserver)
-    let values = await getNextValue()
-    t.deepEqual(values, objects.slice(0, 5), 'range value' )
+
+    let values
+
+    t.test("get values", async t => {
+      t.plan(1)
+      values = await getNextValue()
+      t.deepEqual(values, objects.slice(0,5), 'range value')
+    })
 
     t.test("remove object 'b_3' from observed range", async t => {
       t.plan(1)
@@ -104,13 +110,19 @@ test("store limited range observable", t => {
     })
   })
 
-  t.test("observe range (b_0,b_5)", async t => {
+  t.test("observe range (b_0,b_5)", t => {
     t.plan(7)
     gotNextValue = false
     rangeObservable = store.rangeObservable({ gt: 'b_0', lt: 'b_5', limit: 3 })
     rangeObservable.observe(rangeObserver)
-    let values = await getNextValue()
-    t.deepEqual(values, objects.slice(1,4) , 'range value' )
+
+    let values
+
+    t.test("get values", async t => {
+      t.plan(1)
+      values = await getNextValue()
+      t.deepEqual(values, objects.slice(1,4), 'range value')
+    })
 
     t.test("remove object 'b_0' outside observed range", async t => {
       t.plan(1)

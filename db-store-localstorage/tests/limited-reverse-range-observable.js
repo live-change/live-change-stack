@@ -11,7 +11,7 @@ test("store limited reverse range observable", t => {
 
   t.test("create store", async t => {
     t.plan(1)
-    store = new Store('test-limited-reverse-range-observable', 'test')
+    store = new Store('test-limited-reverse-range-observable', 'test', 'local')
     await store.open()
     t.pass('store created')
   })

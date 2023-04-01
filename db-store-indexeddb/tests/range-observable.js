@@ -11,7 +11,7 @@ test("store range observable", t => {
 
   t.test("create store", async t => {
     t.plan(1)
-    store = new Store('test-range-observable')
+    store = new Store('test-range-observable', 'test')
     await store.open()
     t.pass('store created')
   })
@@ -39,12 +39,16 @@ test("store range observable", t => {
     if(nextValueResolve) nextValueResolve(rangeObservable.list)
   }
 
-  t.test("observe range [a,z]", async t => {
+  t.test("observe range [a,z]", t => {
     t.plan(6)
     rangeObservable = store.rangeObservable({ gte: 'a', lte: 'z' })
     rangeObservable.observe(rangeObserver)
-    let values = await getNextValue()
-    t.deepEqual(values, [ { v: 1, id: 'a' }, { v: 3, id: 'c' } ], 'range value' )
+    let values
+    t.test("get values", async t => {
+      t.plan(1)
+      values = await getNextValue()
+      t.deepEqual(values, [{v: 1, id: 'a'}, {v: 3, id: 'c'}], 'range value')
+    })
 
     t.test("remove object 'a' from observed range", async t => {
       t.plan(1)
@@ -81,12 +85,18 @@ test("store range observable", t => {
     })
   })
 
-  t.test("observe range (a,d)", async t => {
+  t.test("observe range (a,d)", t => {
     t.plan(6)
     rangeObservable = store.rangeObservable({ gt: 'a', lt: 'd' })
     rangeObservable.observe(rangeObserver)
-    let values = await getNextValue()
-    t.deepEqual(values, [ { v: 5, id: 'b' }, { v: 3, id: 'c' } ], 'range value' )
+
+    let values
+
+    t.test("get values", async t => {
+      t.plan(1)
+      values = await getNextValue()
+      t.deepEqual(values, [ { v: 5, id: 'b' }, { v: 3, id: 'c' } ], 'range value' )
+    })
 
     t.test("remove object 'd' outside observed range", async t => {
       t.plan(1)

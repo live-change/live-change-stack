@@ -12,10 +12,10 @@ test("store broadcast object changes", t => {
 
   t.test("create stores", async t => {
     t.plan(2)
-    readStore = new Store('test-broadcast-object-changes', 'test')
+    readStore = new Store('test-broadcast-object-changes', 'test', 'local')
     await readStore.open()
     t.pass('read store created')
-    writeStore = new Store('test-broadcast-object-changes', 'test')
+    writeStore = new Store('test-broadcast-object-changes', 'test', 'local')
     await writeStore.open()
     t.pass('write store created')
   })

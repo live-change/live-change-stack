@@ -4,19 +4,19 @@ require('fake-indexeddb/auto.js')
 const idb = require('idb')
 const Store = require('../lib/Store.js')
 
-test("store non-reactive properties", async t => {
+test("store non-reactive properties", t => {
   t.plan(3)
 
   let store
-
   t.test("create store", async t => {
     t.plan(1)
-    store = new Store('test-non-reactive')
+    store = new Store('test-non-reactive', 'test')
+    await new Promise(resolve => setTimeout(resolve, 1000))
     await store.open()
     t.pass('store created')
   })
 
-  t.test("non reactive operations", async t => {
+  t.test("non reactive operations", t => {
     t.plan(15)
 
     t.test("put value", async t => {

@@ -2,8 +2,8 @@ const fs = require('fs')
 const path = require('path')
 const rimraf = require("rimraf-promise")
 
-function createBackend(config) {
-  if(config.backend == 'leveldb') {
+function createBackend({ name, url, maxDbs, mapSize }) {
+  if(name == 'leveldb') {
     return {
       levelup: require('levelup'),
       leveldown: require('leveldown'),
@@ -32,7 +32,7 @@ function createBackend(config) {
         await store.clear()
       }
     }
-  } else if(config.backend == 'rocksdb') {
+  } else if(name == 'rocksdb') {
     return {
       levelup: require('levelup'),
       rocksdb: require('level-rocksdb'),
@@ -61,7 +61,7 @@ function createBackend(config) {
         await store.clear()
       }
     }
-  } else if(config.backend == 'memdown') {
+  } else if(name == 'memdown') {
     return {
       levelup: require('levelup'),
       memdown: require('memdown'),
@@ -90,7 +90,7 @@ function createBackend(config) {
         await store.clear()
       }
     }
-  } else if(config.backend == 'mem') {
+  } else if(name == 'mem') {
     return {
       Store: require('@live-change/db-store-rbtree'),
       createDb(path, options) {
@@ -110,7 +110,7 @@ function createBackend(config) {
       async deleteStore(store) {
       }
     }
-  } else if(config.backend == 'lmdb') {
+  } else if(name == 'lmdb') {
     return {
       lmdb: require('node-lmdb'),
       Store: require('@live-change/db-store-lmdb'),
@@ -119,8 +119,8 @@ function createBackend(config) {
         const env = new this.lmdb.Env()
         const envConfig = {
           path: path,
-          maxDbs: config.maxDbs || 1000,
-          mapSize: config.mapSize || (10 * 1024 * 1024 * 1024),
+          maxDbs: maxDbs || 1000,
+          mapSize: mapSize || (10 * 1024 * 1024 * 1024),
           ...options
         }
         env.open(envConfig)
@@ -149,9 +149,9 @@ function createBackend(config) {
         store.lmdb.drop()
       }
     }
-  } else if(config.backend == 'observabledb') {
+  } else if(name == 'observabledb') {
     const Store = require('@live-change/db-store-observable-db')
-    const connection = new Store.Connection(config.backendUrl || 'ws://localhost:3530/api/ws')
+    const connection = new Store.Connection(url || 'ws://localhost:3530/api/ws')
     return {
       Store,
       connection,
@@ -190,7 +190,7 @@ function createBackend(config) {
         return connection.deleteStore(store.databaseName, store.storeName)
       }
     }
-  } else throw new Error("Unknown backend " + config.backend)
+  } else throw new Error("Unknown backend " + name)
 }
 
 module.exports = createBackend

@@ -11,7 +11,7 @@ test("store object observable", t => {
 
   t.test("create store", async t => {
     t.plan(1)
-    store = new Store('test-object-observable')
+    store = new Store('test-object-observable', 'test')
     await store.open()
     t.pass('store created')
   })
@@ -33,12 +33,16 @@ test("store object observable", t => {
     if(nextValueResolve) nextValueResolve(value)
   }
 
-  t.test('observe object A', async t => {
+  t.test('observe object A', t => {
     t.plan(3)
     objectObservable = store.objectObservable('A')
     objectObservable.observe(objectObserver)
-    let value = await getNextValue()
-    t.deepEqual(value, null, 'found null')
+
+    t.test('get value', async t => {
+      t.plan(1)
+      let value = await getNextValue()
+      t.deepEqual(value, null, 'found null')
+    })
 
     t.test("add object A", async t => {
       t.plan(1)

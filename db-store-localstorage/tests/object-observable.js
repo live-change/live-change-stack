@@ -4,20 +4,16 @@ require('fake-indexeddb/auto.js')
 const idb = require('idb')
 const Store = require('../lib/Store.js')
 
-test("store broadcast object changes", t => {
+test("store object observable", t => {
   t.plan(3)
 
-  let writeStore
-  let readStore
+  let store
 
-  t.test("create stores", async t => {
-    t.plan(2)
-    readStore = new Store('test-broadcast-object-changes', 'test')
-    await readStore.open()
-    t.pass('read store created')
-    writeStore = new Store('test-broadcast-object-changes', 'test')
-    await writeStore.open()
-    t.pass('write store created')
+  t.test("create store", async t => {
+    t.plan(1)
+    store = new Store('test-object-observable', 'test', 'local')
+    await store.open()
+    t.pass('store created')
   })
 
   let nextValueResolve
@@ -33,47 +29,39 @@ test("store broadcast object changes", t => {
   let objectObservable
   const objectObserver = (signal, value, ...rest) => {
     console.log("SIGNAL", signal, value, ...rest)
-    if(nextValueResolve) {
-      nextValueResolve(value)
-    } else {
-      gotNextValue = true
-    }
+    gotNextValue = true
+    if(nextValueResolve) nextValueResolve(value)
   }
 
   t.test('observe object A', t => {
     t.plan(3)
-    objectObservable = readStore.objectObservable('A')
+    objectObservable = store.objectObservable('A')
     objectObservable.observe(objectObserver)
-
-    let value
 
     t.test('get value', async t => {
       t.plan(1)
-      value = await getNextValue()
+      let value = await getNextValue()
       t.deepEqual(value, null, 'found null')
     })
 
     t.test("add object A", async t => {
       t.plan(1)
-      await writeStore.put({ id: 'A', a: 1 })
+      await store.put({ id: 'A', a: 1 })
       let value = await getNextValue()
       t.deepEqual(value, { id: 'A', a: 1 } , 'found object' )
     })
 
     t.test("delete object A", async t => {
       t.plan(1)
-      await writeStore.delete('A')
+      await store.delete('A')
       let value = await getNextValue()
       t.deepEqual(value, null , 'found null' )
     })
   })
 
   t.test("close database", async t => {
-    t.plan(2)
-    await readStore.close()
-    t.pass('read store closed')
-    await writeStore.close()
-    t.pass('write store closed')
+    await store.close()
+    t.pass('closed')
     t.end()
   })
 

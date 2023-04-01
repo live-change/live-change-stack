@@ -1,8 +1,7 @@
 const IntervalTree = require('@live-change/interval-tree').default
 const ReactiveDao = require("@live-change/dao")
 const { BroadcastChannel, createLeaderElection } = require('broadcast-channel')
-const idb = require('idb')
-
+const storage = require('./storage.js')
 
 class ObjectObservable extends ReactiveDao.ObservableValue {
   constructor(store, key) {
@@ -222,17 +221,21 @@ class RangeObservable extends ReactiveDao.ObservableList {
 }
 
 class Store {
-  constructor(dbName, storeName) {
+  constructor(dbName, storeName, type) {
     if(!dbName) throw new Error("dbName argument is required")
     if(!storeName) throw new Error("storeName argument is required")
+    if(!type) throw new Error("type argument is required")
 
     this.dbName = dbName
     this.storeName = storeName
 
+    this.prefix = `lcdb/${dbName}/${storeName}/`
+
     this.finished = false
 
-    this.db = null
-    this.dbPromise = null
+    this.storage = storage[type]
+    if(!this.storage) throw new Error("Unknown storage type: " + type)
+
     this.channel = null
 
     this.objectObservables = new Map()
@@ -240,25 +243,8 @@ class Store {
     this.rangeObservablesTree = new IntervalTree()
   }
 
-  async openDb() {
-    this.dbPromise = idb.openDB(`lc-db-${this.dbName}-${this.storeName}`, 1, {
-      upgrade: (db) => {
-        const store = db.createObjectStore(this.storeName, { keyPath: 'id' })
-      },
-      terminated: async () => {
-        console.log("IndexedDB terminated!")
-        if(this.finished) return
-        for(const [key, value] of this.objectObservables) value.dispose()
-        for(const [key, value] of this.rangeObservables) value.dispose()
-        await this.openDb()
-        for(const [key, value] of this.objectObservables) value.respawn()
-        for(const [key, value] of this.rangeObservables) value.respawn()
-      }
-    })
-    this.db = await this.dbPromise
-  }
   async openChannel() {
-    this.channel = new BroadcastChannel('lc-db-channel' + this.dbName, {
+    this.channel = new BroadcastChannel(`lc-db-${this.dbName}-${this.storeName}`, {
       idb: {
         onclose: () => {
           if(this.finished) return
@@ -271,20 +257,21 @@ class Store {
   }
   async open() {
     await this.openChannel()
-    await this.openDb()
   }
   async close() {
     this.finished = true
     await this.channel.close()
-    ;(await this.dbPromise).close()
   }
 
   async deleteDb() {
     if(!this.finished) await this.close()
-    await idb.deleteDB('lc-db-' + this.dbName)
+    const all = await this.storage.getKeys()
+    const own = all.filter(key => key.startsWith(this.prefix))
+    await this.storage.remove(own)
   }
 
   async handleChannelMessage(message) {
+    console.log("handleChannelMessage", message)
     switch(message.type) {
       case 'put' : {
         const { object, oldObject } = message
@@ -316,7 +303,7 @@ class Store {
   async objectGet(id) {
     if(!id) throw new Error("key is required")
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    return await this.db.get(this.storeName, id) || null
+    return JSON.parse(await this.storage.getItem(this.prefix + id) || 'null')
   }
 
   objectObservable(key) {
@@ -328,46 +315,24 @@ class Store {
 
   async rangeGet(range) {
     if(!range) throw new Error("range not defined")
-    console.log("RANGE GET!")
-
-    const txn = this.db.transaction(this.storeName, 'readonly')
-    let data = []
-    const min = range.gt || range.gte
-    const max = range.lt || range.lte
-    let keyRange = undefined
-    if(min && max) {
-      keyRange = IDBKeyRange.bound(min, max, !!range.gt, !!range.lt)
-    } else if(min) {
-      keyRange = IDBKeyRange.lowerBound(min, !!range.gt)
-    } else if(max) {
-      keyRange = IDBKeyRange.upperBound(min, !!range.gt)
-    }
-
-    if(range.reverse) {
-      let cursor = await txn.store.openCursor(keyRange, 'prev')
-      while ((!range.limit || data.length < range.limit) && cursor) {
-        if (range.gt && cursor.key <= range.gt) break
-        if (range.gte && cursor.key < range.gte) break
-        if ((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
-          data.push(cursor.value)
-        }
-        cursor = await cursor.continue()
-      }
-    } else {
-      let cursor = await txn.store.openCursor(keyRange, 'next')
-      //console.log("CURSOR", cursor)
-      while((!range.limit || data.length < range.limit) && cursor) {
-        if(range.lt && cursor.key >= range.lt) break
-        if(range.lte && cursor.key > range.lte) break
-        if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
-          data.push(cursor.value)
-        }
-        cursor = await cursor.continue()
-        //console.log("CURSOR C", cursor)
-      }
-      //console.log("CUR READ END", cursor)
-    }
-    return data
+    const { gt, gte, lt, lte, limit, reverse } = range
+    const all = (await this.storage.getKeys())
+      .filter(key => key.startsWith(this.prefix))
+      .sort()
+    if(range.reverse) all.reverse()
+    const keys = all.filter(key => {
+      const id = key.slice(this.prefix.length)
+      if(gt && !(id > gt)) return false
+      if(gte && !(id >= gte)) return false
+      if(lt && !(id < lt)) return false
+      if(lte && !(id <= lte)) return false
+      return true
+    }).slice(0, limit)
+    const objects = (await this.storage.getValues(keys))
+      .map(json => JSON.parse(json))
+      .sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+    if(range.reverse) objects.reverse()
+    return objects
   }
 
   rangeObservable(range) {
@@ -379,19 +344,18 @@ class Store {
 
   async countGet(range) {
     if(!range) throw new Error("range not defined")
-    const min = range.gt || range.gte
-    const max = range.lt || range.lte
-    let keyRange = undefined
-    if(min && max) {
-      keyRange = IDBKeyRange.bound(min, max, !!range.gt, !!range.lt)
-    } else if(min) {
-      keyRange = IDBKeyRange.lowerBound(min, !!range.gt)
-    } else if(max) {
-      keyRange = IDBKeyRange.upperBound(min, !!range.gt)
-    }
-    const count = await this.count(this.storeName, keyRange)
-    if(range.limit && count > range.limit) return range.limit
-    return count
+    const { gt, gte, lt, lte, limit, reverse } = range
+    const all = await this.storage.getKeys()
+    const keys = all.filter(key => {
+      if(!key.startsWith(this.prefix)) return false
+      const id = key.slice(this.prefix.length)
+      if(gt && !(id > gt)) return false
+      if(gte && !(id >= gte)) return false
+      if(lt && !(id < lt)) return false
+      if(lte && !(id <= lte)) return false
+      return true
+    }).slice(0, limit)
+    return keys.length
   }
 
   countObservable(range) {
@@ -403,74 +367,26 @@ class Store {
 
   async rangeDelete(range) {
     if(!range) throw new Error("range not defined")
-
-    const txn = this.db.transaction(this.storeName)
-    let count = 0, last
-    const min = range.gt || range.gte
-    const max = range.lt || range.lte
-    let keyRange = undefined
-    if(min && max) {
-      keyRange = IDBKeyRange.bound(min, max, !!range.gt, !!range.lt)
-    } else if(min) {
-      keyRange = IDBKeyRange.lowerBound(min, !!range.gt)
-    } else if(max) {
-      keyRange = IDBKeyRange.upperBound(min, !!range.gt)
-    }
-
-    if(range.reverse) {
-      let cursor = await txn.store.openCursor(keyRange, 'prev')
-      while ((!range.limit || data.length < range.limit) && cursor) {
-        if (range.gt && cursor.key <= range.gt) break
-        if (range.gte && cursor.key < range.gte) break
-        if ((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
-          count++
-          const id = cursor.key
-          const object = cursor.value
-          last = id
-          await cursor.delete()
-
-          const objectObservable = this.objectObservables.get(id)
-          if(objectObservable) objectObservable.set(null)
-          const rangeObservables = this.rangeObservablesTree.search([id, id])
-          for(const rangeObservable of rangeObservables) {
-            rangeObservable.deleteObject(object)
-          }
-          this.channel.postMessage({ type: "delete", object })
-        }
-        cursor = await cursor.continue()
-      }
-    } else {
-      let cursor = await txn.store.openCursor(keyRange, 'prev')
-      while((!range.limit || data.length < range.limit) && cursor) {
-        if(range.lt && cursor.key >= range.lt) break
-        if(range.lte && cursor.key > range.lte) break
-        if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
-          count++
-          const id = cursor.key
-          const object = cursor.value
-          last = id
-          await cursor.delete()
-
-          const objectObservable = this.objectObservables.get(id)
-          if(objectObservable) objectObservable.set(null)
-          const rangeObservables = this.rangeObservablesTree.search([id, id])
-          for(const rangeObservable of rangeObservables) {
-            rangeObservable.deleteObject(object)
-          }
-          this.channel.postMessage({ type: "delete", object })
-        }
-        cursor = await cursor.continue()
-      }
-    }
-    return { count, last }
+    const { gt, gte, lt, lte, limit, reverse } = range
+    const all = await this.storage.getKeys()
+    const keys = all.filter(key => {
+      if(!key.startsWith(this.prefix)) return false
+      const id = key.slice(this.prefix.length)
+      if(gt && !(id > gt)) return false
+      if(gte && !(id >= gte)) return false
+      if(lt && !(id < lt)) return false
+      if(lte && !(id <= lte)) return false
+      return true
+    }).slice(0, limit)
+    await this.storage.delete(keys)
+    return { count: keys.length, last: keys[keys.length - 1] }
   }
 
   async put(object) {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    const oldObject = await this.db.get(this.storeName, id)
-    console.log("PUT", object)
-    await this.db.put(this.storeName, object)
+    const oldObject = JSON.parse(await this.storage.getItem(this.prefix + id) || 'null')
+    await this.storage.setItem(this.prefix + id, JSON.stringify(object))
     const objectObservable = this.objectObservables.get(id)
     if(objectObservable) objectObservable.set(object, oldObject)
     const rangeObservables = this.rangeObservablesTree.search([id, id])
@@ -483,8 +399,8 @@ class Store {
 
   async delete(id) {
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    const object = await this.db.get(this.storeName, id)
-    await this.db.delete(this.storeName, id)
+    const object = JSON.parse(await this.storage.getItem(this.prefix + id))
+    await this.storage.removeItem(this.prefix + id)
     const objectObservable = this.objectObservables.get(id)
     if(objectObservable) objectObservable.set(null)
     const rangeObservables = this.rangeObservablesTree.search([id, id])
