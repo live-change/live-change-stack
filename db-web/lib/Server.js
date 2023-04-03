@@ -72,7 +72,7 @@ class Server {
     }
     for(let backend of config.backends || []) {
       if(typeof backend == 'string') {
-        backend = { backend }
+        backend = { name: backend }
       }
       this.backends[backend.name] = createBackend(backend)
       if(!this.backends.default) {
@@ -84,11 +84,12 @@ class Server {
     }
     if(!this.backends.memory) {
       this.backends.memory = createBackend({
-        backend: "memory"
+        name: "memory"
       })
     }
 
-    this.metadataSavePromise = null
+    this.metadataDatabase = this.backends.default.createDb('_db_metadata', {})
+    this.metadataStore = this.backends.default.createStore(this.metadataDatabase, 'metadata', {})
   }
   createDao(session) {
     return new ReactiveDao(session, {
@@ -130,8 +131,7 @@ class Server {
     if(initOptions.metadata) {
       this.metadata = initOptions.metadata
     } else {
-      const jsonStr = localStorage[`${this.config.dbPrefix || ''}_lcdb`]
-      this.metadata = jsonStr && JSON.parse(jsonStr)
+      this.metadata = await this.metadataStore.objectGet('metadata')
     }
     if(!this.metadata) {
       this.metadata = {
@@ -179,7 +179,7 @@ class Server {
   }
 
   async saveMetadata() {
-    localStorage[`${this.config.dbPrefix || ''}_lcdb`] = JSON.stringify(this.metadata)
+    await this.metadataStore.put({ ...this.metadata, id: 'metadata' })
   }
 
   async close() {

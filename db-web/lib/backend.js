@@ -1,5 +1,6 @@
 function createBackend(config) {
-  if(config.backend == 'mem' || config.backend == 'memory') {
+  console.log("CREATE BACKEND", config)
+  if(config.name == 'mem' || config.name == 'memory') {
     return {
       Store: require('@live-change/db-store-rbtree'),
       createDb(path, options) {
@@ -22,7 +23,7 @@ function createBackend(config) {
         await store.clear()
       }
     }
-  } if(config.backend == 'indexeddb') {
+  } if(config.name == 'indexeddb') {
     return {
       Store: require('@live-change/db-store-indexeddb'),
       createDb(path, options) {
@@ -46,7 +47,7 @@ function createBackend(config) {
         await store.clear()
       }
     }
-  } if(config.backend == 'local') {
+  } if(config.name == 'local') {
     return {
       Store: require('@live-change/db-store-localstorage'),
       createDb(path, options) {
@@ -70,7 +71,7 @@ function createBackend(config) {
         await store.clear()
       }
     }
-  } if(config.backend == 'session') {
+  } if(config.name == 'session') {
     return {
       Store: require('@live-change/db-store-localstorage'),
       createDb(path, options) {
@@ -95,7 +96,7 @@ function createBackend(config) {
       }
     }
   } else {
-    throw new Error("Unknown backend " + config.backend)
+    throw new Error("Unknown backend " + config.name)
   }
 }
 

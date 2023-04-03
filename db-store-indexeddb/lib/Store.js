@@ -221,6 +221,86 @@ class RangeObservable extends ReactiveDao.ObservableList {
   }
 }
 
+class CountObservable extends ReactiveDao.ObservableValue {
+  constructor(store, range) {
+    super()
+    this.store = store
+    this.range = range
+
+    this.disposed = false
+    this.ready = false
+    this.respawnId = 0
+    this.refillId = 0
+    this.refillPromise = null
+
+    this.forward = null
+
+    this.rangeKey = JSON.stringify(this.range)
+    this.rangeDescr = [ this.range.gt || this.range.gte || '', this.range.lt || this.range.lte || '\xFF\xFF\xFF\xFF']
+
+    this.readPromise = this.startReading()
+  }
+
+  async startReading() {
+    this.store.rangeObservables.set(this.rangeKey, this)
+    const treeInsert = this.rangeDescr
+    this.store.rangeObservablesTree.insert(treeInsert, this)
+    this.set(await this.store.countGet(this.range))
+  }
+
+  async putObject(object, oldObject) {
+    const id = object.id
+    if(this.range.gt && !(id > this.range.gt)) return
+    if(this.range.lt && !(id < this.range.lt)) return
+    await this.readPromise
+    if(this.range.limit) {
+      this.set(await this.store.countGet(this.range))
+    } else {
+      if(object && !oldObject) {
+        this.set(this.value + 1)
+      } else if(!object && oldObject) {
+        this.set(this.value - 1)
+      }
+    }
+  }
+
+  async deleteObject(object) {
+    const id = object.id
+    if(this.range.gt && !(id > this.range.gt)) return
+    if(this.range.lt && !(id < this.range.lt)) return
+    this.set(this.value - 1)
+  }
+
+  dispose() {
+    if(this.forward) {
+      this.forward.unobserve(this)
+      this.forward = null
+      return
+    }
+
+    this.disposed = true
+    this.respawnId++
+    this.changesStream = null
+
+    this.store.rangeObservables.delete(this.rangeKey)
+    let removed = this.store.rangeObservablesTree.remove(this.rangeDescr, this)
+  }
+
+  respawn() {
+    const existingObservable = this.store.rangeObservables.get(JSON.stringify(this.range))
+    if(existingObservable) {
+      this.forward = existingObservable
+      this.forward.observe(this)
+      return
+    }
+
+    this.respawnId++
+    this.ready = false
+    this.disposed = false
+    this.startReading()
+  }
+}
+
 class Store {
   constructor(dbName, storeName, options = {}) {
     if(!dbName) throw new Error("dbName argument is required")
@@ -229,14 +309,16 @@ class Store {
     this.dbName = dbName
     this.storeName = storeName
 
-    this.serialization = {
-      stringify: x => x,
-      parse: x => x
-    }
-    if(options.serialization) {
+    if(options.noSerialization) {
       this.serialization = {
-        stringify: x => ({ id: x.id, data: options.serialization.stringify(x) }),
-        parse: x => options.serialization.parse(x.data)
+        stringify: x => x,
+        parse: x => x
+      }
+    } else {
+      const serialization = options.serialization ?? JSON
+      this.serialization = {
+        stringify: x => x ? ({ id: x.id, data: serialization.stringify(x) }) : null,
+        parse: x => x?.data ? serialization.parse(x.data) : null
       }
     }
 
@@ -248,6 +330,7 @@ class Store {
 
     this.objectObservables = new Map()
     this.rangeObservables = new Map()
+    this.countObservables = new Map()
     this.rangeObservablesTree = new IntervalTree()
   }
 
@@ -289,6 +372,10 @@ class Store {
     await this.channel.close()
     ;(await this.dbPromise).close()
   }
+  async ensureOpen() {
+    if(!this.dbPromise) await this.open()
+    await this.dbPromise
+  }
 
   async deleteDb() {
     if(!this.finished) await this.close()
@@ -298,7 +385,9 @@ class Store {
   async handleChannelMessage(message) {
     switch(message.type) {
       case 'put' : {
-        const { object, oldObject } = message
+        const { object: objectJson, oldObjectJson } = message
+        const object = this.serialization.parse(objectJson)
+        const oldObject = this.serialization.parse(oldObjectJson)
         const id = object?.id || oldObject?.id
         if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
         const objectObservable = this.objectObservables.get(id)
@@ -309,7 +398,8 @@ class Store {
         }
       } break
       case 'delete' : {
-        const { object } = message
+        const { object: objectJson } = message
+        const object = this.serialization.parse(objectJson)
         const id = object?.id
         if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
         const objectObservable = this.objectObservables.get(id)
@@ -325,6 +415,7 @@ class Store {
   }
 
   async objectGet(id) {
+    await this.ensureOpen()
     if(!id) throw new Error("key is required")
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
     const json = await this.db.get(this.storeName, id) || null
@@ -340,6 +431,7 @@ class Store {
 
   async rangeGet(range) {
     if(!range) throw new Error("range not defined")
+    await this.ensureOpen()
     console.log("RANGE GET!")
 
     const txn = this.db.transaction(this.storeName, 'readonly')
@@ -393,6 +485,7 @@ class Store {
 
   async countGet(range) {
     if(!range) throw new Error("range not defined")
+    await this.ensureOpen()
     const min = range.gt || range.gte
     const max = range.lt || range.lte
     let keyRange = undefined
@@ -403,7 +496,7 @@ class Store {
     } else if(max) {
       keyRange = IDBKeyRange.upperBound(min, !!range.gt)
     }
-    const count = await this.count(this.storeName, keyRange)
+    const count = await this.db.count(this.storeName, keyRange)
     if(range.limit && count > range.limit) return range.limit
     return count
   }
@@ -417,6 +510,7 @@ class Store {
 
   async rangeDelete(range) {
     if(!range) throw new Error("range not defined")
+    await this.ensureOpen()
 
     const txn = this.db.transaction(this.storeName)
     let count = 0, last
@@ -450,7 +544,7 @@ class Store {
           for(const rangeObservable of rangeObservables) {
             rangeObservable.deleteObject(object)
           }
-          this.channel.postMessage({ type: "delete", object })
+          this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object) })
         }
         cursor = await cursor.continue()
       }
@@ -473,7 +567,7 @@ class Store {
           for(const rangeObservable of rangeObservables) {
             rangeObservable.deleteObject(object)
           }
-          this.channel.postMessage({ type: "delete", object })
+          this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object) })
         }
         cursor = await cursor.continue()
       }
@@ -484,6 +578,8 @@ class Store {
   async put(object) {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
+    await this.ensureOpen()
+
     const oldObjectJson = await this.db.get(this.storeName, id)
     const oldObject = oldObjectJson ? this.serialization.parse(oldObjectJson) : null
     console.log("PUT", object)
@@ -495,12 +591,17 @@ class Store {
     for(const rangeObservable of rangeObservables) {
       rangeObservable.putObject(object, oldObject)
     }
-    this.channel.postMessage({ type: "put", object, oldObject })
+    this.channel.postMessage({ type: "put",
+      object: this.serialization.stringify(object),
+      oldObject: this.serialization.stringify(oldObject)
+    })
     return oldObject
   }
 
   async delete(id) {
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
+    await this.ensureOpen()
+
     const json = await this.db.get(this.storeName, id)
     const object = json ? this.serialization.parse(json) : null
     await this.db.delete(this.storeName, id)
@@ -510,7 +611,7 @@ class Store {
     for(const rangeObservable of rangeObservables) {
       rangeObservable.deleteObject(object)
     }
-    this.channel.postMessage({ type: "delete", object  })
+    this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object)  })
     return object
   }
 

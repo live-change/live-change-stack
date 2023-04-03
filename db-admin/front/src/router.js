@@ -7,12 +7,17 @@ import {
 import { routes as dbAdminRoutes } from './routes.js'
 
 export function routes(config = {}) {
-  const { prefix = '/', route = (r) => r } = config
+  const {
+    prefix = '/',
+    route = (r) => r,
+    dbApi = 'serverDatabase'
+  } = config
   return [
 
     route({
       path: prefix,
       component: () => import("./DatabaseAdmin.vue"),
+      props: { dbApi },
       meta: { pageType: 'wide', noNavBar: true },
       children: [
         ...dbAdminRoutes({ ...config, prefix: '' })

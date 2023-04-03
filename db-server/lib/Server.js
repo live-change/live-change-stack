@@ -88,7 +88,7 @@ class Server {
     }
     for(let backend of config.backends || []) {
       if(typeof backend == 'string') {
-        backend = { backend }
+        backend = { name: backend }
       }
       this.backends[backend.name] = createBackend(backend)
       if(!this.backends.default) {
@@ -100,7 +100,7 @@ class Server {
     }
     if(!this.backends.memory) {
       this.backends.memory = createBackend({
-        backend: "memory"
+        name: "memory"
       })
     }
 
