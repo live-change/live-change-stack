@@ -68,7 +68,8 @@ function clientApi(settings = {}) {
 
     defaultRoute: {
       type: "remote",
-      generator: ReactiveObservableList
+      generator: ReactiveObservableList,
+      ...settings.defaultRoute
     }
   })
 

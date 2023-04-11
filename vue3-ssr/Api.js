@@ -60,6 +60,7 @@ class Api extends DaoProxy {
   setupMetadata() {
     const api = ref()
     this.apiObservable = this.observable(['metadata', 'api'])
+    console.log("API OBSERVABLE", this.apiObservable)
     this.apiObservable.bindProperty(api, 'value')
     const version = ref()
     this.versionObservable = this.observable(['version', 'version'])
@@ -77,9 +78,9 @@ class Api extends DaoProxy {
       return api?.value?.client
     })
     watch(() => api.value, (api) => {
-      console.log("API CHANGE!", api)
+      //console.log("API CHANGE!", api)
       if(!api) return
-      console.log("API CHANGE!", api)
+      console.log("API CHANGE!"/*, api*/)
       this.generateServicesApi()
     })
     console.log("SETUP API", api.value)
@@ -109,7 +110,7 @@ class Api extends DaoProxy {
       }
     }
     //console.trace("GENERATE API SERVICES!")
-    //console.log("GENERATE SERVICES API", apiInfo)
+    console.log("GENERATE SERVICES API", apiInfo)
     const definitions = [...(apiInfo?.services ?? []), ...(this.settings.localDefinitions ?? [])]
     if(JSON.stringify(definitions) == JSON.stringify(api.servicesApiDefinitions)) return
     if(!definitions) throw new Error("API DEFINITIONS NOT FOUND! UNABLE TO GENERATE API!")

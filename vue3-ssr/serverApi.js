@@ -15,6 +15,7 @@ async function serverApi(dao, settings = {}) {
   for(const plugin of (settings.use || [])) {
     plugin(api)
   }
+  await api.readyPromise
   api.generateServicesApi()
   await api.preFetch()
   return api
