@@ -3,6 +3,7 @@ const ReactiveDao = require("@live-change/dao")
 const Table = require('./Table.js')
 const queryGet = require('./queryGet.js')
 const profileLog = require('./profileLog.js')
+const nextTick = require('next-tick')
 const queryObservable = require('./queryObservable.js')
 const { ChangeStream } = require('./ChangeStream.js')
 
@@ -183,12 +184,11 @@ class TableReader extends ChangeStream {
       //console.log("READ OP LOG", this.prefix, "RANGE", JSON.stringify(this.opLogObservableRange))
       this.opLogObservable = this.opLog.rangeObservable(this.opLogObservableRange)
       /// NEXT TICK BECAUSE IT CAN FINISH BEFORE EVENT START xD
-      process.nextTick(() => this.opLogObservable.observe(this))
+      nextTick(() => this.opLogObservable.observe(this))
     })
     return this.opLogPromise
   }
   set(value) {
-    //if(this.prefix == 'table_triggers') console.log("TABLE", this.prefix, "READER SET", value)
     if(!value) return
     this.opLogBuffer = value.slice()
     //console.log("PROMISE", this.opLogPromise)
@@ -209,7 +209,6 @@ class TableReader extends ChangeStream {
     this.opLogReader.handleSignal()
   }
   push(object) {
-    //if(this.prefix == 'table_triggers') console.log("TABLE", this.prefix, " READER PUSH", object)
     if(this.disposed) return
     this.opLogBuffer.push(object)
     this.opLogReader.handleSignal()
@@ -240,7 +239,6 @@ class TableReader extends ChangeStream {
     }
   }
   async readTo(endKey) {
-    //if(this.prefix == 'table_triggers') console.log("RT", endKey, "IN", this.opLogBuffer)
     let lastKey = null
     while(this.opLogBuffer[0] && this.opLogBuffer[0].id <= endKey) {
       const next = this.opLogBuffer.shift()
@@ -249,7 +247,6 @@ class TableReader extends ChangeStream {
         await this.change(next, null, next.id, next.id)
       } else {
         const op = next.operation
-        //if(this.prefix == 'table_triggers') console.log("HANDLE OP LOG OPERATION", next)
         if(op) {
           if(op.type == 'put') {
             await this.change(op.object, op.oldObject, op.object.id, next.id)
@@ -267,7 +264,6 @@ class TableReader extends ChangeStream {
         await this.readOpLog(this.opLogObservable.list[this.opLogObservable.list.length - 1].id)
         //console.log("READ TO RESULT, OP LOG PROMISE:", this.opLogPromise)
       }
-      //console.log("RT", endKey, "IN", this.opLogBuffer)
     }
     return lastKey
   }
@@ -326,7 +322,6 @@ class OpLogReader {
   }
   async readMore() {
     this.readingMore = true
-    //if(this.indexName == 'triggers_new') console.log("READING TRIGGERS STARTED!")
     do {
       while(true) {
         this.gotSignals = false
@@ -336,9 +331,9 @@ class OpLogReader {
         let possibleNextKeys = await Promise.all(
             this.tableReaders.map(async tr => ({ reader: tr, key: await tr.nextKey() }))
         )
-        //if(this.indexName == 'triggers_new') console.log("GOT NEXT KEYS")
+        //console.log("GOT NEXT KEYS")
         if(this.disposed) return
-        //if(this.indexName == 'triggers_new') console.log("POSSIBLE NEXT KEYS", possibleNextKeys.map(({key, reader}) => [reader.prefix, key]))
+        //console.log("POSSIBLE NEXT KEYS", possibleNextKeys.map(({key, reader}) => [reader.prefix, key]))
         if(possibleNextKeys.length == 0) { /// It could happen when oplog is cleared
           return
         }
@@ -348,9 +343,10 @@ class OpLogReader {
             next = possibleKey
           }
         }
-        //if(this.indexName == 'triggers_new') console.log("NEXT KEY", next && next.reader && next.reader.prefix, next && next.key)
+        //console.log("NEXT", next)
+        //console.log("NEXT KEY", next && next.reader && next.reader.prefix, next && next.key)
         const lastKey = '\xFF\xFF\xFF\xFF'
-        //if(this.indexName == 'triggers_new') console.log("NEXT", !!next, "KEY", next && next.key, lastKey)
+        //console.log("NEXT", !!next, "KEY", next && next.key, lastKey)
         if(!next || next.key == lastKey) break // nothing to read
         let otherReaderNext = null
         for(const possibleKey of possibleNextKeys) {
@@ -358,13 +354,12 @@ class OpLogReader {
               && (!otherReaderNext || possibleKey.key < otherReaderNext.key))
             otherReaderNext = possibleKey
         }
-        //if(this.indexName == 'triggers_new')
-        //  console.log("OTHER READ NEXT", otherReaderNext && otherReaderNext.reader && otherReaderNext.reader.prefix,
-        //    otherReaderNext && otherReaderNext.key)
+        /*console.log("OTHER READ NEXT", otherReaderNext && otherReaderNext.reader && otherReaderNext.reader.prefix,
+            otherReaderNext && otherReaderNext.key)*/
         let readEnd = (otherReaderNext && otherReaderNext.key) // Read to next other reader key
             || (((''+(now - 1))).padStart(16, '0'))+':' // or to current timestamp
         if(readEnd < next) {
-          readEnd = next+'\xff'
+          readEnd = next.key+'\xff'
         }
 
         if((next.key||'') < this.currentKey) {
@@ -372,24 +367,23 @@ class OpLogReader {
           console.error("time travel", next.key, this.currentKey)
           //process.exit(1) /// TODO: do something about it!
         }
-        //if(this.indexName == 'triggers_new') console.log("CKN", this.currentKey, '=>', next.key)
+        //console.log("CKN", this.currentKey, '=>', next.key)
         this.currentKey = next.key
-        //if(this.indexName == 'triggers_new') console.log("READ TO", readEnd)
+        //console.log("READ TO", readEnd)
         const readKey = await next.reader.readTo(readEnd)
-        //if(this.indexName == 'triggers_new') console.log("READED")
+        //console.log("READED")
         if(readKey) {
           if((readKey||'') < this.currentKey) {
             //debugger
             console.error("time travel", readKey, this.currentKey)
             //process.exit(1) /// TODO: do something about it!
           }
-          //if(this.indexName == 'triggers_new') console.log("CKR", this.currentKey, '=>', readKey)
+          //console.log("CKR", this.currentKey, '=>', readKey)
           this.currentKey = readKey
         }
       }
     } while(this.gotSignals)
     this.readingMore = false
-    //if(this.indexName == 'triggers_new') console.log("READING TRIGGERS FINISHED!")
   }
   dispose() {
     this.disposed = true

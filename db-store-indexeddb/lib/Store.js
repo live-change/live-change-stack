@@ -1,7 +1,7 @@
 const IntervalTree = require('@live-change/interval-tree').default
 const ReactiveDao = require("@live-change/dao")
 const { BroadcastChannel, createLeaderElection } = require('broadcast-channel')
-const idb = require('idb')
+
 
 
 class ObjectObservable extends ReactiveDao.ObservableValue {
@@ -301,6 +301,18 @@ class CountObservable extends ReactiveDao.ObservableValue {
   }
 }
 
+async function handleRequest(request, onUpgrade = ()=>{}) {
+  return new Promise((resolve, reject) => {
+    request.onerror = (event) => {
+      reject(request.error)
+    }
+    request.onsuccess = (event) => {
+      resolve(request.result)
+    }
+    request.onupgradeneeded = onUpgrade
+  })
+}
+
 class Store {
   constructor(dbName, storeName, options = {}) {
     if(!dbName) throw new Error("dbName argument is required")
@@ -308,6 +320,7 @@ class Store {
 
     this.dbName = dbName
     this.storeName = storeName
+    this.idbName = dbName + '.' + storeName
 
     if(options.noSerialization) {
       this.serialization = {
@@ -328,6 +341,8 @@ class Store {
     this.dbPromise = null
     this.channel = null
 
+    this.openPromise = null
+
     this.objectObservables = new Map()
     this.rangeObservables = new Map()
     this.countObservables = new Map()
@@ -335,24 +350,19 @@ class Store {
   }
 
   async openDb() {
-    this.dbPromise = idb.openDB(`lc-db-${this.dbName}-${this.storeName}`, 1, {
-      upgrade: (db) => {
-        const store = db.createObjectStore(this.storeName, { keyPath: 'id' })
-      },
-      terminated: async () => {
-        console.log("IndexedDB terminated!")
-        if(this.finished) return
-        for(const [key, value] of this.objectObservables) value.dispose()
-        for(const [key, value] of this.rangeObservables) value.dispose()
-        await this.openDb()
-        for(const [key, value] of this.objectObservables) value.respawn()
-        for(const [key, value] of this.rangeObservables) value.respawn()
-      }
+    //console.log("Opening db", this.dbName, this.storeName)
+    const openRequest = globalThis.indexedDB.open(this.idbName, 1)
+    globalThis.lastOpenRequest = openRequest
+    this.dbPromise = handleRequest(openRequest, (event) => {
+      //console.error("Upgrading db", this.dbName, this.storeName)
+      const db = event.target.result
+      const store = db.createObjectStore(this.storeName, { keyPath: 'id' })
     })
     this.db = await this.dbPromise
+    //console.log("Opened db", this.dbName, this.storeName)
   }
   async openChannel() {
-    this.channel = new BroadcastChannel('lc-db-channel' + this.dbName, {
+    this.channel = new BroadcastChannel('lc-db-channel' + this.dbName + '-' + this.storeName, {
       idb: {
         onclose: () => {
           if(this.finished) return
@@ -373,13 +383,13 @@ class Store {
     ;(await this.dbPromise).close()
   }
   async ensureOpen() {
-    if(!this.dbPromise) await this.open()
-    await this.dbPromise
+    if(!this.openPromise) this.openPromise = this.open()
+    await this.openPromise
   }
 
   async deleteDb() {
+    ;(await this.dbPromise).deleteObjectStore(this.storeName)
     if(!this.finished) await this.close()
-    await idb.deleteDB('lc-db-' + this.dbName)
   }
 
   async handleChannelMessage(message) {
@@ -418,8 +428,10 @@ class Store {
     await this.ensureOpen()
     if(!id) throw new Error("key is required")
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
-    const json = await this.db.get(this.storeName, id) || null
-    return json && this.serialization.parse(json)
+    const transaction = this.db.transaction([this.storeName], 'readonly')
+    const store = transaction.objectStore(this.storeName)
+    const json = await handleRequest(store.get(id) || null)
+    return json ? this.serialization.parse(json) : null
   }
 
   objectObservable(key) {
@@ -432,9 +444,6 @@ class Store {
   async rangeGet(range) {
     if(!range) throw new Error("range not defined")
     await this.ensureOpen()
-    console.log("RANGE GET!")
-
-    const txn = this.db.transaction(this.storeName, 'readonly')
     let data = []
     const min = range.gt || range.gte
     const max = range.lt || range.lte
@@ -444,34 +453,53 @@ class Store {
     } else if(min) {
       keyRange = IDBKeyRange.lowerBound(min, !!range.gt)
     } else if(max) {
-      keyRange = IDBKeyRange.upperBound(min, !!range.gt)
+      keyRange = IDBKeyRange.upperBound(max, !!range.gt)
     }
 
+    const txn = this.db.transaction([this.storeName], 'readonly')
+    const store = txn.objectStore(this.storeName)
     if(range.reverse) {
-      let cursor = await txn.store.openCursor(keyRange, 'prev')
-      while ((!range.limit || data.length < range.limit) && cursor) {
-        if (range.gt && cursor.key <= range.gt) break
-        if (range.gte && cursor.key < range.gte) break
-        if ((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
-          const json = cursor.value
-          data.push(this.serialization.parse(json))
+      await new Promise((resolve, reject) => {
+        const cursorRequest = store.openCursor(keyRange, 'prev')
+        cursorRequest.onsuccess = (event) => {
+          const cursor = event.target.result
+          if ((!range.limit || data.length < range.limit) && cursor) {
+            if (range.gt && cursor.key <= range.gt) return resolve()
+            if (range.gte && cursor.key < range.gte) return resolve()
+            if ((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
+              const json = cursor.value
+              data.push(this.serialization.parse(json))
+            }
+            cursor.continue()
+          } else {
+            return resolve()
+          }
         }
-        cursor = await cursor.continue()
-      }
+        cursorRequest.onerror = (event) => {
+          reject(event.target.error)
+        }
+      })
     } else {
-      let cursor = await txn.store.openCursor(keyRange, 'next')
-      //console.log("CURSOR", cursor)
-      while((!range.limit || data.length < range.limit) && cursor) {
-        if(range.lt && cursor.key >= range.lt) break
-        if(range.lte && cursor.key > range.lte) break
-        if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
-          const json = cursor.value
-          data.push(this.serialization.parse(json))
+      await new Promise((resolve, reject) => {
+        const cursorRequest = store.openCursor(keyRange, 'next')
+        cursorRequest.onsuccess = (event) => {
+          const cursor = event.target.result
+          if ((!range.limit || data.length < range.limit) && cursor) {
+            if(range.lt && cursor.key >= range.lt) return resolve()
+            if(range.lte && cursor.key > range.lte) return resolve()
+            if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
+              const json = cursor.value
+              data.push(this.serialization.parse(json))
+            }
+            cursor.continue()
+          } else {
+            return resolve()
+          }
         }
-        cursor = await cursor.continue()
-        //console.log("CURSOR C", cursor)
-      }
-      //console.log("CUR READ END", cursor)
+        cursorRequest.onerror = (event) => {
+          reject(event.target.error)
+        }
+      })
     }
     return data
   }
@@ -496,7 +524,9 @@ class Store {
     } else if(max) {
       keyRange = IDBKeyRange.upperBound(min, !!range.gt)
     }
-    const count = await this.db.count(this.storeName, keyRange)
+    const txn = this.db.transaction([this.storeName], 'readonly')
+    const store = txn.objectStore(this.storeName)
+    const count = await handleRequest(store.count(keyRange))
     if(range.limit && count > range.limit) return range.limit
     return count
   }
@@ -512,7 +542,6 @@ class Store {
     if(!range) throw new Error("range not defined")
     await this.ensureOpen()
 
-    const txn = this.db.transaction(this.storeName)
     let count = 0, last
     const min = range.gt || range.gte
     const max = range.lt || range.lte
@@ -525,52 +554,74 @@ class Store {
       keyRange = IDBKeyRange.upperBound(min, !!range.gt)
     }
 
+    const txn = this.db.transaction([this.storeName], 'readonly')
+    const store = txn.objectStore(this.storeName)
     if(range.reverse) {
-      let cursor = await txn.store.openCursor(keyRange, 'prev')
-      while ((!range.limit || data.length < range.limit) && cursor) {
-        if (range.gt && cursor.key <= range.gt) break
-        if (range.gte && cursor.key < range.gte) break
-        if ((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
-          count++
-          const id = cursor.key
-          const json = cursor.value
-          const object = this.serialization.parse(json)
-          last = id
-          await cursor.delete()
+      await new Promise((resolve, reject) => {
+        const cursorRequest = store.openCursor(keyRange, 'prev')
+        cursorRequest.onsuccess = async (event) => {
+          const cursor = event.target.result
+          if ((!range.limit || count < range.limit) && cursor) {
+            if (range.gt && cursor.key <= range.gt) return resolve()
+            if (range.gte && cursor.key < range.gte) return resolve()
+            if ((!range.lt || cursor.key < range.lt) && (!range.lte || cursor.key <= range.lte)) {
+              count++
+              const id = cursor.key
+              const json = cursor.value
+              const object = this.serialization.parse(json)
+              last = id
+              await handleRequest(cursor.delete())
 
-          const objectObservable = this.objectObservables.get(id)
-          if(objectObservable) objectObservable.set(null)
-          const rangeObservables = this.rangeObservablesTree.search([id, id])
-          for(const rangeObservable of rangeObservables) {
-            rangeObservable.deleteObject(object)
+              const objectObservable = this.objectObservables.get(id)
+              if(objectObservable) objectObservable.set(null)
+              const rangeObservables = this.rangeObservablesTree.search([id, id])
+              for(const rangeObservable of rangeObservables) {
+                rangeObservable.deleteObject(object)
+              }
+              this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object) })
+            }
+            cursor.continue()
+          } else {
+            return resolve()
           }
-          this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object) })
         }
-        cursor = await cursor.continue()
-      }
+        cursorRequest.onerror = (event) => {
+          reject(event.target.error)
+        }
+      })
     } else {
-      let cursor = await txn.store.openCursor(keyRange, 'prev')
-      while((!range.limit || data.length < range.limit) && cursor) {
-        if(range.lt && cursor.key >= range.lt) break
-        if(range.lte && cursor.key > range.lte) break
-        if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
-          count++
-          const id = cursor.key
-          const json = cursor.value
-          const object = this.serialization.parse(json)
-          last = id
-          await cursor.delete()
+      await new Promise((resolve, reject) => {
+        const cursorRequest = store.openCursor(keyRange, 'next')
+        cursorRequest.onsuccess = async (event) => {
+          const cursor = event.target.result
+          if ((!range.limit || count < range.limit) && cursor) {
+            if(range.lt && cursor.key >= range.lt) return resolve()
+            if(range.lte && cursor.key > range.lte) return resolve()
+            if((!range.gt || cursor.key > range.gt) && (!range.gte || cursor.key >= range.gte)) {
+              count++
+              const id = cursor.key
+              const json = cursor.value
+              const object = this.serialization.parse(json)
+              last = id
+              await handleRequest(cursor.delete())
 
-          const objectObservable = this.objectObservables.get(id)
-          if(objectObservable) objectObservable.set(null)
-          const rangeObservables = this.rangeObservablesTree.search([id, id])
-          for(const rangeObservable of rangeObservables) {
-            rangeObservable.deleteObject(object)
+              const objectObservable = this.objectObservables.get(id)
+              if(objectObservable) objectObservable.set(null)
+              const rangeObservables = this.rangeObservablesTree.search([id, id])
+              for(const rangeObservable of rangeObservables) {
+                rangeObservable.deleteObject(object)
+              }
+              this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object) })
+            }
+            cursor.continue()
+          } else {
+            return resolve()
           }
-          this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object) })
         }
-        cursor = await cursor.continue()
-      }
+        cursorRequest.onerror = (event) => {
+          reject(event.target.error)
+        }
+      })
     }
     return { count, last }
   }
@@ -579,12 +630,15 @@ class Store {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
     await this.ensureOpen()
-
-    const oldObjectJson = await this.db.get(this.storeName, id)
+    //console.error("put", id, object, 'in', this.storeName)
+    //console.error("storeNames", this.db.objectStoreNames)
+    const transaction = this.db.transaction([this.storeName], 'readwrite')
+    const store = transaction.objectStore(this.storeName)
+    const oldObjectJson = await handleRequest(store.get(id))
     const oldObject = oldObjectJson ? this.serialization.parse(oldObjectJson) : null
-    console.log("PUT", object)
+    //console.log("PUT", object)
     const json = this.serialization.stringify(object)
-    await this.db.put(this.storeName, json)
+    await handleRequest(store.put(json))
     const objectObservable = this.objectObservables.get(id)
     if(objectObservable) objectObservable.set(object, oldObject)
     const rangeObservables = this.rangeObservablesTree.search([id, id])
@@ -602,9 +656,12 @@ class Store {
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
     await this.ensureOpen()
 
-    const json = await this.db.get(this.storeName, id)
+    const transaction = this.db.transaction([this.storeName], 'readwrite')
+    const store = transaction.objectStore(this.storeName)
+
+    const json = await handleRequest(store.get(id))
     const object = json ? this.serialization.parse(json) : null
-    await this.db.delete(this.storeName, id)
+    await handleRequest(store.delete(id))
     const objectObservable = this.objectObservables.get(id)
     if(objectObservable) objectObservable.set(null)
     const rangeObservables = this.rangeObservablesTree.search([id, id])

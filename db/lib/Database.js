@@ -4,6 +4,7 @@ const Log = require('./Log.js')
 const queryGet = require('./queryGet.js')
 const queryObservable = require('./queryObservable.js')
 const getRandomValues = require('get-random-values')
+const nextTick = require('next-tick')
 
 const ReactiveDao = require("@live-change/dao")
 
@@ -60,9 +61,9 @@ class Database {
   }
 
   generateUid() {
-    const array = new Uint8Array(16)
+    const array = new Uint8Array(8)
     getRandomValues(array)
-    return array.map (b => b.toString (16).padStart (2, "0")).join ("")
+    return [...array].map (b => b.toString(16).padStart (2, "0")).join ("")
   }
 
   store(name, config) {
@@ -280,7 +281,7 @@ class Database {
     const config = this.config.indexes[name]
     console.error("INDEX", name, "unhandledRejection", reason, "CODE:\n", config?.code)
     console.error("DELETING INDEX", name)
-    process.nextTick(() => {
+    nextTick(() => {
       if(!config) {
         console.error("INDEX", name, "IS ALREADY DELETED")
         console.trace("ALREADY DELETED")
