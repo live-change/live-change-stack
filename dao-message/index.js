@@ -14,7 +14,7 @@ class MessageConnection extends Connection {
   initialize() {
     this.target.addEventListener('message', (event) => {
       debug("MSG IN:", event.data)
-      this.handleMessage(event.data)
+      this.handleMessage(JSON.parse(event.data))
     })
     this.target.addEventListener('error', (event) => {
       console.error("Worker", this.url, "error", event)
@@ -31,7 +31,7 @@ class MessageConnection extends Connection {
 
   send(message) {
     debug("MSG OUT:", message)
-    this.target.postMessage(message)
+    this.target.postMessage(JSON.stringify(message))
   }
 
   reconnect() {

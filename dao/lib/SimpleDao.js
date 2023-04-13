@@ -41,6 +41,11 @@ class SimpleDao {
     return Promise.resolve(res)
   }
 
+  requestWithSettings(settings, what, ...args) {
+    // ignore settings for local dao
+    return this.request(what, ...args)
+  }
+
 }
 
 module.exports = SimpleDao

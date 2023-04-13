@@ -32,7 +32,7 @@ async function fetch(api, path) {
   const preFetchMap = new Map(preFetchPaths.map((res) => [JSON.stringify(res.what), res] ))
   function createObject(what, more) {
     const res = preFetchMap.get(JSON.stringify(what))
-    debug("PREFETCH", what, "RES", res, "MORE", more)
+    debug("PREFETCH", what, "RES", res, "MORE", more, "ERR", res?.error)
     if(res.error) throw new Error(res.error)
     const data = res.data
     if(data && more) {
