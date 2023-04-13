@@ -25,8 +25,10 @@ class EventSourcing {
     await this.saveState()
   }
   async start() {
-    await this.connection.request(['database', 'createTable'], this.database, 'eventConsumers').catch(e => 'ok')
-    await this.connection.request(['database', 'createLog'], this.database, this.logName).catch(e => 'ok')
+    await this.connection.request(['database', 'createTable'], this.database, 'eventConsumers', this.config.storage ?? {})
+      .catch(e => 'ok')
+    await this.connection.request(['database', 'createLog'], this.database, this.logName, this.config.storage ?? {})
+      .catch(e => 'ok')
     this.state = await this.connection.get(
         ['database', 'tableObject', this.database, 'eventConsumers', this.consumerId])
     //console.log("GOT CONSUMER STATE", this.state)

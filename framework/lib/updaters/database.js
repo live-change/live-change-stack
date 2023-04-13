@@ -5,23 +5,30 @@ async function update(changes, service, app, force) {
   const dao = app.dao
   const database = app.databaseName
 
-  dao.request(['database', 'createTable'], database, 'eventConsumers').catch(e => 'ok')
-  dao.request(['database', 'createTable'], database, 'triggerRoutes').catch(e => 'ok')
-  dao.request(['database', 'createTable'], database, 'eventReports').catch(e => 'ok')
-  if(app.splitEvents) {
-    dao.request(['database', 'createLog'], database, service.name+'_events').catch(e => 'ok')
-  } else {
-    dao.request(['database', 'createLog'], database, 'events').catch(e => 'ok')
+  if(!app.shortEvents) {
+    dao.request(['database', 'createTable'], database, 'eventConsumers').catch(e => 'ok')
+    dao.request(['database', 'createTable'], database, 'eventReports').catch(e => 'ok')
+    if (app.splitEvents) {
+      dao.request(['database', 'createLog'], database, service.name + '_events').catch(e => 'ok')
+    } else {
+      dao.request(['database', 'createLog'], database, 'events').catch(e => 'ok')
+    }
   }
-  if(app.splitCommands) {
-    dao.request(['database', 'createTable'], database, service.name+'_commands').catch(e => 'ok')
-  } else {
-    dao.request(['database', 'createTable'], database, 'commands').catch(e => 'ok')
+
+  if(!app.shortCommands) {
+    if (app.splitCommands) {
+      dao.request(['database', 'createTable'], database, service.name + '_commands').catch(e => 'ok')
+    } else {
+      dao.request(['database', 'createTable'], database, 'commands').catch(e => 'ok')
+    }
   }
-  if(app.splitTriggers) {
-    dao.request(['database', 'createTable'], database, service.name+'_triggers').catch(e => 'ok')
-  } else {
-    dao.request(['database', 'createTable'], database, 'triggers').catch(e => 'ok')
+  if(!app.shortTriggers) {
+    dao.request(['database', 'createTable'], database, 'triggerRoutes').catch(e => 'ok')
+    if (app.splitTriggers) {
+      dao.request(['database', 'createTable'], database, service.name + '_triggers').catch(e => 'ok')
+    } else {
+      dao.request(['database', 'createTable'], database, 'triggers').catch(e => 'ok')
+    }
   }
 
   const generateTableName = (modelName) => {
@@ -47,7 +54,7 @@ async function update(changes, service, app, force) {
 
     if(index.function) {
       await dao.request(['database', 'createIndex'], database, indexName,
-          `(${index.function})`, { ...(index.parameters || {}) })
+          `(${index.function})`, { ...(index.parameters || {}) }, index.storage ?? {})
     } else {
       if(!table) throw new Error("only function indexes are possible without table")
       if(index.multi) {
@@ -78,7 +85,7 @@ async function update(changes, service, app, force) {
                 }
               })
             }
-        })`, { property: index.property.split('.'), table })
+        })`, { property: index.property.split('.'), table }, index.storage ?? {})
       } else {
         if(!table) throw new Error("only function indexes are possible without table")
         const properties = (Array.isArray(index.property) ? index.property : [index.property]).map(p => p.split('.'))
@@ -95,7 +102,7 @@ async function update(changes, service, app, force) {
               await input.table(table).onChange((obj, oldObj) =>
                   output.change(obj && mapper(obj), oldObj && mapper(oldObj)) )
             }
-        })`, { properties, table })
+        })`, { properties, table }, index.storage ?? {})
       }
     }
 
@@ -110,7 +117,7 @@ async function update(changes, service, app, force) {
       case "createModel": {
         const model = change.model
         const tableName = generateTableName(model.name)
-        await dao.request(['database', 'createTable'], database, tableName)
+        await dao.request(['database', 'createTable'], database, tableName, model.storage ?? {})
         debug("TABLE CREATED!", tableName)
         for(let indexName in model.indexes) {
           const index = model.indexes[indexName]
@@ -154,7 +161,7 @@ async function update(changes, service, app, force) {
       case "createIndex": {
         const table = change.model ? generateTableName(change.model) : null
         const index = change.index
-        await createIndex(table, change.name, index)
+        await createIndex(table, change.name, index, change.model)
       } break
       case "renameIndex": {
         const table = change.model ? generateTableName(change.model) : null

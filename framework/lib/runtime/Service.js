@@ -5,6 +5,7 @@ const View = require("./View.js")
 const Action = require("./Action.js")
 const EventHandler = require("./EventHandler.js")
 const TriggerHandler = require("./TriggerHandler.js")
+const ExecutionQueue = require("../utils/ExecutionQueue.js")
 
 class Service {
 
@@ -12,6 +13,8 @@ class Service {
     this.definition = definition
     this.app = app
     this.name = definition.name
+
+    if(app.shortEvents) this.eventQueue = new ExecutionQueue()
 
     this.profileLog = app.profileLog
 

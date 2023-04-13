@@ -3,10 +3,10 @@ const App = require('./lib/App.js')
 module.exports = App
 
 module.exports.app = () => {
-  if(!global.liveChangeFrameworkApp) {
-    global.liveChangeFrameworkApp = new App()
+  if(!globalThis.liveChangeFrameworkApp) {
+    globalThis.liveChangeFrameworkApp = new App()
   }
-  return global.liveChangeFrameworkApp
+  return globalThis.liveChangeFrameworkApp
 }
 
 module.exports.utils = require('./lib/utils.js')

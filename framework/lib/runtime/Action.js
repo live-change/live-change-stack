@@ -35,7 +35,7 @@ class Action {
   }
 
   async callCommand(parameters, clientData) {
-    if(!clientData.roles) throw new Error("no roles")
+    // if(!clientData.roles) throw new Error("no roles") - roles are not required in frontend
     const command = {
       type: this.definition.name,
       service: this.service.name,

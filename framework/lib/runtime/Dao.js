@@ -8,7 +8,7 @@ function promiseMap(promise, fn) {
 }
 
 function prepareReactiveDaoDefinition(config, clientData) {
-  if(!clientData.roles) throw new Error("no roles")
+  //if(!clientData.roles) throw new Error("no roles")  - roles not required for local dao
   let dao = {}
   let staticDefinitions = []
   if(config.remote) {
@@ -43,7 +43,7 @@ function prepareReactiveDaoDefinition(config, clientData) {
       let methods = {}, values = {}
       for(let actionName in service.actions) {
         let action = service.actions[actionName]
-        if(!clientData.roles) throw new Error("no roles")
+        //if(!clientData.roles) throw new Error("no roles")  - roles not required for local dao
         methods[actionName] = (params) => action.callCommand(params, clientData)
       }
       for(let viewName in service.views) {
@@ -172,13 +172,13 @@ function prepareReactiveDaoDefinition(config, clientData) {
   return dao
 }
 
-class RTCMSDao extends ReactiveDao {
+class Dao extends ReactiveDao {
   constructor(config, clientData) {
-    console.log("CD", clientData)
+    //console.log("CD", clientData)
     super(clientData, prepareReactiveDaoDefinition(config, clientData))
     //console.log("Created dao with clientData",clientData)
-    if( !clientData.roles ) throw new Error("NO ROLES!!")
+    // if( !clientData.roles ) throw new Error("NO ROLES!!") - roles not required for local dao
   }
 }
 
-module.exports = RTCMSDao
+module.exports = Dao

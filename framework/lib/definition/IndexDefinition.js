@@ -28,6 +28,12 @@ class IndexDefinition {
     if(oldIndex.search && this.search && JSON.stringify(oldIndex.search) != JSON.stringify(this.search))
       changes.push({ operation: "indexSearchUpdated", index: this.name })
 
+    const oldStorage = oldIndex.storage || {}
+    const newStorage = this.storage || {}
+    if(JSON.stringify(oldStorage) != JSON.stringify(newStorage)) {
+      changes.push({ operation: "indexStorageChanged", index: this.name, oldStorage, storage: newStorage })
+    }
+
     return changes
   }
 

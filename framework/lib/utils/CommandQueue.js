@@ -1,12 +1,13 @@
 const ReactiveDao = require('@live-change/dao')
 
 class CommandQueue {
-  constructor(connection, database, tableName, serviceName) {
+  constructor(connection, database, tableName, serviceName, config) {
     this.connection = connection
     this.database = database
     this.tableName = tableName
     this.indexName = tableName + '_new'
     this.serviceName = serviceName
+    this.config = config || {}
     this.observable = null
     this.disposed = false
     this.resolveStart = null
@@ -22,8 +23,10 @@ class CommandQueue {
     }
   }
   async start() {
+    console.log("START COMMAND QUEUE", this.database, this.tableName, this.indexName, this.config)
     //console.log("START QUEUE", this.tableName, this.indexName)
-    await this.connection.request(['database', 'createTable'], this.database, this.tableName).catch(e => 'ok')
+    await this.connection.request(['database', 'createTable'], this.database, this.tableName,
+      this.config.storage ?? {}).catch(e => 'ok')
     await this.connection.request(['database', 'createIndex'], this.database, this.indexName, `(${
         async function(input, output, { tableName }) {
           await input.table(tableName).onChange(async (obj, oldObj) => {
@@ -33,7 +36,7 @@ class CommandQueue {
             await output.change(res, oldRes)
           })
         }
-    })`, { tableName: this.tableName }).catch(e => 'ok')
+    })`, { tableName: this.tableName }, this.config.storage ?? {}).catch(e => 'ok')
     this.observable = this.connection.observable(
         ['database', 'indexRange', this.database, this.indexName, {
           gt: this.serviceName+'_',

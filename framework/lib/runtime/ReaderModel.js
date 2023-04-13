@@ -211,41 +211,17 @@ class ReaderModel {
     })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range }]
   }
 
-  indexRangeDelete(index, range = {}, pathRange = null) {
+  countPath(range = {}, pathRange = null) {
     if(typeof range != 'object' || Array.isArray(range)) {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.indexRangeDelete(index, utils.prefixRange(pathRange, prefix, prefix))
+        return this.countPath(utils.prefixRange(pathRange, prefix, prefix))
       }
-      return this.indexRangeDelete(index,{ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
+      return this.countPath({ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
-    this.service.dao.request(['database', 'query'], this.service.databaseName, `${
-        async (input, output, { tableName, indexName, range }) => {
-          await (await input.index(indexName)).range(range).onChange(async (ind, oldInd) => {
-            output.table(tableName).delete(ind.to)
-          })
-        }
-    })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range })
-  }
-
-  indexRangeUpdate(index, update, range = {}, pathRange = null) {
-    if(typeof range != 'object' || Array.isArray(range)) {
-      const values = Array.isArray(range) ? range : [range]
-      const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
-      if(pathRange) {
-        return this.indexRangeUpdate(index, update, utils.prefixRange(pathRange, prefix, prefix))
-      }
-      return this.indexRangeUpdate(index, update,{ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
-    }
-    const operations = Array.isArray(update) ? update : [{ op:'merge', property: null, value: update }]
-    this.service.dao.request(['database', 'query'], this.service.databaseName, `(${
-        async (input, output, { tableName, indexName, range, operations }) => {
-          await (await input.index(indexName)).range(range).onChange(async (ind, oldInd) => {
-            output.table(tableName).update(ind.to, operations)
-          })
-        }
-    })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range, operations })
+    if(Array.isArray(range)) this.rangePath(range.join(','))
+    return ['database', 'tableCount', this.service.databaseName, this.tableName, range]
   }
 
   observable(id) {
@@ -277,6 +253,12 @@ class ReaderModel {
   }
   async sortedIndexRangeGet(index, range, pathRange = null) {
     return this.service.dao.get(this.sortedIndexRangePath(index, range, pathRange), ReactiveDao.ObservableList)
+  }
+  countObservable(range) {
+    return this.service.dao.observable(this.countPath(range), ReactiveDao.ObservableList)
+  }
+  async countGet(range) {
+    return this.service.dao.get(this.countPath(range), ReactiveDao.ObservableList)
   }
 
   condition(id, condition = x => !!x, timeout = 10000) {

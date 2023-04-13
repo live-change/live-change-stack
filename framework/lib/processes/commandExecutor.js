@@ -7,9 +7,11 @@ async function startCommandExecutor(service, config) {
   if(!config.runCommands) return
 
   service.keyBasedExecutionQueues = service.keyBasedExecutionQueues || new KeyBasedExecutionQueues(r => r.key)
-  
+
+  if(service.app.shortCommands) return
+
   service.commandQueue = new CommandQueue(service.dao, service.databaseName,
-      service.app.splitCommands ? `${service.name}_commands` : 'commands', service.name)
+      service.app.splitCommands ? `${service.name}_commands` : 'commands', service.name, config.runCommands)
   for (let actionName in service.actions) {
     const action = service.actions[actionName]
     if (action.definition.queuedBy) {
@@ -24,9 +26,9 @@ async function startCommandExecutor(service, config) {
         })
         const reportFinished = action.definition.waitForEvents ? 'command_' + command.id : undefined
         const flags = {commandId: command.id, reportFinished}
-        const emit = service.app.splitEvents
-            ? new SplitEmitQueue(service, flags)
-            : new SingleEmitQueue(service, flags)
+        const emit = (!service.app.splitEvents || this.shortEvents)
+          ? new SingleEmitQueue(service, flags)
+          : new SplitEmitQueue(service, flags)
         const routine = () => service.profileLog.profile({
           operation: 'runCommand', commandType: actionName,
           commandId: command.id, client: command.client
@@ -34,9 +36,19 @@ async function startCommandExecutor(service, config) {
           const result = await service.app.assertTime('command ' + action.definition.name,
               action.definition.timeout || 10000,
               () => action.runCommand(command, (...args) => emit.emit(...args)), command)
-          const events = await emit.commit()
-          if (action.definition.waitForEvents)
-            await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+          if(service.app.shortEvents) {
+            const bucket = {}
+            const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
+              const handlerService = service.app.startedServices[event.service]
+              const handler = handlerService.events[event.type]
+              handlerService.exentQueue.queue(() => handler.execute(event, bucket))
+            }))
+            if (action.definition.waitForEvents) await eventsPromise
+          } else {
+            const events = await emit.commit()
+            if (action.definition.waitForEvents)
+              await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+          }
           return result
         })
         routine.key = keyFunction(command)
@@ -52,15 +64,25 @@ async function startCommandExecutor(service, config) {
           }, async () => {
             const reportFinished = action.definition.waitForEvents ? 'command_' + command.id : undefined
             const flags = {commandId: command.id, reportFinished}
-            const emit = service.app.splitEvents
-                ? new SplitEmitQueue(service, flags)
-                : new SingleEmitQueue(service, flags)
+            const emit = (!service.app.splitEvents || this.shortEvents)
+              ? new SingleEmitQueue(service, flags)
+              : new SplitEmitQueue(service, flags)
             const result = await service.app.assertTime('command ' + action.definition.name,
                 action.definition.timeout || 10000,
                 () => action.runCommand(command, (...args) => emit.emit(...args)), command)
-            const events = await emit.commit()
-            if (action.definition.waitForEvents)
-              await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+            if(service.app.shortEvents) {
+              const bucket = {}
+              const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
+                const handlerService = service.app.startedServices[event.service]
+                const handler = handlerService.events[event.type]
+                handlerService.exentQueue.queue(() => handler.execute(event, bucket))
+              }))
+              if (action.definition.waitForEvents) await eventsPromise
+            } else {
+              const events = await emit.commit()
+              if (action.definition.waitForEvents)
+                await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+            }
             return result
           })
       )

@@ -2,17 +2,16 @@ const EventSourcing = require('../utils/EventSourcing.js')
 
 async function startEventListener(service, config) {
   if(!config.handleEvents) return
-    
+
   if(service.app.splitEvents) {
     service.eventSourcing = new EventSourcing(service.dao, service.databaseName,
         'events_'+service.name, service.name,
-        { filter: (event) => event.service == service.name })
+        { filter: (event) => event.service == service.name }, config.handleEvents)
   } else {
     service.eventSourcing = new EventSourcing(service.dao, service.databaseName,
         'events', service.name,
-        { filter: (event) => event.service == service.name })
+        { filter: (event) => event.service == service.name }, config.handleEvents)
   }
-
 
   for (let eventName in service.events) {
     const event = service.events[eventName]

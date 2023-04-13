@@ -30,7 +30,7 @@ class ExecutionQueue {
   runNext() {
     if(this.nextRoutines.length == 0) {
       this.running = false
-      setTimeout(() => { if(!this.running) this.queues.delete(this.key) }, 500)
+      setTimeout(() => { if(!this.running && this.queues) this.queues.delete(this.key) }, 500)
       return;
     }
     this.running = true

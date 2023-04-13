@@ -1,4 +1,5 @@
 const ReaderModel = require("./ReaderModel.js")
+const utils = require("../utils.js");
 
 class Model extends ReaderModel {
 
@@ -37,6 +38,64 @@ class Model extends ReaderModel {
         ['database', 'put'], this.service.databaseName, this.tableName, prepData, options)
     return res
   }
+
+  rangeDelete(range = {}, pathRange = null) {
+    if(typeof range != 'object' || Array.isArray(range)) {
+      const values = Array.isArray(range) ? range : [range]
+      const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
+      if(pathRange) {
+        return this.rangePath(utils.prefixRange(pathRange, prefix, prefix))
+      }
+      return this.rangePath({ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
+    }
+    if(Array.isArray(range)) this.rangePath(range.join(','))
+    this.service.dao.request(['database', 'query'], this.service.databaseName, `(${
+      async (input, output, { tableName, range }) => {
+        await (await input.table(tableName)).range(range).onChange(async (obj, oldObj) => {
+          output.table(tableName).delete(obj.id)
+        })
+      }
+    })`, { tableName: this.tableName, range })
+  }
+
+  indexRangeDelete(index, range = {}, pathRange = null) {
+    if(typeof range != 'object' || Array.isArray(range)) {
+      const values = Array.isArray(range) ? range : [range]
+      const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
+      if(pathRange) {
+        return this.indexRangeDelete(index, utils.prefixRange(pathRange, prefix, prefix))
+      }
+      return this.indexRangeDelete(index,{ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
+    }
+    this.service.dao.request(['database', 'query'], this.service.databaseName, `${
+      async (input, output, { tableName, indexName, range }) => {
+        await (await input.index(indexName)).range(range).onChange(async (ind, oldInd) => {
+          output.table(tableName).delete(ind.to)
+        })
+      }
+    })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range })
+  }
+
+  indexRangeUpdate(index, update, range = {}, pathRange = null) {
+    if(typeof range != 'object' || Array.isArray(range)) {
+      const values = Array.isArray(range) ? range : [range]
+      const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
+      if(pathRange) {
+        return this.indexRangeUpdate(index, update, utils.prefixRange(pathRange, prefix, prefix))
+      }
+      return this.indexRangeUpdate(index, update,{ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
+    }
+    const operations = Array.isArray(update) ? update : [{ op:'merge', property: null, value: update }]
+    this.service.dao.request(['database', 'query'], this.service.databaseName, `(${
+      async (input, output, { tableName, indexName, range, operations }) => {
+        await (await input.index(indexName)).range(range).onChange(async (ind, oldInd) => {
+          output.table(tableName).update(ind.to, operations)
+        })
+      }
+    })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range, operations })
+  }
+
+
 
 }
 

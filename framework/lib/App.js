@@ -33,6 +33,8 @@ const triggerExecutor = require("./processes/triggerExecutor.js")
 const eventListener = require('./processes/eventListener.js')
 
 const utils = require('./utils.js')
+const SplitEmitQueue = require("./utils/SplitEmitQueue.js");
+const SingleEmitQueue = require("./utils/SingleEmitQueue.js");
 
 const debug = require('debug')('framework')
 
@@ -41,6 +43,9 @@ class App {
   constructor(config = {}) {
     this.config = config
     this.splitEvents = false
+    this.shortEvents = false
+    this.shortCommands = false
+    this.shortTriggers = false
 
     this.requestTimeout = config?.db?.requestTimeout || 10*1000
 
@@ -78,6 +83,9 @@ class App {
     this.uidGenerator = uidGenerator(this.instanceId, this.config.uidBorders)
 
     this.activeTimeouts = new Set()
+
+    this.startedServices = {}
+    this.triggerRoutes = {}
   }
 
   createServiceDefinition( definition ) {
@@ -142,6 +150,9 @@ class App {
       oldServiceJson = this.createServiceDefinition({name: service.name}).toJSON()
     }
     let changes = this.computeChanges(oldServiceJson, service)
+    //console.log("OLD SERVICE", JSON.stringify(oldServiceJson, null, '  '))
+    //console.log("NEW SERVICE", JSON.stringify(service.toJSON(), null, '  '))
+    //console.log("CHANGES", JSON.stringify(changes, null, '  '))
 
     /// TODO: chceck for overwriting renames, solve by addeding temporary names
 
@@ -164,6 +175,7 @@ class App {
     await service.start(config)
     console.log("service started", serviceDefinition.name, "!")
     await this.profileLog.end(profileOp)
+    this.startedServices[serviceDefinition.name] = service
     return service
   }
 
@@ -204,6 +216,10 @@ class App {
   }
 
   async trigger(data) {
+    if(this.shortTriggers) {
+      const triggers = this.triggerRoutes[data.route]
+      return await Promise.all(triggers.map(t => t.execute(data)))
+    }
     const profileOp = await this.profileLog.begin({
       operation: "callTrigger", triggerType: data.type, id: data.id, by: data.by
     })
@@ -222,7 +238,14 @@ class App {
   }
 
   async triggerService(service, data, returnArray = false) {
-
+    if(this.shortTriggers) {
+      const service = this.startedServices[service]
+      const triggers = service.triggers[data.type]
+      if(!triggers) return []
+      const result = await Promise.all(triggers.map(t => t.execute(data)))
+      if(!returnArray && Array.isArray(result) && result.length == 1) return result[0]
+      return result
+    }
     if(!data.id) data.id = this.generateUid()
     data.service = service
     data.state = 'new'
@@ -266,45 +289,111 @@ class App {
     if(!data.timestamp) data.timestamp = (new Date()).toISOString()
     data.state = 'new'
 
-    const profileOp = await this.profileLog.begin({
-      operation: "callCommand", commandType: data.type, service: data.service,
-      commandId: data.id, by: data.by, client: data.client
-    })
+    if(this.shortCommands) {
+      const command = data
+      const service = this.startedServices[data.service]
+      const action = service.actions[data.type]
+      const reportFinished = action.definition.waitForEvents ? 'command_' + command.id : undefined
+      const flags = {commandId: command.id, reportFinished}
+      const emit = (!this.splitEvents || this.shortEvents)
+        ? new SingleEmitQueue(service, flags)
+        : new SplitEmitQueue(service, flags)
+      const queuedBy = action.definition.queuedBy
+      if(queuedBy) {
+        const profileOp = await service.profileLog.begin({
+          operation: 'queueCommand', commandType: actionName,
+          commandId: command.id, client: command.client
+        })
+        const keyFunction = typeof queuedBy == 'function' ? queuedBy : (
+          Array.isArray(queuedBy) ? (c) => JSON.stringify(queuedBy.map(k => c[k])) :
+            (c) => JSON.stringify(c[queuedBy]))
 
-    const commandsTable = this.splitCommands ? `${data.service}_commands` : 'commands'
-    const objectObservable = this.dao.observable(
+        const routine = () => service.profileLog.profile({
+          operation: 'runCommand', commandType: actionName,
+          commandId: command.id, client: command.client
+        }, async () => {
+          const result = await service.app.assertTime('command ' + action.definition.name,
+            action.definition.timeout || 10000,
+            () => action.runCommand(command, (...args) => emit.emit(...args)), command)
+          if(this.shortEvents) {
+            const bucket = {}
+            const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
+              const service = this.startedServices[event.service]
+              const handler = service.events[event.type]
+              service.exentQueue.queue(() => handler.execute(event, bucket))
+            }))
+            if (action.definition.waitForEvents) await eventsPromise
+          } else {
+            const events = await emit.commit()
+            if (action.definition.waitForEvents)
+              await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+          }
+          return result
+        })
+        routine.key = keyFunction(command)
+        const promise = service.keyBasedExecutionQueues.queue(routine)
+        await service.profileLog.endPromise(profileOp, promise)
+        return promise
+      } else {
+        const result = await service.app.assertTime('command ' + action.definition.name,
+          action.definition.timeout || 10000,
+          () => action.runCommand(command, (...args) => emit.emit(...args)), command)
+        if(this.shortEvents) {
+          const bucket = {}
+          console.log("emit", emit)
+          const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
+            const service = this.startedServices[event.service]
+            const handler = service.events[event.type]
+            service.exentQueue.queue(() => handler.execute(event, bucket))
+          }))
+          if (action.definition.waitForEvents) await eventsPromise
+        } else {
+          const events = await emit.commit()
+          if (action.definition.waitForEvents)
+            await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+        }
+        return result
+      }
+    } else { // queue and observe command execution
+      const profileOp = await this.profileLog.begin({
+        operation: "callCommand", commandType: data.type, service: data.service,
+        commandId: data.id, by: data.by, client: data.client
+      })
+
+      const commandsTable = this.splitCommands ? `${data.service}_commands` : 'commands'
+      const objectObservable = this.dao.observable(
         ['database', 'tableObject', this.databaseName, commandsTable, data.id],
         ReactiveDao.ObservableValue
-    )
-    await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [
-      { op: 'reverseMerge', value: data }
-    ]])
-    let observer
-    const promise = new Promise((resolve, reject) => {
-      observer = (signal, value) => {
-        if(signal != 'set') return reject('unknownSignal')
-        if(!value) return
-        if(value.state == 'done') return resolve(value.result)
-        if(value.state == 'failed') return reject(value.error)
-      }
-      objectObservable.observe(observer)
-      if(!requestTimeout) {
-        requestTimeout = this.requestTimeout
-      }
-      if(requestTimeout) {
-        const timeout = setTimeout(() => {
-          this.activeTimeouts.delete(timeout)
-          reject('timeout')
-        }, requestTimeout)
-        this.activeTimeouts.add(timeout)
-      }
-    }).finally(() => {
-      objectObservable.unobserve(observer)
-    })
+      )
+      await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [
+        {op: 'reverseMerge', value: data}
+      ]])
+      let observer
+      const promise = new Promise((resolve, reject) => {
+        observer = (signal, value) => {
+          if (signal != 'set') return reject('unknownSignal')
+          if (!value) return
+          if (value.state == 'done') return resolve(value.result)
+          if (value.state == 'failed') return reject(value.error)
+        }
+        objectObservable.observe(observer)
+        if (!requestTimeout) {
+          requestTimeout = this.requestTimeout
+        }
+        if (requestTimeout) {
+          const timeout = setTimeout(() => {
+            this.activeTimeouts.delete(timeout)
+            reject('timeout')
+          }, requestTimeout)
+          this.activeTimeouts.add(timeout)
+        }
+      }).finally(() => {
+        objectObservable.unobserve(observer)
+      })
 
-    await this.profileLog.endPromise(profileOp, promise)
-
-    return promise
+      await this.profileLog.endPromise(profileOp, promise)
+      return promise
+    }
   }
 
   async emitEvents(service, events, flags = {}) {
