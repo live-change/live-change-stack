@@ -28,9 +28,9 @@
     "tape": "^5.3.2"
   },
   "dependencies": {
-    "@live-change/dao": "0.5.14",
-    "@live-change/dao-sockjs": "0.5.14",
-    "@live-change/dao-websocket": "0.5.14",
+    "@live-change/dao": "0.5.15",
+    "@live-change/dao-sockjs": "0.5.15",
+    "@live-change/dao-websocket": "0.5.15",
     "@live-change/db": "0.6.2",
     "@live-change/db-admin": "0.6.2",
     "@live-change/db-client": "0.6.2",
