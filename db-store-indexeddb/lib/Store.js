@@ -350,7 +350,7 @@ class Store {
   }
 
   async openDb() {
-    //console.log("Opening db", this.dbName, this.storeName)
+    console.log("Opening db", this.dbName, this.storeName)
     const openRequest = globalThis.indexedDB.open(this.idbName, 1)
     globalThis.lastOpenRequest = openRequest
     this.dbPromise = handleRequest(openRequest, (event) => {
@@ -359,7 +359,11 @@ class Store {
       const store = db.createObjectStore(this.storeName, { keyPath: 'id' })
     })
     this.db = await this.dbPromise
-    //console.log("Opened db", this.dbName, this.storeName)
+    this.db.addEventListener("close", (event) => {
+      console.log("database close event", this.idbName)
+      this.openDb()
+    })
+    console.log("Opened db", this.dbName, this.storeName)
   }
   async openChannel() {
     this.channel = new BroadcastChannel('lc-db-channel' + this.dbName + '-' + this.storeName, {
