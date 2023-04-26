@@ -42,6 +42,21 @@ class WebScriptContext {
       }
     }
   }
+
+  getOrCreateFunction(code, filename) {
+    const cleanCode = code.replace(/\n +/g, "\n")
+    //console.log("COMPILED FUNCTIONS", `\n[\n  ${Object.keys(globalThis.compiledFunctions).join(',\n  ')},\n]`)
+    if(!(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[cleanCode]) {
+      console.log("############# compiled function not found: ", code)
+      for(const key of Object.keys(globalThis.compiledFunctions)) {
+        console.log(`compiled func |${cleanCode}| == |${key}| => ${cleanCode == key}`)
+      }
+    }
+    const queryFunction = (globalThis.compiledFunctions = globalThis.compiledFunctions || {})[cleanCode]
+      ?? this.run(code, filename)
+    ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[cleanCode] = queryFunction
+    return queryFunction
+  }
 }
 
 module.exports = WebScriptContext

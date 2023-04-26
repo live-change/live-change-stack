@@ -231,7 +231,7 @@ function localRequests(server, scriptContext) {
       if(!dbName) throw new Error("databaseNameRequired")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
-      const queryFunction = scriptContext.run(code, 'query')
+      const queryFunction = scriptContext.getOrCreateFunction(code, `query`)
       return db.queryUpdate((input, output) => queryFunction(input, output, params))
     }
   }
@@ -813,7 +813,7 @@ function localReads(server, scriptContext) {
         if(!dbName) return new ReactiveDao.ObservableError("databaseNameRequired")
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
-        const queryFunction = scriptContext.run(code, 'queryCode:' + sourceName) /// TODO: log queries, more info here
+        const queryFunction = scriptContext.getOrCreateFunction(code, 'queryCode:' + sourceName)
         return db.queryObservable(async (input, output) => {
           return queryFunction(input, output, params)
         })
@@ -822,7 +822,7 @@ function localReads(server, scriptContext) {
         if(!dbName) throw new Error("databaseNameRequired")
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
-        const queryFunction = scriptContext.run(code, 'queryCode:' + sourceName)
+        const queryFunction = scriptContext.getOrCreateFunction(code, 'queryCode:' + sourceName)
         return db.queryGet((input, output) => queryFunction(input, output, params))
       }
     },
@@ -831,7 +831,7 @@ function localReads(server, scriptContext) {
         if(!dbName) return new ReactiveDao.ObservableError("databaseNameRequired")
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
-        const queryFunction = scriptContext.run(code, 'queryCode:' + sourceName) /// TODO: log queries, more info here
+        const queryFunction = scriptContext.getOrCreateFunction(code, 'queryCode:' + sourceName)
         return db.queryObjectObservable(async (input, output) => {
           return queryFunction(input, output, params)
         })
@@ -840,7 +840,7 @@ function localReads(server, scriptContext) {
         if(!dbName) throw new Error("databaseNameRequired")
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
-        const queryFunction = scriptContext.run(code, 'queryCode:' + sourceName)
+        const queryFunction = scriptContext.getOrCreateFunction(code, 'queryCode:' + sourceName)
         return db.queryObjectGet((input, output) => queryFunction(input, output, params))
       }
     }

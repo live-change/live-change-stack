@@ -460,7 +460,8 @@ class Index extends Table {
     this.scriptContext = this.database.createScriptContext({
       /// TODO: script available routines
     })
-    const queryFunction = this.scriptContext.run(this.code,`userCode:${this.database.name}/indexes/${this.name}`)
+    const queryFunction = this.scriptContext.getOrCreateFunction(this.code,
+      `userCode:${this.database.name}/indexes/${this.name}`)
     this.codeFunction = (input, output) => queryFunction(input, output, this.params)
     this.writer = new IndexWriter(this)
     this.reader = null
