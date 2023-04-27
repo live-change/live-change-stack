@@ -8,30 +8,41 @@ class MessageConnection extends Connection {
     super(credentials, settings)
     this.url = url
     this.target = settings.target
+    this.messageChannel = settings.messageChannel ? new MessageChannel() : null
+    this.port = this.messageChannel ? this.messageChannel.port1 : this.target
+    this.decorator = settings.decorator || ((message) => message)
+    this.filter = settings.filter || ((message) => true)
     this.initialize()
   }
 
   initialize() {
-    this.target.addEventListener('message', (event) => {
+    this.port.addEventListener('message', (event) => {
       debug("MSG IN:", event.data)
-      this.handleMessage(JSON.parse(event.data))
+      const data = JSON.parse(event.data)
+      if(!this.filter(data)) return
+      this.handleMessage(data)
     })
     this.target.addEventListener('error', (event) => {
       console.error("Worker", this.url, "error", event)
     })
-    this.target.addEventListener('messageerror', (event) => {
+    this.port.addEventListener('messageerror', (event) => {
       console.error("Worker", this.url, "message error", event)
     })
     this.target.addEventListener('unhandledrejection', (event) => {
       console.error("Worker", this.url, "unhandled rejection", event)
     })
+    if(this.messageChannel) {
+      this.port.start()
+      this.target.postMessage({ type: 'connection', port: this.messageChannel.port2 }, [this.messageChannel.port2])
+    }
     this.handleConnect()
-    console.log("MESSAGE CONNECTED", this.url)
+    debug("MESSAGE CONNECTED", this.url)
   }
 
   send(message) {
+    message = this.decorator(message)
     debug("MSG OUT:", message)
-    this.target.postMessage(JSON.stringify(message))
+    this.port.postMessage(JSON.stringify(message))
   }
 
   reconnect() {
@@ -39,7 +50,12 @@ class MessageConnection extends Connection {
   }
 
   dispose() {
-    if(this.target.terminate) this.target.terminate()
+    if(this.messageChannel) {
+      this.port.postMessage(JSON.stringify({ type: 'close' }))
+      this.port.close()
+    } else {
+      if (this.target.terminate) this.target.terminate()
+    }
   }
 
   closeConnection() {
