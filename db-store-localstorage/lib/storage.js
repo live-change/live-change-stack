@@ -146,12 +146,15 @@ if(typeof window == 'undefined') {
       window.browser = chrome.extension
     }
   }
-  if (isExtension) {
+  if (isExtension && browser.storage) {
     local = useExtensionStorage(browser.storage.local)
     session = useExtensionStorage(browser.storage.session)
-  } else {
+  } else if(typeof window != 'undefined' && window.localStorage && window.sessionStorage) {
     local = useWebStorage(window.localStorage)
     session = useWebStorage(window.sessionStorage)
+  } else {
+    local = null
+    session = null
   }
 }
 
