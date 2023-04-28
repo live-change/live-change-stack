@@ -9,7 +9,7 @@ class MessageConnection extends Connection {
     this.url = url
     this.target = settings.target
     this.messageChannel = settings.messageChannel ? new MessageChannel() : null
-    this.port = this.messageChannel ? this.messageChannel.port1 : this.target
+    this.port = settings.messagePort ?? (this.messageChannel ? this.messageChannel.port1 : this.target)
     this.decorator = settings.decorator || ((message) => message)
     this.filter = settings.filter || ((message) => true)
     this.initialize()
@@ -22,17 +22,21 @@ class MessageConnection extends Connection {
       if(!this.filter(data)) return
       this.handleMessage(data)
     })
-    this.target.addEventListener('error', (event) => {
-      console.error("Worker", this.url, "error", event)
-    })
     this.port.addEventListener('messageerror', (event) => {
       console.error("Worker", this.url, "message error", event)
     })
-    this.target.addEventListener('unhandledrejection', (event) => {
-      console.error("Worker", this.url, "unhandled rejection", event)
-    })
-    if(this.messageChannel) {
+    if(this.target?.addEventListener) {
+      this.target.addEventListener('error', (event) => {
+        console.error("Worker", this.url, "error", event)
+      })
+      this.target.addEventListener('unhandledrejection', (event) => {
+        console.error("Worker", this.url, "unhandled rejection", event)
+      })
+    }
+    if(this.port.start) {
       this.port.start()
+    }
+    if(this.messageChannel) {
       this.target.postMessage({ type: 'connection', port: this.messageChannel.port2 }, [this.messageChannel.port2])
     }
     this.handleConnect()
@@ -54,7 +58,7 @@ class MessageConnection extends Connection {
       this.port.postMessage(JSON.stringify({ type: 'close' }))
       this.port.close()
     } else {
-      if (this.target.terminate) this.target.terminate()
+      if (this.target?.terminate) this.target.terminate()
     }
   }
 
