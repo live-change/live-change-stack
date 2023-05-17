@@ -287,6 +287,7 @@
           } else if(this.ignoreError) {
             if((typeof this.ignoreError) == 'function') {
               if(this.ignoreError(error)) {
+                this.state = 'ready'
                 this.workingZone.finished(this.workingTask)
               } else {
                 this.state = 'error'
@@ -295,6 +296,7 @@
               }
             } else if(Array.isArray(this.ignoreError)) {
               if(this.ignoreError.indexOf(error) != -1) {
+                this.state = 'ready'
                 this.workingZone.finished(this.workingTask)
               } else {
                 this.state = 'error'
