@@ -61,7 +61,7 @@ class Api extends DaoProxy {
     const api = ref()
     this.apiObservable = this.observable(['metadata', 'api'])
     console.log("API OBSERVABLE", this.apiObservable)
-    this.apiObservable.bindProperty(api, 'value')
+    //this.apiObservable.bindProperty(api, 'value')
     const version = ref()
     this.versionObservable = this.observable(['version', 'version'])
     this.versionObservable.bindProperty(version, 'value')
@@ -77,19 +77,28 @@ class Api extends DaoProxy {
     const client = computed(() => {
       return api?.value?.client
     })
-    watch(() => api.value, (api) => {
-      //console.log("API CHANGE!", api)
-      if(!api) return
-      console.log("API CHANGE!"/*, api*/)
-      this.generateServicesApi()
-    })
-    console.log("SETUP API", api.value)
     this.metadata = {
       api, version,
       softwareVersion,
       versionMismatch,
       client
     }
+    let lastApiJson = ''
+    this.apiObservable.observe((signal, ...args) => {
+      if(signal != 'set') return
+      console.log("API OBSERVE SIGNAL", signal, ...args)
+      const newApi = args[0]
+      console.log("NEW API", newApi)
+      if(JSON.stringify(newApi) == lastApiJson) {
+        console.log("API NOT CHANGED")
+        return
+      }
+      lastApiJson = JSON.stringify(newApi)
+      console.log("API CHANGED")
+      api.value = JSON.parse(lastApiJson)
+      this.generateServicesApi()
+    })
+    //console.log("SETUP API", api.value)
     this.afterPreFetch.push(() => this.generateServicesApi())
   }
 
@@ -117,7 +126,7 @@ class Api extends DaoProxy {
     api.uidGenerator = uidGenerator(
       apiInfo.client.user || (apiInfo.client.session ? apiInfo.client.session.slice(0, 16) : randomString(10) )
       , 1, '[]')
-    //console.log("GENERATE API DEFINITIONS", definitions)
+    console.log("GENERATE API DEFINITIONS", definitions)
     api.servicesApiDefinitions = definitions
     api.servicesDefinitions.value = definitions
     let globalViews = {}
@@ -127,6 +136,7 @@ class Api extends DaoProxy {
       let views = { }
       globalViews[serviceDefinition.name] = views
       for(const viewName in serviceDefinition.views) {
+        console.log("GENERATE VIEW", serviceDefinition.name, viewName)
         views[viewName] = (params) => [serviceDefinition.name, viewName, params]
         views[viewName].definition = serviceDefinition.views[viewName]
       }
