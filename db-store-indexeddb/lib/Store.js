@@ -572,9 +572,11 @@ class Store {
               count++
               const id = cursor.key
               const json = cursor.value
-              const object = this.serialization.parse(json)
+              let object = this.serialization.parse(json)
               last = id
               await handleRequest(cursor.delete())
+
+              if(!object || !object.id) object = { id }
 
               const objectObservable = this.objectObservables.get(id)
               if(objectObservable) objectObservable.set(null)
@@ -605,9 +607,11 @@ class Store {
               count++
               const id = cursor.key
               const json = cursor.value
-              const object = this.serialization.parse(json)
+              let object = this.serialization.parse(json)
               last = id
               await handleRequest(cursor.delete())
+
+              if(!object || !object.id) object = { id }
 
               const objectObservable = this.objectObservables.get(id)
               if(objectObservable) objectObservable.set(null)
