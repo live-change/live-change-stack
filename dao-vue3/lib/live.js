@@ -33,7 +33,9 @@ async function fetch(api, path) {
   function createObject(what, more) {
     const res = preFetchMap.get(JSON.stringify(what))
     debug("PREFETCH", what, "RES", res, "MORE", more, "ERR", res?.error)
-    if(res.error) throw new Error(res.error)
+    if(res.error) {
+      throw new Error(res.error)
+    }
     const data = res.data
     if(data && more) {
       if(Array.isArray(data)) {
@@ -80,7 +82,7 @@ async function live(api, path, onUnmountedCb) {
   if(isRef(path)) {
     if(typeof window == 'undefined') {
       debug("FETCH", path.value)
-      const data = await fetch(api, path.value)
+      const data = path.value ? await fetch(api, path.value) : null
       debug("FETCHED", data)
       return data
     }
@@ -107,7 +109,7 @@ async function live(api, path, onUnmountedCb) {
     }
     await update()
     watch(() => path.value, () => update())
-    const result = computed(() => liveRef.value?.value)
+    const result = computed(() => liveRef.value === null ? null : liveRef.value?.value)
     return result
   }
 
