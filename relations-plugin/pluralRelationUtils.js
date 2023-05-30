@@ -1,6 +1,6 @@
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } = App
-const { extractIdParts, extractRange, extractIdentifiers, extractObjectData, prepareAccessControl } = require("./utils.js")
+const { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl } = require("./utils.js")
 
 const pluralize = require('pluralize')
 
@@ -10,7 +10,7 @@ function defineView(config, context) {
   const indexName = 'by'+context.joinedOthersClassName
   const viewProperties = {}
   for (let i = 0; i < others.length; i++) {
-    viewProperties[otherPropertyNames[i]] = new PropertyDefinition({
+    viewProperties[otherPropertyNames[i][0].toLowerCase() + otherPropertyNames[i].slice(1) ] = new PropertyDefinition({
       type: others[i],
       validation: ['nonEmpty']
     })
@@ -34,7 +34,7 @@ function defineView(config, context) {
     accessControl: config.readAccessControl || config.writeAccessControl,
     daoPath(properties, { client, context }) {
       const idParts = extractIdParts(otherPropertyNames, properties)
-      const range = extractRange(properties)
+      const range = App.extractRange(properties)
       const path = modelRuntime().sortedIndexRangePath(indexName, idParts, range)
       return path
     }
@@ -47,7 +47,7 @@ function defineCreateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
-  const actionName = 'set' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
   const accessControl = config.createAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
   service.actions[actionName] = new ActionDefinition({

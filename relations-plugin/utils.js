@@ -52,18 +52,20 @@ function defineProperties(model, types, names) {
 }
 
 function defineIndex(model, what, props) {
+  console.log("DEFINE INDEX", model.name, what, props)
   model.indexes['by' + what] = new IndexDefinition({
     property: props
   })
 }
 function defineIndexes(model, props, types) {
+  console.log("DEFINE INDEXES", model.name, props, types)
   const propCombinations = allCombinations(Object.keys(props))
   for(const propCombination of propCombinations) {
     const upperCaseProps = propCombination.map(id => {
       const prop = props[id]
       return prop[0].toUpperCase() + prop.slice(1)
     })
-    defineIndex(model, upperCaseProps.join('And'), propCombination.map(id => types[id]))
+    defineIndex(model, upperCaseProps.join('And'), props[propCombination])
   }
 }
 
@@ -113,7 +115,7 @@ function processModelsAnnotation(service, app, annotation, multiple, cb) {
         const writeableProperties = modelProperties || config.writeableProperties
         //console.log("PPP", others)
         const otherPropertyNames = what.map(other => other.name ? other.name : other)
-        const joinedOthersPropertyName = otherPropertyNames[0] +
+        const joinedOthersPropertyName = (otherPropertyNames[0][0].toLowerCase() + otherPropertyNames[0].slice(1)) +
             (others.length > 1 ? ('And' + others.slice(1).join('And')) : '')
         const joinedOthersClassName = others.join('And')
 

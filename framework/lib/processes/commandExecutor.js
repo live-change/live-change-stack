@@ -12,6 +12,7 @@ async function startCommandExecutor(service, config) {
 
   service.commandQueue = new CommandQueue(service.dao, service.databaseName,
       service.app.splitCommands ? `${service.name}_commands` : 'commands', service.name, config.runCommands)
+
   for (let actionName in service.actions) {
     const action = service.actions[actionName]
     if (action.definition.queuedBy) {

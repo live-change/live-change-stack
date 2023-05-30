@@ -20,7 +20,7 @@ module.exports = function(service, app) {
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
     addAccessControlParents(context)
-    defineIndexes(context.model, context.otherPropertyNames, context.others)
+    defineIndexes(context.model, context.otherPropertyNames.map(p => p[0].toLowerCase() + p.slice(1)), context.others)
 
     if(config.sortBy) {
       for(const sortFields of config.sortBy) {
