@@ -1,7 +1,7 @@
 const definition = require("./definition.js")
 const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
-const { User } = require("./model.js")
+const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition } = App
+const { User, Session } = require("./model.js")
 
 const pluralize = require('pluralize')
 
@@ -35,8 +35,113 @@ definition.processor(function(service, app) {
         to: ['sessionOrUser', ...extendedWith]
       }
 
-      /// TODO: merge on signedIn trigger
-      /// TODO: delete on userDeleted trigger
+      service.trigger({
+        name: 'signedIn',
+        properties: {
+          user: {
+            type: User,
+            validation: ['nonEmpty']
+          },
+          session: {
+            type: Session,
+            validation: ['nonEmpty']
+          },
+        },
+        async execute({ user, session }, { service }, emit) {
+          const sessionPath = ['session_Session', session]
+          const sessionItems = await modelRuntime().indexRangeGet('bySessionOrUser', sessionPath, {} )
+          if(config.merge) {
+            const userPath = ['user_User', user]
+            const userItems = await modelRuntime().indexRangeGet('bySessionOrUser', userPath, {} )
+            const mergeResult = await config.merge(sessionItems, userItems)
+            if(mergeResult) {
+              const { transferred, updated, deleted } = mergeResult
+              for(const entity of transferred) {
+                emit({
+                  type: 'sessionOrUserOwned' + modelName + 'Transferred',
+                  [modelPropertyName]: entity.id,
+                  to: {
+                    sessionOrUserType: 'user_User',
+                    sessionOrUser: user
+                  }
+                })
+              }
+              for(const entity of updated) {
+                emit({
+                  type: 'sessionOrUserOwned' + modelName + 'Updated',
+                  [modelPropertyName]: entity.id,
+                  identifiers: {
+                    id: entity.id,
+                    sessionOrUserType: 'user_User',
+                    sessionOrUser: user
+                  },
+                  data: entity
+                })
+              }
+              for(const entity of deleted) {
+                emit({
+                  type: 'sessionOrUserOwned' + modelName + 'Deleted',
+                  [modelPropertyName]: entity.id,
+                })
+              }
+            }
+          } else {
+            for(const entity of sessionItems) {
+              emit({
+                type: 'sessionOrUserOwned' + modelName + 'Transferred',
+                [modelPropertyName]: entity.id,
+                identifiers: {
+                  id: entity.id
+                },
+                to: {
+                  sessionOrUserType: 'user_User',
+                  sessionOrUser: user
+                }
+              })
+            }
+          }
+        }
+      })
+
+      service.trigger({
+        name: 'userDeleted',
+        properties: {
+          user: {
+            type: User,
+            validation: ['nonEmpty']
+          }
+        },
+        async execute({ user, session }, { service }, emit) {
+          /// TODO: delete on userDeleted trigger
+        }
+      })
+
+      if(config.ownerReadAccess) {
+        const viewName = 'my' + modelName
+        const propertyName = modelName[0].toLowerCase() + modelName.slice(1)
+        service.views[viewName] = new ViewDefinition({
+          name: viewName,
+          access(params, context) {
+            return config.ownerReadAccess ? config.ownerReadAccess(params, context) : true
+          },
+          properties: {
+            [propertyName]: {
+              type: `${service.name}_${modelName}`,
+              validation: ['nonEmpty']
+            }
+          },
+          async daoPath(params, { client, context }) {
+            const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            const range = {
+              gte: '_'+ params[propertyName],
+              lte: '_'+ params[propertyName]
+            }
+            const path = modelRuntime().indexObjectPath('bySessionOrUser', owner, range )
+            console.log("DAO PATH", path, "range", range, 'params', params)
+            return path
+          }
+        })
+      }
 
       if(config.ownerReadAccess) {
         const viewName = 'my' + pluralize(modelName)
@@ -49,6 +154,7 @@ definition.processor(function(service, app) {
           daoPath(range, { client, context }) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
             const path = modelRuntime().indexRangePath('bySessionOrUser', owner, range )
+            console.log("DAO PATH", path, "range", range)
             return path
           }
         })
@@ -157,7 +263,7 @@ definition.processor(function(service, app) {
         const validators = App.validation.getValidators(action, service, action)
       }
       if(config.userDeleteAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Deleted'
+        const eventName = 'sessionOrUser' + modelName + 'Deleted'
         const actionName = 'deleteMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

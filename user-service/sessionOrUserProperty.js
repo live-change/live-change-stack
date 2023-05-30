@@ -1,7 +1,7 @@
 const definition = require("./definition.js")
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
-const { User } = require("./model.js")
+const { User, Session } = require("./model.js")
 const { allCombinations } = require("./combinations.js")
 const { createIdentifiersProperties } = require('./utils.js')
 
@@ -39,9 +39,120 @@ definition.processor(function(service, app) {
         to: ['sessionOrUser', ...extendedWith]
       }
 
-      /// TODO: merge on signedIn trigger
-      /// TODO: delete on userDeleted trigger
+      const transferEventName = ['sessionOrUser', ...(extendedWith.map(e => e[0].toUpperCase() + e.slice(1)))]
+        .join('And') + 'Owned' + modelName + 'Transferred'
 
+      service.trigger({
+        name: 'signedIn',
+        properties: {
+          user: {
+            type: User,
+            validation: ['nonEmpty']
+          },
+          session: {
+            type: Session,
+            validation: ['nonEmpty']
+          },
+        },
+        async execute({ user, session }, { service }, emit) {
+          const sessionPath = ['session_Session', session]
+          const sessionPropertyId = sessionPath.map(p => JSON.stringify(p)).join(':')
+          const range = {
+            gte: sessionPropertyId + '', // '' because it can be not-extended
+            lte: sessionPropertyId + ':\xFF'
+          }
+          const sessionProperties = await modelRuntime().rangeGet(range)
+          for(const sessionProperty of sessionProperties) {
+            console.log("SESSION PROPERTY FOUND!", sessionProperty, "MERGE =", config.merge)
+
+            const extendedIdentifiers = {}
+            for(const key of extendedWith) {
+              extendedIdentifiers[key+'Type'] = sessionProperty[key+'Type']
+              extendedIdentifiers[key] = sessionProperty[key]
+            }
+            const userPath = ['user_User', user]
+            for(const key of extendedWith) {
+              userPath.push(extendedIdentifiers[key+'Type'], extendedIdentifiers[key])
+            }
+            const userPropertyId = userPath.map(p => JSON.stringify(p)).join(':')
+            const userProperty = await modelRuntime().get(userPropertyId)
+
+            if(config.merge) {
+              const mergeResult = await config.merge(sessionProperty, userProperty)
+              if(mergeResult && userProperty) {
+                emit({
+                  type: 'sessionOrUserOwned' + modelName + 'Updated',
+                  identifiers: {
+                    sessionOrUserType: 'user_User',
+                    sessionOrUser: user
+                  },
+                  data: mergeResult
+                })
+              } else {
+                emit({
+                  type: 'sessionOrUserOwned' + modelName + 'Set',
+                  identifiers: {
+                    sessionOrUserType: 'user_User',
+                    sessionOrUser: user
+                  },
+                  data: mergeResult
+                })
+              }
+              if(!config.mergeWithoutDelete) {
+                emit({
+                  type: 'sessionOrUserOwned' + modelName + 'Reset',
+                  identifiers: {
+                    sessionOrUserType: 'session_Session',
+                    sessionOrUser: session
+                  }
+                })
+              }
+            } else {
+              if(!userProperty) {
+                await service.trigger({
+                  type: 'contactOrUserOwned' + modelName + 'Moved',
+                  from: {
+                    sessionOrUserType: 'session_Session',
+                    sessionOrUser: session,
+                    ...extendedIdentifiers
+                  },
+                  to: {
+                    sessionOrUserType: 'user_User',
+                    sessionOrUser: user,
+                    ...extendedIdentifiers
+                  },
+                })
+                emit({
+                  type: transferEventName,
+                  from: {
+                    sessionOrUserType: 'session_Session',
+                    sessionOrUser: session,
+                    ...extendedIdentifiers
+                  },
+                  to: {
+                    sessionOrUserType: 'user_User',
+                    sessionOrUser: user,
+                    ...extendedIdentifiers
+                  }
+                })
+              } // else ignore - user property is more important by default
+            }
+          }
+        }
+      })
+
+      service.trigger({
+        name: 'userDeleted',
+        properties: {
+          user: {
+            type: User,
+            validation: ['nonEmpty']
+          }
+        },
+        async execute({ user, session }, { service }, emit) {
+          /// TODO: delete on userDeleted trigger
+        }
+      })
 
       if(config.ownerReadAccess) { // single item view
         const viewName = 'my' + modelName

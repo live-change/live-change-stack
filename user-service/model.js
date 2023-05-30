@@ -85,4 +85,4 @@ definition.event({
   }
 })
 
-module.exports = { User, AuthenticatedUser }
+module.exports = { User, Session, AuthenticatedUser }
