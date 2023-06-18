@@ -266,6 +266,7 @@ async function server(argv, dev) {
 
   const manifest = (dev || argv.spa) ? null : require(path.resolve(ssrRoot, 'dist/client/ssr-manifest.json'))
 
+  if(!argv.version) argv.version = process.env.VERSION
   if(argv.versionFile) argv.version = await readFile(argv.versionFile, 'utf8')
 
   if(!argv.withApi) {
