@@ -137,7 +137,7 @@ definition.processor(function(service, app) {
               lte: '_'+ params[propertyName]
             }
             const path = modelRuntime().indexObjectPath('bySessionOrUser', owner, range )
-            console.log("DAO PATH", path, "range", range, 'params', params)
+            //console.log("DAO PATH", path, "range", range, 'params', params)
             return path
           }
         })
@@ -154,7 +154,7 @@ definition.processor(function(service, app) {
           daoPath(range, { client, context }) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
             const path = modelRuntime().indexRangePath('bySessionOrUser', owner, range )
-            console.log("DAO PATH", path, "range", range)
+            //console.log("DAO PATH", path, "range", range)
             return path
           }
         })

@@ -287,7 +287,7 @@ definition.trigger({
   async execute({ timer }, { client, service }, emit) {
     console.log("CREATE TIMER", timer)
     if(!timer) throw new Error("timer is required")
-    let timestamp = timer.timestamp
+    let timestamp = new Date(timer.timestamp).getTime()
     let loops = timer.loops || 0
     let timerId = timer.id || app.generateUid()
     let maxRetries = timer.maxRetries || 0
