@@ -1,6 +1,6 @@
 const rd = require("@live-change/dao")
 const Connection = rd.ReactiveConnection
-const debug = require('debug')('dao:message')
+const debug = require('debug')('dao-message')
 
 class MessageConnection extends Connection {
 

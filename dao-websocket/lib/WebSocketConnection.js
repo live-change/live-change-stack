@@ -30,7 +30,7 @@ class WebSocketConnection extends Connection {
       this.handleDisconnect()
     }
     connection.onclose = (function () {
-      debug("connection close")
+      debug("connection", this.url, " close")
       disconnect()
     }).bind(this)
     connection.onmessage = (function (e) {
@@ -39,7 +39,7 @@ class WebSocketConnection extends Connection {
       this.handleMessage(message)
     }).bind(this)
     connection.onerror = (function(err) {
-      debug("connection error", err.message)
+      debug("connection", this.url, "error", err.message)
       disconnect()
     })
   }
@@ -51,14 +51,14 @@ class WebSocketConnection extends Connection {
   }
 
   reconnect() {
-    debug("reconnect")
+    debug("reconnect", this.url)
     this.connection.close()
     if (this.autoReconnect) return;
     this.initialize()
   }
 
   dispose() {
-    debug("close")
+    debug("close", this.url)
     super.dispose()
     this.connection.close()
   }
