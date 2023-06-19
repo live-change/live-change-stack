@@ -598,6 +598,7 @@ class Store {
       console.log("ERROR WHILE PUTTING OBJECT", id)
       console.error(err)
       console.log("OBJECT DATA",  JSON.stringify(object))
+      process.exit(1)
       throw err
     } finally {
       txn.commit()
