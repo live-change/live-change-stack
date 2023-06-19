@@ -60,9 +60,10 @@ function defineAnyIndex(model, what, props) {
   })
 }
 
-function defineAnyIndexes(model, props) {
+function defineAnyIndexes(model, props, fullIndex = true) {
   const propCombinations = allCombinations(props)
   for(const propCombination of propCombinations) {
+    if(propCombination.length == props.length && !fullIndex) continue
     const upperCaseProps = propCombination.map(prop => prop[0].toUpperCase() + prop.slice(1))
     defineAnyIndex(model, upperCaseProps.join('And'), propCombination)
   }

@@ -22,7 +22,7 @@ module.exports = function(service, app) {
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
     addAccessControlAnyParents(context)
-    defineAnyIndexes(context.model, context.otherPropertyNames)
+    defineAnyIndexes(context.model, context.otherPropertyNames, false)
 
     if(config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl) {
       defineObjectView(config, context)
