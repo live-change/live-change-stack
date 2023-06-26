@@ -92,6 +92,7 @@
 
   function deleteObject(event) {
     const removeRequest = remove({ object: initialData.value }, dbRequestSugar)
+    if(removeRequest === false) return // remove handled elsewhere
     const requestInfo =
         `${removeRequest[0].join('.')}(${removeRequest.slice(1).map(v => JSON.stringify(v)).join(', ')})`
     const id = initialData.value.id
@@ -115,6 +116,7 @@
 
   function updateObject(event) {
     const updateRequest = write({ object: editedData.value }, dbRequestSugar)
+    if(updateRequest === false) return // update handled elsewhere
     const requestInfo =
         `${updateRequest[0].join('.')}(${updateRequest.slice(1).map(v => JSON.stringify(v)).join(', ')})`
     const id = editedData.value.id

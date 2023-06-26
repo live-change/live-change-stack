@@ -7,6 +7,8 @@
 
 <!--  <p>{{ path }}</p>-->
 
+  <CreateObject v-if="write" :dbApi="dbApi" :write="write.result" class="mt-2" />
+
   <template v-if="read?.external?.includes('range')">
     <DataRangeView v-if="read && write && remove" :key="'rangeView' + version"
                    :dbApi="dbApi" :read="read.result" :write="write.result" :remove="remove.result" />
@@ -16,6 +18,8 @@
               :dbApi="dbApi" :read="read.result" :write="write.result" :remove="remove.result" />
   </template>
 
+  <CreateObject v-if="write" :dbApi="props.dbApi" :write="write.result" class="mt-2" />
+
 </template>
 
 <script setup>
@@ -24,6 +28,7 @@
   import PathEditor from "./PathEditor.vue"
   import DataRangeView from "./DataRangeView.vue"
   import DataView from "./DataView.vue"
+  import CreateObject from "./CreateObject.vue"
 
   const props = defineProps({
     dbApi: {
@@ -52,8 +57,6 @@
     }
   })
 
-
-
   import { ref, watch } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
 
@@ -76,7 +79,7 @@
     const paramsArray = value.params.flat()
     router.replace({ name: route.name, params: {
       read: value.read,
-      write: value.write, 
+      write: value.write,
       remove: value.remove,
       params: paramsArray
     } })
