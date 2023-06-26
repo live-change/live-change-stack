@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-admin",
-  "version": "0.6.7",
+  "version": "0.6.8",
   "scripts": {
     "memDev": "lcli memDev --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --initScript ./init.js --dbAccess",
