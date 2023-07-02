@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const SegfaultHandler = require('segfault-handler')
 
 const dump = require('../lib/dump.js')
 const exec = require('../lib/exec.js')
@@ -16,8 +15,6 @@ process.on('unhandledRejection', (reason, p) => {
 process.on('uncaughtException', function (err) {
   console.error(err.stack)
 })
-
-SegfaultHandler.registerHandler("crash.log");
 
 function clientOptions(yargs) {
   yargs.option('serverUrl', {

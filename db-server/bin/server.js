@@ -2,7 +2,6 @@
 const path = require('path')
 const fs = require('fs')
 const service = require ("os-service")
-const SegfaultHandler = require('segfault-handler')
 const Server = require('../lib/Server.js')
 const { client: WSClient } = require("@live-change/dao-websocket")
 const ReactiveDao = require('@live-change/dao')
@@ -22,8 +21,6 @@ process.on('unhandledRejection', (reason, p) => {
 process.on('uncaughtException', function (err) {
   console.error(err.stack)
 })
-
-SegfaultHandler.registerHandler("crash.log");
 
 function serverOptions(yargs) {
   yargs.option('port', {
