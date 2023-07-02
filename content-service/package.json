@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.7.24",
-    "@live-change/relations-plugin": "0.7.24",
+    "@live-change/framework": "0.7.25",
+    "@live-change/relations-plugin": "0.7.25",
     "lru-cache": "^7.12.0",
-    "pluralize": "8.0.0",
+    "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0",
     "prosemirror-model": "^1.18.1"
   },

@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.7.24",
-    "@live-change/relations-plugin": "0.7.24",
+    "@live-change/framework": "0.7.25",
+    "@live-change/relations-plugin": "0.7.25",
     "download": "^8.0.0",
-    "pluralize": "8.0.0",
+    "pluralize": "^8.0.0",
     "sharp": "^0.30.6"
   },
   "gitHead": "5450bfda7a0eabc71152e8ebfc87d9e7ebf5448f"
