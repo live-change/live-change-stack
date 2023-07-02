@@ -1,6 +1,6 @@
 {
   "name": "@live-change/framework",
-  "version": "0.7.25",
+  "version": "0.7.26",
   "description": "Live Change Framework - ultimate solution for real time mobile/web apps",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
     "@live-change/db-store-level": "0.6.11",
     "@live-change/db-store-lmdb": "0.6.11",
     "@live-change/sockjs": "0.4.1",
-    "@live-change/uid": "0.7.25",
+    "@live-change/uid": "^0.7.26",
     "cookie": "^0.4.1",
     "express": "^4.18.1",
     "os-service": "^2.2.0",
