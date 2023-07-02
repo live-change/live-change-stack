@@ -67,8 +67,10 @@ class Renderer {
       '<head>': (meta.headAttrs ? `<head ${meta.headAttrs}>` : '<head>'),
       '<!--head-->': (meta.head || '') + '\n' + preloadLinks,
       '<body>': (meta.bodyAttrs ? `<body ${meta.bodyAttrs}>` : '<body>') + '\n' + (meta.bodyPrepend || ''),
+      '<!--body-tags-open-->': meta.bodyTagsOpen || '',
+      '<!--body-tags-->': meta.bodyTags || '',
       '<!--app-html-->': appHtml,
-      '<!--app-data-->': (meta.bodyAppend || '') + '\n' + appDataScript
+      '<!--app-data-->': appDataScript
     })
 
     return { html, response }
