@@ -2,7 +2,6 @@
 require('dotenv').config()
 const express = require("express")
 const path = require('path')
-const SegfaultHandler = require('segfault-handler')
 const http = require("http")
 const { createProxyMiddleware } = require('http-proxy-middleware')
 const { readFile } = require('fs').promises
@@ -29,8 +28,6 @@ process.on('unhandledRejection', (reason, p) => {
 process.on('uncaughtException', function (err) {
   console.error(err.stack)
 })
-
-SegfaultHandler.registerHandler("crash.log");
 
 function startOptions(yargs) {
   yargs.option('withServices', {
