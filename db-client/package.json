@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-client",
-  "version": "0.6.11",
+  "version": "0.6.12",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -27,8 +27,8 @@
     "tape": "^5.3.2"
   },
   "dependencies": {
-    "@live-change/dao": "0.5.19",
-    "@live-change/dao-websocket": "0.5.19",
+    "@live-change/dao": "0.5.20",
+    "@live-change/dao-websocket": "0.5.20",
     "line-reader": "^0.4.0",
     "websocket": "^1.0.34",
     "yargs": "^17.5.1"

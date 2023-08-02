@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-indexeddb",
-  "version": "0.6.11",
+  "version": "0.6.12",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "tape": "^5.3.2"
   },
   "dependencies": {
-    "@live-change/dao": "0.5.19",
+    "@live-change/dao": "0.5.20",
     "@live-change/interval-tree": "^1.0.12",
     "broadcast-channel": "^4.2.0"
   },
