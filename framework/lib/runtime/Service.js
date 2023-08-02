@@ -79,8 +79,10 @@ class Service {
     let promises = config.processes.map(proc => proc(this, config))
     await Promise.all(promises)
 
-    for(const beforeStartCallback of this.definition.beforeStartCallbacks) {
-      await beforeStartCallback(this)
+    if(config.runCommands) {
+      for (const beforeStartCallback of this.definition.beforeStartCallbacks) {
+        await beforeStartCallback(this)
+      }
     }
 
     console.log("Service", this.definition.name, "started")
