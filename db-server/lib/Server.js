@@ -357,7 +357,12 @@ class Server {
         this.apiServer.handleConnection(conn)
       })
       const server = http.createServer(app)
-      let wsServer = new WebSocketServer({ httpServer: server, autoAcceptConnections: false })
+      let wsServer = new WebSocketServer({
+        httpServer: server,
+        autoAcceptConnections: false,
+        maxReceivedFrameSize: 1024*1024, // 1 MiB
+        maxReceivedMessageSize: 10*1024*1024, // 10 MiB
+      })
       wsServer.on("request",(request) => {
         debug("WS URI", request.httpRequest.url, "FROM", request.remoteAddress)
         if(request.httpRequest.url != "/api/ws") return request.reject()
