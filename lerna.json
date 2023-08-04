@@ -20,7 +20,8 @@
     "prosemirror-service",
     "content-service",
     "url-service",
-    "blog-service"
+    "blog-service",
+    "backup-server"
   ],
   "publishConfig": {
     "access": "public"
