@@ -1,6 +1,6 @@
 {
   "name": "@live-change/url-service",
-  "version": "0.3.26",
+  "version": "0.3.27",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -28,5 +28,5 @@
     "progress-stream": "^2.0.0",
     "prosemirror-model": "^1.18.1"
   },
-  "gitHead": "5450bfda7a0eabc71152e8ebfc87d9e7ebf5448f"
+  "gitHead": "ab367db8f3b8d25d19adcb6cdc15a9c9e25c6e60"
 }
