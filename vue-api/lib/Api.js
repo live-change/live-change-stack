@@ -120,7 +120,7 @@ class Api extends DaoProxy {
         apiInfo = this.prerenderCache.cache.get(cachePath)
       }
     }
-    console.log("GENERATE SERVICES API", apiInfo)
+    //console.log("GENERATE SERVICES API", apiInfo)
     const definitions = apiInfo?.services
     if(JSON.stringify(definitions) == JSON.stringify(api.servicesApiDefinitions)) return
     if(!definitions) throw new Error("API DEFINITIONS NOT FOUND! UNABLE TO GENERATE API!")
