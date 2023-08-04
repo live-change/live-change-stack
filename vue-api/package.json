@@ -1,6 +1,6 @@
 {
   "name": "@live-change/vue-api",
-  "version": "0.2.27",
+  "version": "0.2.28",
   "description": "Live Change Framework - vue api base",
   "main": "index.js",
   "scripts": {
