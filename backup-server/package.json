@@ -1,6 +1,6 @@
 {
   "name": "@live-change/backup-server",
-  "version": "0.3.27",
+  "version": "0.3.28",
   "description": "",
   "main": "index.js",
   "scripts": {
