@@ -7,7 +7,7 @@ const { once } = require('events')
 const os = require("os")
 const path = require('path')
 
-function currentBackupPath(backupsDir = '../../backups/') {
+function currentBackupPath(backupsDir = './backups/') {
   const dateString = new Date().toISOString().slice(0,-1).replace(/[T:\\.-]/gi, '_')
   return `${backupsDir}/${dateString.substring(0, dateString.length - 1)}`
 }
@@ -23,12 +23,12 @@ async function writeDbBackup(stream) {
     }
   }
   await dump({
-    serverUrl: process.env.DB_URL || 'http://localhost:9417/api/ws',
-    db: process.env.DB_NAME,
-    structure: true,
-    verbose: true
-  },
-      (method, ...args) => write({ type: 'request', method, parameters: args }),
+      serverUrl: process.env.DB_URL || 'http://localhost:9417/api/ws',
+      db: process.env.DB_NAME || 'test',
+      structure: true,
+      verbose: true
+    },
+    (method, ...args) => write({ type: 'request', method, parameters: args }),
       sync = () => write({ type: 'sync' })
   )
   stream.end()
@@ -40,18 +40,22 @@ async function createBackup(backupPath = currentBackupPath()) {
   const dbStream = fs.createWriteStream(path.resolve(backupPath, 'db.json'))
   await writeDbBackup(dbStream)
 
-  const version = await fs.promises.readFile('../../version', { encoding: 'utf8' }).catch(e => 'unknown')
+  const version = await (
+    fs.promises.readFile('./package.json', { encoding: 'utf8' })
+      .catch(e => 'unknown')
+      .then(data => JSON.parse(data).version)
+  )
   const info = {
     version: version,
     hostname: os.hostname(),
-    directory: path.resolve('../..')
+    directory: path.resolve('.')
   }
 
   await fs.promises.writeFile(path.resolve(backupPath, 'info.json'), JSON.stringify(info, null, '  '))
 
-  await fse.copy("../../storage", path.resolve(backupPath, "storage"))
+  await fse.copy("./storage", path.resolve(backupPath, "storage"))
 
-  const command = `tar -zcf ${backupPath}.tar.gz.tmp storage info.json db.json`
+  const command = `tar -zcf ../${path.basename(backupPath)}.tar.gz.tmp storage info.json db.json`
   console.log("EXEC TAR COMMAND:", command)
   await exec(command, { cwd: backupPath })
 

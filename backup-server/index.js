@@ -1,6 +1,7 @@
 const app = require("@live-change/framework").app()
 const definition = require('./definition.js')
 const config = definition.config
+module.exports = definition
 
 const express = require('express')
 const basicAuth = require('express-basic-auth')
@@ -9,9 +10,7 @@ const fs = require('fs')
 const { createBackup, currentBackupPath } = require('./backup.js')
 const { restoreBackup } = require('./restore.js')
 
-const { default: PQueue } = require('p-queue');
 const progress = require("progress-stream")
-const queue = new PQueue({ concurrency: 1 })
 
 const TWENTY_FOUR_HOURS = 24 * 3600 * 1000
 const TEN_MINUTES = 10 * 60 * 1000
@@ -19,9 +18,18 @@ const TEN_MINUTES = 10 * 60 * 1000
 let currentBackup = null
 
 const backupServerPort = config.port || process.env.BACKUP_SERVER_PORT || 8007
-const backupsDir = config.dir || '../../backups'
 const backupServerUsername = config.username || process.env.BACKUP_SERVER_USERNAME
 const backupServerPassword = config.password || process.env.BACKUP_SERVER_PASSWORD
+
+const backupsDir = config.dir || './backups'
+
+fs.mkdirSync(backupsDir, { recursive: true })
+
+let queue
+(async () => {
+  const PQueue = (await import('p-queue')).default
+  queue = new PQueue({ concurrency: 1 })
+})()
 
 let users = config.users || {}
 if(backupServerUsername && backupServerPassword ) {
