@@ -23,9 +23,9 @@
   "devDependencies": {
     "@live-change/dao": "0.5.20",
     "@live-change/dao-websocket": "0.5.20",
-    "@live-change/db": "0.6.14",
-    "@live-change/db-store-level": "0.6.14",
-    "@live-change/db-store-lmdb": "0.6.14",
+    "@live-change/db": "0.6.15",
+    "@live-change/db-store-level": "0.6.15",
+    "@live-change/db-store-lmdb": "0.6.15",
     "@live-change/sockjs": "0.4.1",
     "@live-change/uid": "^0.7.29",
     "cookie": "^0.4.1",
