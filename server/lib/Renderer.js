@@ -39,6 +39,7 @@ class Renderer {
           interval: 100
         }
       },
+      appType: 'custom'
     })
   }
 
