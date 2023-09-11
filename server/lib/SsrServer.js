@@ -112,8 +112,14 @@ class SsrServer {
 
       const credentials = readCredentials(req)
       const windowId = this.uidGenerator()
+      let dao
       try {
-        const dao = await this.createDao(credentials, clientIp)
+        dao = await this.createDao(credentials, clientIp)
+      } catch (e) {
+        console.error("DAO ERROR", e.stack || e)
+        res.status(500).end(e.stack || e)
+      }
+      try {
         const version = this.version
 
         let result
@@ -147,6 +153,7 @@ class SsrServer {
         console.error("ERROR", e.stack || e)
         res.status(500).end(e.stack || e)
       }
+      dao.dispose()
     })
   }
 
