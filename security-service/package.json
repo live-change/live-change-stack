@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.7.28",
+    "@live-change/framework": "0.7.30",
     "@live-change/pattern": "0.2.1",
     "@live-change/pattern-db": "0.2.2",
     "nodemailer": "^6.7.2"
