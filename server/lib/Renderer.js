@@ -16,8 +16,8 @@ class Renderer {
     if(this.settings.dev) {
       await this.setupVite()
     } else {
-      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/entry-server.js')
-      this.module = require(serverEntryPath)
+      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/entry-server.mjs')
+      this.module = await import(serverEntryPath)
       this.renderer = this.module.render
       this.sitemap = this.module.sitemap
       const templatePath = path.resolve(this.root, this.settings.templatePath ?? './dist/client/index.html')
