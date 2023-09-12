@@ -1,6 +1,6 @@
 {
   "name": "@live-change/security-service",
-  "version": "0.3.29",
+  "version": "0.3.30",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.7.30",
+    "@live-change/framework": "0.7.31",
     "@live-change/pattern": "0.2.1",
     "@live-change/pattern-db": "0.2.2",
     "nodemailer": "^6.7.2"
