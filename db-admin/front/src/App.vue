@@ -42,11 +42,12 @@
 
   import ProgressSpinner from 'primevue/progressspinner'
 
-  import { useMeta } from 'vue-meta'
   import Page from "./Page.vue"
 
-  const { meta } = useMeta({
-    title: 'Title',
+  import { computed } from 'vue'
+  import { useHead } from '@vueuse/head'
+  useHead(computed(() => ({
+    title: 'DB Admin',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport',
@@ -57,7 +58,7 @@
       lang: 'en',
       amp: true
     }
-  })
+  })))
 
   import { onMounted } from 'vue'
   import isClientSide from "./isClientSide.js"

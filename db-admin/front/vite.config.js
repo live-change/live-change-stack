@@ -14,6 +14,7 @@ const ssrTransformCustomDir = () => {
 }
 
 export default defineConfig(async ({ command, mode }) => {
+  console.log("VITE CONFIG", command, mode)
   return {
     define: {
       ENV_BASE_HREF: JSON.stringify(process.env.BASE_HREF || 'http://localhost:8001')
@@ -68,7 +69,10 @@ export default defineConfig(async ({ command, mode }) => {
     },
     ssr: {
       external: [
-        '@live-change/dao',
+        ...(command == 'build' ? [
+        ]: [
+          '@live-change/dao'
+        ]),
         '@live-change/uid',
         '@live-change/framework',
         '@live-change/framework/lib/utils/validators.js',
@@ -76,11 +80,18 @@ export default defineConfig(async ({ command, mode }) => {
         'vite'
       ],
       noExternal: [
-        'vue-meta',
+        ...(command == 'build' ? [
+          '@live-change/dao',
+        ]: [
+        ]),
         '@live-change/vue3-components',
         '@live-change/dao-vue3',
         '@live-change/vue3-ssr',
-        'vue3-scroll-border'
+        'vue3-scroll-border',
+        'primevue',
+        'primevue/usetoast',
+        'primevue/useconfirm',
+        'primevue/usedialog'
       ]
     },
     optimizeDeps: {
@@ -92,7 +103,11 @@ export default defineConfig(async ({ command, mode }) => {
         '@live-change/uid',
         '@live-change/framework',
         '@live-change/framework/lib/utils/validators.js',
-        'debug'
+        'debug',
+        'primevue',
+        'primevue/usetoast',
+        'primevue/useconfirm',
+        'primevue/usedialog'
       ]
     },
 
