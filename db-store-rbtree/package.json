@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-rbtree",
-  "version": "0.6.15",
+  "version": "0.6.16",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
