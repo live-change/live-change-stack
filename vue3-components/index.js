@@ -8,7 +8,6 @@ import { registerViewComponents } from "./view"
 
 function registerComponents(app, settings = {}) {
   registerLogicComponents(app, settings)
-  console.log("reg", registerFormComponents)
   registerFormComponents(app, settings)
   registerViewComponents(app, settings)
 }
