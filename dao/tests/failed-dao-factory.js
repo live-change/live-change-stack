@@ -15,6 +15,7 @@ test("time value", (t) => {
     client = new LoopbackConnection({ sessionId }, server, {
       delay: 50
     })
+    client.initialize()
     client.once('authenticationError', (err) => t.pass("authentication failed!"))
   })
 

@@ -23,6 +23,7 @@ test("request resend", (t) => {
       queueRequestsWhenDisconnected: true,
       queueActiveRequestsOnDisconnect: true
     })
+    client.initialize()
 
     counter = client.observable(['test', 'counter'], testServerDao.ObservableCounter)
     client.request(['test', 'reset'])

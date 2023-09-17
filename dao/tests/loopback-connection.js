@@ -22,6 +22,7 @@ test("loopback connection", (t) => {
       onConnect: () => t.pass("connected"),
       delay: 50
     })
+    client.initialize()
   })
 
   t.test('get session id', (t) => {

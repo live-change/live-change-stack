@@ -16,6 +16,7 @@ test("get more", (t) => {
       onConnect: () => t.pass("connected"),
       delay: 50
     })
+    client.initialize()
   })
 
   t.test('get users list with one level of dependencies', (t) => {

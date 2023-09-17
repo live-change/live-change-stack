@@ -16,6 +16,7 @@ test("time value", (t) => {
       onConnect: () => t.pass("connected"),
       delay: 50
     })
+    client.initialize()
   })
 
   let timeObservable, timeObserver, ticks = 0

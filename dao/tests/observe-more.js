@@ -16,6 +16,7 @@ test("observe more", (t) => {
       onConnect: () => t.pass("connected"),
       delay: 50
     })
+    client.initialize()
   })
 
   t.test('observe and unobserve users list with no dependencies', (t) => {

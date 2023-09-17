@@ -10,7 +10,6 @@ class LoopbackConnection extends Connection {
     this.serverMessageListener = null
     this.serverCloseListener = null
     this.headers = {}
-    this.initialize()
   }
 
   next(fn) {
@@ -32,6 +31,7 @@ class LoopbackConnection extends Connection {
         resolve(true)
       })
     })
+    return this.initPromise
   }
 
   send(message) {

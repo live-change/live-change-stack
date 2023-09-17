@@ -11,11 +11,11 @@ class WebSocketConnection extends Connection {
   }
 
   initialize() {
-    debug("connecting...")
+    debug("connecting", this.url, "...")
     this.connection = new WebSocket(this.url, "reactive-observer", this.settings)
     let connection = this.connection
     connection.onopen = (function () {
-      debug("connection open")
+      debug("connection", this.url, "open")
       if (connection.readyState === WebSocket.CONNECTING) return setTimeout(connection.onopen, 230)
       this.handleConnect()
     }).bind(this)

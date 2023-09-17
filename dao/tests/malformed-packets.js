@@ -19,6 +19,7 @@ test('create connection', (t) => {
     },
     delay: 50
   })
+  client.initialize()
 })
 
 test('send {type:"get"}', (t) => {

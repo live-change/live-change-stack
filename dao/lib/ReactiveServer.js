@@ -1,5 +1,7 @@
 const ReactiveServerConnection = require('./ReactiveServerConnection.js')
 
+const debug = require('debug')('dao')
+
 class ReactiveServer {
   constructor(daoFactory, settings) {
     this.settings = settings || {}
@@ -11,9 +13,11 @@ class ReactiveServer {
     let id = ++this.lastConnectionId
     let reactiveConnection = new ReactiveServerConnection(this, id, connection, this.daoFactory, this.settings)
     this.connections.set( reactiveConnection.id, reactiveConnection )
+    debug("ReactiveServer: new connection", id, 'total', this.connections.size)
   }
   handleConnectionClose(reactiveConnection) {
     this.connections.delete( reactiveConnection.id )
+    debug("ReactiveServer: connection closed", reactiveConnection.id, 'total', this.connections.size)
   }
 }
 

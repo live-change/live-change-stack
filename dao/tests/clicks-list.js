@@ -16,6 +16,7 @@ test("click list", (t) => {
       onConnect: () => t.pass("connected"),
       delay: 50
     })
+    client.initialize()
   })
 
   let clicksObservable, clicksObserver, ticks = 0

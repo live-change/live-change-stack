@@ -37,6 +37,7 @@ test("connection monitors", (t) => {
         })
       }
     })
+    client.initialize()
   })
 
   t.test('wait 10 ping pongs', (t) => {

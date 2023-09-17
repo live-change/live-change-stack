@@ -26,6 +26,7 @@ test("time synchronization", (t) => {
       delay: 50,
       timeSynchronization
     })
+    client.initialize()
   })
 
   t.test('check if time is synchronized', (t) => {
