@@ -30,10 +30,10 @@
   },
   "dependencies": {
     "@live-change/dao": "0.5.21",
-    "@live-change/db": "^0.6.17",
-    "@live-change/db-store-indexeddb": "^0.6.17",
-    "@live-change/db-store-localstorage": "^0.6.17",
-    "@live-change/db-store-rbtree": "^0.6.17",
+    "@live-change/db": "0.6.17",
+    "@live-change/db-store-indexeddb": "0.6.17",
+    "@live-change/db-store-localstorage": "0.6.17",
+    "@live-change/db-store-rbtree": "0.6.17",
     "debug": "^4.3.4"
   },
   "gitHead": "358bc9b508a6e446b9286a01e0ceb0e77c1dec28"
