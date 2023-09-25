@@ -1,5 +1,5 @@
 import { createSSRApp } from 'vue'
-import { createMetaManager } from 'vue-meta'
+import { createHead } from "@vueuse/head"
 
 import { registerComponents } from '@live-change/vue3-components'
 import ReactiveDaoVue from '@live-change/dao-vue3'
@@ -46,10 +46,8 @@ export function createApp(api) {
   app.directive('ripple', Ripple)
   app.directive('badge', BadgeDirective)
 
-  const meta = createMetaManager({
-    isSSR: import.meta.env.SSR
-  })
-  app.use(meta)
+  const head = createHead()
+  app.use(head)
 
   return { app, router }
 }
