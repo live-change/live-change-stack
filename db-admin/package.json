@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-admin",
-  "version": "0.6.18",
+  "version": "0.6.19",
   "scripts": {
     "memDev": "lcli memDev --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --initScript ./init.js --dbAccess",
@@ -41,6 +41,7 @@
     "serialize-javascript": "^6.0.1",
     "serve-static": "^1.15.0",
     "v-shared-element": "3.1.1",
+    "vite-plugin-compression": "^0.5.1",
     "vite-plugin-vue-images": "^0.6.1",
     "vue": "^3.2.47",
     "vue-prism-editor": "2.0.0-alpha.2",
