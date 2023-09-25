@@ -49,5 +49,5 @@ export function createApp(api) {
   const head = createHead()
   app.use(head)
 
-  return { app, router }
+  return { app, router, head }
 }

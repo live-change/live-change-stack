@@ -20,7 +20,7 @@ export async function render({ url, dao, windowId }) {
     use: [ ]
   })
 
-  const { app, router } = createApp(api)
+  const { app, router, head } = createApp(api)
 
   // set the router to the desired URL before rendering
   router.push(url)

@@ -103,11 +103,13 @@ export default defineConfig(async ({ command, mode }) => {
         '@live-change/uid',
         '@live-change/framework',
         '@live-change/framework/lib/utils/validators.js',
-        'debug',
+        'debug'
+      ],
+      exclude: [
         'primevue',
         'primevue/usetoast',
         'primevue/useconfirm',
-        'primevue/usedialog'
+        'primevue/usedialog',
       ]
     },
 
