@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@live-change/dao": "0.5.21",
-    "@live-change/db": "^0.6.21",
+    "@live-change/db": "0.6.21",
     "@live-change/db-store-indexeddb": "^0.6.21",
     "@live-change/db-store-localstorage": "^0.6.21",
     "@live-change/db-store-rbtree": "^0.6.21",
