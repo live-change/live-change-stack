@@ -132,14 +132,9 @@ class Api extends DaoProxy {
     let globalViews = {}
     let globalFetch = (...args) => new Path(...args)
     let globalActions = {}
+    let globalModels = {}
+    let globalServices = {}
     for(const serviceDefinition of definitions) {
-      let views = { }
-      globalViews[serviceDefinition.name] = views
-      for(const viewName in serviceDefinition.views) {
-        //console.log("GENERATE VIEW", serviceDefinition.name, viewName)
-        views[viewName] = (params) => [serviceDefinition.name, viewName, params]
-        views[viewName].definition = serviceDefinition.views[viewName]
-      }
       let fetch = { }
       globalFetch[serviceDefinition.name] = fetch
       for(const actionName in serviceDefinition.actions) {
@@ -156,6 +151,21 @@ class Api extends DaoProxy {
         actions[actionName] = (params) => api.command([serviceDefinition.name, actionName], params)
         actions[actionName].definition = serviceDefinition.actions[actionName]
       }
+      let views = { }
+      globalViews[serviceDefinition.name] = views
+      for(const viewName in serviceDefinition.views) {
+        //console.log("GENERATE VIEW", serviceDefinition.name, viewName)
+        views[viewName] = (params) => [serviceDefinition.name, viewName, params]
+        views[viewName].definition = serviceDefinition.views[viewName]
+      }
+      let models = { }
+      globalModels[serviceDefinition.name] = models
+      for(const modelName in serviceDefinition.models) {
+        models[modelName] = serviceDefinition.models[modelName]
+      }
+      globalServices[serviceDefinition.name] = {
+        actions, views, models, definitions
+      }
     }
 
     api.views = globalViews
@@ -163,6 +173,7 @@ class Api extends DaoProxy {
     api.actions = globalActions
     api.client = this.metadata.client
     api.uid = api.uidGenerator
+    api.services = globalServices
 
     api.globals.$lc = api
 
@@ -171,6 +182,7 @@ class Api extends DaoProxy {
     api.globals.$views = this.views
     api.globals.$actions = this.actions
     api.globals.$fetch = this.fetch
+    api.globals.$services = this.services
 
     api.windowId = this.settings.windowId || api.uid()
 
@@ -268,6 +280,36 @@ class Api extends DaoProxy {
   getServiceDefinition(serviceName) {
     return this.metadata.api.value.services.find(s => s.name == serviceName)
   }
+
+  uploadFile(purpose, fileName, blob, id) {
+    if (!id) id = this.uidGenerator()
+    const xhr = new XMLHttpRequest()
+    const state = ref({ id, state: 'starting', transferred: 0, percent: 0, size: blob.size, xhr })
+    xhr.upload.addEventListener("progress", (evt) => {
+      const percent = evt.loaded / evt.total * 100;
+      state.value = { ...state.value, percent, transferred: evt.loaded }
+    }, false)
+    xhr.addEventListener("readystatechange", (evt) => {
+      if (xhr.readyState == 4) {
+        if (xhr.status == 200) {
+          state.value = { ...state.value, state: "done" }
+        } else {
+          state.value = { ...state.value, state: "failed", error: xhr.status + " " + xhr.responseText }
+        }
+      }
+    })
+    xhr.addEventListener("error", (evt) => {
+      state.value = { ...state.value, state: "failed", error: 'XHR error' }
+    })
+    xhr.addEventListener("abort", (evt) => {
+      state.value = { ...state.value, state: "failed", error: 'XHR aborted' }
+    })
+    const url = `${document.location.protocol}//${document.location.host}/upload/${purpose}/${fileName}/${id}`
+    xhr.open("POST", url, true)
+    xhr.send(blob)
+    return state
+  }
+
 }
 
 export default Api

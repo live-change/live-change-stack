@@ -37,6 +37,7 @@ export function validateData(definition, data, validationType = 'validation',
       if(error) return error
     }
   }
+  if(!data) return undefined // No data, no errors, nonEmpty validator was already checked
   if(definition.properties) {
     const propertyErrors = {}
     for(let name in definition.properties) {
