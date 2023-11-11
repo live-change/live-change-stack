@@ -1,6 +1,6 @@
 {
   "name": "@live-change/smsapi-service",
-  "version": "0.3.31",
+  "version": "0.3.32",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -23,10 +23,10 @@
   "dependencies": {
     "@live-change/framework": "0.7.34",
     "@live-change/relations-plugin": "0.7.34",
-    "smsapi": "2.0.9",
     "got": "^11.8.3",
     "html-to-text": "8.1.0",
     "inline-css": "3.0.0",
-    "jsdom": "^18.1.1"
+    "jsdom": "^18.1.1",
+    "smsapi": "2.0.9"
   }
 }
