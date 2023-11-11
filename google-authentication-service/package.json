@@ -24,5 +24,6 @@
     "@live-change/framework": "0.7.34",
     "@live-change/relations-plugin": "0.7.34",
     "google-auth-library": "9.0.0"
-  }
+  },
+  "gitHead": "2fc30f1d4be9c78de081c0e18b3c706ed094b8d4"
 }

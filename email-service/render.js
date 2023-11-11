@@ -44,7 +44,7 @@ function processElement(element, images) {
 }
 
 async function renderEmail(data) {
-  const baseUrl = `http://${config.ssrHost||process.env.SSR_HOST||'localhost'}`+
+  const baseUrl = `http://${config.ssrHost||process.env.SSR_HOST||'127.0.0.1'}`+
   `:${config.ssrPort||process.env.SSR_PORT||'8001'}`
 
   const encodedData = encodeURIComponent(JSON.stringify(data))

@@ -28,5 +28,6 @@
     "inline-css": "3.0.0",
     "jsdom": "^18.1.1",
     "smsapi": "2.0.9"
-  }
+  },
+  "gitHead": "2fc30f1d4be9c78de081c0e18b3c706ed094b8d4"
 }
