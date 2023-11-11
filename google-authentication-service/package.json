@@ -1,5 +1,5 @@
 {
-  "name": "@live-change/user-identification-service",
+  "name": "@live-change/google-authentication-service",
   "version": "0.3.31",
   "description": "",
   "main": "index.js",
@@ -23,7 +23,6 @@
   "dependencies": {
     "@live-change/framework": "0.7.34",
     "@live-change/relations-plugin": "0.7.34",
-    "pluralize": "^8.0.0"
-  },
-  "gitHead": "ab367db8f3b8d25d19adcb6cdc15a9c9e25c6e60"
+    "google-auth-library": "9.0.0"
+  }
 }

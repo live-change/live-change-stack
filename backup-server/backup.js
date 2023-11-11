@@ -1,3 +1,4 @@
+const app = require("@live-change/framework").app()
 const fs = require('fs')
 const fse = require('fs-extra')
 const util = require('util')
@@ -23,8 +24,10 @@ async function writeDbBackup(stream) {
     }
   }
   await dump({
-      serverUrl: process.env.DB_URL || 'http://localhost:9417/api/ws',
-      db: process.env.DB_NAME || 'test',
+      dao: app.dao,
+      db: app.databaseName,
+      //serverUrl: process.env.DB_URL || 'http://localhost:9417/api/ws',
+      //db: process.env.DB_NAME || 'test',
       structure: true,
       verbose: true
     },

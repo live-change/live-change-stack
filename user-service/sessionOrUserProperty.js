@@ -154,13 +154,14 @@ definition.processor(function(service, app) {
         }
       })
 
+      const extendedIdentifiersProperties = createIdentifiersProperties(extendedWith)
+
       if(config.ownerReadAccess) { // single item view
         const viewName = 'my' + modelName
-        const identifiers = createIdentifiersProperties(extendedWith)
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           properties: {
-            ...identifiers
+            ...extendedIdentifiersProperties
           },
           access(params, context) {
             return config.ownerReadAccess ? config.ownerReadAccess(params, context) : true
@@ -186,7 +187,7 @@ definition.processor(function(service, app) {
           service.views[viewName] = new ViewDefinition({
             name: viewName,
             properties: {
-              ...identifiers,
+              ...extendedIdentifiersProperties,
               ...App.rangeProperties,
             },
             access(params, context) {
@@ -232,13 +233,19 @@ definition.processor(function(service, app) {
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
           properties: {
-            ...originalModelProperties
+            ...originalModelProperties,
+            ...extendedIdentifiersProperties,
           },
           access: config.ownerSetAccess || config.ownerWriteAccess,
           skipValidation: true,
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
           async execute(properties, {client, service}, emit) {
+            const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
+            const id = owner.map(p => JSON.stringify(p)).join(':')
+            const entity = await modelRuntime().get(id)
+            if(entity) throw 'alerady_exists'
             let newObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -253,6 +260,10 @@ definition.processor(function(service, app) {
             } : {
               sessionOrUserType: 'session_Session',
               sessionOrUser: client.session,
+            }
+            for(const key of extendedWith) {
+              identifiers[key+'Type'] = properties[key+'Type']
+              identifiers[key]=properties[key]
             }
             emit({
               type: eventName,
@@ -271,7 +282,8 @@ definition.processor(function(service, app) {
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
           properties: {
-            ...originalModelProperties
+            ...originalModelProperties,
+            ...extendedIdentifiersProperties,
           },
           access: config.ownerUpdateAccess || config.ownerWriteAccess,
           skipValidation: true,
@@ -279,6 +291,7 @@ definition.processor(function(service, app) {
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
             const entity = await modelRuntime().get(id)
             if(!entity) throw 'not_found'
@@ -297,11 +310,78 @@ definition.processor(function(service, app) {
               sessionOrUserType: 'session_Session',
               sessionOrUser: client.session,
             }
+            for(const key of extendedWith) {
+              identifiers[key+'Type'] = properties[key+'Type']
+              identifiers[key]=properties[key]
+            }
             emit({
               type: eventName,
               identifiers,
               data: properties || {}
             })
+          }
+        })
+        const action = service.actions[actionName]
+        const validators = App.validation.getValidators(action, service, action)
+      }
+
+      if((config.ownerUpdateAccess && config.ownerSetAccess) || config.ownerWriteAccess) {
+        const setEventName = eventPrefix + modelName + 'Set'
+        const updatedEventName = eventPrefix + modelName + 'Updated'
+        const actionName = 'setOrUpdateMy' + modelName
+        service.actions[actionName] = new ActionDefinition({
+          name: actionName,
+          properties: {
+            ...originalModelProperties,
+            ...extendedIdentifiersProperties,
+          },
+          access: config.ownerSetAccess || config.ownerWriteAccess,
+          skipValidation: true,
+          queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
+          waitForEvents: true,
+          async execute(properties, { client, service }, emit) {
+            const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
+            const id = owner.map(p => JSON.stringify(p)).join(':')
+            const entity = await modelRuntime().get(id)
+            let updateObject = {}
+            for(const propertyName of writeableProperties) {
+              if(properties.hasOwnProperty(propertyName)) {
+                updateObject[propertyName] = properties[propertyName]
+              }
+            }
+            const identifiers = client.user ? {
+              sessionOrUserType: 'user_User',
+              sessionOrUser: client.user,
+            } : {
+              sessionOrUserType: 'session_Session',
+              sessionOrUser: client.session,
+            }
+            for(const key of extendedWith) {
+              identifiers[key+'Type'] = properties[key+'Type']
+              identifiers[key]=properties[key]
+            }
+            if(!entity) {
+              const data = App.utils.mergeDeep({}, defaults, updateObject)
+              //console.log('V', { ...identifiers, ...data}, validators)
+              await App.validation.validate({ ...identifiers, ...data}, validators,
+                  { source: action, action, service, app, client })
+              emit({
+                type: setEventName,
+                identifiers,
+                data
+              })
+            } else {
+              const merged = App.utils.mergeDeep({}, entity, updateObject)
+              //console.log('V', { ...identifiers, ...merged}, validators)
+              await App.validation.validate({ ...identifiers, ...merged}, validators,
+                  { source: action, action, service, app, client })
+              emit({
+                type: updatedEventName,
+                identifiers,
+                data: updateObject || {}
+              })
+            }
           }
         })
         const action = service.actions[actionName]
@@ -316,8 +396,12 @@ definition.processor(function(service, app) {
           access: config.ownerResetAccess || config.ownerWriteAccess,
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
+          properties: {
+            ...extendedIdentifiersProperties,
+          },
           async execute(properties, {client, service}, emit) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
             const entity = await modelRuntime().get(id)
             if (!entity) throw 'not_found'
@@ -327,6 +411,10 @@ definition.processor(function(service, app) {
             } : {
               sessionOrUserType: 'session_Session',
               sessionOrUser: client.session,
+            }
+            for(const key of extendedWith) {
+              identifiers[key+'Type'] = properties[key+'Type']
+              identifiers[key]=properties[key]
             }
             emit({
               type: eventName,

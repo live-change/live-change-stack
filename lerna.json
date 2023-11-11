@@ -21,7 +21,9 @@
     "content-service",
     "url-service",
     "blog-service",
-    "backup-server"
+    "backup-server",
+    "smsapi-service",
+    "google-authentication-service"
   ],
   "publishConfig": {
     "access": "public"

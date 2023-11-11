@@ -1,5 +1,5 @@
 {
-  "name": "@live-change/user-identification-service",
+  "name": "@live-change/smsapi-service",
   "version": "0.3.31",
   "description": "",
   "main": "index.js",
@@ -23,7 +23,10 @@
   "dependencies": {
     "@live-change/framework": "0.7.34",
     "@live-change/relations-plugin": "0.7.34",
-    "pluralize": "^8.0.0"
-  },
-  "gitHead": "ab367db8f3b8d25d19adcb6cdc15a9c9e25c6e60"
+    "smsapi": "2.0.9",
+    "got": "^11.8.3",
+    "html-to-text": "8.1.0",
+    "inline-css": "3.0.0",
+    "jsdom": "^18.1.1"
+  }
 }
