@@ -34,7 +34,7 @@ async function fetch(api, path) {
     const res = preFetchMap.get(JSON.stringify(what))
     debug("PREFETCH", what, "RES", res, "MORE", more, "ERR", res?.error)
     if(res.error) {
-      throw new Error(res.error + ' when fetching '+JSON.stringify(what) + ' with more=('+JSON.stringify(more)+')')
+      throw new Error(JSON.stringify(res.error) + ' when fetching '+JSON.stringify(what) + ' with more=('+JSON.stringify(more)+')')
     }
     const data = res.data
     if(data && more) {
@@ -79,10 +79,11 @@ async function fetch(api, path) {
 }
 
 async function live(api, path, onUnmountedCb) {
+  if(path == null) return ref(null)
   if(isRef(path)) {
     if(typeof window == 'undefined') {
       debug("FETCH", path.value)
-      const data = path.value ? await fetch(api, path.value) : null
+      const data = path.value ? await fetch(api, path.value) : ref(null)
       debug("FETCHED", data)
       return data
     }
