@@ -1,8 +1,10 @@
 const App = require("@live-change/framework")
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
 const { extractTypeAndIdParts, extractIdentifiersWithTypes, prepareAccessControl } = require("./utilsAny.js")
-const { extractObjectData } = require("./utils.js")
+const { extractObjectData, extractIdentifiers} = require("./utils.js")
 const { extractRange } = App
+
+const { fireChangeTriggers } = require("./changeTriggers.js")
 
 const pluralize = require('pluralize')
 
@@ -49,7 +51,7 @@ function defineView(config, context) {
 
 function defineCreateAction(config, context) {
   const {
-    service, app, model,  defaults, modelPropertyName, modelRuntime,
+    service, app, model,  defaults, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
@@ -74,6 +76,7 @@ function defineCreateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, defaults)
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id, null, data)
       emit({
         type: eventName,
         [modelPropertyName]: id,
@@ -88,7 +91,7 @@ function defineCreateAction(config, context) {
 
 function defineUpdateAction(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName,
+    service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
@@ -123,6 +126,8 @@ function defineUpdateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, entity)
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          extractObjectData(writeableProperties, entity, {}), data)
       emit({
         type: eventName,
         [modelPropertyName]: id,
@@ -137,7 +142,7 @@ function defineUpdateAction(config, context) {
 
 function defineDeleteAction(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName, identifiers,
+    service, app, model, modelRuntime, modelPropertyName, identifiers, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
@@ -164,21 +169,12 @@ function defineDeleteAction(config, context) {
       if(!entity) throw new Error('not_found')
       const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
+      const identifiers = extractIdentifiers(otherPropertyNames, entity)
       if(JSON.stringify(entityTypeAndIdParts) != JSON.stringify(typeAndIdParts)) {
         throw new Error('not_authorized')
       }
-      await Promise.all([
-        service.trigger({
-          type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
-          objectType: service.name+'_'+modelName,
-          object: id
-        }),
-        service.trigger({
-          type: 'deleteObject',
-          objectType: service.name+'_'+modelName,
-          object: id
-        })
-      ])
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          extractObjectData(writeableProperties, entity, {}), null)
       emit({
         type: eventName,
         [modelPropertyName]: id

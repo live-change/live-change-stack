@@ -4,6 +4,8 @@ const {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } = App
 const { allCombinations } = require("./combinations.js")
+const {fireChangeTriggers, registerParentDeleteTriggers} = require("./changeTriggers");
+const {extractObjectData} = require("./utils.js");
 
 function extractTypeAndIdParts(otherPropertyNames, properties) {
   const typeAndIdParts = []
@@ -115,10 +117,14 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
         const joinedOthersPropertyName = otherPropertyNames[0] +
             (others.length > 1 ? ('And' + others.slice(1).join('And')) : '')
         const joinedOthersClassName = others.join('And')
+        const objectType = service.name + '_' + modelName
+
+        const { parentsTypes } = config
 
         const context = {
           service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
-          otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+          otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
+          objectType, parentsTypes
         }
 
         cb(config, context)
@@ -183,64 +189,7 @@ function defineDeleteByOwnerEvents(config, context, generateId) {
 }
 
 function defineParentDeleteTrigger(config, context) {
-  const {
-    service, modelRuntime, modelPropertyName, identifiers,
-    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model,
-    reverseRelationWord
-  } = context
-  const triggerName = 'deleteObject'
-  if(!service.triggers[triggerName]) service.triggers[triggerName] = []
-  service.triggers[triggerName].push(new TriggerDefinition({
-    name: triggerName,
-    properties: {
-      objectType: {
-        type: String,
-      },
-      object: {
-        type: String
-      }
-    },
-    async execute({ objectType, object }, {client, service}, emit) {
-      const tableName = modelRuntime().tableName
-      const prefix = JSON.stringify(objectType) + ':' + JSON.stringify(object)
-      const promises = otherPropertyNames.map(async (propertyName) => {
-        const indexName = tableName + '_by' + propertyName[0].toUpperCase() + propertyName.slice(1)
-        const bucketSize = 32
-        let found = false
-        let bucket
-        do {
-          bucket = await app.dao.get(['database', 'indexRange', app.databaseName, indexName, {
-            gte: prefix + ':',
-            lte: prefix + '_\xFF\xFF\xFF\xFF',
-            limit: bucketSize
-          }])
-          if(bucket.length > 0) found = true
-          const deleteTriggerPromises = bucket.map(({to}) => [
-            service.trigger({
-              type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
-              objectType: service.name+'_'+modelName,
-              object: to
-            }),
-            service.trigger({
-              type: 'deleteObject',
-              objectType: service.name+'_'+modelName,
-              object: to
-            })
-          ]).flat()
-          await Promise.all(deleteTriggerPromises)
-        } while (bucket.length == bucketSize)
-        if(found) {
-          const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
-          emit({
-            type: eventName,
-            ownerType: objectType,
-            owner: object
-          })
-        }
-      })
-      await Promise.all(promises)
-    }
-  }))
+  registerParentDeleteTriggers(context, config)
 }
 
 module.exports = {

@@ -42,14 +42,14 @@ class Services {
       for(const plugin of this.config.plugins) {
         const entryFile = await this.getServiceEntryFile(plugin)
         debug("PLUGIN", plugin, 'ENTRY FILE', entryFile)
-        this.plugins.push(require(entryFile))
+        this.plugins.push((await import(entryFile)).default)
       }
     }
     if(this.config.services) {
       for(const service of this.config.services) {
         const entryFile = await this.getServiceEntryFile(service)
         debug("SERVICE", service, 'ENTRY FILE', entryFile)
-        const definition = require(entryFile)
+        const definition = (await import(entryFile)).default
         if(definition.name != service.name) {
           console.error("SERVICE", service, "NAME", service.name, "MISMATCH", definition.name)
           process.exit(1)

@@ -1,6 +1,7 @@
 const App = require("@live-change/framework")
 const app = App.app()
-const { allCombinations } = require("./combinations.js");
+const { allCombinations } = require("./combinations.js")
+const { fireChangeTriggers, registerParentDeleteTriggers } = require("./changeTriggers.js")
 const {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } = App
@@ -113,16 +114,18 @@ function processModelsAnnotation(service, app, annotation, multiple, cb) {
         const others = what.map(other => other.getTypeName ? other.getTypeName() : (other.name ? other.name : other))
 
         const writeableProperties = modelProperties || config.writeableProperties
-        //console.log("PPP", others)
-        const otherPropertyNames = what.map(other => other.name ? other.name : other)
-        const joinedOthersPropertyName = (otherPropertyNames[0][0].toLowerCase() + otherPropertyNames[0].slice(1)) +
-            (others.length > 1 ? ('And' + others.slice(1).join('And')) : '')
-        const joinedOthersClassName = others.join('And')
+        const otherNames = what.map(other => other.name ? other.name : other)
+        const otherPropertyNames = otherNames.map(name => name[0].toLowerCase() + name.slice(1))
+
+        const joinedOthersPropertyName = (otherNames[0][0].toLowerCase() + otherNames[0].slice(1)) +
+            (otherNames.length > 1 ? ('And' + otherNames.slice(1).join('And')) : '')
+        const joinedOthersClassName = otherNames.join('And')
+        const objectType = service.name + '_' + modelName
 
         const context = {
           service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName,
-          others, annotation
+          others, annotation, objectType, parentsType: others
         }
 
         cb(config, context)
@@ -188,62 +191,7 @@ function defineDeleteByOwnerEvents(config, context, generateId) {
 }
 
 function defineParentDeleteTriggers(config, context) {
-  const {
-    service, modelRuntime, modelPropertyName, identifiers, others,
-    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model,
-    reverseRelationWord
-  } = context
-  for(const index in others) {
-    const otherType = others[index]
-    const propertyName = otherPropertyNames[index]
-    const triggerName = 'delete' + otherType[0].toUpperCase() + otherType.slice(1)
-    if(!service.triggers[triggerName]) service.triggers[triggerName] = []
-    service.triggers[triggerName].push(new TriggerDefinition({
-      name: triggerName,
-      properties: {
-        object: {
-          type: String
-        }
-      },
-      async execute({ object }, {client, service}, emit) {
-        const tableName = modelRuntime().tableName
-        const prefix = JSON.stringify(object)
-        const indexName = tableName + 'by' + propertyName[0].toUpperCase() + propertyName.slice(1)
-        const bucketSize = 32
-        let found = false
-        let bucket
-        do {
-          bucket = await app.dao.get(['database', 'indexRange', app.databaseName, indexName, {
-            gte: prefix + ':',
-            lte: prefix + '_\xFF\xFF\xFF\xFF',
-            limit: bucketSize
-          }])
-          if(bucket.length > 0) found = true
-          const deleteTriggerPromises = bucket.map(({to}) => [
-            service.trigger({
-              type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
-              objectType: service.name+'_'+modelName,
-              object: to
-            }),
-            service.trigger({
-              type: 'deleteObject',
-              objectType: service.name+'_'+modelName,
-              object: to
-            })
-          ]).flat()
-          await Promise.all(deleteTriggerPromises)
-        } while (bucket.length == bucketSize)
-        if(found) {
-          const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
-          emit({
-            type: eventName,
-            owner: object
-          })
-        }
-        await Promise.all(promises)
-      }
-    }))
-  }
+  registerParentDeleteTriggers(context, config)
 }
 
 module.exports = {

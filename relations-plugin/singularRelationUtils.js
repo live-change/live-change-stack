@@ -3,6 +3,7 @@ const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } 
 const {
   extractIdentifiers, extractObjectData, generateId, extractIdParts, prepareAccessControl
 } = require("./utils.js")
+const {fireChangeTriggers} = require("./changeTriggers.js");
 
 function defineView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
@@ -39,7 +40,7 @@ function defineView(config, context) {
 
 function defineSetAction(config, context) {
   const {
-    service, app, model,  defaults,
+    service, app, model, defaults, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Set'
@@ -57,10 +58,13 @@ function defineSetAction(config, context) {
     queuedBy: otherPropertyNames,
     waitForEvents: true,
     async execute(properties, { client, service }, emit) {
+      const idParts = extractIdParts(otherPropertyNames, properties)
+      const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
       const identifiers = extractIdentifiers(otherPropertyNames, properties)
       const data = extractObjectData(writeableProperties, properties, defaults)
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id, null, data)
       emit({
         type: eventName,
         identifiers, data
@@ -73,7 +77,7 @@ function defineSetAction(config, context) {
 
 function defineUpdateAction(config, context) {
   const {
-    service, app, model, modelRuntime,
+    service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
@@ -98,6 +102,9 @@ function defineUpdateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, entity)
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      const oldData = extractObjectData(writeableProperties, entity, {})
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
       emit({
         type: eventName,
         identifiers, data
@@ -110,7 +117,7 @@ function defineUpdateAction(config, context) {
 
 function defineSetOrUpdateAction(config, context) {
   const {
-    service, app, model, defaults, modelRuntime,
+    service, app, model, defaults, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
@@ -134,6 +141,8 @@ function defineSetOrUpdateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, { ...defaults, ...entity })
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
       emit({
         type: eventName,
         identifiers, data
@@ -146,8 +155,8 @@ function defineSetOrUpdateAction(config, context) {
 
 function defineResetAction(config, context) {
   const {
-    service, modelRuntime, modelPropertyName,
-    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others
+    service, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Reset'
   const actionName = 'reset' + joinedOthersClassName + 'Owned' + modelName
@@ -170,18 +179,8 @@ function defineResetAction(config, context) {
       const id = generateId(otherPropertyNames, properties)
       const entity = await modelRuntime().get(id)
       if (!entity) throw new Error('not_found')
-      await Promise.all([
-        service.trigger({
-          type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
-          objectType: service.name+'_'+modelName,
-          object: id
-        }),
-        service.trigger({
-          type: 'deleteObject',
-          objectType: service.name+'_'+modelName,
-          object: id
-        })
-      ])
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
       emit({
         type: eventName,
         identifiers

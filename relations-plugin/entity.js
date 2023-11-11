@@ -3,6 +3,7 @@ const {
   processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData
 } = require('./utils.js')
 const App = require("@live-change/framework")
+const {fireChangeTriggers} = require("./changeTriggers.js");
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
 
 const annotation = 'entity'
@@ -16,7 +17,7 @@ function entityAccessControl({service, modelName, modelPropertyName}, accessCont
 }
 
 function defineView(config, context) {
-  const { service, modelRuntime, modelPropertyName, modelName, others, model } = context
+  const { service, modelRuntime, modelPropertyName, modelName, model } = context
   const viewName = (config.prefix || '' ) + (config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
   service.views[viewName] = new ViewDefinition({
     name: viewName,
@@ -84,7 +85,7 @@ function defineDeletedEvent(config, context) {
 
 function defineCreateAction(config, context) {
   const {
-    service, app, model,  defaults, modelPropertyName, modelRuntime,
+    service, app, model,  defaults, modelPropertyName, modelRuntime, objectType,
     modelName, writeableProperties
   } = context
   const eventName = modelName + 'Created'
@@ -106,6 +107,9 @@ function defineCreateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, defaults)
       await App.validation.validate({ ...data }, validators,
         { source: action, action, service, app, client })
+
+      await fireChangeTriggers(context, objectType, null, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
       emit({
         type: eventName,
         [modelPropertyName]: id,
@@ -120,7 +124,7 @@ function defineCreateAction(config, context) {
 
 function defineUpdateAction(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName,
+    service, app, model, modelRuntime, modelPropertyName, objectType,
     modelName, writeableProperties
   } = context
   const eventName = modelName + 'Updated'
@@ -145,6 +149,8 @@ function defineUpdateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, entity)
       await App.validation.validate({ ...identifiers, ...data }, validators,
         { source: action, action, service, app, client })
+      await fireChangeTriggers(context, null, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
       emit({
         type: eventName,
         [modelPropertyName]: id,
@@ -158,8 +164,8 @@ function defineUpdateAction(config, context) {
 
 function defineDeleteAction(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName,
-    otherPropertyNames, modelName,
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, modelName, writeableProperties,
   } = context
   const eventName = modelName + 'Deleted'
   const actionName = 'delete' + modelName
@@ -179,18 +185,8 @@ function defineDeleteAction(config, context) {
       const id = properties[modelPropertyName]
       const entity = await modelRuntime().get(id)
       if(!entity) throw new Error('not_found')
-      await Promise.all([
-        service.trigger({
-          type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
-          objectType: service.name+'_'+modelName,
-          object: id
-        }),
-        service.trigger({
-          type: 'deleteObject',
-          objectType: service.name+'_'+modelName,
-          object: id
-        })
-      ])
+      await fireChangeTriggers(context, objectType, null, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
       emit({
         type: eventName,
         [modelPropertyName]: id
@@ -226,10 +222,11 @@ module.exports = function(service, app) {
 
     const writeableProperties = modelProperties || config.writeableProperties
     //console.log("PPP", others)
+    const objectType = service.name + '_' + modelName
 
     const context = {
       service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
-      modelName, writeableProperties, annotation
+      modelName, writeableProperties, annotation, objectType
     }
 
     if (config.readAccess || config.readAccessControl || config.writeAccessControl) {

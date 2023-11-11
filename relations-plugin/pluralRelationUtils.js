@@ -3,6 +3,7 @@ const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } 
 const { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl } = require("./utils.js")
 
 const pluralize = require('pluralize')
+const {fireChangeTriggers} = require("./changeTriggers.js")
 
 function defineView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
@@ -43,7 +44,7 @@ function defineView(config, context) {
 
 function defineCreateAction(config, context) {
   const {
-    service, app, model,  defaults, modelPropertyName, modelRuntime,
+    service, app, model,  defaults, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
@@ -68,6 +69,7 @@ function defineCreateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, defaults)
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id, null, data)
       emit({
         type: eventName,
         [modelPropertyName]: id,
@@ -82,7 +84,7 @@ function defineCreateAction(config, context) {
 
 function defineUpdateAction(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName,
+    service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
@@ -92,6 +94,10 @@ function defineUpdateAction(config, context) {
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      },
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
@@ -100,6 +106,7 @@ function defineUpdateAction(config, context) {
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
     async execute(properties, { client, service }, emit) {
+      console.log("UPDATE", actionName, properties)
       const id = properties[modelPropertyName]
       const entity = await modelRuntime().get(id)
       if(!entity) throw 'not_found'
@@ -110,8 +117,11 @@ function defineUpdateAction(config, context) {
       }
       const identifiers = extractIdentifiers(otherPropertyNames, properties)
       const data = extractObjectData(writeableProperties, properties, entity)
-      await App.validation.validate({ ...identifiers, ...data }, validators,
+      const dataWithIdentifiers = { [modelPropertyName]: id, ...identifiers, ...data }
+      await App.validation.validate(dataWithIdentifiers, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          extractObjectData(writeableProperties, entity, {}), data)
       emit({
         type: eventName,
         [modelPropertyName]: id,
@@ -126,7 +136,7 @@ function defineUpdateAction(config, context) {
 
 function defineDeleteAction(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName,
+    service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
@@ -136,6 +146,10 @@ function defineDeleteAction(config, context) {
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      },
       ...(model.properties)
     },
     access: config.deleteAccess || config.writeAccess,
@@ -149,21 +163,12 @@ function defineDeleteAction(config, context) {
       if(!entity) throw new Error('not_found')
       const entityIdParts = extractIdParts(otherPropertyNames, entity)
       const idParts = extractIdParts(otherPropertyNames, properties)
+      const identifiers = extractIdentifiers(otherPropertyNames, entity)
       if(JSON.stringify(entityIdParts) != JSON.stringify(idParts)) {
         throw new Error('not_authorized')
       }
-      await Promise.all([
-        service.trigger({
-          type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
-          objectType: service.name+'_'+modelName,
-          object: id
-        }),
-        service.trigger({
-          type: 'deleteObject',
-          objectType: service.name+'_'+modelName,
-          object: id
-        })
-      ])
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          extractObjectData(writeableProperties, entity, {}), null)
       emit({
         type: eventName,
         [modelPropertyName]: id

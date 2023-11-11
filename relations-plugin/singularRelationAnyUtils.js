@@ -5,6 +5,7 @@ const { extractObjectData } = require("./utils.js")
 const { allCombinations } = require("./combinations.js")
 
 const pluralize = require('pluralize')
+const {fireChangeTriggers} = require("./changeTriggers.js");
 
 function createIdentifiersProperties(keys) {
   const identifiers = {}
@@ -92,7 +93,7 @@ function defineRangeViews(config, context) {
 
 function defineSetAction(config, context) {
   const {
-    service, app, model, defaults,
+    service, app, model, defaults, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
 
@@ -115,6 +116,7 @@ function defineSetAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, defaults)
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id, null, data)
       emit({
         type: eventName,
         identifiers, data
@@ -127,7 +129,7 @@ function defineSetAction(config, context) {
 
 function defineUpdateAction(config, context) {
   const {
-    service, app, model, modelRuntime,
+    service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
@@ -152,6 +154,8 @@ function defineUpdateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, entity)
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
       emit({
         type: eventName,
         identifiers, data
@@ -164,7 +168,7 @@ function defineUpdateAction(config, context) {
 
 function defineSetOrUpdateAction(config, context) {
   const {
-    service, app, model, modelRuntime, defaults,
+    service, app, model, modelRuntime, defaults, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
@@ -188,6 +192,8 @@ function defineSetOrUpdateAction(config, context) {
       const data = extractObjectData(writeableProperties, properties, { ...defaults, ...entity } )
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
       emit({
         type: eventName,
         identifiers, data
@@ -200,7 +206,7 @@ function defineSetOrUpdateAction(config, context) {
 
 function defineResetAction(config, context) {
   const {
-    service, modelRuntime, modelPropertyName, identifiers,
+    service, modelRuntime, modelPropertyName, identifiers, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Reset'
@@ -225,18 +231,8 @@ function defineResetAction(config, context) {
       const id = generateAnyId(otherPropertyNames, properties)
       const entity = await modelRuntime().get(id)
       if (!entity) throw new Error('not_found')
-      await Promise.all([
-        service.trigger({
-          type: 'delete'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
-          objectType: service.name+'_'+modelName,
-          object: id
-        }),
-        service.trigger({
-          type: 'deleteObject',
-          objectType: service.name+'_'+modelName,
-          object: id
-        })
-      ])
+      await fireChangeTriggers(context, objectType, identifiers, id,
+          entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
       emit({
         type: eventName,
         identifiers

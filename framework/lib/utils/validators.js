@@ -74,9 +74,106 @@ let validators = {
         return false
       }
     }
-    return
-  }
+    return validator
+  },
 
+  switchBy: ({ prop, cases }, { getValidator }) => {
+    let validators = {}
+    for(let [value, then] of Object.entries(cases)) {
+      validators[value] = then.map(getValidator)
+    }
+    const validator = (value, context) => {
+      let selectorValue = getField(context, prop)
+      for(let v of (validators[selectorValue] || [])) {
+        const err = v(value, context)
+        if(err) return err
+      }
+    }
+    validator.isRequired = (context) => {
+      let value = getField(context, prop)
+      for(let v of validators[value]) {
+        if(v.isRequired && v.isRequired(context)) return true
+      }
+      return false
+    }
+    return validator
+  },
+
+  ifNotOneOf: ({ prop, what, then }, { getValidator }) => {
+    let validators = then.map(getValidator)
+    const validator = (value, context) => {
+      console.error("VIF NOT ONE OF", getField(context, prop), what, what.includes(getField(context, prop)))
+      if(!what.includes(getField(context, prop))) {
+        console.log("V", validators)
+        for(let v of validators) {
+          const err = v(value, context)
+          if(err) return err
+        }
+      }
+    }
+    validator.isRequired = (context) => {
+      if(!what.includes(getField(context, prop))) {
+        for(let v of validators) {
+          if(v.isRequired && v.isRequired(context)) return true
+        }
+        return false
+      }
+    }
+    return validator
+  },
+
+  ifEmpty: ({ prop, then }, { getValidator }) => {
+    let validators = then.map(getValidator)
+    const validator = (value, context) => {
+      console.log("IFEMPTY CTX", context, "FIELD", prop, "VALUE", getField(context, prop))
+      if(!getField(context, prop)) {
+        console.log("V", validators)
+        for(let v of validators) {
+          const err = v(value, context)
+          if(err) return err
+        }
+      }
+    }
+    validator.isRequired = (context) => {
+      if(!getField(context, prop)) {
+        for(let v of validators) {
+          if(v.isRequired && v.isRequired(context)) return true
+        }
+        return false
+      }
+    }
+    return validator
+  },
+
+
+  ifIncludes: ({ prop, that, then }, { getValidator }) => {
+    let validators = then.map(getValidator)
+    const validator = (value, context) => {
+      if(getField(context, prop).includes(that)) {
+        for(let v of validators) {
+          const err = v(value, context)
+          if(err) return err
+        }
+      }
+    }
+    validator.isRequired = (context) => {
+      if(getField(context, prop).includes(that)) {
+        for(let v of validators) {
+          if(v.isRequired && v.isRequired(context)) return true
+        }
+        return false
+      }
+    }
+    return validator
+  },
+
+  httpUrl: (settings) => (value) => {
+    if(!value) return false // ignore empty
+    const match = value.match(
+        /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._%~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
+    )
+    if(!match) return 'wrongUrl'
+  }
 }
 
 module.exports = validators
