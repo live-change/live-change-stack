@@ -5,52 +5,53 @@ async function dump(
     req = (method, ...args) => console.log(JSON.stringify({ type: 'request', method, parameters: args })),
     sync = () => console.log(JSON.stringify({ type: 'sync' }))
 ) {
-  let { serverUrl, verbose, db, targetDb, tables, logs, metadata, structure } = options
+  let { serverUrl, verbose, db, targetDb, tables, logs, metadata, structure, dao } = options
   if(!targetDb) targetDb = db
   // console.log("options", options)
   const dumpAll = !tables && !logs
 
   let done = false
 
-  let disconnectCallbacks
-  const disconnectPromise = new Promise((resolve, reject) => disconnectCallbacks = { resolve, reject })
+  if(!dao) {
+    let disconnectCallbacks
+    const disconnectPromise = new Promise((resolve, reject) => disconnectCallbacks = {resolve, reject})
 
-  const clientPromise = new Promise((resolve, reject) => {
-    const client = new WSClient("commandLine", serverUrl, {
-      connectionSettings: {
-        logLevel: 1
-      },
-      onConnect: () => {
-        if(verbose) console.error("connected to server")
-        resolve(client)
-      },
-      onDisconnect: () => {
-        if(verbose) console.error("disconnected from server")
-        if(!done) {
-          console.error("disconnected before request done")
-          disconnectCallbacks.reject("disconnected before request done")
-        } else {
-          disconnectCallbacks.resolve('ok')
+    const clientPromise = new Promise((resolve, reject) => {
+      const client = new WSClient("commandLine", serverUrl, {
+        connectionSettings: {
+          logLevel: 1
+        },
+        onConnect: () => {
+          if (verbose) console.error("connected to server")
+          resolve(client)
+        },
+        onDisconnect: () => {
+          if (verbose) console.error("disconnected from server")
+          if (!done) {
+            console.error("disconnected before request done")
+            disconnectCallbacks.reject("disconnected before request done")
+          } else {
+            disconnectCallbacks.resolve('ok')
+          }
         }
-      }
+      })
     })
-  })
 
-  const client = await clientPromise
-
+    dao = await clientPromise
+  }
 
   let tablesList = tables || [], logsList = logs || []
   let databaseConfig
   if(structure || metadata) {
-    databaseConfig = await client.get(['database', 'databaseConfig', db])
+    databaseConfig = await dao.get(['database', 'databaseConfig', db])
   }
   if(dumpAll && (structure || metadata)) {
     // console.log("CONFIG", databaseConfig)
     tablesList = Object.keys(databaseConfig.tables)
     logsList = Object.keys(databaseConfig.logs)
   } else if(dumpAll) {
-    tablesList = await client.get(['database', 'tablesList', db])
-    logsList = await client.get(['database', 'logsList', db])
+    tablesList = await dao.get(['database', 'tablesList', db])
+    logsList = await dao.get(['database', 'logsList', db])
   }
   if(structure || metadata) {
     if(dumpAll) {
@@ -108,7 +109,7 @@ async function dump(
     let found = 0
     let position = ''
     do {
-      const results = await client.get(path(position, bucket))
+      const results = await dao.get(path(position, bucket))
       await Promise.all(results.map(output))
       found = results.length
       if(results.length) position = results[results.length - 1].id
@@ -132,9 +133,10 @@ async function dump(
 
   done = true
 
-  client.dispose()
-
-  await disconnectPromise
+  if(!options.dao) {
+    dao.dispose()
+    await disconnectPromise
+  }
 }
 
 module.exports = dump

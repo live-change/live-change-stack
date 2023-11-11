@@ -124,7 +124,7 @@
   import { useRoute } from 'vue-router'
   const route = useRoute()
 
-  const viewType = computed(() => route.meta.viewType ?? 'simple' )
+  const viewType = computed(() => route?.meta?.viewType ?? 'simple' )
 
   import { api } from "@live-change/vue3-ssr"
   const dao = api().source
