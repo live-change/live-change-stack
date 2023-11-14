@@ -1,6 +1,6 @@
 {
   "name": "@live-change/blog-service",
-  "version": "0.3.34",
+  "version": "0.3.35",
   "description": "",
   "main": "index.js",
   "scripts": {
