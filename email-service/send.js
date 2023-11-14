@@ -14,7 +14,9 @@ const smtp = nodemailer.createTransport(config.transport || {
     user: (config.user || process.env.SMTP_USER),
     pass: (config.password || process.env.SMTP_PASSWORD)
   },
-  secure: !(config.insecure || process.env.SMTP_INSECURE), // secure:true for port 465, secure:false for port 587
+  secure: (config.secure || process.env.SMTP_SECURE) !== undefined
+      ? !!((config.secure || process.env.SMTP_SECURE))
+      : undefined, // secure:true for port 465, secure:false for port 587
   tls: {
     // do not fail on invalid certs
     rejectUnauthorized: !(config.ignoreTLS || process.env.SMTP_IGNORE_TLS)
