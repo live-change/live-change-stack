@@ -1,5 +1,6 @@
 const got = require('got')
 const inlineCss = require('inline-css')
+const juice = require('juice')
 const { JSDOM } = require("jsdom")
 const { convert: htmlToText } = require('html-to-text')
 const path = require('path')
@@ -53,7 +54,22 @@ async function renderEmail(data) {
   const response = await got(url)
   let body = response.body
   console.log("BASE URL", baseUrl)
-  body = await inlineCss(body, { url })
+  //body = await inlineCss(body, { url })
+  const juiceOptions = {
+    webResources: {
+      scripts: false,
+      links: true,
+      images: false,
+      relativeTo: url
+    }
+  }
+  /*body = await juice(body, juiceOptions)*/
+  body = await new Promise((resolve, reject) => {
+    juice.juiceResources(body, juiceOptions, (err, html) => {
+      if(err) reject(err)
+      else resolve(html)
+    })
+  })
   console.log("HTML", body)
   const dom = new JSDOM(body)
   const headers = JSON.parse(dom.window.document.querySelector('[data-headers]').textContent)

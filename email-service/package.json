@@ -25,6 +25,7 @@
     "got": "^11.8.3",
     "html-to-text": "8.1.0",
     "inline-css": "4.0.2",
+    "juice": "9.1.0",
     "jsdom": "^18.1.1",
     "nodemailer": "^6.7.2"
   },
