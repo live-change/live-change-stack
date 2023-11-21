@@ -1,5 +1,5 @@
 import { computed, ref, watch } from "vue"
-import { useThrottleFn } from "@vueuse/core"
+import { useThrottleFn, useDebounceFn } from "@vueuse/core"
 
 function copy(value) {
   let res = JSON.parse(JSON.stringify(value || {}))
@@ -23,7 +23,8 @@ function synchronized(options) {
     onSaveError = (e) => { console.error("SAVE ERROR", e) },
     resetOnError = true,
     recursive = false,
-    throttle = 300,
+    throttle = 0,
+    debounce = 300,
     autoSave = true
   } = options
   if(!source) throw new Error('source must be defined')
@@ -61,11 +62,16 @@ function synchronized(options) {
       }
       return true
     }
-    const throttledSave = throttle ? useThrottleFn(save, throttle) : save
+    const throttledSave = debounce ? () => {} : (throttle ? useThrottleFn(save, throttle) : save)
+    const debouncedSave = debounce ? useDebounceFn(save, throttle)
+        : (throttle ? useDebounceFn(save, throttle) : () => {}) // debounce after throttle
     watch(() => synchronizedJSON.value, json => {
       lastLocalUpdate.value = timeSource()
       onChange()
-      if(autoSave) throttledSave()
+      if(autoSave) {
+        throttledSave()
+        debouncedSave()
+      }
     })
     //console.log("WATCH SOURCE VALUE", source.value)
     watch(() => JSON.stringify(source.value), sourceJson => {
@@ -101,7 +107,9 @@ function synchronized(options) {
       }
       return true
     }
-    const throttledSave = throttle ? useThrottleFn(save, throttle) : save
+    const throttledSave = debounce ? () => {} : (throttle ? useThrottleFn(save, throttle) : save)
+    const debouncedSave = debounce ? useDebounceFn(save, throttle)
+        : (throttle ? useDebounceFn(save, throttle) : () => {}) // debounce after throttle
     const synchronizedComputed = computed({
       get: () => {
         const localTime = ((local.value && local.value[timeField]) ?? '')
@@ -111,7 +119,10 @@ function synchronized(options) {
       set: newValue => {
         local.value = { ...newValue, [timeField]: timeSource() }
         onChange()
-        if(autoSave) throttledSave()
+        if(autoSave) {
+          throttledSave()
+          debouncedSave()
+        }
       }
     })
     return { value: synchronizedComputed, save, changed }

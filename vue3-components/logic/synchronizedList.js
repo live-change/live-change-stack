@@ -45,6 +45,7 @@ function synchronizedList(options) {
     move: moveAction,
     identifiers = {},
     objectIdentifiers = object => ({ id: object.id }),
+    prefix = '',
     timeField = 'lastUpdate',
     timeSource = () => (new Date()).toISOString(),
     onChange = () => {},
@@ -114,14 +115,15 @@ function synchronizedList(options) {
           return createSynchronizedElement(locallyAddedElement)
         }
       }, synchronizedList.value, source.value || [], locallyAdded.value, locallyDeleted.value)
-    if(obsoleteLocallyAdded.length > 0) {
+    console.log("OBSOLETE", obsoleteLocallyAdded, obsoleteLocallyDeleted)
+    if(obsoleteLocallyAdded.size > 0) {
       locallyAdded.value = locallyAdded.value.filter(
-        locallyAddedElement => obsoleteLocallyAdded.has(locallyAddedElement.id)
+        locallyAddedElement => !obsoleteLocallyAdded.has(locallyAddedElement.id)
       )
     }
-    if(obsoleteLocallyDeleted.length > 0) {
+    if(obsoleteLocallyDeleted.size > 0) {
       locallyDeleted.value = locallyDeleted.value.filter(
-        locallyDeletedElement => obsoleteLocallyDeleted.has(locallyDeletedElement.id)
+        locallyDeletedElement => !obsoleteLocallyDeleted.has(locallyDeletedElement.id)
       )
     }
     synchronizedList.value = newSynchronized
@@ -142,8 +144,12 @@ function synchronizedList(options) {
   }
 
   async function insert(element) {
-    locallyAdded.value.push(element)
-    await insertAction({ ...element, [timeField]: timeSource(), ...identifiers })
+    locallyAdded.value.push({
+      ...element,
+      to: element.id,
+      id: prefix + element.id
+    })
+    await insertAction({ ...element, [timeField]: timeSource(), ...identifiers, ...objectIdentifiers(element) })
   }
 
   async function deleteElement(element) {
@@ -157,7 +163,7 @@ function synchronizedList(options) {
   }
 
   const synchronizedValue = computed(() => synchronizedList.value.map(synchronizedElement => synchronizedElement.value))
-  return { value: synchronizedValue, save, changed, insert, delete: deleteElement, move }
+  return { value: synchronizedValue, save, changed, insert, delete: deleteElement, move, locallyAdded }
 }
 
 export default synchronizedList
