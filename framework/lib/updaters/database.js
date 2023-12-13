@@ -1,5 +1,6 @@
 const utils = require("../utils.js")
 const debug = require('debug')('framework:updaters:db')
+
 async function update(changes, service, app, force) {
 
   const dao = app.dao
@@ -116,7 +117,8 @@ async function update(changes, service, app, force) {
 
   debug("DATABASE UPDATER")
 
-  for(let change of changes) {
+  for(let i = 0; i < changes.length; i++) {
+    const change = changes[i]
     debug("PROCESSING CHANGE", change)
     switch(change.operation) {
       case "createModel": {
@@ -124,9 +126,18 @@ async function update(changes, service, app, force) {
         const tableName = generateTableName(model.name)
         await dao.request(['database', 'createTable'], database, tableName, model.storage ?? {})
         debug("TABLE CREATED!", tableName)
-        for(let indexName in model.indexes) {
-          const index = model.indexes[indexName]
+        for(const [indexName, index] of Object.entries(model.indexes || {})) {
+          if(index.created) continue
+          if(index.dependsOn) {
+            const dependsOn = Array.isArray(index.dependsOn) ? index.dependsOn : [index.dependsOn]
+            for(const indexName of dependsOn) {
+              const index = model.indexes[indexName]
+              await createIndex(tableName, indexName, index)
+              index.created = true
+            }
+          }
           await createIndex(tableName, indexName, index)
+          index.created = true
         }
       } break
       case "renameModel": {

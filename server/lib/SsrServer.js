@@ -10,6 +10,8 @@ const getIp = require('./getIp.js')
 
 const Renderer = require('./Renderer.js')
 
+const { fbRedirect } = require('./fbRedirect.js')
+
 class SsrServer {
   constructor(express, manifest, settings) {
     this.manifest = manifest
@@ -99,6 +101,7 @@ class SsrServer {
       this.renderer.renderSitemap({ dao, clientIp }, res)
     })
     this.express.use('*', async (req, res) => {
+      if(fbRedirect(req, res)) return
       if(this.settings.spa) {
         if(this.settings.dev) {
           res.sendFile(path.resolve(this.root, 'index.html'))
