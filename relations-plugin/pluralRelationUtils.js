@@ -1,9 +1,9 @@
 const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } = App
+const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition } = App
 const { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl } = require("./utils.js")
 
 const pluralize = require('pluralize')
-const {fireChangeTriggers} = require("./changeTriggers.js")
+const { fireChangeTriggers } = require("./changeTriggers.js")
 
 function defineView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
@@ -177,6 +177,156 @@ function defineDeleteAction(config, context) {
   })
 }
 
+function defineCopyAction(config, context) {
+  const {
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
+    identifiers
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
+  const actionName = 'copy' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const accessControl = config.copyAccessControl
+  prepareAccessControl(accessControl, otherPropertyNames, others)
+  service.actions[actionName] = new ActionDefinition({
+    name: actionName,
+    properties: {
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      },
+      ...(identifiers),
+      updates: {
+        type: 'object',
+        properties: {
+          ...(model.properties)
+        }
+      }
+    },
+    access: config.copyAccess,
+    skipValidation: true,
+    //queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    async execute(properties, { client, service }, emit) {
+      const id = properties[modelPropertyName]
+      const entity = await modelRuntime().get(id)
+      if(!entity) throw new Error('not_found')
+      const entityIdParts = extractIdParts(otherPropertyNames, entity)
+      const idParts = extractIdParts(otherPropertyNames, properties)
+      const identifiers = extractIdentifiers(otherPropertyNames, entity)
+      if(JSON.stringify(entityIdParts) != JSON.stringify(idParts)) {
+        throw new Error('not_authorized')
+      }
+      const srcData = extractObjectData(writeableProperties, properties, entity)
+      const updatedData = App.utils.mergeDeep(srcData, properties.updates)
+      const newId = app.generateUid()
+      const dataWithIdentifiers = { [modelPropertyName]: newId, ...identifiers, ...updatedData }
+      await App.validation.validate(dataWithIdentifiers, validators,
+          { source: action, action, service, app, client })
+      app.trigger({
+        type: 'copy'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+        objectType,
+        object: newId,
+        from: id,
+        identifiers,
+        data: updatedData
+      }),
+      app.trigger({
+        type: 'copyObject',
+        objectType,
+        object: newId,
+        from: id,
+        identifiers,
+        data: updatedData
+      })
+      await fireChangeTriggers(context, objectType, identifiers, newId, null, updatedData)
+      emit({
+        type: eventName,
+        [modelPropertyName]: newId,
+        ['from'+modelPropertyName[0].toUpperCase() + modelPropertyName.slice(1)]: id,
+        identifiers,
+        data: updatedData
+      })
+      return {
+        newId,
+      }
+    }
+  })
+  const action = service.actions[actionName]
+  const validators = App.validation.getValidators(action, service, action)
+}
+
+function defineCopyOnParentCopyTrigger(config, context) {
+  const {
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, others, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName,
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
+  const triggerName = 'copyOnParentCopy_' + service.name + '_' + modelName
+  if(!service.triggers[triggerName]) service.triggers[triggerName] = []
+  service.triggers[triggerName].push(new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      objectType: {
+        type: String,
+      },
+      object: {
+        type: String,
+      },
+      parentType: {
+        type: String,
+      },
+      parent: {
+        type: String,
+      },
+      fromParent: {
+        type: String,
+      },
+      identifiers: {
+        type: Object,
+      },
+      data: {
+        type: Object,
+      }
+    },
+    async execute({ objectType, object, parentType, parent, fromParent, identifiers, data }, {client, service}, emit) {
+      const newIdentifiers = {
+        ...identifiers
+      }
+      for(let i = 0; i < others.length; i++) {
+        const other = others[i]
+        if(other == parentType) {
+          newIdentifiers[otherPropertyNames[i]] = parent
+        }
+      }
+      const newId = app.generateUid()
+      app.trigger({
+        type: 'copy'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+        objectType,
+        object: newId,
+        from: object,
+        identifiers: newIdentifiers,
+        data
+      })
+      app.trigger({
+        type: 'copyObject',
+        objectType,
+        object: newId,
+        from: object,
+        identifiers: newIdentifiers,
+        data
+      })
+      await fireChangeTriggers(context, objectType, newIdentifiers, newId, null, data)
+      emit({
+        type: eventName,
+        [modelPropertyName]: newId,
+        ['from'+modelPropertyName[0].toUpperCase() + modelPropertyName.slice(1)]: object,
+        identifiers,
+        data
+      })
+    }
+  }))
+}
+
 function defineSortIndex(context, sortFields) {
   if(!Array.isArray(sortFields)) sortFields = [sortFields]
   console.log("DEFINE SORT INDEX", sortFields)
@@ -187,4 +337,9 @@ function defineSortIndex(context, sortFields) {
   })
 }
 
-module.exports = { defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex }
+module.exports = {
+  defineView,
+  defineCreateAction, defineUpdateAction, defineDeleteAction, defineCopyAction,
+  defineCopyOnParentCopyTrigger,
+  defineSortIndex,
+}

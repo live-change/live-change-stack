@@ -1,10 +1,16 @@
 const App = require("@live-change/framework")
 const app = App.app()
 const { allCombinations } = require("./combinations.js")
-const { fireChangeTriggers, registerParentDeleteTriggers } = require("./changeTriggers.js")
+const {
+  fireChangeTriggers, registerParentDeleteTriggers, registerParentCopyTriggers
+} = require("./changeTriggers.js")
 const {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } = App
+
+const {
+  extractObjectData, extractIdentifiers
+} = require('./dataUtils.js')
 
 function extractIdParts(otherPropertyNames, properties) {
   const idParts = []
@@ -14,28 +20,11 @@ function extractIdParts(otherPropertyNames, properties) {
   return idParts
 }
 
-function extractIdentifiers(otherPropertyNames, properties) {
-  const identifiers = {}
-  for (const propertyName of otherPropertyNames) {
-    identifiers[propertyName] = properties[propertyName]
-  }
-  return identifiers
-}
 
 function generateId(otherPropertyNames, properties) {
   return otherPropertyNames.length > 1
       ? otherPropertyNames.map(p => JSON.stringify(properties[p])).join(':')
       : properties[otherPropertyNames[0]]
-}
-
-function extractObjectData(writeableProperties, properties, defaults) {
-  let objectData = {}
-  for (const propertyName of writeableProperties) {
-    if (properties.hasOwnProperty(propertyName)) {
-      objectData[propertyName] = properties[propertyName]
-    }
-  }
-  return App.utils.mergeDeep({}, defaults, JSON.parse(JSON.stringify(objectData)))
 }
 
 function defineProperties(model, types, names) {
@@ -125,7 +114,7 @@ function processModelsAnnotation(service, app, annotation, multiple, cb) {
         const context = {
           service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName,
-          others, annotation, objectType, parentsType: others
+          others, annotation, objectType, parentsTypes: others
         }
 
         cb(config, context)
@@ -194,8 +183,13 @@ function defineParentDeleteTriggers(config, context) {
   registerParentDeleteTriggers(context, config)
 }
 
+function defineParentCopyTriggers(config, context) {
+  registerParentCopyTriggers(context, config)
+}
+
+
 module.exports = {
   extractIdParts, extractIdentifiers, extractObjectData, defineProperties, defineIndex, defineIndexes,
   processModelsAnnotation, generateId, addAccessControlParents, prepareAccessControl,
-  defineDeleteByOwnerEvents, defineParentDeleteTriggers
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers,
 }

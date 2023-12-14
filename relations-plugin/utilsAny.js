@@ -4,8 +4,8 @@ const {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } = App
 const { allCombinations } = require("./combinations.js")
-const {fireChangeTriggers, registerParentDeleteTriggers} = require("./changeTriggers");
-const {extractObjectData} = require("./utils.js");
+const { fireChangeTriggers, registerParentDeleteTriggers } = require("./changeTriggers")
+const { extractObjectData } = require("./dataUtils.js")
 
 function extractTypeAndIdParts(otherPropertyNames, properties) {
   const typeAndIdParts = []

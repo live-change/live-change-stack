@@ -57,4 +57,22 @@ function defineDeletedEvent(config, context) {
   })
 }
 
-module.exports = { defineCreatedEvent, defineUpdatedEvent, defineTransferredEvent, defineDeletedEvent }
+function defineCopyEvent(config, context) {
+  const {
+    service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, reverseRelationWord
+  } = context
+  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Copied'
+  service.events[eventName] = new EventDefinition({
+    name: eventName,
+    execute(properties) {
+      const id = properties[modelPropertyName]
+      console.log("COPY CREATE", { ...properties.data, ...properties.identifiers, id })
+      return modelRuntime().create({ ...properties.data, ...properties.identifiers, id })
+    }
+  })
+}
+
+module.exports = {
+  defineCreatedEvent, defineUpdatedEvent, defineTransferredEvent, defineDeletedEvent,
+  defineCopyEvent,
+}

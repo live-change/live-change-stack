@@ -1,15 +1,17 @@
 const {
   defineProperties, defineIndexes,
   processModelsAnnotation, addAccessControlParents,
-  defineDeleteByOwnerEvents, defineParentDeleteTriggers
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers
 } = require('./utils.js')
 
 const {
   defineCreatedEvent, defineUpdatedEvent, defineDeletedEvent, defineTransferredEvent,
+  defineCopyEvent
 } = require('./itemEvents.js')
 
 const {
-  defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex
+  defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex,
+  defineCopyAction, defineCopyOnParentCopyTrigger
 } = require('./pluralRelationUtils.js')
 
 module.exports = function(service, app) {
@@ -38,6 +40,7 @@ module.exports = function(service, app) {
     defineTransferredEvent(config, context)
     defineDeletedEvent(config, context)
     defineDeleteByOwnerEvents(config, context)
+    defineCopyEvent(config, context)
 
     if(config.createAccess || config.writeAccess || config.createAccessControl || config.writeAccessControl) {
       defineCreateAction(config, context)
@@ -51,6 +54,18 @@ module.exports = function(service, app) {
       defineDeleteAction(config, context)
     }
 
-    if(!config.customDeleteTrigger) defineParentDeleteTriggers(config, context)
+    if(config.copyAccess || config.copyAccessControl) {
+      defineCopyAction(config, context)
+    }
+
+    if(!config.customDeleteTrigger) {
+      defineParentDeleteTriggers(config, context)
+    }
+
+    if(!config.customParentCopyTrigger) {
+      defineParentCopyTriggers(config, context)
+      //defineCopyOnParentCopyTrigger(config, context)
+    }
+
   })
 }

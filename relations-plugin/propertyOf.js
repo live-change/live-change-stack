@@ -16,6 +16,8 @@ module.exports = function(service, app) {
     context.relationWord = 'Property'
     context.reverseRelationWord = 'Owned'
 
+    context.sameIdAsParent = true
+
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
     addAccessControlParents(context)
     defineIndexes(context.model, context.otherPropertyNames, context.others)
