@@ -49,6 +49,8 @@ class Renderer {
     const render = await this.getRenderFunction()
     const { html: appHtml, modules, data, meta, response } = await render(params)
 
+    console.log("META:", meta)
+
     const preloadLinks = this.renderPreloadLinks(modules)
 
     const appDataScript = `  <script>` +
@@ -66,7 +68,7 @@ class Renderer {
     const html = renderTemplate(template, {
       '<html>': (meta.htmlAttrs ? `<html ${meta.htmlAttrs}>` : '<html>'),
       '<head>': (meta.headAttrs ? `<head ${meta.headAttrs}>` : '<head>'),
-      '<!--head-->': (meta.head || '') + '\n' + preloadLinks,
+      '<!--head-->': (meta.headTags || '') + '\n' + preloadLinks,
       '<body>': (meta.bodyAttrs ? `<body ${meta.bodyAttrs}>` : '<body>') + '\n' + (meta.bodyPrepend || ''),
       '<!--body-tags-open-->': meta.bodyTagsOpen || '',
       '<!--body-tags-->': meta.bodyTags || '',
