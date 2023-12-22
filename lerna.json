@@ -23,7 +23,8 @@
     "blog-service",
     "backup-server",
     "smsapi-service",
-    "google-authentication-service"
+    "google-authentication-service",
+    "vote-service"
   ],
   "publishConfig": {
     "access": "public"
