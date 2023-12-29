@@ -49,7 +49,7 @@ class Renderer {
     const render = await this.getRenderFunction()
     const { html: appHtml, modules, data, meta, response } = await render(params)
 
-    console.log("META:", meta)
+    //console.log("META:", meta)
 
     const preloadLinks = this.renderPreloadLinks(modules)
 
