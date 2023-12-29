@@ -130,6 +130,18 @@
       this.object = this.data[this.property]
       this.properties = {}
 
+      this.bindProperties(definition)
+
+      this.unwatch = watch(() => this.data[this.property], () => {
+        if(this.object != this.data[this.property]) {
+          this.object = this.data[this.property]
+          console.log("OBJECT OBJECT CHANGE", this.property)
+          this.bindProperties(definition)
+        }
+      }, { deep: true })
+    }
+
+    bindProperties(definition) {
       for(let propName in definition.properties) {
         let propDefn = definition.properties[propName]
 
@@ -264,7 +276,6 @@
       this.properties[propName].reset(oldData)
       this.object[propName] = this.properties[propName].getValue()
     }
-
   }
 
   class FormArray extends FormValue {
@@ -274,15 +285,25 @@
       this.elements = []
       if(!this.data[this.property]) this.data[this.property] = []
       this.object = this.data[this.property]
+      this.bindElements()
       this.unwatch = watch(() => this.data[this.property], () => {
-        this.object = this.data[this.property]
-        while(this.elements.length > this.object.length) {
-          this.elements.pop()
+        if(this.object != this.data[this.property]) {
+          //console.log("ARRAY OBJECT CHANGE", this.property)
+          this.object = this.data[this.property]
+          this.elements = []
         }
-        while(this.elements.length < this.object.length) {
-          this.elements.push(this.newElement(this.elements.length))
-        }
+        this.bindElements()
+        //this.check()
       }, { deep: true })
+    }
+
+    bindElements() {
+      while(this.elements.length > this.object.length) {
+        this.elements.pop()
+      }
+      while(this.elements.length < this.object.length) {
+        this.elements.push(this.newElement(this.elements.length))
+      }
     }
 
     setProperty(name) {
@@ -290,6 +311,11 @@
       this.property = name
       this.object = this.data[this.property]
       this.unwatch = watch(() => this.data[this.property], () => {
+        if(this.object != this.data[this.property]) {
+          //console.log("ARRAY OBJECT CHANGE", this.property)
+          this.object = this.data[this.property]
+          this.elements = []
+        }
         this.object = this.data[this.property]
         while(this.elements.length > this.object.length) {
           this.elements.pop()
@@ -313,13 +339,24 @@
     reset(initialValue) {
       initialValue = initialValue || this.definition.defaultValue || []
       this.data[this.property] = new Array(initialValue.length)
-      this.elements = this.data[this.property]
+      this.elements = new Array(this.object.length)
       for(let i = 0; i < initialValue.length; i++) {
-        let n = this.newElement(this.elements.length)
+        let n = this.newElement(i)
         n.reset(initialValue[i])
         this.elements[i] = n
       }
       super.setValue(initialValue)
+/*      if(this.property == 'query') {
+        this.check()
+        this.object.bzz = 1
+      }*/
+    }
+
+    check() {
+      console.log("ARRAY", this, JSON.stringify(this.data))
+      for(let i = 0; i < this.elements.length; i++) {
+        console.log("ELEMENT", i, this.elements[i].data[i] == this.object[i])
+      }
     }
 
     afterError(initialValue) {
@@ -384,18 +421,28 @@
     }
 
     setValue(value) {
-      this.data[this.property] = value
-      if(!value) return;
-      for(let i = 0; i < value.length; i++) {
-        if(this.elements[i]) {
-          this.elements[i].setValue(value[i])
-        } else {
-          let n = this.newElement()
+      if(value != this.object) {
+        this.data[this.property] = value
+        this.object = value
+        this.elements = []
+        if(!value) return;
+        for(let i = 0; i < value.length; i++) {
+          let n = this.newElement(i)
           n.reset(value[i])
           this.elements.push(n)
         }
+      } else {
+        for (let i = 0; i < value.length; i++) {
+          if (this.elements[i]) {
+            this.elements[i].setValue(value[i])
+          } else {
+            let n = this.newElement(i)
+            n.reset(value[i])
+            this.elements.push(n)
+          }
+        }
+        this.elements = this.elements.slice(0, value.length)
       }
-      this.elements = this.elements.slice(0, value.length)
     }
 
     updateElementIndices() {
@@ -464,6 +511,8 @@
           getValue: () => this.formRoot.getValue(),
           reset: () => this.reset(),
 
+          getNode: (name) => this.getNode(name),
+
           addValidator: (propName, validator) => this.addValidator(propName, validator),
           removeValidator: (propName, validator) => this.addValidator(propName, validator),
           validateField: (propName) => this.validateField(propName),
@@ -477,7 +526,11 @@
           waitForBarriers: (propName) => this.waitForBarriers(),
 
           addElementToArray: (propName, initialValue) => this.addElementToArray(propName, initialValue),
-          removeElementFromArray: (propName, index) => this.removeElementFromArray(propName, index)
+          removeElementFromArray: (propName, index) => this.removeElementFromArray(propName, index),
+
+          data: computed(() => this.data),
+          root: computed(() => this.formRoot),
+          state: computed(() => this.state),
         }
       }
     },
@@ -487,11 +540,6 @@
         state: 'starting',
         data: {},
         formRoot: {}
-      }
-    },
-    computed: {
-      rootValue() {
-        return this.formRoot && this.formRoot.value
       }
     },
     methods: {
@@ -620,6 +668,8 @@
     created() {
       this.initForm()
       this.state = 'ready'
+
+      globalThis.form = this
     },
     unmounted() {
     },

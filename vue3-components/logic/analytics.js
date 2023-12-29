@@ -8,6 +8,7 @@ function useAnalytics() {
 
 function installRouterAnalytics(router) {
   router.afterEach((to, from) => {
+    if(typeof window === 'undefined') return
     analytics.emit('pageView', { ...to })
   })
 }

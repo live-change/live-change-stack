@@ -22,7 +22,17 @@ export default {
     },
     value: {
       get() {
-        return this.form.getFieldValue(this.name)
+        let np = this.name.split('.')
+        let data = this.form.data.value
+        for(let p of np) {
+          if(!p) continue
+          data = data[p]
+        }
+        return data
+/*      const node = this.form.getNode(this.name)
+        console.log("RECOMPUTE VALUE OF", this.name, node.data[node.property])
+        return node.data[node.property]
+        //return this.form.getFieldValue(this.name)*/
       },
       set(value) {
         const filtered = this.valueFilter(value)
