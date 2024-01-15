@@ -125,9 +125,7 @@ let validators = {
   ifEmpty: ({ prop, then }, { getValidator }) => {
     let validators = then.map(getValidator)
     const validator = (value, context) => {
-      console.log("IFEMPTY CTX", context, "FIELD", prop, "VALUE", getField(context, prop))
       if(!getField(context, prop)) {
-        console.log("V", validators)
         for(let v of validators) {
           const err = v(value, context)
           if(err) return err

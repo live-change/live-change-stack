@@ -136,6 +136,8 @@ class Services {
   }
 
   async start(startOptions) {
+    // when starting all services at once remove triggerRoutes for cleanup
+    await app.dao.request(['database', 'deleteTable'], app.databaseName, 'triggerRoutes').catch(e => 'ok')
     await Promise.all(this.plugins.map(plugin => plugin(app, this)))
     this.services = await Promise.all(this.serviceDefinitions.map(defn => {
       if(!defn.processed) {

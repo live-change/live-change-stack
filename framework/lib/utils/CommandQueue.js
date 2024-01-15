@@ -37,14 +37,22 @@ class CommandQueue {
           })
         }
     })`, { tableName: this.tableName }, this.config.storage ?? {}).catch(e => 'ok')
+    this.queuePath = ['database', 'indexRange', this.database, this.indexName, {
+      gt: this.serviceName+'_',
+      lt: this.serviceName+'_\xFF',
+      limit: 128
+    }]
     this.observable = this.connection.observable(
-        ['database', 'indexRange', this.database, this.indexName, {
-          gt: this.serviceName+'_',
-          lt: this.serviceName+'_\xFF',
-          limit: 128
-        }],
+        this.queuePath,
         ReactiveDao.ObservableList)
     this.observable.observe(this)
+
+/*    setInterval(async () => {
+      const realCommands = await this.connection.get(this.queuePath)
+      const observableCommands = this.observable ? this.observable.getValue() : this.observable
+      console.log("COMMAND QUEUE", this.tableName, this.indexName, this.serviceName, "CONTENTS:", observableCommands)
+      console.log("REAL COMMANDS", realCommands.length)
+    }, 1000)*/
 
     return new Promise((resolve, reject) => {
       this.resolveStart = { resolve, reject }

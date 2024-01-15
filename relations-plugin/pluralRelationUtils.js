@@ -157,6 +157,7 @@ function defineDeleteAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
+    timeout: config.deleteTimeout,
     async execute(properties, { client, service }, emit) {
       const id = properties[modelPropertyName]
       const entity = await modelRuntime().get(id)
