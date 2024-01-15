@@ -91,7 +91,7 @@
       }
       this.compute('started')
     },
-    beforeDestroy() {
+    beforeUnmount() {
       if(this.resizeObserver) this.resizeObserver.disconnect()
       clearInterval(this.checkInt)
       window.removeEventListener('scroll', this.recomputeListenerScroll)

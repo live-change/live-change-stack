@@ -78,6 +78,10 @@ function client(context) {
   return useApi(context).client
 }
 
+function useClient(context) {
+  return useApi(context).client
+}
+
 function uid(context) {
   return useApi(context).uid
 }
@@ -92,7 +96,8 @@ const api = useApi
 export {
   path, live, fetch,
   useApi, api,
-  view, actions, client, uid,
+  view, actions, uid,
+  client, useClient,
   rangeBuckets, reverseRange,
   inboxReader,
   serviceDefinition
