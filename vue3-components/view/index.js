@@ -1,7 +1,8 @@
 import ScrollLoader from "./ScrollLoader.vue"
 import VisibleArea from "./VisibleArea.vue"
+import RangeViewer from "./RangeViewer.vue"
 
-export { ScrollLoader, VisibleArea }
+export { ScrollLoader, VisibleArea, RangeViewer }
 
 function registerViewComponents(app) {
   app.component("scroll-loader", ScrollLoader)
