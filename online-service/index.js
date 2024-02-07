@@ -12,7 +12,7 @@ const definition = app.createServiceDefinition({
 })
 
 const config = definition.config
-const onlinePort = config.port || process.env.ONLINE_PORT || 8007
+const onlinePort = config.port || process.env.ONLINE_PORT || 8006
 const onlineHost = config.host || process.env.ONLINE_HOST || 'localhost'
 const onlineUrl = `ws://${onlineHost}:${onlinePort}/ws`
 
