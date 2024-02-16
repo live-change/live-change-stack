@@ -1,6 +1,6 @@
-const { getValidators, validate } = require('../utils/validation.js')
+import { getValidators, validate } from '../utils/validation.js'
 
-module.exports = function(service, app) {
+export default function(service, app) {
   for(let actionName in service.actions) {
     const action = service.actions[actionName]
     if(action.skipValidation) continue

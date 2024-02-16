@@ -1,6 +1,5 @@
-const Model = require('./Model.js')
-
-const ModelDefinition = require('../definition/ModelDefinition')
+import Model from './Model.js'
+import ModelDefinition from '../definition/ModelDefinition.js'
 
 function getModelName(t) {
   let modelName = null
@@ -96,7 +95,7 @@ async function processReturn(data, definition, service) {
   return data
 }
 
-module.exports = {
+export {
   processReturn,
   prepareParameters,
   preFilterParameters

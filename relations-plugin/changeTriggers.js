@@ -1,8 +1,7 @@
-const { extractObjectData, extractIdentifiers } = require("./dataUtils.js")
-const App = require("@live-change/framework")
-const {
+import { extractObjectData, extractIdentifiers } from "./dataUtils.js"
+import {
   TriggerDefinition
-} = App
+} from "@live-change/framework"
 
 async function fireChangeTriggers(context, objectType, identifiers, object, oldData, data) {
   const { service, modelName, app } = context
@@ -255,7 +254,7 @@ function registerParentCopyTriggers(context, config) {
   }
 }
 
-module.exports = {
+export {
   fireChangeTriggers,
   registerParentDeleteTriggers,
   registerParentCopyTriggers,

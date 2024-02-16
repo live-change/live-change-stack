@@ -1,5 +1,5 @@
-const ReactiveDao = require("@live-change/dao")
-const utils = require('../utils.js')
+import LcDao from "@live-change/dao"
+import { prefixRange, fieldListToFieldsObject } from "../utils.js"
 
 class ReaderModel {
 
@@ -16,7 +16,7 @@ class ReaderModel {
 
   limitedPath(id, fields) { // takes object or list of fields
     if(Array.isArray(fields)) {
-      fields = utils.fieldListToFieldsObject(fields)
+      fields = fieldListToFieldsObject(fields)
     }
     fields.id = true // id is required
     return ['database', 'queryObject', this.service.databaseName, `(${
@@ -44,7 +44,7 @@ class ReaderModel {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.rangePath(utils.prefixRange(pathRange, prefix, prefix))
+        return this.rangePath(prefixRange(pathRange, prefix, prefix))
       }
       return this.rangePath({ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -57,7 +57,7 @@ class ReaderModel {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.indexRangePath(index, utils.prefixRange(pathRange, prefix, prefix))
+        return this.indexRangePath(index, prefixRange(pathRange, prefix, prefix))
       }
       return this.indexRangePath(index, { gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -115,7 +115,7 @@ class ReaderModel {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.sortedIndexRangePath(index, utils.prefixRange(pathRange, prefix, prefix))
+        return this.sortedIndexRangePath(index, prefixRange(pathRange, prefix, prefix))
       }
       return this.sortedIndexRangePath(index, { gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -178,7 +178,7 @@ class ReaderModel {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.indexObjectPath(index, utils.prefixRange(pathRange, prefix, prefix))
+        return this.indexObjectPath(index, prefixRange(pathRange, prefix, prefix))
       }
       return this.indexObjectPath(index,{ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -216,7 +216,7 @@ class ReaderModel {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.countPath(utils.prefixRange(pathRange, prefix, prefix))
+        return this.countPath(prefixRange(pathRange, prefix, prefix))
       }
       return this.countPath({ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -225,22 +225,22 @@ class ReaderModel {
   }
 
   observable(id) {
-    return this.service.dao.observable(this.path(id), ReactiveDao.ObservableValue)
+    return this.service.dao.observable(this.path(id), LcDao.ObservableValue)
   }
   async get(id) {
-    return this.service.dao.get(this.path(id), ReactiveDao.ObservableValue)
+    return this.service.dao.get(this.path(id), LcDao.ObservableValue)
   }
   rangeObservable(range) {
-    return this.service.dao.observable(this.rangePath(range), ReactiveDao.ObservableList)
+    return this.service.dao.observable(this.rangePath(range), LcDao.ObservableList)
   }
   async rangeGet(range) {
-    return this.service.dao.get(this.rangePath(range), ReactiveDao.ObservableList)
+    return this.service.dao.get(this.rangePath(range), LcDao.ObservableList)
   }
   indexRangeObservable(index, range, pathRange = null) {
-    return this.service.dao.observable(this.indexRangePath(index, range, pathRange), ReactiveDao.ObservableList)
+    return this.service.dao.observable(this.indexRangePath(index, range, pathRange), LcDao.ObservableList)
   }
   async indexRangeGet(index, range, pathRange = null) {
-    return this.service.dao.get(this.indexRangePath(index, range, pathRange), ReactiveDao.ObservableList)
+    return this.service.dao.get(this.indexRangePath(index, range, pathRange), LcDao.ObservableList)
   }
   indexObjectObservable(index, range, pathRange = null) {
     return this.service.dao.observable(this.indexObjectPath(index, range, pathRange))
@@ -249,16 +249,16 @@ class ReaderModel {
     return this.service.dao.get(this.indexObjectPath(index, range, pathRange))
   }
   sortedIndexRangeObservable(index, range, pathRange = null) {
-    return this.service.dao.observable(this.sortedIndexRangePath(index, range, pathRange), ReactiveDao.ObservableList)
+    return this.service.dao.observable(this.sortedIndexRangePath(index, range, pathRange), LcDao.ObservableList)
   }
   async sortedIndexRangeGet(index, range, pathRange = null) {
-    return this.service.dao.get(this.sortedIndexRangePath(index, range, pathRange), ReactiveDao.ObservableList)
+    return this.service.dao.get(this.sortedIndexRangePath(index, range, pathRange), LcDao.ObservableList)
   }
   countObservable(range) {
-    return this.service.dao.observable(this.countPath(range), ReactiveDao.ObservableList)
+    return this.service.dao.observable(this.countPath(range), LcDao.ObservableList)
   }
   async countGet(range) {
-    return this.service.dao.get(this.countPath(range), ReactiveDao.ObservableList)
+    return this.service.dao.get(this.countPath(range), LcDao.ObservableList)
   }
 
   condition(id, condition = x => !!x, timeout = 10000) {
@@ -286,4 +286,4 @@ class ReaderModel {
 
 }
 
-module.exports = ReaderModel
+export default ReaderModel

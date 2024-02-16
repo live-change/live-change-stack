@@ -1,4 +1,4 @@
-const utils = require("../utils.js")
+import * as utils from "../utils.js"
 
 function ignoreValidation(prop) {
   delete prop.validation
@@ -12,7 +12,7 @@ function ignoreValidation(prop) {
   }
 }
 
-module.exports = function(service, app) {
+export default function(service, app) {
   if(!service) throw new Error("no service")
   if(!app) throw new Error("no service")
   for(let modelName in service.models) {

@@ -52,4 +52,4 @@ async function validate(props, validators, context) {
   if(Object.keys(propErrors).length > 0) throw { properties: propErrors }
 }
 
-module.exports = { getValidator, getValidators, validate }
+export { getValidator, getValidators, validate }

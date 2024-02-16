@@ -1,4 +1,4 @@
-const sockjs = require('@live-change/sockjs')
+import sockjs from '@live-change/sockjs'
 
 function setupApiSockJs(httpServer, apiServer) {
   const sockJsServer = sockjs.createServer({
@@ -18,4 +18,4 @@ function setupApiSockJs(httpServer, apiServer) {
   return sockJsServer
 }
 
-module.exports = setupApiSockJs
+export default setupApiSockJs

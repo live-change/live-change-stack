@@ -1,7 +1,7 @@
-const LcDao = require("@live-change/dao")
-const Dao = require("./Dao.js")
+import LcDao from "@live-change/dao"
+import Dao from "./Dao.js"
 
-const { waitForSignal } = require('./utils.js')
+import { waitForSignal } from './utils.js'
 
 class LiveDao extends LcDao.DaoProxy {
   constructor(config, credentials) {
@@ -94,4 +94,4 @@ class LiveDao extends LcDao.DaoProxy {
   }
 }
 
-module.exports = LiveDao
+export default LiveDao

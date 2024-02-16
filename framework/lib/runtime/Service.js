@@ -1,11 +1,11 @@
-const Model = require("./Model.js")
-const ForeignModel = require("./ForeignModel.js")
-const Index = require("./Index.js")
-const View = require("./View.js")
-const Action = require("./Action.js")
-const EventHandler = require("./EventHandler.js")
-const TriggerHandler = require("./TriggerHandler.js")
-const ExecutionQueue = require("../utils/ExecutionQueue.js")
+import Model from "./Model.js"
+import ForeignModel from "./ForeignModel.js"
+import Index from "./Index.js"
+import View from "./View.js"
+import Action from "./Action.js"
+import EventHandler from "./EventHandler.js"
+import TriggerHandler from "./TriggerHandler.js"
+import ExecutionQueue from "../utils/ExecutionQueue.js"
 
 class Service {
 
@@ -99,4 +99,4 @@ class Service {
 }
 
 
-module.exports = Service
+export default Service

@@ -14,4 +14,4 @@ function allCombinations(x) {
   return acc
 }
 
-module.exports = { combinations, allCombinations }
+export { combinations, allCombinations }

@@ -1,6 +1,6 @@
-const { prepareParameters, processReturn } = require("./params.js")
-const SplitEmitQueue = require("../utils/SplitEmitQueue.js");
-const SingleEmitQueue = require("../utils/SingleEmitQueue.js");
+import { prepareParameters, processReturn } from "./params.js"
+import SplitEmitQueue from "../utils/SplitEmitQueue.js"
+import SingleEmitQueue from "../utils/SingleEmitQueue.js"
 
 class TriggerHandler {
 
@@ -108,4 +108,4 @@ class TriggerHandler {
 
 }
 
-module.exports = TriggerHandler
+export default TriggerHandler

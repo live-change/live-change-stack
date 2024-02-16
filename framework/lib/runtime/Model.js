@@ -1,5 +1,5 @@
-const ReaderModel = require("./ReaderModel.js")
-const utils = require("../utils.js");
+import ReaderModel from "./ReaderModel.js"
+import { prefixRange }from "../utils.js"
 
 class Model extends ReaderModel {
 
@@ -44,7 +44,7 @@ class Model extends ReaderModel {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.rangePath(utils.prefixRange(pathRange, prefix, prefix))
+        return this.rangePath(prefixRange(pathRange, prefix, prefix))
       }
       return this.rangePath({ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -63,7 +63,7 @@ class Model extends ReaderModel {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.indexRangeDelete(index, utils.prefixRange(pathRange, prefix, prefix))
+        return this.indexRangeDelete(index, prefixRange(pathRange, prefix, prefix))
       }
       return this.indexRangeDelete(index,{ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -81,7 +81,7 @@ class Model extends ReaderModel {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.indexRangeUpdate(index, update, utils.prefixRange(pathRange, prefix, prefix))
+        return this.indexRangeUpdate(index, update, prefixRange(pathRange, prefix, prefix))
       }
       return this.indexRangeUpdate(index, update,{ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -95,8 +95,6 @@ class Model extends ReaderModel {
     })`, { indexName: this.tableName+'_'+index, tableName: this.tableName, range, operations })
   }
 
-
-
 }
 
-module.exports = Model
+export default Model

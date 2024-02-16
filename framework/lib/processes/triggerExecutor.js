@@ -1,7 +1,7 @@
-const KeyBasedExecutionQueues = require('../utils/KeyBasedExecutionQueues.js')
-const CommandQueue = require('../utils/CommandQueue.js')
-const SingleEmitQueue = require('../utils/SingleEmitQueue.js')
-const SplitEmitQueue = require('../utils/SplitEmitQueue.js')
+import KeyBasedExecutionQueues from '../utils/KeyBasedExecutionQueues.js'
+import CommandQueue from '../utils/CommandQueue.js'
+import SingleEmitQueue from '../utils/SingleEmitQueue.js'
+import SplitEmitQueue from '../utils/SplitEmitQueue.js'
 
 async function startTriggerExecutor(service, config) {
   if(!config.runCommands) return
@@ -34,4 +34,4 @@ async function startTriggerExecutor(service, config) {
   service.triggerQueue.start()
 }
 
-module.exports = startTriggerExecutor
+export default startTriggerExecutor

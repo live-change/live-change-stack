@@ -1,5 +1,5 @@
-const path = require('path')
-const DbServer = require('@live-change/db-server')
+import path from 'path'
+import DbServer from '@live-change/db-server'
 
 async function setupDbServer(settings) {
   const { dbRoot, dbBackend, dbBackendUrl, dbSlowStart } = settings
@@ -24,4 +24,4 @@ async function setupDbServer(settings) {
   return server
 }
 
-module.exports = setupDbServer
+export default setupDbServer

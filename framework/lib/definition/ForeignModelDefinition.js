@@ -1,5 +1,3 @@
-const utils = require("../utils.js")
-
 class ForeignModelDefinition {
 
   constructor(serviceName, modelName) {
@@ -20,4 +18,4 @@ class ForeignModelDefinition {
 
 }
 
-module.exports = ForeignModelDefinition
+export default ForeignModelDefinition

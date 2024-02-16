@@ -1,10 +1,12 @@
-const {
+import {
   defineProperties, defineIndex,
   processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData
-} = require('./utils.js')
-const App = require("@live-change/framework")
-const {fireChangeTriggers} = require("./changeTriggers.js");
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
+} from './utils.js'
+import { fireChangeTriggers } from "./changeTriggers.js"
+import App from '@live-change/framework'
+import {
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
+} from "@live-change/framework"
 
 const annotation = 'entity'
 
@@ -195,7 +197,7 @@ function defineDeleteAction(config, context) {
   })
 }
 
-module.exports = function(service, app) {
+export default function(service, app) {
   if (!service) throw new Error("no service")
   if (!app) throw new Error("no app")
 

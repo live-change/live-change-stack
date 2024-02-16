@@ -1,5 +1,6 @@
-const utils = require("../utils.js")
-const debug = require('debug')('framework:updaters:db')
+import * as utils from "../utils.js"
+import Debug from 'debug'
+const debug = Debug('framework:updaters:db')
 
 async function update(changes, service, app, force) {
 
@@ -278,5 +279,5 @@ async function update(changes, service, app, force) {
   }
 }
 
-module.exports = update
+export default update
 

@@ -1,6 +1,6 @@
-const getAccessMethod = require("../processors/accessMethod.js")
+import getAccessMethod from "../processors/accessMethod.js"
 
-module.exports = async function(service, definition, app, client) {
+export default async function(service, definition, app, client) {
 
   for(let actionName in definition.actions) {
     const action = service.definition.actions[actionName]

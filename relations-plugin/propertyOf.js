@@ -1,16 +1,16 @@
-const {
+import {
   defineProperties, defineIndexes,
   processModelsAnnotation, generateId, addAccessControlParents,
   defineDeleteByOwnerEvents, defineParentDeleteTriggers
-} = require('./utils.js')
+} from './utils.js'
 
-const { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } = require('./propertyEvents.js')
+import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
 
-const {
+import {
   defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
-} = require('./singularRelationUtils.js')
+} from './singularRelationUtils.js'
 
-module.exports = function(service, app) {
+export default function(service, app) {
   processModelsAnnotation(service, app, 'propertyOf', false, (config, context) => {
 
     context.relationWord = 'Property'

@@ -45,4 +45,4 @@ class ExecutionQueue {
 
 }
 
-module.exports = ExecutionQueue
+export default ExecutionQueue

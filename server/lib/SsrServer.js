@@ -1,16 +1,17 @@
-const cookie = require('cookie')
-const path = require('path')
-const serveStatic = require('serve-static')
-const crypto = require('crypto')
-const expressStaticGzip = require("express-static-gzip")
+import cookie from 'cookie'
+import path from 'path'
+import crypto from 'crypto'
+import os from 'os'
+import expressStaticGzip from "express-static-gzip"
 
-const serverDao = require('./serverDao.js')
-const { hashCode, encodeNumber, uidGenerator } = require('@live-change/uid')
-const getIp = require('./getIp.js')
+import serverDao from './serverDao.js'
+import { hashCode, encodeNumber, uidGenerator } from '@live-change/uid'
+import getIp from './getIp.js'
 
-const Renderer = require('./Renderer.js')
+import Renderer from './Renderer.js'
 
-const { fbRedirect } = require('./fbRedirect.js')
+import { fbRedirect } from './fbRedirect.js'
+
 
 class SsrServer {
   constructor(express, manifest, settings) {
@@ -24,7 +25,7 @@ class SsrServer {
     }
 
     this.instanceId = encodeNumber(hashCode(
-      `ssr${process.pid}${require("os").hostname()} ${process.cwd()}/${process.argv.join(' ')}`))
+      `ssr${process.pid}${os.hostname()} ${process.cwd()}/${process.argv.join(' ')}`))
     this.uidGenerator = uidGenerator(this.instanceId, 1, this.settings.uidBorders)
 
     this.root = this.settings.root || process.cwd()
@@ -165,4 +166,4 @@ class SsrServer {
   }
 }
 
-module.exports = SsrServer
+export default SsrServer

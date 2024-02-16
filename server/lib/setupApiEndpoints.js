@@ -1,5 +1,3 @@
-const { app } = require("@live-change/framework")
-
 async function setupApiEndpoints(expressApp, apiServer) {
   for(const serviceDefinition of apiServer.services.serviceDefinitions) {
     const { name, endpoints } = serviceDefinition
@@ -14,4 +12,4 @@ async function setupApiEndpoints(expressApp, apiServer) {
   }
 }
 
-module.exports = setupApiEndpoints
+export default setupApiEndpoints

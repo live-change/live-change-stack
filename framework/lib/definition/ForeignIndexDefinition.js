@@ -1,4 +1,3 @@
-const utils = require("../utils.js")
 
 class ForeignIndexDefinition {
 
@@ -16,4 +15,4 @@ class ForeignIndexDefinition {
 
 }
 
-module.exports = ForeignIndexDefinition
+export default ForeignIndexDefinition

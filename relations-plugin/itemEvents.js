@@ -1,5 +1,6 @@
-const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
+import {
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
+} from "@live-change/framework"
 
 function defineCreatedEvent(config, context) {
   const {
@@ -72,7 +73,7 @@ function defineCopyEvent(config, context) {
   })
 }
 
-module.exports = {
+export {
   defineCreatedEvent, defineUpdatedEvent, defineTransferredEvent, defineDeletedEvent,
   defineCopyEvent,
 }

@@ -1,5 +1,4 @@
-const PropertyDefinition = require("./PropertyDefinition.js")
-const utils = require("../utils.js")
+import PropertyDefinition from "./PropertyDefinition.js"
 
 class ActionDefinition {
 
@@ -37,4 +36,4 @@ class ActionDefinition {
 
 }
 
-module.exports = ActionDefinition
+export default ActionDefinition

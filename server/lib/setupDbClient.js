@@ -1,6 +1,5 @@
-
-const ReactiveDao = require("@live-change/dao")
-const ReactiveDaoWebsocket = require("@live-change/dao-websocket")
+import ReactiveDao from "@live-change/dao"
+import * as ReactiveDaoWebsocket from "@live-change/dao-websocket"
 
 function setupDbClient(argv, env = process.env) {
   const config = {
@@ -38,4 +37,4 @@ function setupDbClient(argv, env = process.env) {
   return dbDao
 }
 
-module.exports = setupDbClient
+export default setupDbClient

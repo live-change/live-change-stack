@@ -1,6 +1,6 @@
-const ReactiveDao = require('@live-change/dao')
+import LcDao from '@live-change/dao'
 
-const { prepareParameters, processReturn } = require("./params.js")
+import { prepareParameters, processReturn } from "./params.js"
 
 class View {
   constructor(definition, service) {
@@ -15,7 +15,7 @@ class View {
     }
     const preparedParameters = await prepareParameters(parameters, this.definition.properties, this.service)
     const observable = this.definition.observable(preparedParameters, context)
-    if(observable === null) return new ReactiveDao.ObservableValue(null)
+    if(observable === null) return new LcDao.ObservableValue(null)
     return observable
   }
 
@@ -29,4 +29,4 @@ class View {
   }
 }
 
-module.exports = View
+export default View

@@ -1,4 +1,4 @@
-const utils = require("../utils.js")
+import { typeName } from "../utils.js"
 
 class PropertyDefinition {
 
@@ -30,7 +30,7 @@ class PropertyDefinition {
     }
     let json = {
       ...this,
-      type: utils.typeName(this.type),
+      type: typeName(this.type),
       properties
     }
     if(this.of) {
@@ -43,8 +43,8 @@ class PropertyDefinition {
   computeChanges( oldProperty, params, name) {
     let changes = []
     let typeChanged = false
-    if(utils.typeName(this.type) != utils.typeName(oldProperty.type)) typeChanged = true
-    if((this.of && utils.typeName(this.of.type)) != (oldProperty.of && utils.typeName(oldProperty.of.type)))
+    if(typeName(this.type) != typeName(oldProperty.type)) typeChanged = true
+    if((this.of && typeName(this.of.type)) != (oldProperty.of && typeName(oldProperty.of.type)))
       typeChanged = true
     if(typeChanged) {
       changes.push({
@@ -67,4 +67,4 @@ class PropertyDefinition {
 
 }
 
-module.exports = PropertyDefinition
+export default PropertyDefinition

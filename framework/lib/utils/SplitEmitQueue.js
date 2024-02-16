@@ -64,4 +64,4 @@ class SplitEmitQueue {
   }
 }
 
-module.exports = SplitEmitQueue
+export default SplitEmitQueue

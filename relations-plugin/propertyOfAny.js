@@ -1,19 +1,18 @@
-const {
+import {
   defineAnyProperties, defineAnyIndexes,
   processModelsAnyAnnotation, generateAnyId, addAccessControlAnyParents,
   defineDeleteByOwnerEvents, defineParentDeleteTrigger
-} = require('./utilsAny.js')
+} from './utilsAny.js'
 
-const {
+import {
   defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent
-} = require('./propertyEvents.js')
+} from './propertyEvents.js'
 
-const {
+import {
   defineObjectView, defineRangeViews, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
-} = require('./singularRelationAnyUtils.js')
-const {defineResetByOwner} = require("./propertyEvents");
+} from './singularRelationAnyUtils.js'
 
-module.exports = function(service, app) {
+export default function(service, app) {
   processModelsAnyAnnotation(service, app, 'propertyOfAny', false, (config, context) => {
 
     context.relationWord = 'Property'

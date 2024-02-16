@@ -1,4 +1,4 @@
-const utils = require("../utils.js")
+import * as utils from "../utils.js"
 
 function propertyWithoutValidation(property) {
   let prop = { ...property }
@@ -20,7 +20,7 @@ function propertiesWithoutValidation(properties, validateFields) {
   return propertiesWV
 }
 
-module.exports = function(service, app) {
+export default function(service, app) {
   if(!service) throw new Error("no service")
   if(!app) throw new Error("no service")
   for(let actionName in service.actions) {

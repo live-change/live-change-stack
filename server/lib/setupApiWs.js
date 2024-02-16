@@ -1,5 +1,5 @@
-const WebSocketServer = require('websocket').server
-const DaoWebsocket = require("@live-change/dao-websocket")
+import { server as WebSocketServer} from 'websocket'
+import * as DaoWebsocket from "@live-change/dao-websocket"
 
 function setupApiWs(httpServer, apiServer) {
   const wsServer = new WebSocketServer({ httpServer, autoAcceptConnections: false })
@@ -12,4 +12,4 @@ function setupApiWs(httpServer, apiServer) {
   return wsServer
 }
 
-module.exports = setupApiWs
+export default setupApiWs

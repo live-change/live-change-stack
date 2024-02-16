@@ -1,5 +1,5 @@
 
-module.exports = function(service, definition, app) {
+export default function clientSideFilter(service, definition, app) {
 /*  for(let actionName in service.actions) {
     const action = service.actions[actionName]
 

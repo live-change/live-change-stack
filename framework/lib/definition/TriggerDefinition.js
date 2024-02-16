@@ -1,4 +1,4 @@
-const PropertyDefinition = require("./PropertyDefinition.js")
+import PropertyDefinition from "./PropertyDefinition.js"
 
 class TriggerDefinition {
 
@@ -36,4 +36,4 @@ class TriggerDefinition {
 
 }
 
-module.exports = TriggerDefinition
+export default TriggerDefinition

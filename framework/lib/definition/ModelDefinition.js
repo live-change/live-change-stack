@@ -1,5 +1,5 @@
-const PropertyDefinition = require("./PropertyDefinition.js")
-const utils = require("../utils.js")
+import PropertyDefinition from "./PropertyDefinition.js"
+import { crudChanges } from "../utils.js"
 
 class ModelDefinition {
 
@@ -55,9 +55,9 @@ class ModelDefinition {
     oldModel.indexes = oldModel.indexes || {}
     let changes = []
     const json = this.toJSON()
-    changes.push(...utils.crudChanges(oldModel.properties || {}, json.properties || {},
+    changes.push(...crudChanges(oldModel.properties || {}, json.properties || {},
         "Property", "property", { model: this.name }))
-    changes.push(...utils.crudChanges(oldModel.indexes || {}, json.indexes || {},
+    changes.push(...crudChanges(oldModel.indexes || {}, json.indexes || {},
         "Index", "index", { model: this.name, storage: this.storage }))
     if(oldModel.search && !this.search) changes.push({ operation: "searchDisabled", model: this.name })
     if(!oldModel.search && this.search) changes.push({ operation: "searchEnabled", model: this.name })
@@ -76,8 +76,6 @@ class ModelDefinition {
     return changes
   }
 
-
-
 }
 
-module.exports = ModelDefinition
+export default ModelDefinition

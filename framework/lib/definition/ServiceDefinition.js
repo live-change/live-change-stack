@@ -1,13 +1,13 @@
-const ModelDefinition = require("./ModelDefinition.js")
-const ForeignModelDefinition = require("./ForeignModelDefinition.js")
-const IndexDefinition = require("./IndexDefinition.js")
-const ForeignIndexDefinition = require("./ForeignIndexDefinition.js")
-const ActionDefinition = require("./ActionDefinition.js")
-const TriggerDefinition = require("./TriggerDefinition.js")
-const ViewDefinition = require("./ViewDefinition.js")
-const EventDefinition = require("./EventDefinition.js")
-const defaultValidators = require('../utils/validators.js')
-const utils = require("../utils.js")
+import ModelDefinition from "./ModelDefinition.js"
+import ForeignModelDefinition from "./ForeignModelDefinition.js"
+import IndexDefinition from "./IndexDefinition.js"
+import ForeignIndexDefinition from "./ForeignIndexDefinition.js"
+import ActionDefinition from "./ActionDefinition.js"
+import TriggerDefinition from "./TriggerDefinition.js"
+import ViewDefinition from "./ViewDefinition.js"
+import EventDefinition from "./EventDefinition.js"
+import defaultValidators from '../utils/validators.js'
+import { crudChanges } from "../utils.js"
 
 function createModelProxy(definition, model) {
   return new Proxy(model, {
@@ -86,7 +86,7 @@ class ServiceDefinition {
     this.authenticators = []
     this.beforeStartCallbacks = []
     this.endpoints = []
-    this.validators = defaultValidators
+    this.validators = { ...defaultValidators }
     this.clientSideFilters = []
     for(let key in definition) this[key] = definition[key]
   }
@@ -209,11 +209,11 @@ class ServiceDefinition {
   computeChanges( oldModuleParam ) {
     let oldModule = JSON.parse(JSON.stringify(oldModuleParam))
     let changes = []
-    changes.push(...utils.crudChanges(oldModule.models || {}, this.models || {},
+    changes.push(...crudChanges(oldModule.models || {}, this.models || {},
         "Model", "model", { }))
     return changes
   }
 
 }
 
-module.exports = ServiceDefinition
+export default ServiceDefinition

@@ -1,4 +1,4 @@
-const ReaderModel = require("./ReaderModel.js")
+import ReaderModel from "./ReaderModel.js"
 
 class ForeignModel extends ReaderModel {
 
@@ -9,4 +9,4 @@ class ForeignModel extends ReaderModel {
 
 }
 
-module.exports = ForeignModel
+export default ForeignModel

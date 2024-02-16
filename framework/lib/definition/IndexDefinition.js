@@ -1,5 +1,3 @@
-const PropertyDefinition = require("./PropertyDefinition.js")
-const utils = require("../utils.js")
 
 class IndexDefinition {
 
@@ -37,8 +35,6 @@ class IndexDefinition {
     return changes
   }
 
-
-
 }
 
-module.exports = IndexDefinition
+export default IndexDefinition

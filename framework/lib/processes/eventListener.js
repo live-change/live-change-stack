@@ -1,4 +1,4 @@
-const EventSourcing = require('../utils/EventSourcing.js')
+import EventSourcing from '../utils/EventSourcing.js'
 
 async function startEventListener(service, config) {
   if(!config.handleEvents) return
@@ -36,4 +36,4 @@ async function startEventListener(service, config) {
   service.eventSourcing.start()
 }
 
-module.exports = startEventListener
+export default startEventListener

@@ -1,4 +1,4 @@
-function getIp(connection) {
+export function getIp(connection) {
   let ip =
       connection.headers['x-real-ip'] ||
       connection.headers['x-forwarded-for'] ||
@@ -9,7 +9,7 @@ function getIp(connection) {
   return ip
 }
 
-function waitForSignal(observable, timeout = 1000, filter = () => true) {
+export function waitForSignal(observable, timeout = 1000, filter = () => true) {
   let observer
   let done = false
   return new Promise((resolve, reject) => {
@@ -32,7 +32,3 @@ function waitForSignal(observable, timeout = 1000, filter = () => true) {
     observable.unobserve(observer)
   })
 }
-
-
-module.exports.getIp = getIp
-module.exports.waitForSignal = waitForSignal

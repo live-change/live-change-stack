@@ -1,6 +1,6 @@
-const ReactiveDao = require("@live-change/dao")
+import ReactiveDao from "@live-change/dao"
 
-const profileLog = require("../utils/profileLog.js")
+import profileLog from "../utils/profileLog.js"
 
 function promiseMap(promise, fn) {
   if(promise.then) return promise.then(fn)
@@ -181,4 +181,4 @@ class Dao extends ReactiveDao {
   }
 }
 
-module.exports = Dao
+export default Dao

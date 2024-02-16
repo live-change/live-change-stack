@@ -1,11 +1,13 @@
-const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } = App
-const { extractTypeAndIdParts, extractIdentifiersWithTypes, generateAnyId, prepareAccessControl } = require("./utilsAny.js")
-const { extractObjectData } = require("./utils.js")
-const { allCombinations } = require("./combinations.js")
+import App from '@live-change/framework'
+import { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } from '@live-change/framework'
+import {
+  extractTypeAndIdParts, extractIdentifiersWithTypes, generateAnyId, prepareAccessControl
+} from './utilsAny.js'
+import { extractObjectData } from "./utils.js"
+import { allCombinations } from "./combinations.js"
+import { fireChangeTriggers } from "./changeTriggers.js"
 
-const pluralize = require('pluralize')
-const {fireChangeTriggers} = require("./changeTriggers.js");
+import pluralize from 'pluralize'
 
 function createIdentifiersProperties(keys) {
   const identifiers = {}
@@ -241,7 +243,7 @@ function defineResetAction(config, context) {
   })
 }
 
-module.exports = {
+export {
   defineObjectView, defineRangeViews,
   defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
 }

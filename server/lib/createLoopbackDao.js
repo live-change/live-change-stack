@@ -1,4 +1,4 @@
-const Dao = require("@live-change/dao")
+import Dao from "@live-change/dao"
 
 async function createLoopbackDao(credentials, daoFactory) {
   const server = new Dao.ReactiveServer(daoFactory)
@@ -24,4 +24,4 @@ async function createLoopbackDao(credentials, daoFactory) {
   return dao
 }
 
-module.exports = createLoopbackDao
+export default createLoopbackDao

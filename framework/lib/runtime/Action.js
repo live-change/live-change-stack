@@ -1,4 +1,4 @@
-const { prepareParameters, processReturn, preFilterParameters } = require("./params.js")
+import { prepareParameters, processReturn, preFilterParameters } from "./params.js"
 
 class Action {
 
@@ -48,4 +48,4 @@ class Action {
   }
 }
 
-module.exports = Action
+export default Action

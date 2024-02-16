@@ -15,24 +15,14 @@
     "name": "Michał Łaszczewski",
     "url": "https://www.viamage.com/"
   },
+  "type": "module",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/live-change/live-change-framework/issues"
   },
   "homepage": "https://github.com/live-change/live-change-framework",
   "devDependencies": {
-    "@live-change/dao": "0.5.22",
-    "@live-change/dao-websocket": "0.5.22",
-    "@live-change/db": "0.6.23",
-    "@live-change/db-store-level": "0.6.23",
-    "@live-change/db-store-lmdb": "0.6.23",
-    "@live-change/sockjs": "0.4.1",
-    "@live-change/uid": "^0.7.39",
-    "cookie": "^0.4.1",
-    "express": "^4.18.2",
-    "os-service": "^2.2.0",
-    "rimraf": "^3.0.2",
-    "tape": "^5.3.2",
-    "websocket": "^1.0.34"
+    "@live-change/dao": "0.6.0",
+    "@live-change/uid": "0.7.39"
   }
 }

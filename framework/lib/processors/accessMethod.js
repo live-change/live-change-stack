@@ -1,4 +1,4 @@
-function getAccessMethod(access) {
+export default function getAccessMethod(access) {
   if(typeof access == 'function') {
     return access
   } else if(Array.isArray(access)) {
@@ -10,5 +10,3 @@ function getAccessMethod(access) {
     }
   } else throw new Error("unknown view access definition "+access)
 }
-
-module.exports = getAccessMethod

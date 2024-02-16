@@ -1,9 +1,8 @@
-const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } = App
-const {
+import { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } from "@live-change/framework"
+import {
   extractIdentifiers, extractObjectData, generateId, extractIdParts, prepareAccessControl
-} = require("./utils.js")
-const {fireChangeTriggers} = require("./changeTriggers.js");
+} from "./utils.js"
+import { fireChangeTriggers } from "./changeTriggers.js"
 
 function defineView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
@@ -189,4 +188,4 @@ function defineResetAction(config, context) {
   })
 }
 
-module.exports = { defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction }
+export { defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction }

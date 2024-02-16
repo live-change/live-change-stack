@@ -1,5 +1,5 @@
-const ReactiveDao = require("@live-change/dao")
-const utils = require("../utils.js");
+import ReactiveDao from "@live-change/dao"
+import { prefixRange } from "../utils.js"
 
 class Index {
 
@@ -19,7 +19,7 @@ class Index {
       const values = Array.isArray(range) ? range : [range]
       const prefix = values.map(value => value === undefined ? '' : JSON.stringify(value)).join(':')
       if(pathRange) {
-        return this.rangePath(utils.prefixRange(pathRange, prefix, prefix))
+        return this.rangePath(prefixRange(pathRange, prefix, prefix))
       }
       return this.rangePath({ gte: prefix+':', lte: prefix+'_\xFF\xFF\xFF\xFF' })
     }
@@ -45,4 +45,4 @@ class Index {
 
 }
 
-module.exports = Index
+export default Index

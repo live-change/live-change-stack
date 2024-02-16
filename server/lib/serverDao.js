@@ -1,5 +1,5 @@
-const { Dao } = require("@live-change/dao")
-const DaoWebsocket = require("@live-change/dao-websocket")
+import Dao from "@live-change/dao"
+import { client as DaoWebsocket } from "@live-change/dao-websocket"
 
 function reactiveObservableListConstructor(reactive) {
   class ReactiveObservableList extends Dao.ObservableList {
@@ -53,4 +53,4 @@ function serverDao(credentials, ip, settings) {
   })
 }
 
-module.exports = serverDao
+export default serverDao

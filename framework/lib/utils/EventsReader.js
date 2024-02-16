@@ -90,4 +90,4 @@ class EventsReader {
 
 }
 
-module.exports = EventsReader
+export default EventsReader

@@ -1,4 +1,4 @@
-const ExecutionQueue = require('./ExecutionQueue.js')
+import ExecutionQueue from './ExecutionQueue.js'
 
 class KeyBasedExecutionQueues {
   constructor(keyFunction) {
@@ -22,4 +22,4 @@ class KeyBasedExecutionQueues {
   }
 }
 
-module.exports = KeyBasedExecutionQueues
+export default KeyBasedExecutionQueues

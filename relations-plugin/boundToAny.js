@@ -1,13 +1,13 @@
-const {
+import {
   defineAnyProperties, defineAnyIndex,
   processModelsAnyAnnotation, generateAnyId
-} = require('./utilsAny.js')
+} from './utilsAny.js'
 
-const { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } = require('./propertyEvents.js')
+import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
 
-const  { defineView, defineSetAction, defineUpdateAction, defineResetAction } = require('./singularRelationUtils.js')
+import { defineView, defineSetAction, defineUpdateAction, defineResetAction } from './singularRelationUtils.js'
 
-module.exports = function(service, app) {
+export default function(service, app) {
   processModelsAnyAnnotation(service, app, 'boundToAny', false, (config, context) => {
 
     context.relationWord = 'Friend'

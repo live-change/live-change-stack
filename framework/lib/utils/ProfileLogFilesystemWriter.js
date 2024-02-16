@@ -1,6 +1,6 @@
-const fs = require('fs')
-const os = require('os')
-const { once } = require('events')
+import fs from 'fs'
+import os from 'os'
+import { once } from 'events'
 
 class ProfileLogFilesystemWriter {
   constructor(path) {
@@ -37,4 +37,4 @@ class ProfileLogFilesystemWriter {
   }
 }
 
-module.exports = ProfileLogFilesystemWriter
+export default ProfileLogFilesystemWriter

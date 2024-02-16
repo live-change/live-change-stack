@@ -1,17 +1,16 @@
-const {
-  defineAnyProperties, defineAnyIndex,
-  processModelsAnyAnnotation
-} = require('./utilsAny.js')
+import {
+  defineAnyProperties, defineAnyIndex, processModelsAnyAnnotation
+} from './utilsAny.js'
 
-const {
+import {
   defineCreatedEvent, defineUpdatedEvent, defineDeletedEvent, defineTransferredEvent,
-} = require('./itemEvents.js')
+} from './itemEvents.js'
 
-const {
+import {
   defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex
-} = require('./pluralRelationAnyUtils.js')
+} from './pluralRelationAnyUtils.js'
 
-module.exports = function(service, app) {
+export default function(service, app) {
   processModelsAnyAnnotation(service, app, 'relatedToAny',true, (config, context) => {
 
     context.relationWord = 'Friend'

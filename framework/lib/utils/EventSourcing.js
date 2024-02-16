@@ -1,5 +1,5 @@
-const EventsReader = require('./EventsReader.js')
-const ReactiveDao = require('@live-change/dao')
+import EventsReader from './EventsReader.js'
+import ReactiveDao from '@live-change/dao'
 
 function sleep(ms) {
   return new Promise((resolve, reject) => setTimeout(resolve, ms))
@@ -141,4 +141,4 @@ class EventSourcing {
   }
 }
 
-module.exports = EventSourcing
+export default EventSourcing

@@ -280,7 +280,7 @@ function isomorphic( v ) {
   }
 }
 
-module.exports = {
+export {
   typeName, toJSON, setDifference, mapDifference, crudChanges,
   getProperty, setProperty, getField, setField, isObject, mergeDeep, generateDefault,
   prefixRange, rangeProperties, fieldListToFieldsObject,

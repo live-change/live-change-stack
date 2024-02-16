@@ -30,7 +30,7 @@ function fbRedirect(req, res) {
   }
 }
 
-module.exports = {
+export {
   isAppSpecificUserAgent,
   isIOs,
   fbRedirect

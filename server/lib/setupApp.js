@@ -1,15 +1,20 @@
-const { hashCode, encodeNumber, uidGenerator } = require('@live-change/uid')
+import os from 'os'
 
-const setupDbServer = require('./setupDbServer.js')
-const setupDbClient = require('./setupDbClient.js')
-const createLoopbackDao = require('./createLoopbackDao.js')
+import { hashCode, encodeNumber, uidGenerator }from '@live-change/uid'
 
-const debug = require('debug')('server:app')
+import setupDbServer from './setupDbServer.js'
+import setupDbClient from './setupDbClient.js'
+import createLoopbackDao from './createLoopbackDao.js'
+
+import Debug from 'debug'
+const debug = Debug('server:app')
+
+import App from "@live-change/framework"
 
 async function setupApp(settings, env = process.env) {
-  const app = require("@live-change/framework").app()
+  const app = App.app()
   app.instanceId = encodeNumber(hashCode(
-    `app${process.pid}${require("os").hostname()} ${process.cwd()}/${process.argv.join(' ')}`))
+    `app${process.pid}${os.hostname()} ${process.cwd()}/${process.argv.join(' ')}`))
   app.uidGenerator = uidGenerator(app.instanceId, 1, settings.uidBorders)
   debug("SETUP APP", settings)
   let dbServer
@@ -23,4 +28,4 @@ async function setupApp(settings, env = process.env) {
   app.databaseName = env.DB_NAME || 'test'
 }
 
-module.exports = setupApp
+export default setupApp

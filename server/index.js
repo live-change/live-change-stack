@@ -1,20 +1,19 @@
-const Renderer = require('./lib/Renderer.js')
-const Services = require('./lib/Services.js')
-const SsrServer = require('./lib/SsrServer.js')
-const TestServer = require('./lib/TestServer.js')
+import Renderer from './lib/Renderer.js'
+import Services from './lib/Services.js'
+import SsrServer from './lib/SsrServer.js'
+import TestServer from './lib/TestServer.js'
 
-const createLoopbackDao = require('./lib/createLoopbackDao.js')
-const renderTemplate = require('./lib/renderTemplate.js')
-const setupApiServer = require('./lib/setupApiServer.js')
-const setupApiSockJs = require('./lib/setupApiSockJs.js')
-const setupApiWs = require('./lib/setupApiWs.js')
-const setupApiEndpoints = require('./lib/setupApiEndpoints.js')
-const setupDbServer = require('./lib/setupDbServer.js')
-const setupDbClient = require('./lib/setupDbClient.js')
-const setupApp = require('./lib/setupApp.js')
+import createLoopbackDao from './lib/createLoopbackDao.js'
+import renderTemplate from './lib/renderTemplate.js'
+import setupApiServer from './lib/setupApiServer.js'
+import setupApiSockJs from './lib/setupApiSockJs.js'
+import setupApiWs from './lib/setupApiWs.js'
+import setupApiEndpoints from './lib/setupApiEndpoints.js'
+import setupDbServer from './lib/setupDbServer.js'
+import setupDbClient from './lib/setupDbClient.js'
+import setupApp from './lib/setupApp.js'
 
-module.exports = {
-
+export {
   Renderer,
   Services,
   SsrServer,
@@ -29,5 +28,4 @@ module.exports = {
   setupDbServer,
   setupDbClient,
   setupApp
-
 }

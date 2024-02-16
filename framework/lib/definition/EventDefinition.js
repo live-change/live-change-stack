@@ -1,5 +1,4 @@
-const PropertyDefinition = require("./PropertyDefinition.js")
-const utils = require("../utils.js")
+import PropertyDefinition from "./PropertyDefinition.js"
 
 class EventDefinition {
 
@@ -43,4 +42,4 @@ class EventDefinition {
   }
 }
 
-module.exports = EventDefinition
+export default EventDefinition

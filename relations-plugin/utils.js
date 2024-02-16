@@ -1,16 +1,16 @@
-const App = require("@live-change/framework")
+import App from "@live-change/framework"
 const app = App.app()
-const { allCombinations } = require("./combinations.js")
-const {
+import { allCombinations } from "./combinations.js"
+import {
   fireChangeTriggers, registerParentDeleteTriggers, registerParentCopyTriggers
-} = require("./changeTriggers.js")
-const {
+} from "./changeTriggers.js"
+import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
-} = App
+} from "@live-change/framework"
 
-const {
+import {
   extractObjectData, extractIdentifiers
-} = require('./dataUtils.js')
+} from './dataUtils.js'
 
 function extractIdParts(otherPropertyNames, properties) {
   const idParts = []
@@ -188,7 +188,7 @@ function defineParentCopyTriggers(config, context) {
 }
 
 
-module.exports = {
+export {
   extractIdParts, extractIdentifiers, extractObjectData, defineProperties, defineIndex, defineIndexes,
   processModelsAnnotation, generateId, addAccessControlParents, prepareAccessControl,
   defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers,

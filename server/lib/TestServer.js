@@ -1,17 +1,18 @@
-const path = require('path')
-const http = require('http')
-const express = require('express')
+import path from 'path'
+import http from 'http'
+import express from 'express'
 
-const app = require('@live-change/framework').app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const { hashCode, encodeNumber, uidGenerator } = require('@live-change/uid')
-
-const setupApiServer = require('./setupApiServer.js')
-const setupApiSockJs = require('./setupApiSockJs.js')
-const setupApiWs = require('./setupApiWs.js')
-const setupDbServer = require('./setupDbServer.js')
-const createLoopbackDao = require('./createLoopbackDao.js')
-const SsrServer = require('./SsrServer.js')
+import { hashCode, encodeNumber, uidGenerator } from '@live-change/uid'
+import setupApiServer from './setupApiServer.js'
+import setupApiSockJs from './setupApiSockJs.js'
+import setupApiWs from './setupApiWs.js'
+import setupDbServer from './setupDbServer.js'
+import createLoopbackDao from './createLoopbackDao.js'
+import SsrServer from './SsrServer.js'
+import fs from "fs";
 
 class TestServer {
   constructor(config) {
@@ -21,9 +22,9 @@ class TestServer {
   async start() {
     this.expressApp = express()
 
-    this.manifest = this.config.dev ? null : require(
-      path.resolve(this.config.ssrRoot, 'dist/client/ssr-manifest.json')
-    )
+    const manifest = (dev || argv.spa)
+        ? null
+        : JSON.parse(fs.readFileSync((path.resolve(ssrRoot, 'dist/client/.vite/ssr-manifest.json'))))
 
     app.instanceId = encodeNumber(hashCode(
       `app${process.pid}${require("os").hostname()} ${process.cwd()}/${process.argv.join(' ')}`))
@@ -90,4 +91,4 @@ class TestServer {
   }
 }
 
-module.exports = TestServer
+export default TestServer

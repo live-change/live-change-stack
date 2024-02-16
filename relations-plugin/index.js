@@ -1,16 +1,17 @@
-const entity = require('./entity.js')
+import entity from './entity.js'
 
-const propertyOf = require('./propertyOf.js')
-const itemOf = require('./itemOf.js')
+import propertyOf from './propertyOf.js'
+import itemOf from './itemOf.js'
 
-const propertyOfAny = require('./propertyOfAny.js')
-const itemOfAny = require('./itemOfAny.js')
+import propertyOfAny from './propertyOfAny.js'
+import itemOfAny from './itemOfAny.js'
 
-const relatedTo = require('./relatedTo.js')
-const relatedToAny = require('./relatedToAny.js')
+import relatedTo from './relatedTo.js'
+import relatedToAny from './relatedToAny.js'
 
-const boundTo = require('./boundTo.js')
-const boundToAny = require('./boundToAny.js')
+import boundTo from './boundTo.js'
+import boundToAny from './boundToAny.js'
+
 
 const processors = [
   entity,
@@ -20,10 +21,11 @@ const processors = [
   boundTo, boundToAny
 ]
 
-module.exports = function(app, services) {
+const plugin = function(app, services) {
   app.defaultProcessors.push(...processors)
 }
+plugin.processors = processors
 
-module.exports.processors = [
-    ...processors
-]
+export default plugin
+
+export { processors }

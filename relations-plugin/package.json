@@ -20,8 +20,9 @@
     "name": "Michał Łaszczewski",
     "url": "https://www.viamage.com/"
   },
+  "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.7.39",
+    "@live-change/framework": "0.7.39",
     "pluralize": "^8.0.0"
   }
 }

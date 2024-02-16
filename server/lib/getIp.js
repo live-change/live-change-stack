@@ -9,4 +9,4 @@ function getIp(connection) {
   return ip
 }
 
-module.exports = getIp
+export default getIp

@@ -1,42 +1,42 @@
-const { uidGenerator, randomString } = require('@live-change/uid')
+import { uidGenerator, randomString } from '@live-change/uid'
 
-const ReactiveDao = require("@live-change/dao")
+import ReactiveDao from "@live-change/dao"
 
-const ServiceDefinition = require("./definition/ServiceDefinition.js")
+import ServiceDefinition from "./definition/ServiceDefinition.js"
 
-const Service = require("./runtime/Service.js")
+import Service from "./runtime/Service.js"
 
-const profileLog = require("./utils/profileLog.js")
+import profileLog from "./utils/profileLog.js"
 
-const Dao = require("./runtime/Dao.js")
-const SessionDao = require("./runtime/SessionDao.js")
-const LiveDao = require("./runtime/LiveDao.js")
-const ApiServer = require("./runtime/ApiServer.js")
+import Dao from "./runtime/Dao.js"
+import SessionDao from "./runtime/SessionDao.js"
+import LiveDao from "./runtime/LiveDao.js"
+import ApiServer from "./runtime/ApiServer.js"
 
-const reverseRelationProcessor = require("./processors/reverseRelation.js")
-const indexListProcessor = require("./processors/indexList.js")
-const crudGenerator = require("./processors/crudGenerator.js")
-const draftGenerator = require("./processors/draftGenerator.js")
-const daoPathView = require("./processors/daoPathView.js")
-const fetchView = require("./processors/fetchView.js")
-const accessControl = require("./processors/accessControl.js")
-const autoValidation = require("./processors/autoValidation.js")
-const indexCode = require("./processors/indexCode.js")
+import reverseRelationProcessor from "./processors/reverseRelation.js"
+import indexListProcessor from "./processors/indexList.js"
+import crudGenerator from "./processors/crudGenerator.js"
+import draftGenerator from "./processors/draftGenerator.js"
+import daoPathView from "./processors/daoPathView.js"
+import fetchView from "./processors/fetchView.js"
+import accessControl from "./processors/accessControl.js"
+import autoValidation from "./processors/autoValidation.js"
+import indexCode from "./processors/indexCode.js"
 
-const databaseUpdater = require("./updaters/database.js")
+import databaseUpdater from "./updaters/database.js"
 
-const accessControlFilter = require("./clientSideFilters/accessFilter.js")
-const clientSideFilter = require("./clientSideFilters/clientSideFilter.js")
+import accessControlFilter from "./clientSideFilters/accessFilter.js"
+import clientSideFilter from "./clientSideFilters/clientSideFilter.js"
 
-const commandExecutor = require("./processes/commandExecutor.js")
-const triggerExecutor = require("./processes/triggerExecutor.js")
-const eventListener = require('./processes/eventListener.js')
+import commandExecutor from "./processes/commandExecutor.js"
+import triggerExecutor from "./processes/triggerExecutor.js"
+import eventListener from './processes/eventListener.js'
 
-const utils = require('./utils.js')
-const SplitEmitQueue = require("./utils/SplitEmitQueue.js");
-const SingleEmitQueue = require("./utils/SingleEmitQueue.js");
+import SplitEmitQueue from "./utils/SplitEmitQueue.js"
+import SingleEmitQueue from "./utils/SingleEmitQueue.js"
 
-const debug = require('debug')('framework')
+import Debug from 'debug'
+const debug = Debug('framework')
 
 class App {
 
@@ -89,8 +89,9 @@ class App {
   }
 
   createServiceDefinition( definition ) {
-    const config = this.config && this.config.services && this.config.services.find
+    const sourceConfig = this.config && this.config.services && this.config.services.find
       && this.config.services.find(c => c.name == definition.name)
+    const config = { ...sourceConfig, module: null }
     return new ServiceDefinition({ ...definition, config })
   }
 
@@ -542,5 +543,4 @@ class App {
 
 }
 
-
-module.exports = App
+export default App

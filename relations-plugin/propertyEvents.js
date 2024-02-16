@@ -1,5 +1,6 @@
-const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
+import {
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
+} from '@live-change/framework'
 
 function defineSetEvent(config, context, generateId) {
   const {
@@ -65,6 +66,6 @@ function defineResetEvent(config, context, generateId) {
   })
 }
 
-module.exports = {
+export {
   defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent
 }

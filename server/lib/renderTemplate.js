@@ -19,4 +19,4 @@ function renderTemplate(source, replacements) {
   return output.join('')
 }
 
-module.exports = renderTemplate
+export default renderTemplate

@@ -1,9 +1,9 @@
-const fs = require('fs')
-const path = require('path')
-const serialize = require('serialize-javascript')
-const renderTemplate = require('./renderTemplate.js')
-
-const { SitemapStream } = require('sitemap')
+import fs from 'fs'
+import path from 'path'
+import * as vite from 'vite'
+import serialize from 'serialize-javascript'
+import renderTemplate from './renderTemplate.js'
+import { SitemapStream } from 'sitemap'
 
 class Renderer {
   constructor(manifest, settings) {
@@ -16,7 +16,7 @@ class Renderer {
     if(this.settings.dev) {
       await this.setupVite()
     } else {
-      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/entry-server.mjs')
+      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/entry-server.js')
       this.module = await import(serverEntryPath)
       this.renderer = this.module.render
       this.sitemap = this.module.sitemap
@@ -26,7 +26,7 @@ class Renderer {
   }
 
   async setupVite() {
-    this.vite = await require('vite').createServer({
+    this.vite = await vite.createServer({
       root: this.root,
       mode: this.settings.mode,
       logLevel: 'info', //isTest ? 'error' : 'info',
@@ -174,4 +174,4 @@ class Renderer {
 
 }
 
-module.exports = Renderer
+export default Renderer

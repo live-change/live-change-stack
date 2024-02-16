@@ -1,4 +1,4 @@
-const ReactiveDao = require('@live-change/dao')
+import ReactiveDao from '@live-change/dao'
 
 class CommandQueue {
   constructor(connection, database, tableName, serviceName, config) {
@@ -165,4 +165,4 @@ class CommandQueue {
   }
 }
 
-module.exports = CommandQueue
+export default CommandQueue

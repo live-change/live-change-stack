@@ -1,4 +1,4 @@
-const { prepareParameters, processReturn } = require("./params.js")
+import { prepareParameters, processReturn } from "./params.js"
 
 class EventHandler {
 
@@ -31,4 +31,4 @@ class EventHandler {
   }
 }
 
-module.exports = EventHandler
+export default EventHandler

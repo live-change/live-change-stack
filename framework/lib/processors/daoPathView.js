@@ -1,6 +1,6 @@
-const ReactiveDao = require("@live-change/dao")
+import ReactiveDao from "@live-change/dao"
 
-module.exports = function(service, app) {
+export default function(service, app) {
   for(let viewName in service.views) {
     const view = service.views[viewName]
     if(view.daoPath) {

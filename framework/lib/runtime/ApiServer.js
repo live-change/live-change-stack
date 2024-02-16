@@ -1,8 +1,8 @@
-const LcDao = require("@live-change/dao")
-const Dao = require("./Dao.js")
-const cookie = require('cookie')
+import LcDao from "@live-change/dao"
+import Dao from "./Dao.js"
+import cookie from 'cookie'
 
-const { getIp } = require("./utils.js")
+import { getIp } from "./utils.js"
 
 class ApiServer {
   constructor(config, DaoConstructor = Dao) {
@@ -55,4 +55,4 @@ class ApiServer {
   }
 }
 
-module.exports = ApiServer
+export default ApiServer

@@ -1,5 +1,4 @@
-
-module.exports = function(module, app) {
+export default function(module, app) {
   for(let modelName in module.models) {
     const model = module.models[modelName]
     for(let indexName in model.indexes) {

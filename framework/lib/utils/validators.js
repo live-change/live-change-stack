@@ -28,7 +28,7 @@ function getField(context, fieldName) {
 
 nonEmpty.isRequired = () => true
 
-let validators = {
+const validators = {
   nonEmpty: (settings) => nonEmpty,
 
   minLength: ({ length }) => (value) => value.length < length ? 'tooShort' : undefined,
@@ -174,4 +174,4 @@ let validators = {
   }
 }
 
-module.exports = validators
+export default validators

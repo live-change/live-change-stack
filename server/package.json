@@ -19,23 +19,24 @@
   "bugs": {
     "url": "https://github.com/live-change/live-change-framework/issues"
   },
+  "type": "module",
   "homepage": "https://github.com/live-change/live-change-framework",
   "dependencies": {
-    "@live-change/dao": "0.5.22",
-    "@live-change/dao-sockjs": "0.5.22",
-    "@live-change/db-server": "0.6.23",
-    "@live-change/framework": "^0.7.39",
+    "@live-change/dao": "0.6.0",
+    "@live-change/dao-sockjs": "0.6.0",
+    "@live-change/db-server": "0.7.2",
+    "@live-change/framework": "0.7.39",
     "@live-change/sockjs": "0.4.1",
-    "@live-change/uid": "^0.7.39",
-    "dotenv": "^16.0.3",
+    "@live-change/uid": "0.7.39",
+    "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "express-static-gzip": "2.1.7",
     "http-proxy-middleware": "2.0.6",
-    "resolve": "^1.22.1",
-    "serialize-javascript": "^6.0.1",
+    "resolve": "^1.22.8",
+    "serialize-javascript": "^6.0.2",
     "sitemap": "^7.1.1",
-    "vite": "^4.4.9",
+    "vite": "^5.1.1",
     "websocket": "^1.0.34",
-    "yargs": "^17.5.1"
+    "yargs": "^17.7.2"
   }
 }

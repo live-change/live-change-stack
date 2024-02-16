@@ -1,9 +1,8 @@
-const cookie = require("cookie")
-const Dao = require("@live-change/dao")
-const { connection } = require("websocket")
-const Services = require('../lib/Services.js')
-const app = require("@live-change/framework").app()
-const DaoWebsocket = require("@live-change/dao-websocket")
+import Dao from "@live-change/dao"
+import Services from '../lib/Services.js'
+import App from "@live-change/framework"
+const app = App.app()
+import * as DaoWebsocket from "@live-change/dao-websocket"
 
 async function setupApiServer(settings) {
   const { services: config, withServices, updateServices } = settings
@@ -12,6 +11,7 @@ async function setupApiServer(settings) {
     const list = await app.dao.get(['database', 'databasesList'])
     console.log("existing databases:", list.join(', '))
     console.log("creating database", app.databaseName)
+
     await app.dao.request(['database', 'createDatabase'], app.databaseName, {
       storage: { noMetaSync: true, noSync: true }
     }).catch(err => 'exists')
@@ -20,14 +20,19 @@ async function setupApiServer(settings) {
   const services = new Services(config)
 
   await services.loadServices()
+
   if(updateServices) await services.update()
   await services.start(withServices
       ? { runCommands: true, handleEvents: true, indexSearch: true }
       : { runCommands: false, handleEvents: false, indexSearch: false })
 
   if(settings.initScript) {
-    const initScript = await import(await services.resolve(settings.initScript))
-    await (initScript.default || initScript)(services.getServicesObject())
+    if(config.init) {
+      config.init(await services.getServicesObject())
+    } else {
+      const initScript = await import(await services.resolve(settings.initScript))
+      await (initScript.default || initScript)(await services.getServicesObject())
+    }
   }
 
   const apiServerConfig = {
@@ -76,13 +81,7 @@ async function setupApiServer(settings) {
     shareDefinition: true,
     logErrors: true,
     createSessionOnUpdate: true, /// deprecated - moved to session-service settings
-    fastAuth: settings.fastAuth /* && ((connection) => {
-      const cookies = cookie.parse(connection.headers.cookie || '')
-      return {
-        sesionId: cookies.sessionId,
-        sessionKey: cookies.sessionKey
-      }
-    }) */
+    fastAuth: settings.fastAuth
   }
 
   const apiServer = await app.createLiveApiServer(apiServerConfig)
@@ -92,4 +91,4 @@ async function setupApiServer(settings) {
   return apiServer
 }
 
-module.exports = setupApiServer
+export default setupApiServer

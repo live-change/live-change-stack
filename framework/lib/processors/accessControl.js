@@ -1,6 +1,6 @@
-const getAccessMethod = require("./accessMethod.js")
+import getAccessMethod from "./accessMethod.js"
 
-module.exports = function(module, app) {
+export default function(module, app) {
   for(let actionName in module.actions) {
     const action = module.actions[actionName]
     if(!action.access) continue;

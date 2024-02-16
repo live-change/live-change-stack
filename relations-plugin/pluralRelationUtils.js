@@ -1,9 +1,10 @@
-const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition } = App
-const { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl } = require("./utils.js")
-
-const pluralize = require('pluralize')
-const { fireChangeTriggers } = require("./changeTriggers.js")
+import App from '@live-change/framework'
+import {
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
+} from "@live-change/framework"
+import { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl } from "./utils.js"
+import { fireChangeTriggers } from "./changeTriggers.js"
+import pluralize from 'pluralize'
 
 function defineView(config, context) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
@@ -338,7 +339,7 @@ function defineSortIndex(context, sortFields) {
   })
 }
 
-module.exports = {
+export {
   defineView,
   defineCreateAction, defineUpdateAction, defineDeleteAction, defineCopyAction,
   defineCopyOnParentCopyTrigger,

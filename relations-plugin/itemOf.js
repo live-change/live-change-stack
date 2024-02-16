@@ -1,20 +1,20 @@
-const {
+import {
   defineProperties, defineIndexes,
   processModelsAnnotation, addAccessControlParents,
   defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers
-} = require('./utils.js')
+} from './utils.js'
 
-const {
+import {
   defineCreatedEvent, defineUpdatedEvent, defineDeletedEvent, defineTransferredEvent,
   defineCopyEvent
-} = require('./itemEvents.js')
+} from './itemEvents.js'
 
-const {
+import {
   defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex,
   defineCopyAction, defineCopyOnParentCopyTrigger
-} = require('./pluralRelationUtils.js')
+} from './pluralRelationUtils.js'
 
-module.exports = function(service, app) {
+export default function(service, app) {
   processModelsAnnotation(service, app, 'itemOf', false, (config, context) => {
 
     context.relationWord = 'Item'

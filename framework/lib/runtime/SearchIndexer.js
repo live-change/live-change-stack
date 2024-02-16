@@ -1,5 +1,3 @@
-
-
 const SEARCH_INDEX_NOTSTARTED = 0
 const SEARCH_INDEX_CREATING = 1
 const SEARCH_INDEX_UPDATING = 2
@@ -313,4 +311,4 @@ class SearchIndexer {
 
 }
 
-module.exports = SearchIndexer
+export default SearchIndexer

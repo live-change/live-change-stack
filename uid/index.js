@@ -101,7 +101,7 @@ function verifyUidSource(uid, source) {
   return at.slice(0, source.length) == source
 }
 
-module.exports = {
+export {
   encodeDate,
   decodeDate,
   encodeNumber,

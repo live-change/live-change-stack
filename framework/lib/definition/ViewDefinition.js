@@ -1,4 +1,4 @@
-const PropertyDefinition = require("./PropertyDefinition.js")
+import PropertyDefinition from "./PropertyDefinition.js"
 
 class ViewDefinition {
 
@@ -36,4 +36,4 @@ class ViewDefinition {
 
 }
 
-module.exports = ViewDefinition
+export default ViewDefinition

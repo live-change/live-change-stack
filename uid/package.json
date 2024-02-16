@@ -15,6 +15,7 @@
     "name": "Michał Łaszczewski",
     "url": "https://www.viamage.com/"
   },
+  "type": "module",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/live-change/live-change-framework/issues"

@@ -1,4 +1,4 @@
-const App = require("@live-change/framework");
+import App from "@live-change/framework"
 
 function extractIdentifiers(otherPropertyNames, properties) {
   const identifiers = {}
@@ -18,7 +18,7 @@ function extractObjectData(writeableProperties, properties, defaults) {
   return App.utils.mergeDeep({}, defaults, JSON.parse(JSON.stringify(objectData)))
 }
 
-module.exports = {
+export {
   extractIdentifiers,
   extractObjectData
 }

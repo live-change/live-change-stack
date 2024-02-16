@@ -1,17 +1,26 @@
-const { def } = require('@vue/shared')
-const fs = require('fs')
-const path = require('path')
-const resolve = require('util').promisify(require('resolve'))
-const app = require("@live-change/framework").app()
+import fs from 'fs'
+import path from 'path'
+import { promisify } from 'util'
+import resolveCb from 'resolve'
+const resolve = promisify(resolveCb)
+import App from "@live-change/framework"
+const app = App.app()
 
-const debug = require('debug')('framework')
+import Debug from 'debug'
+const debug = Debug('framework')
 
 class Services {
-  constructor(configPath) {
-    if(!configPath) throw new Error("services config parameter is required")
-    this.configPath = path.resolve(configPath)
-    this.config = require(path.resolve(this.configPath))
-    this.servicesDir = path.dirname(this.configPath)
+  constructor(config) {
+    if(!config) throw new Error("services config parameter is required")
+    if(typeof config == 'string') {
+      this.configPath = path.resolve(config)
+      this.servicesDir = path.dirname(this.configPath)
+      this.configPromise = import(path.resolve(this.configPath)).then(x => x.default)
+      this.config = null
+    } else {
+      this.config = config
+      this.configPromise = Promise.resolve(config)
+    }
 
     this.plugins = []
     this.serviceDefinitions = []
@@ -29,32 +38,52 @@ class Services {
     return path
   }
 
-  servicesList() {
+  async servicesList() {
+    this.config = await this.configPromise
     return this.config.services.map(s => s.name)
   }
-  serviceConfig(serviceName) {
+  async serviceConfig(serviceName) {
+    this.config = await this.configPromise
     return this.config.services.find(s => s.name = serviceName)
   }
   async loadServices() {
+
+    this.config = await this.configPromise
     app.config.services = this.config.services
     app.config.plugins = this.config.plugins
+
     if(this.config.plugins) {
       for(const plugin of this.config.plugins) {
-        const entryFile = await this.getServiceEntryFile(plugin)
-        debug("PLUGIN", plugin, 'ENTRY FILE', entryFile)
-        this.plugins.push((await import(entryFile)).default)
+        if(plugin.module) {
+          const module = plugin.module
+          const definition = module
+          this.plugins.push(definition)
+        } else {
+          const entryFile = await this.getServiceEntryFile(plugin)
+          debug("PLUGIN", plugin, 'ENTRY FILE', entryFile)
+          const module = await import(entryFile)
+          this.plugins.push(module.default)
+        }
       }
     }
     if(this.config.services) {
       for(const service of this.config.services) {
-        const entryFile = await this.getServiceEntryFile(service)
-        debug("SERVICE", service, 'ENTRY FILE', entryFile)
-        const definition = (await import(entryFile)).default
-        if(definition.name != service.name) {
-          console.error("SERVICE", service, "NAME", service.name, "MISMATCH", definition.name)
-          process.exit(1)
+        if(service.module) {
+          const module = service.module
+          const definition = module
+          this.serviceDefinitions.push(definition)
+          //console.log("SERVICE DEFINITION", definition, "OF", service)
+        } else {
+          const entryFile = await this.getServiceEntryFile(service)
+          debug("SERVICE", service, 'ENTRY FILE', entryFile)
+          const module = await import(entryFile)
+          const definition = module.default
+          if (definition.name != service.name) {
+            console.error("SERVICE", service, "NAME", service.name, "MISMATCH", definition.name)
+            process.exit(1)
+          }
+          this.serviceDefinitions.push(definition)
         }
-        this.serviceDefinitions.push(definition)
       }
     }
 
@@ -139,16 +168,18 @@ class Services {
     // when starting all services at once remove triggerRoutes for cleanup
     await app.dao.request(['database', 'deleteTable'], app.databaseName, 'triggerRoutes').catch(e => 'ok')
     await Promise.all(this.plugins.map(plugin => plugin(app, this)))
-    this.services = await Promise.all(this.serviceDefinitions.map(defn => {
+    this.servicesPromise = Promise.all(this.serviceDefinitions.map(defn => {
       if(!defn.processed) {
         app.processServiceDefinition(defn)
         defn.processed = true
       }
       return app.startService(defn, startOptions)
     }))
+    this.services = await this.servicesPromise
   }
 
-  getServicesObject() {
+  async getServicesObject() {
+    await this.servicesPromise
     let object = {}
     for(const service of this.services) object[service.name] = service
     return object
@@ -156,4 +187,4 @@ class Services {
 
 }
 
-module.exports = Services
+export default Services

@@ -41,4 +41,4 @@ class SingleEmitQueue {
   }
 }
 
-module.exports = SingleEmitQueue
+export default SingleEmitQueue
