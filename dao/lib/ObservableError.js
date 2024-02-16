@@ -1,4 +1,4 @@
-const Observable = require("./Observable.js")
+import Observable from "./Observable.js"
 
 class ObservableError extends Observable {
   constructor(error) {
@@ -17,4 +17,4 @@ class ObservableError extends Observable {
   }
 }
 
-module.exports = ObservableError
+export default ObservableError

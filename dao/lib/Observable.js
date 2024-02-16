@@ -1,4 +1,5 @@
-const debug = require('debug')('dao')
+import Debug from "debug"
+const debug = Debug('dao')
 
 class Observable {
   constructor() {
@@ -137,4 +138,4 @@ class Observable {
   }
 }
 
-module.exports = Observable
+export default Observable

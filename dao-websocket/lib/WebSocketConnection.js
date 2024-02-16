@@ -1,9 +1,9 @@
-const WebSocket = require('universal-websocket-client');
-const rd = require("@live-change/dao")
-const Connection = rd.ReactiveConnection
-const debug = require('debug')('reactive-dao-ws')
+import WebSocket from 'universal-websocket-client'
+import { ReactiveConnection } from '@live-change/dao'
+import Debug from 'debug'
+const debug = Debug('reactive-dao-ws')
 
-class WebSocketConnection extends Connection {
+class WebSocketConnection extends ReactiveConnection {
   constructor(credentials, url, settings) {
     super(credentials, settings)
     this.url = url
@@ -69,4 +69,4 @@ class WebSocketConnection extends Connection {
 
 }
 
-module.exports = WebSocketConnection
+export default WebSocketConnection

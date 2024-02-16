@@ -1,5 +1,6 @@
-const debug = require('debug')('dao')
-const Observable = require("./Observable.js")
+import Debug from "debug"
+const debug = Debug('dao')
+import Observable from "./Observable.js"
 
 class ObservableProxy extends Observable {
   constructor(observable) {
@@ -136,4 +137,4 @@ class ObservableProxy extends Observable {
 
 }
 
-module.exports = ObservableProxy
+export default ObservableProxy

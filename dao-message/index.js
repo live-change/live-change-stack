@@ -1,8 +1,8 @@
-const rd = require("@live-change/dao")
-const Connection = rd.ReactiveConnection
-const debug = require('debug')('dao-message')
+import { ReactiveConnection } from "@live-change/dao"
+import Debug from "debug"
+const debug = Debug('dao-message')
 
-class MessageConnection extends Connection {
+class MessageConnection extends ReactiveConnection {
 
   constructor(credentials, url, settings) {
     super(credentials, settings)
@@ -68,5 +68,4 @@ class MessageConnection extends Connection {
 
 }
 
-module.exports = MessageConnection
-module.exports.MessageConnection = MessageConnection
+export default MessageConnection

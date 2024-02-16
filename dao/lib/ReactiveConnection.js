@@ -1,6 +1,7 @@
-const EventEmitter = require("./EventEmitter.js")
-const debug = require('debug')('dao')
-const utils = require('./utils')
+import EventEmitter from "./EventEmitter.js"
+import Debug from 'debug'
+const debug = Debug('dao')
+import * as utils from './utils.js'
 
 let lastUid = 0
 
@@ -455,4 +456,4 @@ class Connection extends EventEmitter {
 
 }
 
-module.exports = Connection
+export default Connection

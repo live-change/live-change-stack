@@ -1,10 +1,9 @@
-const test = require('blue-tape')
-const testServerDao = require('reactive-dao/tests/testServerDao.js')
-const ReactiveDao = require("reactive-dao")
-const WebSocketServer = require('websocket').server
-var http = require('http')
-
-const rdws = require("../index.js")
+import test from 'tape'
+import * as testServerDao from '@live-change/dao/tests/testServerDao.js'
+import ReactiveDao from "@live-change/dao"
+import { server as WebSocketConnection } from 'websocket'
+import http from 'http'
+import * as rdws from '../index.js'
 
 test("time value", (t) => {
   t.plan(4)
@@ -28,7 +27,7 @@ test("time value", (t) => {
       console.log('Server is listening on port',port);
     })
 
-    let wsServer = new WebSocketServer({ httpServer, autoAcceptConnections: false })
+    let wsServer = new WebSocketConnection({ httpServer, autoAcceptConnections: false })
     wsServer.on("request",(request) => {
       t.pass("WebSocket request made")
       let serverConnection = new rdws.server(request)

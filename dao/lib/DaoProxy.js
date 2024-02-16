@@ -1,5 +1,5 @@
-const EventEmitter = require("./EventEmitter.js")
-const ObservableProxy = require("./ObservableProxy.js")
+import EventEmitter from "./EventEmitter.js"
+import ObservableProxy from "./ObservableProxy.js"
 
 class DaoProxy extends EventEmitter {
   constructor(dao) {
@@ -94,4 +94,4 @@ class DaoProxy extends EventEmitter {
   }
 }
 
-module.exports = DaoProxy
+export default DaoProxy

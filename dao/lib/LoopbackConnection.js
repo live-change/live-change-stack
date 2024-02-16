@@ -1,5 +1,6 @@
-const Connection = require("./ReactiveConnection.js")
-const debug = require("debug")("reactive-dao:loopback-connection")
+import Connection from "./ReactiveConnection.js"
+import Debug from "debug"
+const debug = Debug("reactive-dao:loopback-connection")
 
 class LoopbackConnection extends Connection {
   constructor(credentials, server, settings) {
@@ -86,4 +87,4 @@ class LoopbackConnection extends Connection {
 
 }
 
-module.exports = LoopbackConnection
+export default LoopbackConnection

@@ -22,4 +22,4 @@ class RemoteDataSource {
   }
 }
 
-module.exports = RemoteDataSource
+export default RemoteDataSource

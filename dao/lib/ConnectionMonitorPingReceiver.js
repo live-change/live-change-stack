@@ -28,4 +28,4 @@ class ConnectionMonitorPingReceiver {
   }
 }
 
-module.exports = ConnectionMonitorPingReceiver
+export default ConnectionMonitorPingReceiver

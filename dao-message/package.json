@@ -10,9 +10,9 @@
     "url": "https://github.com/live-change/live-change-dao/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.5.22",
+    "@live-change/dao": "0.5.22",
     "debug": "^4.3.4",
-    "supports-color": "^7.2.0"
+    "supports-color": "^9.4.0"
   },
   "devDependencies": {
     "babel-loader": "^6.2.5",
@@ -21,6 +21,7 @@
     "better-assert": "github:devinrhode2/better-assert-browser",
     "mocha": "^9.0.0"
   },
+  "type": "module",
   "description": "live-change dao sockjs transport",
   "directories": {},
   "homepage": "https://github.com/live-change/live-change-dao",

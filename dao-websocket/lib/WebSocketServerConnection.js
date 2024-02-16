@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+import EventEmitter from 'events'
 
 class WebSocketServerConnection extends EventEmitter {
   constructor(request, origin) {
@@ -26,4 +26,4 @@ class WebSocketServerConnection extends EventEmitter {
   }
 }
 
-module.exports = WebSocketServerConnection
+export default WebSocketServerConnection

@@ -1,4 +1,4 @@
-function errorToJSON(error) {
+export function errorToJSON(error) {
   if(typeof error == 'object') {
     let obj = {}
     Object.getOwnPropertyNames(error).forEach(function (key) {
@@ -8,8 +8,6 @@ function errorToJSON(error) {
   }
   return error
 }
-
-module.exports.errorToJSON = errorToJSON
 
 function nextTickMicrotask(handler, ...args) {
   queueMicrotask(() => handler(...args))
@@ -23,4 +21,4 @@ function nextTickPromise(handler, ...args) {
 const supportMicrotask = typeof queueMicrotask !== 'undefined'
 const supportNextTick = typeof process !== 'undefined' && process.nextTick
 
-module.exports.nextTick = supportNextTick ? process.nextTick : (supportMicrotask ? nextTickMicrotask : nextTickPromise)
+export const nextTick = supportNextTick ? process.nextTick : (supportMicrotask ? nextTickMicrotask : nextTickPromise)

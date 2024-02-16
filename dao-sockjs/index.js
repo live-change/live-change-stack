@@ -1,9 +1,9 @@
-const SockJS = require("sockjs-client")
-const rd = require("@live-change/dao")
-const Connection = rd.ReactiveConnection
-const debug = require('debug')('dao:sockjs')
+import SockJS from "sockjs-client"
+import { ReactiveConnection } from "@live-change/dao"
+import Debug from "debug"
+const debug = Debug('dao:sockjs')
 
-class SockJsConnection extends Connection {
+class SockJsConnection extends ReactiveConnection {
   constructor(credentials, url, settings) {
     super(credentials, settings)
     this.url = url
@@ -61,5 +61,4 @@ class SockJsConnection extends Connection {
 
 }
 
-module.exports = SockJsConnection
-module.exports.SockJsConnection = SockJsConnection
+export default SockJsConnection

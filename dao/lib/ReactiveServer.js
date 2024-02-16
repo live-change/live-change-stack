@@ -1,6 +1,6 @@
-const ReactiveServerConnection = require('./ReactiveServerConnection.js')
-
-const debug = require('debug')('dao')
+import ReactiveServerConnection from './ReactiveServerConnection.js'
+import Debug from 'debug'
+const debug = Debug('dao')
 
 class ReactiveServer {
   constructor(daoFactory, settings) {
@@ -21,4 +21,4 @@ class ReactiveServer {
   }
 }
 
-module.exports = ReactiveServer
+export default ReactiveServer

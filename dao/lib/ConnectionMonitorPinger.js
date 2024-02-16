@@ -47,4 +47,4 @@ class ConnectionMonitorPinger {
 
 }
 
-module.exports = ConnectionMonitorPinger
+export default ConnectionMonitorPinger

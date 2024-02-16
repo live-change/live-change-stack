@@ -1,7 +1,8 @@
-const Observable = require("./Observable.js")
-const ObservableValue = require("./ObservableValue.js")
-const ObservableError = require("./ObservableError.js")
-const debug = require('debug')('dao')
+import Observable from "./Observable.js"
+import ObservableValue from "./ObservableValue.js"
+import ObservableError from "./ObservableError.js"
+import Debug from "debug"
+const debug = Debug('dao')
 
 class ObservablePromiseProxy extends Observable {
   constructor(promise, errorMapper = v => v) {
@@ -58,4 +59,4 @@ class ObservablePromiseProxy extends Observable {
   }
 }
 
-module.exports = ObservablePromiseProxy
+export default ObservablePromiseProxy

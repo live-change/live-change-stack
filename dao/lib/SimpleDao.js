@@ -1,7 +1,8 @@
-const ObservableValue = require("./ObservableValue.js")
-const ObservablePromiseProxy = require("./ObservablePromiseProxy.js")
-const ObservableError = require("./ObservableError.js")
-const debug = require("debug")("reactive-dao")
+import ObservableValue from "./ObservableValue.js"
+import ObservablePromiseProxy from "./ObservablePromiseProxy.js"
+import ObservableError from "./ObservableError.js"
+import Debug from "debug"
+const debug = Debug("reactive-dao")
 
 const errorMapper = e => ''+(e.stack || e.message || (typeof e == 'object' ? JSON.stringify(e) : e))
 
@@ -48,4 +49,4 @@ class SimpleDao {
 
 }
 
-module.exports = SimpleDao
+export default SimpleDao

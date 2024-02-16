@@ -119,4 +119,4 @@ class TimeSynchronization {
 
 }
 
-module.exports = TimeSynchronization
+export default TimeSynchronization

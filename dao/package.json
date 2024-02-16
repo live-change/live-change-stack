@@ -17,9 +17,10 @@
   },
   "description": "live data access object",
   "devDependencies": {
-    "blue-tape": "^1.0.0",
-    "supports-color": "^7.2.0"
+    "tape": "^5.7.4",
+    "supports-color": "^9.4.0"
   },
+  "type": "module",
   "directories": {},
   "license": "BSD-3-Clause",
   "main": "index.js",
@@ -33,7 +34,7 @@
   "name": "@live-change/dao",
   "readme": "README.md",
   "scripts": {
-    "test": "NODE_ENV=test blue-tape tests/*"
+    "test": "NODE_ENV=test tape tests/*"
   },
   "version": "0.5.22"
 }

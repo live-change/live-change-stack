@@ -150,4 +150,4 @@ function collectPointers(source, schemas, getSource) {
   return results
 }
 
-module.exports = collectPointers
+export default collectPointers

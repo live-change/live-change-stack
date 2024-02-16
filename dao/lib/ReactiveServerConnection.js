@@ -1,9 +1,10 @@
-const EventEmitter = require('./EventEmitter.js')
-const ObservableList = require("./ObservableList.js")
-const utils = require('./utils.js')
-const collectPointers = require('./collectPointers.js')
-const debug = require("debug")("reactive-dao")
-const debugPot = require("debug")("reactive-dao:pot")
+import EventEmitter from './EventEmitter.js'
+import ObservableList from "./ObservableList.js"
+import * as utils from './utils.js'
+import collectPointers from './collectPointers.js'
+import Debug from 'debug'
+const debug = Debug("reactive-dao")
+const debugPot = Debug("reactive-dao:pot")
 
 class PushObservableTrigger {
   constructor(po, what, more) {
@@ -597,11 +598,10 @@ class ReactiveServerConnection extends EventEmitter {
       const pointers = collectPointers(source, schema, (dep) => {
         const key = JSON.stringify(dep)
         const value = resultsMap.get(key)
-        if(typeof value != 'undefined') return value
+        if(typeof value != 'undefined') return value.data
         moreDeps.push(dep)
         return undefined
       })
-      //console.log("S PTRS", JSON.stringify(pointers, null, '  '))
       if(moreDeps.length == 0) return Promise.resolve(pointers)
       return Promise.all(moreDeps.map(dep => {
         const result = fetch({ what: dep }).catch(error => {
@@ -611,7 +611,6 @@ class ReactiveServerConnection extends EventEmitter {
         })
         return result
       })).then(gotSomeDeps => fetchDeps(source, schema))
-
     }
     function fetchMore(result, more) {
       return Promise.all(
@@ -749,12 +748,12 @@ class ReactiveServerConnection extends EventEmitter {
       this.dao = this.daoPromise
       this.daoPromise = null
     } else {
-      this.daoPromise.catch(error => this.handleDaoFactoryError(error)).then(dd => {
+      this.daoPromise.then(dd => {
         if(!dd) return this.handleDaoFactoryError("dao not defined")
         this.dao = dd
         this.daoPromise = null
         for(const message of this.daoGenerationQueue) this.handleAuthorizedMessage(message)
-      })
+      }).catch(error => this.handleDaoFactoryError(error))
     }
   }
 
@@ -791,4 +790,4 @@ class ReactiveServerConnection extends EventEmitter {
 
 }
 
-module.exports = ReactiveServerConnection
+export default ReactiveServerConnection

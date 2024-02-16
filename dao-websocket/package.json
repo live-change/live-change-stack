@@ -10,23 +10,23 @@
     "url": "https://github.com/live-change/live-change-dao/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.5.22",
+    "@live-change/dao": "0.5.22",
     "bufferutil": "^4.0.3",
     "debug": "^4.3.4",
-    "supports-color": "^7.2.0",
+    "supports-color": "^9.4.0",
     "universal-websocket-client": "^1.0.1",
     "utf-8-validate": "^5.0.4",
     "websocket": "^1.0.34"
   },
   "description": "live-change dao websocket transport",
   "devDependencies": {
-    "blue-tape": "^1.0.0"
+    "tape": "^5.7.4"
   },
   "directories": {},
   "homepage": "https://github.com/live-change/live-change-dao",
   "license": "BSD-3-Clause",
   "main": "index.js",
-  "browser": "browser.js",
+  "type": "module",
   "maintainers": [
     {
       "email": "michal@laszczewski.com",
@@ -38,7 +38,9 @@
     "type": "git",
     "url": ""
   },
+  "type": "module",
   "scripts": {
-    "compileTests": "webpack test/*.js tests-bundle.js"
+    "compileTests": "webpack tests/*.js tests-bundle.js",
+    "test": "NODE_ENV=test tape tests/*"
   }
 }

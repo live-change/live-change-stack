@@ -1,5 +1,6 @@
-const debug = require('debug')('reactive-dao:cache')
-const ObservableValue = require("./ObservableValue.js")
+import Debug from 'debug'
+const debug = Debug('reactive-dao:cache')
+import ObservableValue from "./ObservableValue.js"
 
 class DaoPrerenderCache {
 
@@ -151,4 +152,4 @@ class DaoPrerenderCache {
 
 }
 
-module.exports = DaoPrerenderCache
+export default DaoPrerenderCache

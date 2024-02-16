@@ -1,9 +1,9 @@
-const ReactiveDao = require("../index.js")
+import ReactiveDao from "../index.js"
 
 let timeObservable = new ReactiveDao.ObservableValue(Date.now())
 let clicksObservable = new ReactiveDao.ObservableList([])
 
-class ObservableCounter extends ReactiveDao.ObservableValue {
+export class ObservableCounter extends ReactiveDao.ObservableValue {
   constructor(v) {
     super(v)
   }
@@ -278,16 +278,15 @@ function generator(credentials) {
   })
 }
 
-module.exports.instant = generator
+export const instant = generator
 
-module.exports.promised = (credentials) => new Promise((resolve, reject) => {
+export const promised = (credentials) => new Promise((resolve, reject) => {
   setTimeout(() => resolve(generator(credentials)), 50)
 })
 
-module.exports.failedPromise = (credentials) => new Promise((resolve, reject) => {
+export const failedPromise = (credentials) => new Promise((resolve, reject) => {
   setTimeout(() => reject("error"))
 })
 
-module.exports.failed = (credentials) => { throw new Error("error") }
+export const failed = (credentials) => { throw new Error("error") }
 
-module.exports.ObservableCounter = ObservableCounter

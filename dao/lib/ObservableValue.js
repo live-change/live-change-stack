@@ -1,4 +1,4 @@
-const Observable = require("./Observable.js")
+import Observable from "./Observable.js"
 
 class ObservableValue extends Observable {
   constructor(value) {
@@ -167,4 +167,4 @@ class ObservableValue extends Observable {
   }
 }
 
-module.exports = ObservableValue
+export default ObservableValue

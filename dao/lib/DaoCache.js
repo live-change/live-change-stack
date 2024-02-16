@@ -1,4 +1,4 @@
-const EventEmitter = require("./EventEmitter.js")
+import EventEmitter from "./EventEmitter.js"
 
 class CacheState {
   constructor(cache, what, settings) {
@@ -272,4 +272,4 @@ class DaoCache extends EventEmitter {
   }
 }
 
-module.exports = DaoCache
+export default DaoCache

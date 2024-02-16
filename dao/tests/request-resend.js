@@ -1,7 +1,7 @@
-const test = require('blue-tape');
-const testServerDao = require('./testServerDao.js')
-const ReactiveDao = require("../index.js")
-const LoopbackConnection = require('../lib/LoopbackConnection.js')
+import test from 'tape'
+import * as testServerDao from './testServerDao.js'
+import ReactiveDao from "../index.js"
+import LoopbackConnection from '../lib/LoopbackConnection.js'
 
 test("request resend", (t) => {
   t.plan(7)

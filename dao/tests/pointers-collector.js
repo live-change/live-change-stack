@@ -1,5 +1,5 @@
-const test = require('blue-tape')
-const ReactiveDao = require("../index.js")
+import test from 'tape'
+import ReactiveDao from "../index.js"
 
 test("pointers collector", (t) => {
   t.plan(14)

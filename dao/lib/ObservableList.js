@@ -1,4 +1,4 @@
-const Observable = require("./Observable.js")
+import Observable from "./Observable.js"
 
 class ObservableList extends Observable {
   constructor(list, _what, _dispose, valueActivator) {
@@ -300,4 +300,4 @@ class ObservableList extends Observable {
   }
 }
 
-module.exports = ObservableList
+export default ObservableList

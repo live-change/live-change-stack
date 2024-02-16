@@ -1,8 +1,9 @@
-const EventEmitter = require("./EventEmitter.js")
-const RemoteDataSource = require("./RemoteDataSource.js")
-const ReactiveConnection = require("./ReactiveConnection.js")
-const ObservableList = require("./ObservableList.js")
-const debug = require('debug')('dao')
+import EventEmitter from "./EventEmitter.js"
+import RemoteDataSource from "./RemoteDataSource.js"
+import ReactiveConnection from "./ReactiveConnection.js"
+import ObservableList from "./ObservableList.js"
+import Debug from "debug"
+const debug = Debug('dao')
 
 function isConstructor(f) {
   try {
@@ -113,5 +114,4 @@ class Dao extends EventEmitter {
   }
 }
 
-module.exports = Dao
-module.exports.default = Dao
+export default Dao

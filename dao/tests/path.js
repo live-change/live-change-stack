@@ -1,6 +1,6 @@
-const test = require('blue-tape')
-const testServerDao = require('./testServerDao.js')
-const { Path } = require("../index.js")
+import test from 'tape'
+import * as testServerDao from './testServerDao.js'
+import { Path } from "../index.js"
 
 const users = (params) => new Path(['users', params])
 const user = (params) => new Path(['user', params])

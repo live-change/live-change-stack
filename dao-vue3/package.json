@@ -10,8 +10,9 @@
     "url": "https://github.com/live-change/live-change-dao/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.5.22"
+    "@live-change/dao": "0.5.22"
   },
+  "type": "module",
   "description": "Vue.js integration for live-change dao",
   "directories": {},
   "homepage": "https://github.com/live-change/live-change-dao",

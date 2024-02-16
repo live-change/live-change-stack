@@ -1,70 +1,90 @@
-const Dao = require("./lib/Dao.js")
+import Dao from "./lib/Dao.js"
+let rd = Dao
+rd.Dao = Dao
 
-Dao.Dao = Dao
+import Observable from "./lib/Observable.js"
+rd.Observable = Observable
+export { Observable }
 
-const Observable = require("./lib/Observable.js")
-Dao.Observable = Observable
+import ObservableValue from "./lib/ObservableValue.js"
+rd.ObservableValue = ObservableValue
+export { ObservableValue }
 
-const ObservableValue = require("./lib/ObservableValue.js")
-Dao.ObservableValue = ObservableValue
+import ObservableList from "./lib/ObservableList.js"
+rd.ObservableList = ObservableList
+export { ObservableList }
 
-const ObservableList = require("./lib/ObservableList.js")
-Dao.ObservableList = ObservableList
+import ExtendedObservableList from "./lib/ExtendedObservableList.js"
+rd.ExtendedObservableList = ExtendedObservableList
+export { ExtendedObservableList }
 
-const ExtendedObservableList = require("./lib/ExtendedObservableList.js")
-Dao.ExtendedObservableList = ExtendedObservableList
+import DaoPrerenderCache from "./lib/DaoPrerenderCache.js"
+const ReactiveCache = DaoPrerenderCache // backward compatibility
+rd.ReactiveCache = DaoPrerenderCache // backward compatibility
+rd.DaoPrerenderCache = DaoPrerenderCache
+export { ReactiveCache, DaoPrerenderCache }
 
-const ReactiveServer = require("./lib/ReactiveServer.js")
-Dao.ReactiveServer = ReactiveServer
+import DaoProxy from "./lib/DaoProxy.js"
+const ReactiveDaoProxy = DaoProxy // backward compatibility
+rd.ReactiveDaoProxy = DaoProxy // backward compatibility
+rd.DaoProxy = DaoProxy
+export { ReactiveDaoProxy, DaoProxy }
 
-const DaoPrerenderCache = require("./lib/DaoPrerenderCache.js")
-Dao.DaoPrerenderCache = DaoPrerenderCache
-Dao.ReactiveCache = DaoPrerenderCache // BACKWARD COMPATIBILITY
+import DaoCache from "./lib/DaoCache.js"
+rd.DaoCache = DaoCache
+export { DaoCache }
 
-const ReactiveConnection = require("./lib/ReactiveConnection.js")
-Dao.ReactiveConnection = ReactiveConnection
+import InboxReader from "./lib/InboxReader.js"
+rd.InboxReader = InboxReader
+export { InboxReader }
 
-const LoopbackConnection = require('./lib/LoopbackConnection.js')
-Dao.LoopbackConnection = LoopbackConnection
+import ReactiveConnection from "./lib/ReactiveConnection.js"
+rd.ReactiveConnection = ReactiveConnection
+export { ReactiveConnection }
 
-const SimpleDao = require("./lib/SimpleDao.js")
-Dao.SimpleDao = SimpleDao
+import LoopbackConnection from "./lib/LoopbackConnection.js"
+rd.LoopbackConnection = LoopbackConnection
+export { LoopbackConnection }
 
-const ObservableProxy = require("./lib/ObservableProxy.js")
-Dao.ObservableProxy = ObservableProxy
+import SimpleDao from "./lib/SimpleDao.js"
+rd.SimpleDao = SimpleDao
+export { SimpleDao }
 
-const ObservablePromiseProxy = require("./lib/ObservablePromiseProxy.js")
-Dao.ObservablePromiseProxy = ObservablePromiseProxy
+import ObservableError from "./lib/ObservableError.js"
+rd.ObservableError = ObservableError
+export { ObservableError }
 
-const ObservableError = require("./lib/ObservableError.js")
-Dao.ObservableError = ObservableError
+import ObservableProxy from "./lib/ObservableProxy.js"
+rd.ObservableProxy = ObservableProxy
+export { ObservableProxy }
 
-const ConnectionMonitorPinger = require("./lib/ConnectionMonitorPinger.js")
-Dao.ConnectionMonitorPinger = ConnectionMonitorPinger
+import ObservablePromiseProxy from "./lib/ObservablePromiseProxy.js"
+rd.ObservablePromiseProxy = ObservablePromiseProxy
+export { ObservablePromiseProxy }
 
-const ConnectionMonitorPingReceiver = require("./lib/ConnectionMonitorPingReceiver.js")
-Dao.ConnectionMonitorPingReceiver = ConnectionMonitorPingReceiver
+import ConnectionMonitorPinger from "./lib/ConnectionMonitorPinger.js"
+rd.ConnectionMonitorPinger = ConnectionMonitorPinger
+export { ConnectionMonitorPinger }
 
-const TimeSynchronization = require("./lib/TimeSynchronization.js")
-Dao.TimeSynchronization = TimeSynchronization
+import ConnectionMonitorPingReceiver from "./lib/ConnectionMonitorPingReceiver.js"
+rd.ConnectionMonitorPingReceiver = ConnectionMonitorPingReceiver
+export { ConnectionMonitorPingReceiver }
 
-const DaoProxy = require("./lib/DaoProxy.js")
-Dao.ReactiveDaoProxy = DaoProxy // BACKWARD COMPATIBILITY
-Dao.DaoProxy = DaoProxy
+import TimeSynchronization from "./lib/TimeSynchronization.js"
+rd.TimeSynchronization = TimeSynchronization
+export { TimeSynchronization }
 
-const DaoCache = require("./lib/DaoCache.js")
-Dao.DaoCache = DaoCache
+import collectPointers from "./lib/collectPointers.js"
+rd.collectPointers = collectPointers
+export { collectPointers }
 
-const InboxReader = require("./lib/InboxReader.js")
-Dao.InboxReader = InboxReader
+import ReactiveServer from "./lib/ReactiveServer.js"
+rd.ReactiveServer = ReactiveServer
+export { ReactiveServer }
 
-const Path = require("./lib/Path.js")
-Dao.Path = Path
+import Path from "./lib/Path.js"
+rd.Path = Path
+export { Path }
 
-const collectPointers = require("./lib/collectPointers.js")
-Dao.collectPointers = collectPointers
 
-Dao.global = Dao
-
-module.exports = Dao
-
+export default rd

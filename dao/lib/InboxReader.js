@@ -97,4 +97,4 @@ class InboxReader {
 
 }
 
-module.exports = InboxReader
+export default InboxReader
