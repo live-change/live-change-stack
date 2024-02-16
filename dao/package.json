@@ -17,8 +17,8 @@
   },
   "description": "live data access object",
   "devDependencies": {
-    "tape": "^5.7.4",
-    "supports-color": "^9.4.0"
+    "supports-color": "^9.4.0",
+    "tape": "^5.7.4"
   },
   "type": "module",
   "directories": {},
@@ -36,5 +36,5 @@
   "scripts": {
     "test": "NODE_ENV=test tape tests/*"
   },
-  "version": "0.5.22"
+  "version": "0.6.0"
 }
