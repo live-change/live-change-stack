@@ -1,4 +1,5 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
 const definition = app.createServiceDefinition({
   name: "analytics"
@@ -41,4 +42,4 @@ definition.beforeStart(async () => {
 
 })
 
-module.exports = definition
+export default definition

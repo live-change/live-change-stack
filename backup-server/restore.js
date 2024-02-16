@@ -1,12 +1,12 @@
-const fs = require('fs')
-const fse = require('fs-extra')
-const util = require('util')
-const execProcess = util.promisify(require('child_process').exec)
-const exec = require('@live-change/db-client/lib/exec.js')
-const { once } = require('events')
-const os = require("os")
-const path = require('path')
+import fs from 'fs'
+import fse from 'fs-extra'
+import util from 'util'
+import { exec } from "child_process"
+const execProcess = util.promisify(exec)
+import { once } from 'events'
+import os from "os"
+import path from 'path'
 
-function restore({ file }) {
+export function restoreBackup({ file }) {
   throw new Error('not_implemented')
 }

@@ -1,6 +1,5 @@
-const definition = require('./definition.js')
-const config = definition.config
-const { PasswordAuthentication, secretProperties } = require('./model.js')
+import definition from './definition.js'
+import { PasswordAuthentication, secretProperties } from './model.js'
 
 definition.action({
   name: 'setPassword',

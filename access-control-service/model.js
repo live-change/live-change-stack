@@ -1,8 +1,9 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
-const access = require('./access.js')(definition)
+import accessModule from'./access.js'
+const access = accessModule(definition)
 
 const rolesArrayType = {
   type: Array,
@@ -113,4 +114,4 @@ const AccessInvitation = definition.model({
   }
 })
 
-module.exports = { Access, PublicAccess, AccessRequest, AccessInvitation, invitationProperties, rolesArrayType }
+export { Access, PublicAccess, AccessRequest, AccessInvitation, invitationProperties, rolesArrayType }

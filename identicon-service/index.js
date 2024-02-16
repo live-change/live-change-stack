@@ -1,7 +1,8 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 
-require('./endpoint.js')
+import './endpoint.js'
 
-module.exports = definition
+export default definition

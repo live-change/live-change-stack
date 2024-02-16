@@ -1,5 +1,6 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 const config = definition.config
 
 const contactProperties = {
@@ -222,4 +223,4 @@ definition.action({
   }
 })
 
-module.exports = { Authentication, contactProperties, targetProperties, messageProperties }
+export { Authentication, contactProperties, targetProperties, messageProperties }

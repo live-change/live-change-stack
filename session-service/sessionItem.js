@@ -1,9 +1,10 @@
-const definition = require("./definition.js")
-const App = require("@live-change/framework")
-const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
-const { Session } = require("./model.js")
+import definition from './definition.js'
+import {
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
+} from '@live-change/framework'
+import { Session } from "./model.js"
 
-const pluralize = require('pluralize')
+import pluralize from 'pluralize'
 
 definition.processor(function(service, app) {
 

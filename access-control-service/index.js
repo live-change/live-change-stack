@@ -1,11 +1,12 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 
-require('./model.js')
-require('./invite.js')
-require('./request.js')
-require('./view.js')
-require('./accessControl.js')
+import './model.js'
+import './invite.js'
+import './request.js'
+import './view.js'
+import './accessControl.js'
 
-module.exports = definition
+export default definition

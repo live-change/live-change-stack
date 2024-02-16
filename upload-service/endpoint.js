@@ -1,19 +1,20 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 const config = definition.config
 
-const progress = require('progress-stream')
+import progress from 'progress-stream'
 
 const uploadsPath = config.uploadsPath || "./storage/uploads/"
 
-const crypto = require("crypto")
-const fs = require('fs')
+import crypto from "crypto"
+import fs from 'fs'
 
-const express = require("express")
+import express from "express"
 
 fs.mkdirSync(uploadsPath, { recursive: true })
 
-const { Upload } = require("./model.js")
+import { Upload } from "./model.js"
 
 async function setStreamInfo(info) {
   console.dir(info)
@@ -114,4 +115,4 @@ definition.endpoint({
   }
 })
 
-module.exports = {}
+export {}

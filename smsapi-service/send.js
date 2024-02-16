@@ -1,5 +1,5 @@
-const definition = require('./definition.js')
-const app = require('@live-change/framework').app()
+import definition from './definition.js'
+import App from ('@live-change/framework'
 
 const renderSms = require('./render.js')
 const config = definition.config

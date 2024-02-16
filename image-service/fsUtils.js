@@ -1,4 +1,4 @@
-const fs = require('fs')
+import fs from 'fs'
 
 function move(from, to) {
   return new Promise((resolve,reject) => {
@@ -36,4 +36,4 @@ function rmdir(path) {
   })
 }
 
-module.exports = { move, copy, mkdir, rmdir }
+export { move, copy, mkdir, rmdir }

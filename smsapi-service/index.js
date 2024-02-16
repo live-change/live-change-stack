@@ -1,6 +1,7 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 definition.processor(function(service, app) {
   service.validators.phone = require('./phoneValidator.js')
@@ -9,6 +10,6 @@ definition.processor(function(service, app) {
 require('./send.js')
 require('./auth.js')
 
-module.exports = definition
+export default definition
 
 

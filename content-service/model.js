@@ -1,6 +1,6 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 const config = definition.config
 const {
@@ -63,4 +63,4 @@ const Page = definition.model({
   },
 })
 
-module.exports = { Content, AdditionalContent, Page }
+export { Content, AdditionalContent, Page }

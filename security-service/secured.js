@@ -1,6 +1,8 @@
-const definition = require('./definition.js')
-const { getClientKeysObject, getClientKeysStrings, multiKeyIndexQuery, fastMultiKeyIndexQuery } = require('./utils.js')
-const { Ban } = require('./ban.js')
+import definition from './definition.js'
+import {
+  getClientKeysObject, getClientKeysStrings, multiKeyIndexQuery, fastMultiKeyIndexQuery
+} from './utils.js'
+import { Ban } from './ban.js'
 
 async function getBans(client, actions) {
   const keys = []

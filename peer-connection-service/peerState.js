@@ -1,4 +1,4 @@
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 const { Peer } = require('./peer.js')
 

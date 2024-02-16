@@ -1,11 +1,12 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 
-const crypto = require("crypto")
-const Identicon = require("identicon.js")
-const jdenticon = require("jdenticon")
+import crypto from "crypto"
+import Identicon from "identicon.js"
+import * as jdenticon from "jdenticon"
 
-const express = require("express")
+import express from "express"
 
 definition.endpoint({
   name: 'identicon',
@@ -45,4 +46,4 @@ definition.endpoint({
   }
 })
 
-module.exports = {}
+export {}

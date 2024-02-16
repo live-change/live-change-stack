@@ -1,7 +1,7 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
-const definition = require('./definition.js')
-const { Session } = require('./model.js')
+import definition from './definition.js'
+import { Session } from './model.js'
 
 definition.view({
   name: 'currentSession',
@@ -76,9 +76,9 @@ definition.trigger({
   }
 })
 
-require('./authenticator.js')
-require('./localIdValidator.js')
-require('./sessionProperty.js')
-require('./sessionItem.js')
+import './authenticator.js'
+import './localIdValidator.js'
+import './sessionProperty.js'
+import './sessionItem.js'
 
-module.exports = definition
+export default definition

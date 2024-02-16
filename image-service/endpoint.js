@@ -1,11 +1,12 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 
-const { Image } = require('./image.js')
+import { Image } from './image.js'
 
-const fs = require("fs")
-const path = require("path")
-const sharp = require('sharp')
+import fs from "fs"
+import path from "path"
+import sharp from 'sharp'
 
 const config = definition.config
 
@@ -154,7 +155,7 @@ async function handleImageGet(req, res, params) {
 }
 
 
-const express = require("express")
+import express from "express"
 
 definition.endpoint({
   name: 'image',
@@ -192,4 +193,4 @@ definition.endpoint({
   }
 })
 
-module.exports = {}
+export {}

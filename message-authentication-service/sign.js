@@ -1,8 +1,9 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 const config = definition.config
 
-const { contactProperties } = require('./authentication.js')
+import { contactProperties } from './authentication.js'
 
 definition.trigger({
   name: 'signUpWithMessageAuthenticated',

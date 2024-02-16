@@ -1,12 +1,14 @@
-const app = require("@live-change/framework").app()
-const fs = require('fs')
-const fse = require('fs-extra')
-const util = require('util')
-const exec = util.promisify(require('child_process').exec)
-const dump = require('@live-change/db-client/lib/dump.js')
-const { once } = require('events')
-const os = require("os")
-const path = require('path')
+import App from '@live-change/framework'
+const app = App.app()
+import fs from 'fs'
+import fse from 'fs-extra'
+import util from 'util'
+import { exec as cpExec } from 'child_process'
+const exec = util.promisify(cpExec)
+import dump from '@live-change/db-client/lib/dump.js'
+import { once } from 'events'
+import os from "os"
+import path from 'path'
 
 function currentBackupPath(backupsDir = './backups/') {
   const dateString = new Date().toISOString().slice(0,-1).replace(/[T:\\.-]/gi, '_')
@@ -93,4 +95,4 @@ async function removeOldBackups(backupsDir = '../../backups/', maxAge = 10*24*36
   }
 }
 
-module.exports = {  createBackup, currentBackupPath, removeOldBackups }
+export { createBackup, currentBackupPath, removeOldBackups }

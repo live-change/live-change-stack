@@ -1,4 +1,4 @@
-module.exports = (settings) => (pass) => {
+export default (settings) => (pass) => {
   if(!pass) return
   let digits = /\d/.test(pass)
   let lower = /[a-z]/.test(pass)

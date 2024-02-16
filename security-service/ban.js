@@ -1,7 +1,8 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
-const { getClientKeysStrings, multiKeyIndexQuery, fastMultiKeyIndexQuery } = require('./utils.js')
-const lcp = require('@live-change/pattern')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
+import { getClientKeysStrings, multiKeyIndexQuery, fastMultiKeyIndexQuery } from './utils.js'
+import lcp from '@live-change/pattern'
 
 const banProperties = {
   actions: {
@@ -317,4 +318,4 @@ definition.trigger({
   }
 })
 
-module.exports = { Ban }
+export { Ban }

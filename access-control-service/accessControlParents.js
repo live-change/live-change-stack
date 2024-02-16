@@ -1,4 +1,4 @@
-const definition = require("./definition.js")
+import definition from './definition.js'
 
 const parents = { }
 const parentsSources = { }
@@ -19,4 +19,4 @@ definition.processor(function(service, app) {
 
 })
 
-module.exports = { parents, parentsSources }
+export { parents, parentsSources }

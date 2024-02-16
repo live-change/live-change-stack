@@ -1,4 +1,4 @@
-const definition = require("./definition.js")
+import definition from './definition.js'
 
 const Session = definition.model({
   name: "Session",
@@ -32,4 +32,4 @@ definition.event({
   }
 })
 
-module.exports = { Session }
+export { Session }

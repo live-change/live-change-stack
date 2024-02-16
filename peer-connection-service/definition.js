@@ -1,11 +1,11 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
 
-const relationsPlugin = require('@live-change/relations-plugin')
+import relationsPlugin from '@live-change/relations-plugin'
 
 const definition = app.createServiceDefinition({
   name: "peerConnection",
   use: [ relationsPlugin ]
 })
 
-module.exports = definition
+export default definition

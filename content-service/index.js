@@ -1,7 +1,7 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 const config = definition.config
 const {
@@ -10,9 +10,8 @@ const {
   contentPublisherRoles = ['writer']
 } = config
 
-
-const { Content, Session, schemas, getDocument } = require("./model.js")
-const { Metadata } = require("./metadata.js")
+import { Content } from "./model.js"
+import { Metadata } from "./metadata.js"
 const Snapshot = definition.foreignModel("prosemirror", "Snapshot")
 
 definition.view({
@@ -172,4 +171,4 @@ definition.action({
   }
 })
 
-module.exports = definition
+export default definition

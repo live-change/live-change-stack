@@ -1,11 +1,12 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const relationsPlugin = require('@live-change/relations-plugin')
-const accessControlService = require('@live-change/access-control-service')
+import relationsPlugin from '@live-change/relations-plugin'
+import accessControlService from '@live-change/access-control-service'
 
 const definition = app.createServiceDefinition({
   name: "content",
   use: [ relationsPlugin, accessControlService ]
 })
 
-module.exports = definition
+export default definition

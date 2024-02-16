@@ -1,8 +1,10 @@
-const definition = require('./definition.js')
-const App = require("@live-change/framework")
-const { ObservableValue, ObservableList, ObservableProxy, ObservablePromiseProxy } = require("@live-change/dao")
+import definition from './definition.js'
+import App from '@live-change/framework'
+import { ObservableValue, ObservableList, ObservableProxy, ObservablePromiseProxy } from '@live-change/dao'
 const app = App.app()
-const access = require('./access.js')(definition)
+
+import accessModule from './access.js'
+const access = accessModule(definition)
 
 definition.processor({
   priority: -1,

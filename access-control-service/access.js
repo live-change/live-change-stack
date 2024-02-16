@@ -1,8 +1,8 @@
-const { parents, parentsSources } = require('./accessControlParents.js')
-const App = require('@live-change/framework')
+import { parents, parentsSources } from './accessControlParents.js'
+import App from '@live-change/framework'
 const app = App.app()
 
-module.exports = (definition) => {
+export default (definition) => {
 
   const Access = definition.foreignModel('accessControl', 'Access')
   const PublicAccess = definition.foreignModel('accessControl', 'PublicAccess')

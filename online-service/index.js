@@ -4,7 +4,7 @@ const ReactiveDaoWebsocket = require("@live-change/dao-websocket")
 const ReactiveServer = ReactiveDao.ReactiveServer
 const WebSocketServer = require('websocket').server
 
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
 
 const definition = app.createServiceDefinition({
@@ -270,4 +270,4 @@ definition.view({
   }
 })
 
-module.exports = definition
+export default definition

@@ -1,4 +1,4 @@
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 const config = definition.config
 const uploadConfig = config.upload || {}

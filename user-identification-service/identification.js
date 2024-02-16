@@ -1,4 +1,4 @@
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 
 const Image = definition.foreignModel('image', 'Image')
@@ -30,4 +30,4 @@ const Identification = definition.model({
   }
 })
 
-module.exports = { Identification }
+export { Identification }

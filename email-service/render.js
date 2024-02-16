@@ -1,12 +1,12 @@
-const got = require('got')
-const inlineCss = require('inline-css')
-const juice = require('juice')
-const { JSDOM } = require("jsdom")
-const { convert: htmlToText } = require('html-to-text')
-const path = require('path')
-const { URL } = require('url')
+import got from 'got'
+import inlineCss from 'inline-css'
+import juice from 'juice'
+import { JSDOM } from 'jsdom'
+import { convert as htmlToText } from 'html-to-text'
+import path from 'path'
+import { URL } from 'url'
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 
 const publicDir = config.publicDir || 'front/public/'
@@ -112,4 +112,4 @@ async function renderEmail(data) {
   return email
 }
 
-module.exports = renderEmail
+export default renderEmail

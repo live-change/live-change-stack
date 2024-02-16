@@ -1,8 +1,9 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 
-require('./notification.js')
-require('./settings.js')
+import './notification.js'
+import './settings.js'
 
-module.exports = definition
+export default definition

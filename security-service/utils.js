@@ -1,5 +1,6 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 
 const clientKeys = definition.config?.clientKeys ?? []
 
@@ -105,4 +106,4 @@ function getClientKeysObject(client, prefix = '') {
   }
 }
 
-module.exports = { multiKeyIndexQuery, fastMultiKeyIndexQuery, getClientKeysStrings, getClientKeysObject }
+export { multiKeyIndexQuery, fastMultiKeyIndexQuery, getClientKeysStrings, getClientKeysObject }

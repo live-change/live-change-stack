@@ -1,11 +1,12 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const relationsPlugin = require('@live-change/relations-plugin')
-const userService = require('@live-change/user-service')
+import relationsPlugin from '@live-change/relations-plugin'
+import userService from '@live-change/user-service'
 
 const definition = app.createServiceDefinition({
   name: "prosemirror",
   use: [ relationsPlugin, userService ]
 })
 
-module.exports = definition
+export default definition

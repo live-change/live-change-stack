@@ -1,4 +1,4 @@
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 const { clientHasAccessRole } = require("../access-control-service/access.js")(definition)
 

@@ -1,5 +1,5 @@
-const crypto = require('crypto')
-const definition = require('./definition.js')
+import crypto from 'crypto'
+import definition from './definition.js'
 const config = definition.config
 
 const secretProperties = {
@@ -31,4 +31,4 @@ definition.event({
   }
 })
 
-module.exports = { PasswordAuthentication, secretProperties }
+export { PasswordAuthentication, secretProperties }

@@ -1,7 +1,7 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 const {
   createFromTitle = (title) => {
@@ -14,7 +14,7 @@ const {
   urlWriterRoles = ['writer']
 } = config
 
-const { Canonical, Redirect, UrlToTarget, UrlToTargetWithoutDomain } = require("./model.js")
+import { Canonical, Redirect, UrlToTarget, UrlToTargetWithoutDomain } from "./model.js"
 
 definition.view({
   name: "urlsByTargetAndPath",
@@ -423,4 +423,4 @@ definition.action({
 
 })
 
-module.exports = definition
+export default definition

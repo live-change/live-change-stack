@@ -1,8 +1,9 @@
-const definition = require("./definition.js")
-const App = require("@live-change/framework")
+import definition from './definition.js'
+import App from '@live-change/framework'
 const app = App.app()
 
-const access = require('./access.js')(definition)
+import accessModule from './access.js'
+const access = accessModule(definition)
 
 definition.view({
   name: "myAccessTo",

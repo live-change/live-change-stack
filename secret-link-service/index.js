@@ -1,6 +1,6 @@
-const nodemailer = require('nodemailer')
-const app = require("@live-change/framework").app()
-const { randomString } = require('@live-change/uid')
+import App from '@live-change/framework'
+const app = App.app()
+import { randomString } from '@live-change/uid'
 
 const definition = app.createServiceDefinition({
   name: "secretLink"
@@ -143,4 +143,4 @@ definition.trigger({
   }
 })
 
-module.exports = definition
+export default definition

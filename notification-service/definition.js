@@ -1,7 +1,8 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const userService = require("@live-change/user-service")
-const relationsPlugin = require('@live-change/relations-plugin')
+import userService from '@live-change/user-service'
+import relationsPlugin from '@live-change/relations-plugin'
 
 const definition = app.createServiceDefinition({
   name: "notification",
@@ -15,4 +16,4 @@ definition.clientConfig = {
   notificationTypes: config.notificationTypes
 }
 
-module.exports = definition
+export default definition

@@ -1,9 +1,9 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 require('./turn.js')
 require('./peer.js')
 
-module.exports = definition
+export default definition

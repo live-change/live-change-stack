@@ -1,7 +1,7 @@
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 
-const { PasswordAuthentication, secretProperties } = require('./model.js')
+import { PasswordAuthentication, secretProperties } from './model.js'
 
 for(const contactType of config.contactTypes) {
 

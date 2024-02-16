@@ -1,5 +1,4 @@
-const { validation } = require('@live-change/framework')
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 const User = definition.foreignModel('user', 'User')
 
@@ -212,4 +211,4 @@ definition.trigger({
   }
 })
 
-module.exports = { Email }
+export { Email }

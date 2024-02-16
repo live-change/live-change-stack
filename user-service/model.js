@@ -1,4 +1,4 @@
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 const User = definition.model({
   name: "User",
@@ -85,4 +85,4 @@ definition.event({
   }
 })
 
-module.exports = { User, Session, AuthenticatedUser }
+export { User, Session, AuthenticatedUser }

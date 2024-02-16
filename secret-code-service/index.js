@@ -1,6 +1,6 @@
-const nodemailer = require('nodemailer')
-const app = require("@live-change/framework").app()
-const crypto = require('crypto')
+import App from '@live-change/framework'
+const app = App.app()
+import crypto from 'crypto'
 
 const definition = app.createServiceDefinition({
   name: "secretCode"
@@ -160,4 +160,4 @@ definition.trigger({
   }
 })
 
-module.exports = definition
+export default definition

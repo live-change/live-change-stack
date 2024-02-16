@@ -1,8 +1,8 @@
-const definition = require("./definition.js")
-const { decodeUid } = require("@live-change/uid")
+import definition from './definition.js'
+import { decodeUid } from "@live-change/uid"
 
 definition.processor(function(service, app) {
-
+  
   service.validators.localId = (settings) => (value, context) => {
     if (!value) return
     //console.log("VALIDATE LOCAL ID", value, "=>", decodeUid(value), "BY", context.client)

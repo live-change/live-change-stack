@@ -1,6 +1,6 @@
 const crypto = require('crypto')
 const ReactiveDao = require('@live-change/dao')
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 
 const urls = config?.turn?.urls || process.env.TURN_URLS?.split(';')
@@ -86,4 +86,4 @@ definition.view({
   }
 })
 
-module.exports = { createTurnConfiguration, releaseTurnConfiguration, turnExpireTime }
+export { createTurnConfiguration, releaseTurnConfiguration, turnExpireTime }

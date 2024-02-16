@@ -1,7 +1,7 @@
-const definition = require("./definition.js")
-const App = require("@live-change/framework")
+import definition from './definition.js'
+import App from '@live-change/framework'
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
-const { Session } = require("./model.js")
+import { Session } from "./model.js"
 
 definition.processor(function(service, app) {
 

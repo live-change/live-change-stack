@@ -1,9 +1,10 @@
-const definition = require('./definition.js')
+import definition from './definition.js'
 
-const nodemailer = require('nodemailer')
-const app = require('@live-change/framework').app()
+import nodemailer from 'nodemailer'
+import App from '@live-change/framework'
+const app = App.app()
 
-const renderEmail = require('./render.js')
+import renderEmail from './render.js'
 
 const config = definition.config
 

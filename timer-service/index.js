@@ -1,4 +1,5 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
 const definition = app.createServiceDefinition({
   name: "timer"
@@ -471,4 +472,4 @@ definition.beforeStart(async () => {
   await startTimers()
 })
 
-module.exports = definition
+export default definition

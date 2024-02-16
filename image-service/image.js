@@ -1,5 +1,6 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 const config = definition.config
 
 const imagesPath = config.imagesPath || `./storage/images/`
@@ -49,10 +50,10 @@ const Image = definition.model({
   }
 })
 
-const { move, copy, mkdir, rmdir } = require('./fsUtils')
-const fs = require('fs')
-const sharp = require('sharp')
-const download = require('download')
+import { move, copy, mkdir, rmdir } from './fsUtils.js'
+import fs from 'fs'
+import sharp from 'sharp'
+import download from 'download'
 
 fs.mkdirSync(imagesPath, { recursive: true })
 
@@ -215,4 +216,4 @@ definition.view({
   }
 })
 
-module.exports = { Image }
+export { Image }

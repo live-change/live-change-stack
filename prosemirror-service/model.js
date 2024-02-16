@@ -1,10 +1,10 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
-const LRU = require('lru-cache')
-const { Schema } = require('prosemirror-model')
-const { Step } = require('prosemirror-transform')
+import LRU from 'lru-cache'
+import { Schema } from 'prosemirror-model'
+import { Step } from 'prosemirror-transform'
 
 const { snapshotAfterSteps = 230 } = config
 
@@ -216,4 +216,4 @@ definition.event({
   }
 })
 
-module.exports = { Document, StepsBucket, schemas, getDocument, readVersion }
+export { Document, StepsBucket, Snapshot, schemas, getDocument, readVersion }

@@ -1,4 +1,4 @@
-const definition = require('./definition.js')
+import definition from './definition.js'
 
 const Upload = definition.model({
   name: 'Upload',
@@ -116,4 +116,4 @@ definition.trigger({
 })
 
 
-module.exports = { Upload }
+export { Upload }

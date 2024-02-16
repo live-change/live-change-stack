@@ -1,8 +1,9 @@
-const app = require("@live-change/framework").app()
-const { randomString } = require('@live-change/uid')
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import { randomString } from '@live-change/uid'
+import definition from './definition.js'
 const config = definition.config
-const { PasswordAuthentication, secretProperties } = require('./model.js')
+import { PasswordAuthentication, secretProperties } from './model.js'
 
 const User = definition.foreignModel('user', 'User')
 

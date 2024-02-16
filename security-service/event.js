@@ -1,11 +1,12 @@
-const crypto = require('crypto')
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
-const { getClientKeysObject, getClientKeysStrings} = require('./utils.js')
+import crypto from 'crypto'
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
+import { getClientKeysObject, getClientKeysStrings} from './utils.js'
 
-const lcp = require('@live-change/pattern')
-const lcpDb = require('@live-change/pattern-db')
-const { request } = require('http')
+import lcp from '@live-change/pattern'
+import lcpDb from '@live-change/pattern-db'
+import { request } from 'http'
 
 const securityPatterns = definition.config?.patterns ?? []
 const relationsStore = lcpDb.relationsStore(app.dao, app.databaseName, 'security_relations')

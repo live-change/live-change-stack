@@ -1,6 +1,7 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 
 const Notification = definition.model({
@@ -369,4 +370,4 @@ definition.action({
   }
 })
 
-module.exports = definition
+export default definition

@@ -1,8 +1,8 @@
-const App = require('@live-change/framework')
+import App from '@live-change/framework'
 const app = App.app()
-const definition = require('./definition.js')
-const { Session } = require('./model.js')
-const { createHmac } = require('crypto')
+import definition from './definition.js'
+import { Session } from './model.js'
+import { createHmac } from 'crypto'
 const config = definition.config
 
 definition.authenticator({

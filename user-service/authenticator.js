@@ -1,8 +1,8 @@
-const App = require('@live-change/framework')
+import App from '@live-change/framework'
 const app = App.app()
-const definition = require('./definition.js')
+import definition from './definition.js'
 
-const { User, AuthenticatedUser } = require('./model.js')
+import { User, AuthenticatedUser } from './model.js'
 
 definition.authenticator({
   async credentialsObservable(credentials) {

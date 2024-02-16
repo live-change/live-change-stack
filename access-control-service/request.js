@@ -1,10 +1,11 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 
-const { Access, AccessRequest, rolesArrayType } = require('./model.js')
-const access = require('./access.js')(definition)
+import { Access, AccessRequest, rolesArrayType } from './model.js'
+import accessModule from './access.js'
+const access = accessModule(definition)
 
 definition.event({
   name: 'accessRequestAccepted',

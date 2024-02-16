@@ -1,6 +1,6 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 const {
   urlReaderRoles = ['writer'],
@@ -98,4 +98,4 @@ const UrlToTargetWithoutDomain = definition.index({
   }
 })
 
-module.exports = { Canonical, Redirect, UrlToTarget, UrlToTargetWithoutDomain }
+export { Canonical, Redirect, UrlToTarget, UrlToTargetWithoutDomain }

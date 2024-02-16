@@ -1,9 +1,10 @@
-const app = require("@live-change/framework").app()
-const user = require('@live-change/user-service')
+import App from '@live-change/framework'
+const app = App.app()
+import user from '@live-change/user-service'
 
 const definition = app.createServiceDefinition({
   name: "email",
   use: [ user ]
 })
 
-module.exports = definition
+export default definition

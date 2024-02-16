@@ -1,9 +1,10 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 
-require('./ban.js')
-require('./event.js')
-require('./secured.js')
+import './ban.js'
+import './event.js'
+import './secured.js'
 
-module.exports = definition
+export default definition

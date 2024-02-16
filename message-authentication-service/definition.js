@@ -1,10 +1,12 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const security = require('@live-change/security-service')
+import security from '@live-change/security-service'
+import email from '@live-change/email-service'
 
 const definition = app.createServiceDefinition({
   name: "messageAuthentication",
-  use: [ security ]
+  use: [ security, email ]
 })
 
-module.exports = definition
+export default definition

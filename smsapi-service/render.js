@@ -2,7 +2,7 @@ const got = require('got')
 const { JSDOM } = require("jsdom")
 const { convert: htmlToText } = require('html-to-text')
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 
 async function renderSms(data) {

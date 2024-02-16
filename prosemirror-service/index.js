@@ -1,7 +1,7 @@
-const App = require("@live-change/framework")
+import App from '@live-change/framework'
 const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 const {
   readerRoles = ['writer'],
@@ -19,7 +19,7 @@ const readerAccessControl = {
   objects: p => [{ objectType: p.targetType, object: p.target }]
 }
 
-const { Document, StepsBucket, Snapshot, schemas, getDocument } = require("./model.js")
+import { Document, StepsBucket, Snapshot, schemas, getDocument } from "./model.js"
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
@@ -124,7 +124,6 @@ definition.action({
   name: 'createDocument',
   accessControl: writerAccessControl,
   waitForEvents: true,
-  queuedBy: ['targetType', 'target'],
   properties: {
     targetType: {
       type: String,
@@ -168,7 +167,6 @@ definition.action({
   name: 'createDocumentIfNotExists',
   accessControl: writerAccessControl,
   waitForEvents: true,
-  queuedBy: ['targetType', 'target'],
   properties: {
     targetType: {
       type: String,
@@ -214,7 +212,6 @@ definition.action({
   name: 'edit',
   accessControl: writerAccessControl,
   waitForEvents: true,
-  queuedBy: ['targetType', 'target'],
   properties: {
     targetType: {
       type: String,
@@ -283,7 +280,6 @@ definition.action({
   name: 'takeSnapshot',
   accessControl: writerAccessControl,
   waitForEvents: true,
-  queuedBy: ['targetType', 'target'],
   properties: {
     targetType: {
       type: String,
@@ -321,7 +317,6 @@ definition.action({
 definition.trigger({
   name: 'takeSnapshot',
   waitForEvents: true,
-  queuedBy: ['targetType', 'target'],
   properties: {
     targetType: {
       type: String,
@@ -358,4 +353,4 @@ definition.trigger({
 })
 
 
-module.exports = definition
+export default definition

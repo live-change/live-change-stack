@@ -13,4 +13,4 @@ function createIdentifiersProperties(keys) {
   return identifiers
 }
 
-module.exports = { createIdentifiersProperties }
+export { createIdentifiersProperties }

@@ -1,9 +1,10 @@
-const app = require("@live-change/framework").app()
+import App from '@live-change/framework'
+const app = App.app()
 
-const definition = require('./definition.js')
+import definition from './definition.js'
 const config = definition.config
 
-require('./authentication.js')
-require('./sign.js')
+import './authentication.js'
+import './sign.js'
 
-module.exports = definition
+export default definition

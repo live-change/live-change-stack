@@ -1,14 +1,15 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 
-const { User, AutheticatedUser } = require('./model.js')
-require('./authenticator.js')
-require('./userProperty.js')
-require('./userItem.js')
-require('./sessionOrUserProperty.js')
-require('./sessionOrUserItem.js')
-require('./contactOrUserProperty.js')
-require('./contactOrUserItem.js')
+import { User } from './model.js'
+import './authenticator.js'
+import './userProperty.js'
+import './userItem.js'
+import './sessionOrUserProperty.js'
+import './sessionOrUserItem.js'
+import './contactOrUserProperty.js'
+import './contactOrUserItem.js'
 
 const Session = definition.foreignModel('session', 'Session')
 
@@ -133,4 +134,4 @@ definition.action({
   }
 })
 
-module.exports = definition
+export default definition

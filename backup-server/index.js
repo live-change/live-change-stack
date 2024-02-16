@@ -1,16 +1,17 @@
-const app = require("@live-change/framework").app()
-const definition = require('./definition.js')
+import App from '@live-change/framework'
+const app = App.app()
+import definition from './definition.js'
 const config = definition.config
-module.exports = definition
+export default definition
 
-const express = require('express')
-const basicAuth = require('express-basic-auth')
+import express from 'express'
+import basicAuth from 'express-basic-auth'
 const expressApp = express()
-const fs = require('fs')
-const { createBackup, currentBackupPath, removeOldBackups } = require('./backup.js')
-const { restoreBackup } = require('./restore.js')
+import fs from 'fs'
+import { createBackup, currentBackupPath, removeOldBackups } from './backup.js'
+import { restoreBackup } from './restore.js'
 
-const progress = require("progress-stream")
+import progress from "progress-stream"
 
 const TWENTY_FOUR_HOURS = 24 * 3600 * 1000
 const TEN_MINUTES = 10 * 60 * 1000
