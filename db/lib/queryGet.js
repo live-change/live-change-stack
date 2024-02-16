@@ -1,5 +1,5 @@
-const { TableWriter, LogWriter } = require('./queryUpdate.js')
-const { ChangeStream } = require('./ChangeStream.js')
+import { TableWriter, LogWriter } from './queryUpdate.js'
+import { ChangeStream } from './ChangeStream.js'
 
 const maxGetLimit = 256
 
@@ -194,4 +194,4 @@ queryGet.single = querySingleGet
 queryGet.QueryWriter = QueryWriter
 queryGet.QueryReader = QueryReader
 
-module.exports = queryGet
+export default queryGet

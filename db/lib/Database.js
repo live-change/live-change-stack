@@ -1,14 +1,15 @@
-const Table = require('./Table.js')
-const Index = require('./Index.js')
-const Log = require('./Log.js')
-const queryGet = require('./queryGet.js')
-const queryObservable = require('./queryObservable.js')
-const getRandomValues = require('get-random-values')
-const nextTick = require('next-tick')
+import Table from './Table.js'
+import Index from './Index.js'
+import Log from './Log.js'
+import queryGet from './queryGet.js'
+import queryObservable from './queryObservable.js'
+import getRandomValues from 'get-random-values'
+import nextTick from 'next-tick'
 
-const ReactiveDao = require("@live-change/dao")
+import ReactiveDao from "@live-change/dao"
 
-const debug = require('debug')('db')
+import Debug from 'debug'
+const debug = Debug('db')
 
 class Database {
   constructor(config, storeFactory, saveConfig, deleteStore, name, createScriptContext) {
@@ -300,4 +301,4 @@ class Database {
   }
 }
 
-module.exports = Database
+export default Database

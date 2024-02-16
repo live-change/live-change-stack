@@ -1,7 +1,6 @@
-const test = require('tape')
+import test from 'tape'
 
-const Store = require('../lib/Store.js')
-
+import Store from '../lib/Store.js'
 
 test("store range observable", t => {
   t.plan(4)

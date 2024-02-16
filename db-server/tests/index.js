@@ -1,4 +1,5 @@
-const test = require('tape')
+import test from 'tape'
+import getServer from './getServer.js'
 
 let users = [
   { id: '1', name: 'david' },
@@ -33,7 +34,7 @@ test("index", t => {
 
   t.test('connect to server and create database', async t => {
     t.plan(1)
-    server = await require('./getServer.js')
+    server = await getServer()
     client = await server.connect(1)
     await client.request(['database', 'createDatabase'], 'index.test')
     t.pass('opened')

@@ -1,11 +1,11 @@
-const lmdb = require('node-lmdb')
-const fs = require('fs')
+import lmdb from 'node-lmdb'
+import fs from 'fs'
 
-const Store = require('@live-change/db-store-lmdb')
+import Store from '@live-change/db-store-lmdb'
 
 const envs = new Map()
 
-module.exports = function(dbPath, name) {
+export default  function(dbPath, name) {
   let env = envs.get(dbPath)
   if(!env) {
     fs.mkdirSync(dbPath)

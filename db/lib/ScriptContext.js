@@ -1,6 +1,7 @@
-const vm = require('vm')
-const crypto = require('crypto')
-const { ChangeStreamPipe } = require('./ChangeStream.js')
+import vm from 'vm'
+import crypto from 'crypto'
+import { ChangeStreamPipe } from './ChangeStream.js'
+import pref_hooks from 'perf_hooks'
 
 const defaultNativeGlobals = [
   'Array', 'ArrayBuffer',
@@ -34,7 +35,7 @@ const defaultContext = {
   pipe() {
     return new ChangeStreamPipe()
   },
-  'performance': require('perf_hooks').performance,
+  'performance': pref_hooks.performance,
   constructor: null
 }
 
@@ -103,4 +104,4 @@ class ScriptContext {
   }
 }
 
-module.exports = ScriptContext
+export default ScriptContext

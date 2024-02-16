@@ -1,5 +1,5 @@
-const { client: WSClient } = require("@live-change/dao-websocket")
-const lineReader = require('line-reader')
+import { client as WSClient } from "@live-change/dao-websocket"
+import lineReader from 'line-reader'
 
 async function exec(options) {
   let { serverUrl, verbose, file, targetDb } = options
@@ -83,4 +83,4 @@ async function exec(options) {
   })
 }
 
-module.exports = exec
+export default exec

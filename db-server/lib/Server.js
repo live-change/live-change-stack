@@ -1,23 +1,21 @@
-const fs = require('fs')
-const path = require('path')
-const http = require("http")
-const express = require("express")
-const sockjs = require('@live-change/sockjs')
-const WebSocketServer = require('websocket').server
-const ReactiveDaoWebsocketServer = require("@live-change/dao-websocket").server
-const ReactiveDaoWebsocketClient = require("@live-change/dao-websocket").client
-const ScriptContext = require('@live-change/db/lib/ScriptContext.js')
-const dbDao = require('./dbDao.js')
-const storeDao = require('./storeDao.js')
-const createBackend = require("./backend.js")
-const Replicator = require("./Replicator.js")
-const { profileLog } = require("@live-change/db")
+import fs from 'fs'
+import path from 'path'
+import http from 'http'
+import express from 'express'
+import sockjs from '@live-change/sockjs'
+import { server as WebSocketServer } from 'websocket'
+import { server as ReactiveDaoWebsocketServer, client as ReactiveDaoWebsocketClient } from '@live-change/dao-websocket'
+import ScriptContext from '@live-change/db/lib/ScriptContext.js'
+import * as dbDao from './dbDao.js'
+import * as storeDao from './storeDao.js'
+import createBackend from './backend.js'
+import Replicator from './Replicator.js'
+import { profileLog } from '@live-change/db'
+import { Database } from '@live-change/db'
+import ReactiveDao from '@live-change/dao'
 
-const ReactiveDao = require("@live-change/dao")
-
-const Database = require('@live-change/db').Database
-
-const debug = require('debug')('db-server')
+import Debug from 'debug'
+const debug = Debug('db-server')
 
 class DatabaseStore {
   constructor(path, backends, options) {
@@ -131,7 +129,8 @@ class Server {
     }
   }
   createDao(session) {
-    const packageInfo = require('@live-change/db-server/package.json')
+
+    const packageInfo = eval('import("@live-change/db-server/package.json"'+', { assert: { type: "json" } })')
 
     const store = { /// Low level data access
       type: 'local',
@@ -153,11 +152,11 @@ class Server {
         methods: {},
         values: {
           version: {
-            observable() {
-              return new ReactiveDao.ObservableValue(packageInfo.version)
+            async observable() {
+              return new ReactiveDao.ObservableValue((await packageInfo).version)
             },
             async get() {
-              return packageInfo.version
+              return (await packageInfo).version
             }
           }
         }
@@ -432,4 +431,4 @@ class Server {
   }
 }
 
-module.exports = Server
+export default Server

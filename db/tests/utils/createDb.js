@@ -1,15 +1,17 @@
-const rimraf = require("rimraf")
+import { rimrafSync } from "rimraf"
 
-const Database = require("../../lib/Database.js")
+import Database from "../../lib/Database.js"
+import createStoreLevel from "./createStore.level.js"
+import createStoreLmdb from "./createStore.lmdb.js"
 
 function createDb(dbPath) {
-  rimraf.sync(dbPath)
+  rimrafSync(dbPath)
   const db = new Database({}, (name, config) => {
     let store
     if(process.env.DB=='level') {
-      store = require('./createStore.level.js')(dbPath, name)
+      store = createStoreLmdb(dbPath, name)
     } else if(process.env.DB=='lmdb' || !process.env.DB) {
-      store = require('./createStore.lmdb.js')(dbPath, name)
+      store = createStoreLevel(dbPath, name)
     } else {
       console.error("Unknown database " + process.env.DB)
       throw new Error("Unknown database " + process.env.DB)
@@ -24,4 +26,4 @@ function createDb(dbPath) {
   return db
 }
 
-module.exports = createDb
+export default createDb

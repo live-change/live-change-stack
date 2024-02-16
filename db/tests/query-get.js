@@ -1,8 +1,9 @@
-const test = require('tape')
-const rimraf = require("rimraf")
+import test from 'tape'
+import { rimraf } from "rimraf"
+import createDb from './utils/createDb.js'
 
 const dbPath = `./test.qg.db`
-const db = require('./utils/createDb.js')(dbPath)
+const db = createDb(dbPath)
 
 const users = [
   { id: '1', name: 'david' },
@@ -109,9 +110,7 @@ test("store range observable", t => {
 
   t.test("close and remove database", async t => {
     t.plan(1)
-    rimraf(dbPath, (err) => {
-      if(err) return t.fail(err)
-      t.pass('removed')
-    })
+    await rimraf(dbPath)
+    t.pass('removed')
   })
 })

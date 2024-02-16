@@ -1,13 +1,12 @@
-const levelup = require('levelup')
-const leveldown = require('leveldown')
-const subleveldown = require('subleveldown')
-const encoding = require('encoding-down')
+import levelup from 'levelup'
+import leveldown from 'leveldown'
+import subleveldown from 'subleveldown'
 
-const Store = require('@live-change/db-store-level')
+import Store from '@live-change/db-store-level'
 
 const levels = new Map()
 
-module.exports = function(dbPath, name) {
+export default function(dbPath, name) {
   let level = levels.get(dbPath)
   if(!level) {
     level = levelup(leveldown(dbPath))

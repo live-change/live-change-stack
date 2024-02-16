@@ -1,5 +1,5 @@
-const fs = require('fs')
-const { once } = require('events')
+import fs from 'fs'
+import { once } from 'events'
 
 function profileOutput(path) {
   const profileLogStream = fs.createWriteStream(path)
@@ -23,4 +23,4 @@ function profileOutput(path) {
   return write
 }
 
-module.exports = profileOutput
+export default profileOutput

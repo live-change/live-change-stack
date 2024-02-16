@@ -5,7 +5,6 @@ const exec = require('../lib/exec.js')
 const request = require('../lib/request.js')
 const get = require('../lib/get.js')
 const observe = require('../lib/observe.js')
-
 const parseList = require('../lib/parseList.js')
 
 process.on('unhandledRejection', (reason, p) => {

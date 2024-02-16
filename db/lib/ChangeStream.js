@@ -65,4 +65,4 @@ class ChangeStreamPipe extends ChangeStream {
   }
 }
 
-module.exports = { ChangeStream, ChangeStreamPipe }
+export { ChangeStream, ChangeStreamPipe }

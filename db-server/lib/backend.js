@@ -1,6 +1,8 @@
-const fs = require('fs')
-const path = require('path')
-const rimraf = require("rimraf-promise")
+import fs from 'fs'
+import { rimraf } from "rimraf"
+import lmdb from 'node-lmdb'
+import lmdbStore from'@live-change/db-store-lmdb'
+import rbTreeStore from'@live-change/db-store-rbtree'
 
 function createBackend({ name, url, maxDbs, mapSize }) {
   if(name == 'leveldb') {
@@ -92,7 +94,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
     }
   } else if(name == 'mem' || name == 'memory') {
     return {
-      Store: require('@live-change/db-store-rbtree'),
+      Store: rbTreeStore,
       createDb(path, options) {
         const db = {}
         db.path = path
@@ -112,8 +114,8 @@ function createBackend({ name, url, maxDbs, mapSize }) {
     }
   } else if(name == 'lmdb') {
     return {
-      lmdb: require('node-lmdb'),
-      Store: require('@live-change/db-store-lmdb'),
+      lmdb,
+      Store: lmdbStore,
       createDb(path, options) {
         fs.mkdirSync(path, { recursive: true })
         const env = new this.lmdb.Env()
@@ -192,4 +194,4 @@ function createBackend({ name, url, maxDbs, mapSize }) {
   } else throw new Error("Unknown backend " + name)
 }
 
-module.exports = createBackend
+export default createBackend

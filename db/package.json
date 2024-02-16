@@ -19,15 +19,16 @@
   "bugs": {
     "url": "https://github.com/live-change/live-change-db/issues"
   },
+  "type": "module",
   "homepage": "https://github.com/live-change/live-change-db",
   "devDependencies": {
-    "@live-change/db-store-level": "^0.6.23",
-    "@live-change/db-store-lmdb": "^0.6.23",
+    "@live-change/db-store-level": "0.6.23",
+    "@live-change/db-store-lmdb": "0.6.23",
     "minimist": ">=1.2.3",
     "next-tick": "^1.1.0",
-    "rimraf": "^3.0.2",
+    "rimraf": "^5.0.5",
     "sockjs": "^0.3.24",
-    "tape": "^5.3.2",
+    "tape": "^5.7.4",
     "websocket-extensions": ">=0.1.4"
   },
   "dependencies": {

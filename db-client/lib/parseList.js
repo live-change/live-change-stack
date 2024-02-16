@@ -12,4 +12,4 @@ function parseList(str, sep = '.') {
   }
 }
 
-module.exports = parseList
+export default parseList

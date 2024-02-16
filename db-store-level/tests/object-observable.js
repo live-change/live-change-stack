@@ -1,10 +1,10 @@
-const test = require('tape')
-const levelup = require('levelup')
-const leveldown = require('leveldown')
-const encoding = require('encoding-down')
-const rimraf = require("rimraf")
+import test from 'tape'
+import levelup from 'levelup'
+import leveldown from 'leveldown'
+import encoding from 'encoding-down'
+import { rimraf } from 'rimraf'
 
-const Store = require('../lib/Store.js')
+import Store from '../lib/Store.js'
 
 const dbPath = `./test.oo.db`
 rimraf.sync(dbPath)
@@ -63,9 +63,7 @@ test("store object observable", t => {
   t.test("close and remove database", async t => {
     t.plan(1)
     await level.close()
-    rimraf(dbPath, (err) => {
-      if(err) return t.fail(err)
-      t.pass('removed')
-    })
+    await rimraf(dbPath)
+    t.pass('removed')
   })
 })

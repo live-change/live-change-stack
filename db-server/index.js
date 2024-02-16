@@ -1,1 +1,3 @@
-module.exports = require('./lib/Server.js')
+import Server from './lib/Server.js'
+
+export default Server

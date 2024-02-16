@@ -1,6 +1,6 @@
-const OpLogger = require('./OpLogger.js')
-const AtomicWriter = require('./AtomicWriter.js')
-const ReactiveDao = require('@live-change/dao')
+import OpLogger from './OpLogger.js'
+import AtomicWriter from './AtomicWriter.js'
+import ReactiveDao from '@live-change/dao'
 
 function opLogWritter(store) {
   let lastTime = Date.now()
@@ -143,4 +143,4 @@ class Table {
   }
 }
 
-module.exports = Table
+export default Table

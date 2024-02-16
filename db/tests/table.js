@@ -1,5 +1,6 @@
-const test = require('tape')
-const rimraf = require("rimraf")
+import test from 'tape'
+import { rimraf } from "rimraf"
+import createDb from './utils/createDb.js'
 
 const dbPath = `./test.t.db`
 rimraf.sync(dbPath)
@@ -26,7 +27,7 @@ test("store range observable", t => {
 
   t.test('open database', async t => {
     t.plan(1)
-    db = require('./utils/createDb.js')(dbPath)
+    db = createDb(dbPath)
     t.pass('opened')
   })
 
@@ -48,9 +49,7 @@ test("store range observable", t => {
     t.plan(2)
     await db.close()
     t.pass('closed')
-    rimraf(dbPath, (err) => {
-      if(err) return t.fail(err)
-      t.pass('removed')
-    })
+    await rimraf(dbPath)
+    t.pass('removed')
   })
 })

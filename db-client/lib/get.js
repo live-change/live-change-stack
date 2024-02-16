@@ -1,4 +1,4 @@
-const { client: WSClient } = require("@live-change/dao-websocket")
+import { client as WSClient } from "@live-change/dao-websocket"
 
 async function get({ serverUrl, path, verbose }) {
   if(verbose) console.info(`getting ${serverUrl} value ${JSON.stringify(path)}`)
@@ -35,4 +35,4 @@ async function get({ serverUrl, path, verbose }) {
   })
 }
 
-module.exports = get
+export default get

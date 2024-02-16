@@ -1,5 +1,5 @@
-const path = require('path')
-const vuePlugin = require('@vitejs/plugin-vue')
+import path from 'path'
+import vuePlugin from '@vitejs/plugin-vue'
 import { defineConfig, searchForWorkspaceRoot } from 'vite'
 import findFreePorts from "find-free-ports"
 import { visualizer } from 'rollup-plugin-visualizer'

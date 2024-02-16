@@ -1,4 +1,4 @@
-const ReactiveDao = require("@live-change/dao")
+import ReactiveDao from "@live-change/dao"
 
 function localRequests(server, scriptContext) {
   return {
@@ -848,7 +848,7 @@ function localReads(server, scriptContext) {
   }
 }
 
-module.exports = {
+export {
   localRequests,
   remoteRequests,
   localReads

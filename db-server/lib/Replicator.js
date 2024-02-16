@@ -371,4 +371,4 @@ class Replicator { // synchronizes database list
   }
 }
 
-module.exports = Replicator
+export default Replicator

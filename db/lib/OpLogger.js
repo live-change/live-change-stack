@@ -46,4 +46,4 @@ class OpLogger {
 
 }
 
-module.exports = OpLogger
+export default OpLogger

@@ -1,14 +1,14 @@
-const test = require('tape')
-const lmdb = require('node-lmdb')
-const rimraf = require("rimraf")
-const fs = require("fs")
+import test from 'tape'
+import lmdb from 'node-lmdb'
+import { rimraf } from 'rimraf'
+import fs from 'fs'
 
-const Store = require('../lib/Store.js')
+import Store from '../lib/Store.js'
 
-const dbPath = `./test.lro.db`
+const dbPath = `./test.lrro.db`
 rimraf.sync(dbPath)
 fs.mkdirSync(dbPath)
-const env = new lmdb.Env();
+const env = new lmdb.Env()
 env.open({
   // Path to the environment
   path: dbPath,
@@ -117,6 +117,7 @@ test("store range observable", t => {
       rangeObservable.unobserve(rangeObserver)
       t.pass('unobserved')
     })
+
   })
 
   t.test("observe reverse range (b_5,b_0)", async t => {
@@ -168,15 +169,15 @@ test("store range observable", t => {
       rangeObservable.unobserve(rangeObserver)
       t.pass('unobserved')
     })
+
   })
 
   t.test("close and remove database", async t => {
     t.plan(1)
     dbi.close()
     env.close()
-    rimraf(dbPath, (err) => {
-      if(err) return t.fail(err)
-      t.pass('removed')
-    })
+    await rimraf(dbPath)
+    t.pass('removed')
   })
+
 })

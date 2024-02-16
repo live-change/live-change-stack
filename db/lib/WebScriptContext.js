@@ -59,4 +59,4 @@ class WebScriptContext {
   }
 }
 
-module.exports = WebScriptContext
+export default WebScriptContext

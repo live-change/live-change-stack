@@ -34,4 +34,4 @@ class LogWriter {
   }
 }
 
-module.exports = { TableWriter, LogWriter }
+export { TableWriter, LogWriter }

@@ -91,4 +91,4 @@ function getParamNames(func) {
 const profileLog = new ProfileLog()
 profileLog.ProfileLog = ProfileLog
 
-module.exports = profileLog
+export default profileLog

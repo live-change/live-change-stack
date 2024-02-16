@@ -1,18 +1,20 @@
 #!/usr/bin/env node
-const path = require('path')
-const fs = require('fs')
-const service = require ("os-service")
-const Server = require('../lib/Server.js')
-const { client: WSClient } = require("@live-change/dao-websocket")
-const ReactiveDao = require('@live-change/dao')
-const db = require("@live-change/db")
-const profileOutput = require("../lib/profileOutput.js")
-const { performance } = require('perf_hooks')
+import path from 'path'
+import fs from 'fs'
+import service from "os-service"
+import Server from '../lib/Server.js'
+import { client as WSClient } from "@live-change/dao-websocket"
+import ReactiveDao from '@live-change/dao'
+import * as db from "@live-change/db"
+import profileOutput from "../lib/profileOutput.js"
+import { performance } from 'perf_hooks'
+import yargs from 'yargs'
+import { fileURLToPath } from 'url'
 
-const {
+import {
   SsrServer,
   createLoopbackDao
-} = require("@live-change/server")
+} from "@live-change/server"
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
@@ -73,7 +75,7 @@ function serviceOptions(yargs) {
   })
 }
 
-const argv = require('yargs') // eslint-disable-line
+const argv = yargs(process.argv.slice(2)) // eslint-disable-line
     .command('create', 'create database root', (yargs) => {
       storeOptions(yargs)
     }, (argv) => create(argv))
@@ -157,7 +159,9 @@ async function serve(argv) {
   if(verbose) console.info(`database initialized!`)
   if(verbose) console.info(`listening on: ${argv.host}:${argv.port}`)
 
-  const ssrRoot = path.dirname(require.resolve("@live-change/db-admin/front/vite.config.js"))
+  const ssrRoot = path.dirname(
+      fileURLToPath(import.meta.resolve("@live-change/db-admin/front/vite.config.js"))
+  )
 
   const http = await server.getHttp()
   const { app } = http
@@ -165,7 +169,9 @@ async function serve(argv) {
   const dev = await fs.promises.access(path.resolve(ssrRoot, './dist'), fs.constants.R_OK)
     .then(r => false).catch(r => true)
   if(dev) console.log("STARTING ADMIN IN DEV MODE!")
-  const manifest = dev ? null : require(path.resolve(ssrRoot, 'dist/client/ssr-manifest.json'))
+  const manifest = (dev || argv.spa)
+      ? null
+      : JSON.parse(fs.readFileSync((path.resolve(ssrRoot, 'dist/client/.vite/ssr-manifest.json'))))
   const admin = new SsrServer(app, manifest, {
     dev,
     fastAuth: true,

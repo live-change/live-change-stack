@@ -1,11 +1,11 @@
-const Log = require("./lib/Log.js")
-const Table = require("./lib/Table.js")
-const OpLogger = require("./lib/OpLogger.js")
-const Index = require("./lib/Index.js")
-const AtomicWriter = require("./lib/AtomicWriter.js")
-const Database = require("./lib/Database.js")
-const profileLog = require('./lib/profileLog.js')
+import Log from "./lib/Log.js"
+import Table from "./lib/Table.js"
+import OpLogger from "./lib/OpLogger.js"
+import Index from "./lib/Index.js"
+import AtomicWriter from "./lib/AtomicWriter.js"
+import Database from "./lib/Database.js"
+import profileLog from './lib/profileLog.js'
 
-module.exports = {
+export {
   Log, Table, OpLogger, Index, AtomicWriter, Database, profileLog
 }

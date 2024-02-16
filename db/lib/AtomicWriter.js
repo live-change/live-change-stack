@@ -324,4 +324,4 @@ class AtomicWriter {
   }
 }
 
-module.exports = AtomicWriter
+export default AtomicWriter

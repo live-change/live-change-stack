@@ -1,5 +1,5 @@
-const ReactiveDao = require("@live-change/dao")
-const { ChangeStream } = require('./ChangeStream.js')
+import ReactiveDao from "@live-change/dao"
+import { ChangeStream } from './ChangeStream.js'
 
 class ObjectObserver {
   #callback = null
@@ -486,4 +486,4 @@ queryObservable.single = querySingleObservable
 queryObservable.QueryWriter = QueryWriter
 queryObservable.QueryReader = QueryReader
 
-module.exports = queryObservable
+export default queryObservable

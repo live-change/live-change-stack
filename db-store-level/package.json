@@ -19,16 +19,17 @@
   "bugs": {
     "url": "https://github.com/live-change/live-change-db/issues"
   },
+  "type": "module",
   "homepage": "https://github.com/live-change/live-change-db",
   "devDependencies": {
     "encoding-down": "^7.1.0",
     "leveldown": "^6.1.0",
     "levelup": "^5.1.1",
     "memdown": "^6.1.1",
-    "rimraf": "^3.0.2",
+    "rimraf": "^5.0.5",
     "rocksdb": "^5.1.1",
     "subleveldown": "^6.0.1",
-    "tape": "^5.3.2"
+    "tape": "^5.7.4"
   },
   "dependencies": {
     "@live-change/dao": "0.5.22",

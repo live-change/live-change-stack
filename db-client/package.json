@@ -24,14 +24,15 @@
   },
   "homepage": "https://github.com/live-change/live-change-db",
   "devDependencies": {
-    "tape": "^5.3.2"
+    "tape": "^5.7.4"
   },
+  "type": "module",
   "dependencies": {
     "@live-change/dao": "0.5.22",
     "@live-change/dao-websocket": "0.5.22",
     "line-reader": "^0.4.0",
     "websocket": "^1.0.34",
-    "yargs": "^17.5.1"
+    "yargs": "^17.7.2"
   },
   "gitHead": "358bc9b508a6e446b9286a01e0ceb0e77c1dec28"
 }

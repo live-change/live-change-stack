@@ -1,5 +1,5 @@
-const { client: WSClient } = require("@live-change/dao-websocket")
-const ReactiveDao = require("@live-change/dao")
+import { client as WSClient } from "@live-change/dao-websocket"
+import ReactiveDao from "@live-change/dao"
 
 async function observe({ serverUrl, path, verbose }) {
   if(verbose) console.info(`observing ${serverUrl} value ${JSON.stringify(path)}`)
@@ -27,4 +27,4 @@ async function observe({ serverUrl, path, verbose }) {
   })
 }
 
-module.exports = observe
+export default observe

@@ -1,13 +1,15 @@
-const IntervalTree = require('node-interval-tree').default
-const ReactiveDao = require("@live-change/dao")
-const Table = require('./Table.js')
-const queryGet = require('./queryGet.js')
-const profileLog = require('./profileLog.js')
-const nextTick = require('next-tick')
-const queryObservable = require('./queryObservable.js')
-const { ChangeStream } = require('./ChangeStream.js')
+import IntervalTreeLib from 'node-interval-tree'
+const IntervalTree = IntervalTreeLib.default || IntervalTreeLib
+import ReactiveDao from "@live-change/dao"
+import Table from './Table.js'
+import queryGet from './queryGet.js'
+import profileLog from './profileLog.js'
+import nextTick from 'next-tick'
+import { ChangeStream } from './ChangeStream.js'
 
-const debug = require('debug')('db')
+
+import Debug from 'debug'
+const debug = Debug('db')
 
 const opLogBatchSize = 128 /// TODO: incrase after testing
 
@@ -526,4 +528,4 @@ class Index extends Table {
   }
 }
 
-module.exports = Index
+export default Index

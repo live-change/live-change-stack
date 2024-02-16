@@ -1,5 +1,5 @@
-const AtomicWriter = require('./AtomicWriter.js')
-const ReactiveDao = require("@live-change/dao")
+import AtomicWriter from './AtomicWriter.js'
+import ReactiveDao from "@live-change/dao"
 
 class Log {
   constructor(database, name, config) {
@@ -61,4 +61,4 @@ class Log {
 
 }
 
-module.exports = Log
+export default Log

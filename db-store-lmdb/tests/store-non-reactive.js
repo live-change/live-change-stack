@@ -1,9 +1,9 @@
-const test = require('tape')
-const lmdb = require('node-lmdb')
-const rimraf = require("rimraf")
-const fs = require('fs')
+import test from 'tape'
+import lmdb from 'node-lmdb'
+import { rimraf } from 'rimraf'
+import fs from 'fs'
 
-const Store = require('../lib/Store.js')
+import Store from '../lib/Store.js'
 
 const dbPath = `./test.nr.db`
 rimraf.sync(dbPath)
@@ -155,12 +155,7 @@ test("store non-reactive properties", t => {
     t.plan(1)
     dbi.close()
     env.close()
-    await new Promise ((resolve, reject) => {
-      rimraf(dbPath, (err) => {
-        if(err) return t.fail(err)
-        t.pass('removed')
-        resolve()
-      })
-    })
+    await rimraf(dbPath)
+    t.pass('removed')
   })
 })

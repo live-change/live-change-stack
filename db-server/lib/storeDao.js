@@ -54,7 +54,7 @@ function localReads(server) {
   }
 }
 
-module.exports = {
+export {
   localRequests,
   localReads
 }

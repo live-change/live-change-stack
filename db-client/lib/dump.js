@@ -1,4 +1,4 @@
-const { client: WSClient } = require("@live-change/dao-websocket")
+import { client as WSClient } from "@live-change/dao-websocket"
 
 async function dump(
     options,
@@ -139,4 +139,4 @@ async function dump(
   }
 }
 
-module.exports = dump
+export default dump

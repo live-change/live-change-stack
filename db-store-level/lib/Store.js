@@ -1,5 +1,6 @@
-const IntervalTree = require('@live-change/interval-tree').default
-const ReactiveDao = require("@live-change/dao")
+import IntervalTreeLib from '@live-change/interval-tree'
+const IntervalTree = IntervalTreeLib.default
+import ReactiveDao from "@live-change/dao"
 
 class ObjectObservable extends ReactiveDao.ObservableValue {
   constructor(store, key) {
@@ -337,4 +338,4 @@ class Store {
   }
 }
 
-module.exports = Store
+export default Store

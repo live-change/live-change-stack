@@ -20,15 +20,17 @@
     "url": "https://github.com/live-change/live-change-db/issues"
   },
   "homepage": "https://github.com/live-change/live-change-db",
+  "type": "module",
   "devDependencies": {
-    "rimraf": "^3.0.2",
-    "tape": "^5.3.2"
+    "rimraf": "^5.0.5",
+    "tape": "^5.7.4"
   },
   "dependencies": {
     "@live-change/dao": "0.5.22",
     "@live-change/interval-tree": "^1.0.12",
     "napi-macros": "^2.0.0",
-    "node-lmdb": "^0.9.6"
+    "node-lmdb": "^0.9.6",
+    "p-queue": "^7.3.4"
   },
   "gitHead": "358bc9b508a6e446b9286a01e0ceb0e77c1dec28"
 }
