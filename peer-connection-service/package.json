@@ -1,8 +1,9 @@
 {
   "name": "@live-change/peer-connection-service",
-  "version": "0.3.41",
+  "version": "0.4.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "setup": "INSTALL=true node index.js",
