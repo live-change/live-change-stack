@@ -1,4 +1,4 @@
-module.exports = (settings) => (phone) => {
+export default (settings) => (phone) => {
   const digits = phone.match(/\d/g)
   if (!digits) return "wrongPhone"
   if (digits.length < 9) return "wrongPhone"

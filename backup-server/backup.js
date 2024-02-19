@@ -34,7 +34,7 @@ async function writeDbBackup(stream) {
       verbose: true
     },
     (method, ...args) => write({ type: 'request', method, parameters: args }),
-      sync = () => write({ type: 'sync' })
+      () => write({ type: 'sync' })
   )
   stream.end()
 }

@@ -1,10 +1,12 @@
 import definition from './definition.js'
-import App from ('@live-change/framework'
-
-const renderSms = require('./render.js')
 const config = definition.config
 
-const SMSAPI = require('smsapi').SMSAPI
+import App from '@live-change/framework'
+const app = App.app()
+
+import renderSms from './render.js'
+
+import { SMSAPI } from 'smsapi'
 const smsapi = new SMSAPI({
   oauth: {
     accessToken: config.accessToken || process.env.SMSAPI_ACCESS_TOKEN

@@ -1,8 +1,7 @@
-const http = require('http')
-const ReactiveDao = require("@live-change/dao")
-const ReactiveDaoWebsocket = require("@live-change/dao-websocket")
-const ReactiveServer = ReactiveDao.ReactiveServer
-const WebSocketServer = require('websocket').server
+import http from 'http'
+import ReactiveDao, { ReactiveServer } from "@live-change/dao"
+import * as ReactiveDaoWebsocket from "@live-change/dao-websocket"
+import { server as WebSocketServer } from 'websocket'
 
 import App from '@live-change/framework'
 const app = App.app()

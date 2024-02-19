@@ -3,12 +3,14 @@ const app = App.app()
 
 import definition from './definition.js'
 
+import phoneValidator from './phoneValidator.js'
+
 definition.processor(function(service, app) {
-  service.validators.phone = require('./phoneValidator.js')
+  service.validators.phone = phoneValidator
 })
 
-require('./send.js')
-require('./auth.js')
+import './send.js'
+import './auth.js'
 
 export default definition
 

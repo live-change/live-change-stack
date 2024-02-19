@@ -1,4 +1,5 @@
-const { validation } = require('@live-change/framework')
+import App from '@live-change/framework'
+const validation = App.validation
 import definition from './definition.js'
 
 const User = definition.foreignModel('user', 'User')

@@ -1,6 +1,6 @@
-const got = require('got')
-const { JSDOM } = require("jsdom")
-const { convert: htmlToText } = require('html-to-text')
+import got from 'got'
+import { JSDOM } from "jsdom"
+import { convert as htmlToText } from 'html-to-text'
 
 import definition from './definition.js'
 const config = definition.config
@@ -37,4 +37,4 @@ async function renderSms(data) {
   return sms
 }
 
-module.exports = renderSms
+export default renderSms

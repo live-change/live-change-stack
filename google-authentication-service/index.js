@@ -1,7 +1,7 @@
 import App from '@live-change/framework'
 const app = App.app()
 
-const { OAuth2Client } = require('google-auth-library');
+import { OAuth2Client } from 'google-auth-library'
 
 const googClientId = process.env.GOOGLE_CLIENT_ID
 const googClient = new OAuth2Client(googClientId)
