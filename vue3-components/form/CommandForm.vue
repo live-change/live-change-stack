@@ -77,7 +77,7 @@
         type: String
       }
     },
-    emits: ['submit', 'done', 'error'],
+    emits: ['validate', 'submit', 'done', 'error'],
     inject: ['loadingZone', 'workingZone'],
     data() {
       return {
@@ -228,6 +228,8 @@
           parameters: { ...this.parameters, ...additionalParameters }
         })
 
+        this.$emit("validate", { parameters: { ...this.parameters, ...additionalParameters }, form: this })
+
         const validationError = await this.validate({
           parameters: { ...this.parameters, ...additionalParameters }
         })
@@ -248,7 +250,7 @@
         //console.trace("SUBMIT!")
         debug("SUBMIT DATA:\n"+JSON.stringify(parameters, null, "  "))
 
-        this.$emit("submit", { parameters })
+        this.$emit("submit", { parameters, form: this })
 
         return this.$api.request([this.service, this.action], parameters).then((result) => {
           debug("DATA SUBMITED")

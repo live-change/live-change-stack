@@ -1,5 +1,5 @@
 import { createReactiveObject } from '@live-change/vue3-components'
-import * as lcdao from '@live-change/dao'
+import ReactiveDao from '@live-change/dao'
 import { reactiveMixin, reactivePrefetchMixin, ReactiveObservableList } from '@live-change/dao-vue3'
 import SockJsConnection from '@live-change/dao-sockjs'
 import MessageConnection from '@live-change/dao-message'
@@ -37,7 +37,7 @@ function clientApi(settings = {}) {
     }
   }
 
-  const dao = new lcdao.Dao(credentials, {
+  const dao = new ReactiveDao(credentials, {
     remoteUrl: settings.remoteUrl || document.location.protocol + '//' + document.location.host + "/api/sockjs",
     protocols: {
       'sockjs': SockJsConnection,
@@ -57,6 +57,7 @@ function clientApi(settings = {}) {
       queueActiveRequestsOnDisconnect: true,
       autoReconnectDelay: 200,
       logLevel: 1,
+
       /*connectionMonitorFactory: (connection) =>
           new ReactiveDao.ConnectionMonitorPinger(connection, {
             pingInterval: 50,
