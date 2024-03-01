@@ -1,8 +1,12 @@
+import localStorageStore from '@live-change/db-store-localstorage'
+import indexedDbStore from '@live-change/db-store-indexeddb'
+import rbTreeStore from '@live-change/db-store-rbtree'
+
 function createBackend(config) {
   console.log("CREATE BACKEND", config)
   if(config.name == 'mem' || config.name == 'memory') {
     return {
-      Store: require('@live-change/db-store-rbtree'),
+      Store: rbTreeStore,
       createDb(path, options) {
         const db = {}
         db.path = path
@@ -20,12 +24,11 @@ function createBackend(config) {
       closeStore(store) {
       },
       async deleteStore(store) {
-        await store.clear()
       }
     }
   } if(config.name == 'indexeddb') {
     return {
-      Store: require('@live-change/db-store-indexeddb'),
+      Store: indexedDbStore,
       createDb(path, options) {
         const db = {}
         db.path = path
@@ -49,7 +52,7 @@ function createBackend(config) {
     }
   } if(config.name == 'local') {
     return {
-      Store: require('@live-change/db-store-localstorage'),
+      Store: localStorageStore,
       createDb(path, options) {
         const db = {}
         db.path = path
@@ -73,7 +76,7 @@ function createBackend(config) {
     }
   } if(config.name == 'session') {
     return {
-      Store: require('@live-change/db-store-localstorage'),
+      Store: localStorageStore,
       createDb(path, options) {
         const db = {}
         db.path = path
@@ -100,4 +103,4 @@ function createBackend(config) {
   }
 }
 
-module.exports = createBackend
+export default createBackend

@@ -1,1 +1,2 @@
-module.exports = require('./lib/Store.js')
+import Store from './lib/Store.js'
+export default Store

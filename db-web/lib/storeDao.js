@@ -1,4 +1,4 @@
-function localRequests(server) {
+export function localRequests(server) {
   return {
     put: (dbName, storeName, object) => {
       const db = server.databaseStores.get(dbName)
@@ -17,7 +17,7 @@ function localRequests(server) {
   }
 }
 
-function localReads(server) {
+export function localReads(server) {
   return {
     object: {
       observable(dbName, storeName, id) {
@@ -52,9 +52,4 @@ function localReads(server) {
       }
     }
   }
-}
-
-module.exports = {
-  localRequests,
-  localReads
 }

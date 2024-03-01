@@ -158,4 +158,4 @@ if(typeof window == 'undefined') {
   }
 }
 
-module.exports = { local, session }
+export { local, session }

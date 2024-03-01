@@ -1,7 +1,8 @@
-const IntervalTree = require('@live-change/interval-tree').default
-const ReactiveDao = require("@live-change/dao")
-const { BroadcastChannel, createLeaderElection } = require('broadcast-channel')
-const storage = require('./storage.js')
+import IntervalTreeLib from '@live-change/interval-tree'
+const IntervalTree = IntervalTreeLib.default ?? IntervalTreeLib
+import ReactiveDao from "@live-change/dao"
+import { BroadcastChannel, createLeaderElection } from 'broadcast-channel'
+import * as storage from './storage.js'
 
 class ObjectObservable extends ReactiveDao.ObservableValue {
   constructor(store, key) {
@@ -248,6 +249,10 @@ class Store {
     this.rangeObservablesTree = new IntervalTree()
   }
 
+  clear() {
+    return this.storage.clear()
+  }
+
   async openChannel() {
     this.channel = new BroadcastChannel(`lc-db-${this.dbName}-${this.storeName}`, {
       idb: {
@@ -418,4 +423,4 @@ class Store {
 
 }
 
-module.exports = Store
+export default Store

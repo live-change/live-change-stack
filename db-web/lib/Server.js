@@ -1,11 +1,11 @@
-const ScriptContext = require('@live-change/db/lib/WebScriptContext.js')
-const dbDao = require('./dbDao.js')
-const storeDao = require('./storeDao.js')
-const createBackend = require("./backend.js")
+import ScriptContext from '@live-change/db/lib/WebScriptContext.js'
+import * as dbDao from './dbDao.js'
+import * as storeDao from './storeDao.js'
+import createBackend from "./backend.js"
 
-const ReactiveDao = require("@live-change/dao")
+import ReactiveDao from "@live-change/dao"
 
-const Database = require('@live-change/db').Database
+import { Database } from '@live-change/db'
 
 class DatabaseStore {
   constructor(path, backends, options) {
@@ -187,4 +187,4 @@ class Server {
   }
 }
 
-module.exports = Server
+export default Server

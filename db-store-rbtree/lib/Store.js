@@ -1,5 +1,5 @@
 import IntervalTreeLib from '@live-change/interval-tree'
-const IntervalTree = IntervalTreeLib.default
+const IntervalTree = IntervalTreeLib.default ?? IntervalTreeLib
 import ReactiveDao from "@live-change/dao"
 import createTree from "functional-red-black-tree"
 
