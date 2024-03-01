@@ -1,3 +1,5 @@
+import {mergeDeep} from "../utils.js"
+
 function nonEmpty(value) {
   if(!value) return 'empty'
   if(typeof value == 'string') {
@@ -21,7 +23,7 @@ function getField(context, fieldName) {
   } else {
     path = propPath.concat(fieldName.split('.'))
   }
-  let p = context.props
+  let p = mergeDeep(context.props, context.parameters)
   for(let part of path) p = p[part]
   return p
 }
@@ -102,9 +104,9 @@ const validators = {
   ifNotOneOf: ({ prop, what, then }, { getValidator }) => {
     let validators = then.map(getValidator)
     const validator = (value, context) => {
-      console.error("VIF NOT ONE OF", getField(context, prop), what, what.includes(getField(context, prop)))
+      //console.error("VIF NOT ONE OF", getField(context, prop), what, what.includes(getField(context, prop)))
       if(!what.includes(getField(context, prop))) {
-        console.log("V", validators)
+        //console.log("V", validators)
         for(let v of validators) {
           const err = v(value, context)
           if(err) return err

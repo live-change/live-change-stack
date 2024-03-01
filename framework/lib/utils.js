@@ -80,7 +80,10 @@ function crudChanges(oldElements, newElements, elementName, newParamName, params
     } else {
       if(newElement.computeChanges) {
         changes.push(...newElement.computeChanges(oldElement, params, newElementName))
-      } else if(JSON.stringify(oldElement) != JSON.stringify(newElement)) {
+      } else if(
+          JSON.stringify({ ...oldElement, created: undefined })
+          != JSON.stringify({ ...newElement, created: undefined })
+      ) {
         let change = {
           operation: "delete"+elementName,
           ...params,

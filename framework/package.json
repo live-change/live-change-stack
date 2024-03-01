@@ -23,6 +23,6 @@
   "homepage": "https://github.com/live-change/live-change-framework",
   "devDependencies": {
     "@live-change/dao": "0.6.0",
-    "@live-change/uid": "^0.8.0"
+    "@live-change/uid": "0.8.0"
   }
 }
