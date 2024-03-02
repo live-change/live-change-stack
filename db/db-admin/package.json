@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-admin",
-  "version": "0.7.3",
+  "version": "0.8.2",
   "scripts": {
     "memDev": "lcli memDev --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --initScript ./init.js --dbAccess",
@@ -20,11 +20,11 @@
   "dependencies": {
     "@live-change/cli": "0.8.0",
     "@live-change/dao": "0.6.0",
-    "@live-change/dao-vue3": "0.6.0",
-    "@live-change/dao-websocket": "0.6.0",
+    "@live-change/dao-vue3": "^0.8.2",
+    "@live-change/dao-websocket": "^0.8.2",
     "@live-change/framework": "0.8.0",
-    "@live-change/vue3-components": "0.2.35",
-    "@live-change/vue3-ssr": "0.2.35",
+    "@live-change/vue3-components": "^0.8.2",
+    "@live-change/vue3-ssr": "^0.8.2",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vueuse/core": "^10.7.2",
     "@vueuse/head": "^2.0.0",
