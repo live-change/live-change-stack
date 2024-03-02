@@ -51,8 +51,9 @@
     "content-service",
     "pages-service",
     "url-service",
-    "blog-service"
-  ],
-  "devDependencies": {
-  }
+    "blog-service",
+    "vue-api",
+    "vue3-components",
+    "vue3-ssr"
+  ]
 }

@@ -16,14 +16,14 @@
     "db-store-lmdb",
     "db-store-observable-db",
     "db-store-rbtree",
-    "db-web"
+    "db-web",
     "cli",
     "codeceptjs-helper",
     "filesystem-plugin",
     "framework",
     "relations-plugin",
     "server",
-    "uid"
+    "uid",
     "session-service",
     "user-service",
     "email-service",
@@ -49,7 +49,10 @@
     "smsapi-service",
     "google-authentication-service",
     "vote-service",
-    "analytics-service"
+    "analytics-service",
+    "vue-api",
+    "vue3-components",
+    "vue3-ssr"
   ],
   "publishConfig": {
     "access": "public"
