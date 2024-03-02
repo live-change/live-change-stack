@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "name": "live-change-stack",
   "version": "0.7.3",
   "private": true,
@@ -22,7 +21,7 @@
     "db-store-level",
     "db-store-lmdb",
     "db-store-observable-db",
-    "db-store-rbtree"
+    "db-store-rbtree",
     "uid",
     "framework",
     "server",
@@ -30,7 +29,7 @@
     "filesystem-plugin",
     "elasticsearch-plugin",
     "relations-plugin",
-    "codeceptjs-helper"
+    "codeceptjs-helper",
     "session-service",
     "user-service",
     "email-service",
