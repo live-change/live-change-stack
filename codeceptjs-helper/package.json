@@ -1,0 +1,29 @@
+{
+  "name": "@live-change/codeceptjs-helper",
+  "version": "0.8.1",
+  "description": "CodeceptJS Helper",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-framework.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-framework/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-framework",
+  "dependencies": {
+    "@codeceptjs/helper": "^2.0.1"
+  },
+  "devDependencies": {
+    "wtfnode": "^0.9.1"
+  }
+}

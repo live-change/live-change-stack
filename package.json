@@ -22,5 +22,13 @@
     "db-store-lmdb",
     "db-store-observable-db",
     "db-store-rbtree"
+    "uid",
+    "framework",
+    "server",
+    "cli",
+    "filesystem-plugin",
+    "elasticsearch-plugin",
+    "relations-plugin",
+    "codeceptjs-helper"
   ]
 }

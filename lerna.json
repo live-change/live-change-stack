@@ -17,9 +17,16 @@
     "db-store-observable-db",
     "db-store-rbtree",
     "db-web"
+    "cli",
+    "codeceptjs-helper",
+    "filesystem-plugin",
+    "framework",
+    "relations-plugin",
+    "server",
+    "uid"
   ],
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.7.3"
+  "version": "0.8.1"
 }

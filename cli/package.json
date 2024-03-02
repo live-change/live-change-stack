@@ -1,0 +1,43 @@
+{
+  "name": "@live-change/cli",
+  "version": "0.8.1",
+  "description": "Live Change Framework - command line interface",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "bin": {
+    "lcli": "./bin/lcli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-framework.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-framework/issues"
+  },
+  "type": "module",
+  "homepage": "https://github.com/live-change/live-change-framework",
+  "dependencies": {
+    "@live-change/dao": "0.6.0",
+    "@live-change/dao-sockjs": "0.6.0",
+    "@live-change/dao-websocket": "0.6.0",
+    "@live-change/db-server": "0.7.3",
+    "@live-change/framework": "^0.8.1",
+    "@live-change/server": "^0.8.1",
+    "dotenv": "^16.4.4",
+    "express": "^4.18.2",
+    "http-proxy-middleware": "2.0.6",
+    "resolve": "^1.22.8",
+    "serialize-javascript": "^6.0.2",
+    "sockjs": "^0.3.24",
+    "websocket": "^1.0.34",
+    "yargs": "^17.7.2"
+  }
+}

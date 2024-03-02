@@ -1,0 +1,28 @@
+{
+  "name": "@live-change/relations-plugin",
+  "version": "0.8.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-framework.git"
+  },
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-framework/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-framework",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "type": "module",
+  "dependencies": {
+    "@live-change/framework": "^0.8.1",
+    "pluralize": "^8.0.0"
+  }
+}

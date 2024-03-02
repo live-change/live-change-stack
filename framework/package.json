@@ -1,0 +1,28 @@
+{
+  "name": "@live-change/framework",
+  "version": "0.8.1",
+  "description": "Live Change Framework - ultimate solution for real time mobile/web apps",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-framework.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "type": "module",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-framework/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-framework",
+  "devDependencies": {
+    "@live-change/dao": "0.6.0",
+    "@live-change/uid": "^0.8.1"
+  }
+}
