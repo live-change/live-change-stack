@@ -1,6 +1,6 @@
 {
   "name": "live-change-stack",
-  "version": "0.7.3",
+  "version": "0.8.1",
   "private": true,
   "license": "BSD-3-Clause",
   "workspaces": [
@@ -54,6 +54,18 @@
     "blog-service",
     "vue-api",
     "vue3-components",
-    "vue3-ssr"
+    "vue3-ssr",
+    "frontend-base",
+    "frontend-auto-form",
+    "user-frontend",
+    "security-frontend",
+    "access-control-frontend",
+    "peer-connection-frontend",
+    "wysiwyg-frontend",
+    "upload-frontend",
+    "image-frontend",
+    "url-frontend",
+    "content-frontend",
+    "blog-frontend"
   ]
 }

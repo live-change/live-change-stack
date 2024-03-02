@@ -1,3 +1,7 @@
 *.log
 */node_modules
 node_modules
+.idea
+lerna-debug.log
+yarn.lock
+*/front/components.d.ts

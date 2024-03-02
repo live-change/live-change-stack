@@ -1,0 +1,7 @@
+{
+  "app": {
+    "updateAvailable": "Update available!",
+    "newVersions": "New version of wallet available!",
+    "reload": "Reload"
+  }
+}

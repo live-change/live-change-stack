@@ -1,5 +1,6 @@
 {
   "packages": [
+<<<<<<< HEAD
     "dao",
     "dao-websocket",
     "dao-message",
@@ -52,7 +53,20 @@
     "analytics-service",
     "vue-api",
     "vue3-components",
-    "vue3-ssr"
+    "vue3-ssr",
+    "access-control-frontend",
+    "frontend-base",
+    "frontend-auto-form",
+    "image-frontend",
+    "peer-connection-frontend",
+    "security-frontend",
+    "upload-frontend",
+    "user-frontend",
+    "wysiwyg-frontend",
+    "url-frontend",
+    "content-frontend",
+    "blog-frontend",
+    "flow-frontend"
   ],
   "publishConfig": {
     "access": "public"
