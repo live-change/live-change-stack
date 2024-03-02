@@ -1,6 +1,6 @@
 {
-  "name": "live-change-dao",
-  "version": "0.0.2",
+  "name": "live-change-stack",
+  "version": "0.7.3",
   "private": true,
   "license": "BSD-3-Clause",
   "workspaces": [
@@ -10,6 +10,17 @@
     "dao-message",
     "dao-vue",
     "dao-vue3",
-    "dao-message"
+    "dao-message",
+    "db",
+    "db-client",
+    "db-server",
+    "db-web",
+    "db-admin",
+    "db-store-indexeddb",
+    "db-store-localstorage",
+    "db-store-level",
+    "db-store-lmdb",
+    "db-store-observable-db",
+    "db-store-rbtree"
   ]
 }

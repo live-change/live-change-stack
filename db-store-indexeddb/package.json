@@ -1,0 +1,34 @@
+{
+  "name": "@live-change/db-store-indexeddb",
+  "version": "0.7.3",
+  "description": "Database with observable data for live queries",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-db.git"
+  },
+  "author": {
+    "email": "michal@laszczewski.com",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-db/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-db",
+  "devDependencies": {
+    "fake-indexeddb": "^3.1.3",
+    "idb": "^6.1.4",
+    "tape": "^5.7.4"
+  },
+  "dependencies": {
+    "@live-change/dao": "0.6.0",
+    "@live-change/interval-tree": "^1.0.12",
+    "broadcast-channel": "^4.2.0"
+  },
+  "gitHead": "358bc9b508a6e446b9286a01e0ceb0e77c1dec28"
+}
