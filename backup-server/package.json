@@ -1,0 +1,22 @@
+{
+  "name": "@live-change/backup-server",
+  "version": "0.4.4",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test blue-tape tests/*"
+  },
+  "author": "Michał Łaszczewski <michal@emikse.com>",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "@live-change/db-client": "0.7.3",
+    "@live-change/framework": "0.8.1",
+    "express": "^4.18.2",
+    "express-basic-auth": "^1.2.1",
+    "fs-extra": "^11.1.1",
+    "p-queue": "^7.3.4",
+    "progress-stream": "^2.0.0"
+  },
+  "gitHead": "2fc30f1d4be9c78de081c0e18b3c706ed094b8d4",
+  "type": "module"
+}

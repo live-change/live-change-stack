@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "live-change-stack",
   "version": "0.7.3",
   "private": true,
@@ -30,5 +31,29 @@
     "elasticsearch-plugin",
     "relations-plugin",
     "codeceptjs-helper"
-  ]
+    "session-service",
+    "user-service",
+    "email-service",
+    "message-authentication-service",
+    "password-authentication-service",
+    "secret-code-service",
+    "secret-link-service",
+    "security-service",
+    "access-control-service",
+    "image-service",
+    "upload-service",
+    "user-identification-service",
+    "identicon-service",
+    "peer-connection-service",
+    "online-service",
+    "timer-service",
+    "notification-service",
+    "prosemirror-service",
+    "content-service",
+    "pages-service",
+    "url-service",
+    "blog-service"
+  ],
+  "devDependencies": {
+  }
 }

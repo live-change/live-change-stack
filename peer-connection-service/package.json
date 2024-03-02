@@ -1,0 +1,15 @@
+{
+  "name": "@live-change/peer-connection-service",
+  "version": "0.4.4",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "setup": "INSTALL=true node index.js",
+    "test": "NODE_ENV=test blue-tape tests/*"
+  },
+  "author": "Michał Łaszczewski <michal@emikse.com>",
+  "license": "BSD-3-Clause",
+  "gitHead": "2fc30f1d4be9c78de081c0e18b3c706ed094b8d4"
+}

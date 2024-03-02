@@ -1,0 +1,33 @@
+{
+  "name": "@live-change/blog-service",
+  "version": "0.4.4",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-services.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-services/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-services",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "dependencies": {
+    "@live-change/framework": "0.8.1",
+    "@live-change/relations-plugin": "0.8.1",
+    "lru-cache": "^7.12.0",
+    "pluralize": "^8.0.0",
+    "progress-stream": "^2.0.0",
+    "prosemirror-model": "^1.18.1"
+  },
+  "gitHead": "2fc30f1d4be9c78de081c0e18b3c706ed094b8d4",
+  "type": "module"
+}
