@@ -1,0 +1,31 @@
+{
+  "name": "@live-change/pattern",
+  "version": "0.2.1",
+  "description": "Realtime usage pattern analysis for security, analytics and gamification purposes",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/pattern.git"
+  },
+  "author": "Michał Łaszczewski <m8@em8.pl> (https://www.viamage.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/pattern/issues"
+  },
+  "homepage": "https://github.com/live-change/pattern",
+  "devDependencies": {
+    "d3": "^5.15.0",
+    "d3-node": "^2.2.1",
+    "d3-path-arrows": "^0.4.0",
+    "d3-sankey-circular": "^0.34.0",
+    "tape": "^5.7.4"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "tests"
+  },
+  "keywords": []
+}
