@@ -1,6 +1,6 @@
 {
   "name": "@live-change/upload-frontend",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "scripts": {
     "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --enableSessions --initScript ./init.js",
@@ -22,15 +22,15 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.4.2",
-    "@live-change/cli": "^0.8.4",
-    "@live-change/dao": "^0.8.4",
+    "@live-change/cli": "^0.8.5",
+    "@live-change/dao": "^0.8.5",
     "@live-change/dao-vue3": "0.8.2",
     "@live-change/dao-websocket": "0.8.2",
     "@live-change/framework": "0.8.2",
     "@live-change/password-authentication-service": "0.8.2",
     "@live-change/secret-code-service": "0.8.2",
     "@live-change/secret-link-service": "0.8.2",
-    "@live-change/security-frontend": "^0.8.4",
+    "@live-change/security-frontend": "^0.8.5",
     "@live-change/session-service": "0.8.2",
     "@live-change/user-service": "0.8.2",
     "@live-change/vue3-components": "0.8.2",
