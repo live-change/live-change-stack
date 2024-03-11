@@ -4,3 +4,5 @@ import { createRouter } from './router'
 import config from './config.js'
 
 clientEntry(App, createRouter, config)
+
+window.appStarted = true

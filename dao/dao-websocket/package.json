@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-dao/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.6.0",
+    "@live-change/dao": "0.6.0",
     "bufferutil": "^4.0.3",
     "debug": "^4.3.4",
     "supports-color": "^9.4.0",
@@ -22,7 +22,6 @@
   "devDependencies": {
     "tape": "^5.7.4"
   },
-  "directories": {},
   "homepage": "https://github.com/live-change/live-change-dao",
   "license": "BSD-3-Clause",
   "main": "index.js",

@@ -70,7 +70,7 @@ module.exports = {
     },
     {
       name: 'backup',
-      path: '@live-change/backup-server',
+      path: '@live-change/backup-service',
     }
 
     //  { path: '@live-change/google-account-service' },

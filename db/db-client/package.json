@@ -29,7 +29,7 @@
   "type": "module",
   "dependencies": {
     "@live-change/dao": "0.6.0",
-    "@live-change/dao-websocket": "^0.8.2",
+    "@live-change/dao-websocket": "0.8.2",
     "line-reader": "^0.4.0",
     "websocket": "^1.0.34",
     "yargs": "^17.7.2"

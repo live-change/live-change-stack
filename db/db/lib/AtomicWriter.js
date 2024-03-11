@@ -289,6 +289,7 @@ class AtomicWriter {
 
   async put(object) {
     const id = object.id
+    if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
     let queue = this.writes.get(id)
     if(!queue) {
       queue = new WriteQueue(this, this.store, id)

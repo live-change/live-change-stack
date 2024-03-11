@@ -54,7 +54,7 @@
     "services/url-service",
     "services/content-service",
     "services/blog-service",
-    "services/backup-server",
+    "services/backup-service",
     "services/google-authentication-service",
     "services/sms-confirm-service",
     "services/smsapi-service",

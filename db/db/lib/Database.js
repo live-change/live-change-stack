@@ -278,12 +278,17 @@ class Database {
     return queryObservable.single(this, code)
   }
 
-  handleUnhandledRejectionInIndex(name, reason, promise) {
+  handleUnhandledRejectionInIndex(name, reason) {
     const config = this.config.indexes[name]
     console.error("INDEX", name, "unhandledRejection", reason, "CODE:\n", config?.code)
     console.error("DELETING INDEX", name)
+    const index = this.indexes.get(name)
+    if(index) {
+      index.deleteIndex()
+      this.indexes.delete(name)
+    }
     nextTick(() => {
-      if(!config) {
+      if(!this.config.indexes[name]) {
         console.error("INDEX", name, "IS ALREADY DELETED")
         console.trace("ALREADY DELETED")
         return;

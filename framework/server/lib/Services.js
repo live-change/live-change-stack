@@ -143,6 +143,16 @@ class Services {
     out.end()
   }
 
+  async processDefinitions() {
+    for(const defn of this.serviceDefinitions) {
+      if(!defn.processed) {
+        app.processServiceDefinition(defn)
+        defn.processed = true
+      }
+    }
+  }
+
+
   async update() {
     /*await Promise.all(this.serviceDefinitions.map(defn => {
       if(!defn.processed) {

@@ -135,7 +135,6 @@ class TableReader extends ChangeStream {
     for(const rangeReader of rangeReaders) {
       rangeReader.change(obj, oldObj, id, timestamp)
     }
-    //console.log("TR change", this.callbacks[0])
     for(const callback of this.callbacks) await callback(obj, oldObj, id, timestamp)
     if(profileOp) await profileLog.end(profileOp)
   }
@@ -372,16 +371,20 @@ class OpLogReader {
         //console.log("CKN", this.currentKey, '=>', next.key)
         this.currentKey = next.key
         //console.log("READ TO", readEnd)
-        const readKey = await next.reader.readTo(readEnd)
-        //console.log("READED")
-        if(readKey) {
-          if((readKey||'') < this.currentKey) {
-            //debugger
-            console.error("time travel", readKey, this.currentKey)
-            //process.exit(1) /// TODO: do something about it!
+        try {
+          const readKey = await next.reader.readTo(readEnd)
+          //console.log("READED")
+          if(readKey) {
+            if((readKey||'') < this.currentKey) {
+              //debugger
+              console.error("time travel", readKey, this.currentKey)
+              //process.exit(1) /// TODO: do something about it!
+            }
+            //console.log("CKR", this.currentKey, '=>', readKey)
+            this.currentKey = readKey
           }
-          //console.log("CKR", this.currentKey, '=>', readKey)
-          this.currentKey = readKey
+        } catch(error) {
+          this.database.handleUnhandledRejectionInIndex(this.indexName, error)
         }
       }
     } while(this.gotSignals)
@@ -400,9 +403,13 @@ class IndexWriter {
     this.index = index
   }
   put(object) {
+    const id = object.id
+    if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
     this.index.put(object)
   }
   delete(object) {
+    const id = object.id
+    if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
     this.index.delete(object.id)
   }
   update(id, ops) {

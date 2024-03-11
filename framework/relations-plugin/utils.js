@@ -158,6 +158,12 @@ function defineDeleteByOwnerEvents(config, context, generateId) {
     const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
     service.events[eventName] = new EventDefinition({
       name: eventName,
+      properties: {
+        owner: {
+          type: String,
+          validation: ['nonEmpty']
+        }
+      },
       async execute({owner}) {
         const runtime = modelRuntime()
         const tableName = runtime.tableName

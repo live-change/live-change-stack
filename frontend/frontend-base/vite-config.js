@@ -23,8 +23,13 @@ import { PrimeVueResolver } from 'unplugin-vue-components/resolvers'
 import { visualizer } from 'rollup-plugin-visualizer'
 import viteImages from 'vite-plugin-vue-images'
 import viteCompression from 'vite-plugin-compression'
+import checker from 'vite-plugin-checker'
 import { searchForWorkspaceRoot } from 'vite'
 import { fileURLToPath } from 'url'
+
+import { mkdir } from 'fs/promises'
+
+await mkdir('build-stats', { recursive: true })
 
 const ssrTransformCustomDir = () => {
   return {
@@ -38,7 +43,7 @@ let version = process.env.VERSION ?? 'unknown'
 export default async ({ command, mode }, options = {
   ssrDisabledDirectives: ['ripple', 'styleclass', 'badge', 'shared-element', 'lazy']
 }) => {
-  //console.log("VITE CONFIG", command, mode)
+  //console.log("VITE CONFIG", command, mode, process.argv)
   return {
     define: {
       ENV_BASE_HREF: JSON.stringify(process.env.BASE_HREF || 'http://localhost:8001'),
@@ -60,6 +65,7 @@ export default async ({ command, mode }, options = {
       }
     },
     plugins: [
+      checker({ typescript: true }),
       vuePlugin({
         include: [/\.vue$/, /\.md$/],
         template: {
@@ -120,7 +126,7 @@ export default async ({ command, mode }, options = {
       viteCompression({ algorithm: 'gzip', ext: '.gz' }),
       viteCompression({ algorithm: 'deflate', ext: '.zz' }),
       visualizer({
-        filename: '../stats.html'
+        filename: `../build-stats/${process.argv.slice(3).map(a=>a.replace(/[\./-]/g,'')).join('-')}.html`
       }),
     ],
     build: {

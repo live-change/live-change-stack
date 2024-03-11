@@ -49,6 +49,14 @@ function defineCreatedEvent(config, context) {
   const eventName = modelName + 'Created'
   service.events[eventName] = new EventDefinition({
     name: eventName,
+    properties: {
+      [modelPropertyName]: {
+        type: String,
+      },
+      data: {
+        type: Object
+      }
+    },
     execute(properties) {
       const id = properties[modelPropertyName]
       return modelRuntime().create({ ...properties.data, id })
@@ -63,6 +71,14 @@ function defineUpdatedEvent(config, context) {
   const eventName = modelName + 'Updated'
   service.events[eventName] = new EventDefinition({
     name: eventName,
+    properties: {
+      [modelPropertyName]: {
+        type: String,
+      },
+      data: {
+        type: Object
+      }
+    },
     execute(properties) {
       const id = properties[modelPropertyName]
       return modelRuntime().update(id, { ...properties.data, id })
@@ -77,6 +93,11 @@ function defineDeletedEvent(config, context) {
   const eventName = modelName + 'Deleted'
   service.events[eventName] = new EventDefinition({
     name: eventName,
+    properties: {
+      [modelPropertyName]: {
+        type: String,
+      }
+    },
     execute(properties) {
       const id = properties[modelPropertyName]
       return modelRuntime().delete(id)

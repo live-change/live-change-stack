@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-dao/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.6.0",
+    "@live-change/dao": "0.6.0",
     "debug": "^4.3.4",
     "sockjs-client": "git+https://github.com/sockjs/sockjs-client.git",
     "supports-color": "^9.4.0"
@@ -24,7 +24,6 @@
     "mocha": "^9.0.0"
   },
   "description": "live-change dao sockjs transport",
-  "directories": {},
   "homepage": "https://github.com/live-change/live-change-dao",
   "license": "BSD-3-Clause",
   "main": "index.js",

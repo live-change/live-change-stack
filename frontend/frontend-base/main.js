@@ -42,7 +42,8 @@ export async function createApp(config, api, App, createRouter, host, headers, r
   app.use(router)
 
   app.use(PrimeVue, {
-    ripple: true
+    ripple: true,
+    ...config.primeVue
   })
 
   app.use(ConfirmationService)

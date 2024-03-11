@@ -146,17 +146,21 @@ process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
 })
 
-expressApp.listen(backupServerPort, () => {
-  console.log(`backup port listening on ${backupServerPort}`)
-  setTimeout(async () => {
-    console.log('Service init backup:')
-    await queue.add(() => doBackup())
-    console.log('Service init backup completed')
-  }, TEN_MINUTES)
+definition.beforeStart(() => {
 
-  setInterval(async () => {
-    console.log('Daily backup:')
-    await queue.add(() => doBackup())
-    console.log('Daily backup completed')
-  }, TWENTY_FOUR_HOURS)
+  expressApp.listen(backupServerPort, () => {
+    console.log(`backup port listening on ${backupServerPort}`)
+    setTimeout(async () => {
+      console.log('Service init backup:')
+      await queue.add(() => doBackup())
+      console.log('Service init backup completed')
+    }, TEN_MINUTES)
+
+    setInterval(async () => {
+      console.log('Daily backup:')
+      await queue.add(() => doBackup())
+      console.log('Daily backup completed')
+    }, TWENTY_FOUR_HOURS)
+  })
+
 })

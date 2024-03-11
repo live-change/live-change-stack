@@ -22,8 +22,8 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-db",
   "devDependencies": {
-    "@live-change/db-store-level": "^0.8.2",
-    "@live-change/db-store-lmdb": "^0.8.2",
+    "@live-change/db-store-level": "0.8.2",
+    "@live-change/db-store-lmdb": "0.8.2",
     "minimist": ">=1.2.3",
     "next-tick": "^1.1.0",
     "rimraf": "^5.0.5",

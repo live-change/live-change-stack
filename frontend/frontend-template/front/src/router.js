@@ -12,6 +12,8 @@ import { dbAdminRoutes } from "@live-change/db-admin"
 import { userRoutes } from "@live-change/user-frontend"
 import { catchAllPagesRoute, contentEditRoutes, pagesSitemap } from "@live-change/content-frontend"
 
+import pagesRoutes from '~pages'
+
 export function routes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
@@ -21,6 +23,8 @@ export function routes(config = {}) {
       name: 'index', path: prefix, meta: { },
       component: () => import("./Index.vue")
     }),
+
+    ...pagesRoutes,
 
     ...contentEditRoutes({ ...config }),
 

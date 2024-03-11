@@ -61,6 +61,8 @@ class Table {
   }
 
   async put(object) {
+    const id = object.id
+    if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
     try {
       return await this.atomicWriter.put(object)
     } catch(e) {

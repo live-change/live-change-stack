@@ -15,6 +15,7 @@ const app = App.app()
 import {
 
   SsrServer,
+  Services,
 
   createLoopbackDao,
   setupApiServer,
@@ -235,6 +236,15 @@ export default function starter(servicesConfig = null) {
         await setupApp({...argv, uidBorders: '[]'})
         await server({...argv, uidBorders: '[]'}, true)
       })
+      .command('describe', 'describe server', (yargs) => {
+        yargs.option('service', {
+          describe: 'service that will be described',
+          type: 'string',
+          default: '*'
+        })
+      }, async (argv) => {
+        await describe(argv)
+      })
       .option('verbose', {
         alias: 'v',
         type: 'boolean',
@@ -243,6 +253,52 @@ export default function starter(servicesConfig = null) {
   /// TODO api.gen.js generation command
 }
 
+
+async function describe(argv) {
+  if(globalServicesConfig) argv.services = globalServicesConfig
+  const services = new Services(argv.services)
+  await services.loadServices()
+  await services.processDefinitions()
+  function describeService(service) {
+    console.log("Service", service.name)
+    console.log("  models:")
+    for(const modelName in service.models) {
+      const model = service.models[modelName]
+      const properties = Object.keys(model.properties ?? {})
+      console.log("    ", modelName, "(", properties.join(', '), ")")
+    }
+    console.log("  actions:")
+    for(const actionName in service.actions) {
+      const action = service.actions[actionName]
+      const properties = Object.keys(action.properties ?? {})
+      console.log("    ", actionName, "(", properties.join(', '), ")")
+    }
+    console.log("  views:")
+    for(const viewName in service.views) {
+      const view = service.views[viewName]
+      const properties = Object.keys(view.properties ?? {})
+      console.log("    ", viewName, "(", properties.join(', '), ")")
+    }
+    console.log("  events:")
+    for(const eventName in service.events) {
+      const event = service.events[eventName]
+      const properties = Object.keys(event.properties ?? {})
+      console.log("    ", eventName, "(", properties.join(', '), ")")
+    }
+  }
+  if(argv.service == '*') {
+    for(const service of services.serviceDefinitions) {
+      describeService(service)
+    }
+  } else {
+    const service = services.serviceDefinitions.find(s => s.name == argv.service)
+    if(service) {
+      describeService(service)
+    } else {
+      console.error("Service", argv.service, "not found")
+    }
+  }
+}
 
 async function apiServer(argv) {
   if(globalServicesConfig) argv.services = globalServicesConfig
