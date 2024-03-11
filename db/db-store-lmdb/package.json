@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-lmdb",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -26,11 +26,11 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "0.6.0",
+    "@live-change/dao": "^0.8.4",
     "@live-change/interval-tree": "^1.0.12",
     "napi-macros": "^2.0.0",
     "node-lmdb": "^0.9.6",
     "p-queue": "^7.3.4"
   },
-  "gitHead": "358bc9b508a6e446b9286a01e0ceb0e77c1dec28"
+  "gitHead": "81b4ac5a36ab1abdf9d521e3c4fbea6d194bb892"
 }

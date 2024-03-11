@@ -1,6 +1,6 @@
 {
   "name": "@live-change/elasticsearch-plugin",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,5 +22,6 @@
   },
   "dependencies": {
     "@elastic/elasticsearch": "7.13.0"
-  }
+  },
+  "gitHead": "81b4ac5a36ab1abdf9d521e3c4fbea6d194bb892"
 }

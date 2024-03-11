@@ -1,6 +1,6 @@
 {
   "name": "@live-change/access-control-frontend",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "scripts": {
     "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --enableSessions --initScript ./init.js",
@@ -22,18 +22,18 @@
   "type": "module",
   "dependencies": {
     "@live-change/access-control-service": "0.8.2",
-    "@live-change/cli": "^0.8.3",
-    "@live-change/dao": "0.6.0",
+    "@live-change/cli": "^0.8.4",
+    "@live-change/dao": "^0.8.4",
     "@live-change/dao-vue3": "0.8.2",
     "@live-change/dao-websocket": "0.8.2",
-    "@live-change/db-admin": "^0.8.3",
+    "@live-change/db-admin": "^0.8.4",
     "@live-change/framework": "0.8.2",
-    "@live-change/frontend-base": "^0.8.3",
+    "@live-change/frontend-base": "^0.8.4",
     "@live-change/password-authentication-service": "0.8.2",
     "@live-change/secret-code-service": "0.8.2",
     "@live-change/secret-link-service": "0.8.2",
     "@live-change/session-service": "0.8.2",
-    "@live-change/user-frontend": "^0.8.3",
+    "@live-change/user-frontend": "^0.8.4",
     "@live-change/user-service": "0.8.2",
     "@live-change/vue3-components": "0.8.2",
     "@live-change/vue3-ssr": "0.8.2",
@@ -64,5 +64,5 @@
   "author": "",
   "license": "BSD-3-Clause",
   "description": "",
-  "gitHead": "61ea1e9554f3bf8cb8f9debffdabd8a88855c3b2"
+  "gitHead": "81b4ac5a36ab1abdf9d521e3c4fbea6d194bb892"
 }

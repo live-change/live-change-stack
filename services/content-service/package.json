@@ -1,6 +1,6 @@
 {
   "name": "@live-change/content-service",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,13 +21,13 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.8.3",
-    "@live-change/relations-plugin": "^0.8.3",
+    "@live-change/framework": "^0.8.4",
+    "@live-change/relations-plugin": "^0.8.4",
     "lru-cache": "^7.12.0",
     "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0",
     "prosemirror-model": "^1.18.1"
   },
-  "gitHead": "2fc30f1d4be9c78de081c0e18b3c706ed094b8d4",
+  "gitHead": "81b4ac5a36ab1abdf9d521e3c4fbea6d194bb892",
   "type": "module"
 }
