@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-admin",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "scripts": {
     "memDev": "node server/start.js memDev --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --initScript ./init.js --dbAccess",
@@ -18,7 +18,6 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/cli": "0.8.2",
     "@live-change/dao": "0.6.0",
     "@live-change/dao-vue3": "0.8.2",
     "@live-change/dao-websocket": "0.8.2",

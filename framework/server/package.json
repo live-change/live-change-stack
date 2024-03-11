@@ -1,6 +1,6 @@
 {
   "name": "@live-change/server",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Live Change Framework - server",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   "dependencies": {
     "@live-change/dao": "0.6.0",
     "@live-change/dao-sockjs": "0.8.2",
-    "@live-change/db-server": "0.8.2",
+    "@live-change/db-server": "^0.8.3",
     "@live-change/framework": "0.8.2",
     "@live-change/sockjs": "0.4.1",
     "@live-change/uid": "0.8.2",

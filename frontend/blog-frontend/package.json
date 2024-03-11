@@ -1,6 +1,6 @@
 {
   "name": "@live-change/blog-frontend",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "scripts": {
     "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --enableSessions --initScript ./init.js",
@@ -23,8 +23,8 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.4.2",
     "@live-change/blog-service": "0.8.2",
-    "@live-change/cli": "0.8.2",
-    "@live-change/content-frontend": "0.8.2",
+    "@live-change/cli": "^0.8.3",
+    "@live-change/content-frontend": "^0.8.3",
     "@live-change/dao": "0.6.0",
     "@live-change/dao-vue3": "0.8.2",
     "@live-change/dao-websocket": "0.8.2",

@@ -1,6 +1,6 @@
 {
   "name": "@live-change/vue-api",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Live Change Framework - vue api base",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   "homepage": "https://github.com/live-change/live-change-framework-vue3",
   "dependencies": {
     "@live-change/dao": "0.6.0",
-    "@live-change/uid": "0.8.2",
+    "@live-change/uid": "^0.8.3",
     "debug": "^4.3.4"
   }
 }

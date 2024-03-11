@@ -1,6 +1,6 @@
 {
   "name": "@live-change/security-frontend",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "scripts": {
     "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js",
     "localDevInit": "rm tmp.db; lcli localDev --enableSessions --initScript ./init.js",
@@ -21,7 +21,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/cli": "0.8.2",
+    "@live-change/cli": "^0.8.3",
     "@live-change/dao": "0.6.0",
     "@live-change/dao-vue3": "0.8.2",
     "@live-change/dao-websocket": "0.8.2",
