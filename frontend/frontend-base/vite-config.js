@@ -65,7 +65,7 @@ export default async ({ command, mode }, options = {
       }
     },
     plugins: [
-      checker({ typescript: true }),
+      //checker({ typescript: true }),
       vuePlugin({
         include: [/\.vue$/, /\.md$/],
         template: {

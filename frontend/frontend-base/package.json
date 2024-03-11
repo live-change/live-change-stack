@@ -107,6 +107,9 @@
     "txtgen": "^3.0.6",
     "webdriverio": "^8.31.1"
   },
+  "resolutions": {
+    "typescript": "5.3.3"
+  },
   "author": "",
   "license": "BSD-3-Clause",
   "description": "",
