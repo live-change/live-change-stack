@@ -94,7 +94,8 @@
     "vue-router": "^4.2.5",
     "vue-shadow-dom": "4.2.0",
     "vue3-lazyload": "0.3.8",
-    "vue3-scroll-border": "0.1.6"
+    "vue3-scroll-border": "0.1.6",
+    "vite-plugin-checker": "^0.6.4"
   },
   "devDependencies": {
     "@live-change/codeceptjs-helper": "0.8.2",
@@ -104,7 +105,6 @@
     "random-profile-generator": "^2.3.0",
     "txtgen": "^3.0.6",
     "typescript": "5.3.3",
-    "vite-plugin-checker": "^0.6.4",
     "webdriverio": "^8.31.1"
   },
   "author": "",
