@@ -1,7 +1,7 @@
 <template>
   <a v-ripple
-     @click="showUserMenu"
-     class="static w-auto w-full surface-overlay left-0 top-100 z-1 shadow-none p-ripple">
+     v-styleclass="{ selector: '@next', enterClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
+     class="static w-auto w-full left-0 top-100 z-1 shadow-none p-ripple">
     <ul class="list-none p-0 m-0 flex align-items-center select-none flex-row border-top-none">
       <li class="border-top-none">
         <span class="flex p-0 px-3 align-items-center hover:surface-100 font-medium border-round
@@ -16,7 +16,9 @@
       </li>
     </ul>
   </a>
-  <OverlayPanel v-if="isMounted" ref="overlayPanel" class="notifications-panel">
+  <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto surface-overlay
+       right-0 top-100 z-1 shadow-2">
+<!--  <OverlayPanel v-if="isMounted" ref="overlayPanel" class="notifications-panel">-->
     <loading-zone suspense>
       <template v-slot:loading>
         <div class="flex align-items-center justify-content-center top-0 left-0 notifications-loading">
@@ -38,17 +40,16 @@
         </working-zone>
       </template>
     </loading-zone>
-  </OverlayPanel>
+<!--  </OverlayPanel>-->
+  </div>
 </template>
 
 <script setup>
   import { Image } from "@live-change/image-frontend"
-  import OverlayPanel from 'primevue/overlaypanel'
   import ProgressSpinner from "primevue/progressspinner"
   import UserMenu from "./UserMenu.vue"
 
   import { ref, computed, onMounted } from 'vue'
-  const overlayPanel = ref()
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)

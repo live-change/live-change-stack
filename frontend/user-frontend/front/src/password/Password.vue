@@ -26,8 +26,17 @@
             {{ infoText }}
         </span>
     <Portal :appendTo="appendTo">
-      <transition name="p-connected-overlay" @enter="onOverlayEnter" @leave="onOverlayLeave" @after-leave="onOverlayAfterLeave">
-        <div v-if="overlayVisible" :ref="overlayRef" :id="panelId || panelUniqueId" :class="panelStyleClass" :style="panelStyle" @click="onOverlayClick" v-bind="panelProps">
+      <transition name="p-connected-overlay"
+                  @enter="onOverlayEnter"
+                  @leave="onOverlayLeave"
+                  @after-leave="onOverlayAfterLeave">
+        <div v-if="overlayVisible"
+             :ref="overlayRef"
+             :id="panelId || panelUniqueId"
+             :class="panelStyleClass"
+             :style="panelStyle"
+             @click="onOverlayClick"
+             v-bind="panelProps">
           <slot name="header"></slot>
           <slot name="content">
             <div class="p-password-meter">
@@ -494,5 +503,12 @@ export default {
 .p-password-input::-ms-reveal,
 .p-password-input::-ms-clear {
   display: none;
+}
+
+.p-password i {
+  position: absolute;
+  top: 0.69em;
+  top: calc(50% - 0.5em);
+  right: 1em
 }
 </style>

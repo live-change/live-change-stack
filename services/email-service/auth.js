@@ -15,6 +15,23 @@ const Email = definition.model({
   }
 })
 
+definition.view({
+  name: "userEmails",
+  global: true,
+  internal: true,
+  properties: {
+    user: {
+      type: String
+    }
+  },
+  returns: {
+    type: Object
+  },
+  async daoPath({ user }) {
+    return Email.indexRangePath('byUser', [user])
+  }
+})
+
 definition.event({
   name: 'emailConnected',
   properties: {

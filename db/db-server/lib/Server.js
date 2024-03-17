@@ -128,13 +128,13 @@ class Server {
       this.replicator = new Replicator(this)
     }
   }
-  createDao(session) {
 
+  createDaoConfig(session) {
     const packageInfo = eval('import("@live-change/db-server/package.json"'+', { assert: { type: "json" } })')
 
     const store = { /// Low level data access
       type: 'local',
-          source: new ReactiveDao.SimpleDao({
+      source: new ReactiveDao.SimpleDao({
         methods: {
           ...(profileLog.started
               ? profileLog.profileFunctions(storeDao.localRequests(this))
@@ -229,11 +229,17 @@ class Server {
         })
       }
     }
-    return new ReactiveDao(session, {
-      remoteUrl: this.config.master,
+
+    return {
+      //remoteUrl: this.config.master,
       database,
       serverDatabase: database,
       store, version, metadata
+    }
+  }
+  createDao(session) {
+    return new ReactiveDao(session, {
+      ...this.createDaoConfig(session),
     })
   }
   async initialize(initOptions = {}) {

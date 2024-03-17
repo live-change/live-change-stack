@@ -75,12 +75,9 @@
 
 <script setup>
 
-  import InputText from "primevue/inputtext"
-  import Checkbox from "primevue/checkbox"
   import Button from "primevue/button"
   import Divider from "primevue/divider"
   import Password from "../password/Password.vue"
-  import SettingsTabs from "../SettingsTabs.vue"
 
   import { live, path } from '@live-change/vue3-ssr'
   import { computed, ref, onMounted } from 'vue'

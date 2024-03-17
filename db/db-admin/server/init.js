@@ -1,7 +1,7 @@
 import App from '@live-change/framework'
 const app = App.app()
 
-module.exports = async function(services) {
+export default async function(services) {
 
   await app.dao.request(['database', 'createDatabase', 'testDb'])
   await app.dao.request(['database', 'createTable', 'testDb', 'testTable1'])

@@ -7,24 +7,24 @@ function useApi(context) {
   return context.config.globalProperties.$lc
 }
 
-function path(context) {
+function usePath(context) {
   return useApi(context).fetch
 }
 
-function view(context) {
+function useView(context) {
   return useApi(context).view
 }
 
-function actions(context) {
+function useActions(context) {
   return useApi(context).actions
 }
 
-function live(path) {
-  return d3live(useApi(), path)
+function useLive(path, context) {
+  return d3live(useApi(context), path)
 }
 
-function fetch(path) {
-  return d3fetch(useApi(), path)
+function useFetch(path, context) {
+  return d3fetch(useApi(context), path)
 }
 
 async function rangeBuckets(pathFunction, options, app = getCurrentInstance()) {
@@ -74,15 +74,11 @@ function inboxReader(pathFunction, callback, start = '', options = {}) {
   }, callback, start, bucketSize)
 }
 
-function client(context) {
-  return useApi(context).client
-}
-
 function useClient(context) {
   return useApi(context).client
 }
 
-function uid(context) {
+function useUid(context) {
   return useApi(context).uid
 }
 
@@ -91,13 +87,19 @@ function serviceDefinition(service, context = getCurrentInstance().appContext) {
   return [...api.metadata.api.value.services].find(x => x.name == service)
 }
 
+// backward compatibility
 const api = useApi
+const path = usePath
+const live = useLive
+const fetch = useFetch
+const view = useView
+const actions = useActions
+const client = useClient
+const uid = useUid
 
 export {
-  path, live, fetch,
-  useApi, api,
-  view, actions, uid,
-  client, useClient,
+  usePath, useLive, useFetch, useApi, useView, useActions, useUid, useClient,
+  path, live, fetch, api, view, actions, uid, client,
   rangeBuckets, reverseRange,
   inboxReader,
   serviceDefinition

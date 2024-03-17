@@ -86,6 +86,39 @@ async function setupApiServer(settings) {
 
   const apiServer = await app.createLiveApiServer(apiServerConfig)
 
+  const internalCredentials = { internal: true, roles: ['admin'] }
+
+  let serviceRemotes = {}
+  if(settings.withServices) {
+    const localServer = new Dao.ReactiveServer(
+        () => app.createDao(apiServerConfig, { ...internalCredentials, ignoreRemoteView: true })
+    )
+    const loopback = new Dao.LoopbackConnection('local', localServer, {})
+    const localConfig = {
+      type: 'remote',
+      generator: Dao.ObservableList,
+      protocol: 'local',
+      url: 'services'
+    }
+    app.dao.definition = {
+      ...app.dao.definition,
+      protocols: { ...app.dao.definition.protocols, local: null },
+      ...(typeof services.config.local === 'function' ? services.config.local(internalCredentials) : services.config.local),
+      ...(typeof services.config.remote === 'function' ? services.config.remote(internalCredentials) : services.config.remote)
+    }
+    for(const service of services.services) {
+      app.dao.definition[service.name] = localConfig
+    }
+    app.dao.connections.set('local:services', loopback)
+    await loopback.initialize()
+    if(!loopback.connected) {
+      console.error("LOOPBACK NOT CONNECTED?!")
+      process.exit(1)
+    }
+  } else {
+    throw new Error("remote services not implemented")
+  }
+
   apiServer.services = services
 
   return apiServer

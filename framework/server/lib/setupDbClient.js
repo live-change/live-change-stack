@@ -1,20 +1,29 @@
 import ReactiveDao from "@live-change/dao"
 import * as ReactiveDaoWebsocket from "@live-change/dao-websocket"
+import setupDbServer from "./setupDbServer.js"
+import createLoopbackDao from "./createLoopbackDao.js"
+import App from "@live-change/framework"
 
 function setupDbClient(argv, env = process.env) {
   const config = {
     url: env.DB_URL,
     name: env.DB_NAME,
     requestTimeout: env.DB_REQUEST_TIMEOUT && +env.DB_REQUEST_TIMEOUT,
-    cache: env.DB_CACHE == "YES",
     //unobserveDebug: env.UNOBSERVE_DEBUG == "YES",
   }
-  const dbDao = new ReactiveDao(process.cwd()+' '+process.argv.join(' '), {
-    remoteUrl: config?.url || "http://localhost:9417/api/ws",
-    protocols: {
-      'ws': ReactiveDaoWebsocket.client
-    },
-    connectionSettings: {
+  const app = App.app()
+
+  const remoteConfig = {
+    type: 'remote',
+    protocol: 'dbWs',
+    url: config?.url || "http://localhost:9417/api/ws",
+    generator: ReactiveDao.ObservableList,
+  }
+
+  app.dao.definition = {
+    ...app.dao.definition,
+    protocols: { ...app.dao.definition.protocols, dbWs: ReactiveDaoWebsocket.client },
+    connectionSettings: app.dao.definition.connectionSettings ?? {
       queueRequestsWhenDisconnected: true,
       requestSendTimeout: 2000,
       requestTimeout: config.requestTimeout,
@@ -23,18 +32,9 @@ function setupDbClient(argv, env = process.env) {
       logLevel: 1,
       unobserveDebug: config?.unobserveDebug || false
     },
-    database: {
-      type: 'remote',
-      generator: ReactiveDao.ObservableList
-    },
-    store: {
-      type: 'remote',
-      generator: ReactiveDao.ObservableList
-    }
-  })
-
-  if(config?.cache) return new ReactiveDao.DaoCache(dbDao)
-  return dbDao
+    database: remoteConfig,
+    store: remoteConfig,
+  }
 }
 
 export default setupDbClient

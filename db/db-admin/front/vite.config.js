@@ -1,4 +1,5 @@
 import path from 'path'
+import { fileURLToPath } from 'url';
 import vuePlugin from '@vitejs/plugin-vue'
 import { defineConfig, searchForWorkspaceRoot } from 'vite'
 import findFreePorts from "find-free-ports"
@@ -25,8 +26,9 @@ export default defineConfig(async ({ command, mode }) => {
       },
       fs: {
         allow: [
-            searchForWorkspaceRoot(process.cwd()),
-            '../../../node_modules'
+          searchForWorkspaceRoot(process.cwd()),
+          path.dirname(fileURLToPath(import.meta.resolve('primeicons/package.json'))),
+          path.dirname(fileURLToPath(import.meta.resolve('@fortawesome/fontawesome-free/package.json'))),
         ],
       }
     },

@@ -71,7 +71,6 @@ function createForeignIndexProxy(definition, model) {
 }
 
 class ServiceDefinition {
-
   constructor(definition) {
     this.models = {}
     this.foreignModels = {}
@@ -79,6 +78,7 @@ class ServiceDefinition {
     this.foreignIndexes = {}
     this.actions = {}
     this.views = {}
+    this.internalViews = {}
     this.events = {}
     this.triggers = {}
     this.use = []

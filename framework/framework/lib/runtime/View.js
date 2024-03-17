@@ -10,6 +10,16 @@ class View {
   }
 
   async observable(parameters, clientData) {
+    if(this.definition.remote) {
+      if(clientData?.ignoreRemoteView) {
+        return this.service.app.serviceViewObservable(this.service.name, this.name, {
+          ...parameters,
+          ___forwardedClientData: clientData
+        })
+      } else if(!this.definition.internal) {
+        clientData = parameters.___forwardedClientData ?? clientData
+      }
+    }
     const context = {
       service: this.service, client: clientData
     }
@@ -20,6 +30,16 @@ class View {
   }
 
   async get(parameters, clientData) {
+    if(this.definition.remote) {
+      if(clientData?.ignoreRemoteView) {
+        return this.service.app.serviceViewGet(this.service.name, this.name, {
+          ...parameters,
+          ___forwardedClientData: clientData
+        })
+      } else if(!this.definition.internal) {
+        clientData = parameters.___forwardedClientData ?? clientData
+      }
+    }
     const context = {
       service: this.service, client: clientData
     }

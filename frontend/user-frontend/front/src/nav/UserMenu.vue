@@ -1,9 +1,9 @@
 <template>
-  <ul class="list-none p-0 m-0 flex lg:align-items-center select-none flex-column flex-row">
+  <ul class="list-none p-0 m-0 flex select-none flex-column flex-row">
     <li>
       <router-link :to="{ name: 'user:identification' }"
                    v-ripple
-                   class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100
+                   class="flex px-6 py-2 align-items-center text-600 hover:text-900 hover:surface-100
                font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
       >
         <i class="pi pi-user mr-2"></i>
@@ -13,7 +13,7 @@
     <li v-if="!client.user">
       <router-link :to="{ name: 'user:signUp' }"
                    v-ripple
-                   class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100
+                   class="flex px-6 py-2 align-items-center text-600 hover:text-900 hover:surface-100
                font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
       >
         <i class="pi pi-user-plus mr-2"></i>
@@ -23,7 +23,7 @@
     <li v-if="!client.user">
       <router-link :to="{ name: 'user:signIn' }"
                    v-ripple
-                   class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100
+                   class="flex px-6 py-2 align-items-center text-600 hover:text-900 hover:surface-100
                font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
       >
         <i class="pi pi-key mr-2"></i>
@@ -33,7 +33,7 @@
     <li v-if="client.user">
       <router-link :to="{ name: 'user:settings' }"
                    v-ripple
-                   class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100
+                   class="flex px-6 py-2 align-items-center text-600 hover:text-900 hover:surface-100
                font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
       >
         <i class="pi pi-cog mr-2"></i>
@@ -43,7 +43,7 @@
     <li v-if="client.user">
       <router-link :to="{ name: 'user:signOut' }"
                    v-ripple
-                   class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100
+                   class="flex px-6 py-2 align-items-center text-600 hover:text-900 hover:surface-100
              font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
       >
         <i class="pi pi-power-off mr-2"></i>

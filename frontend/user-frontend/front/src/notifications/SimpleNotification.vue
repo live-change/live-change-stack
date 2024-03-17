@@ -1,6 +1,6 @@
 <template>
-  <li class="px-3 py-2 flex align-items-start
-             justify-content-between flex-column hover:surface-100">
+  <li :class="['px-3 py-2 flex align-items-start justify-content-between flex-column',
+               notification.readState === 'new' ? 'surface-0 hover:surface-100' : 'surface-100 hover:surface-200'] ">
       <slot></slot>
     <span class="block text-500 font-medium mt-2">
       {{ DateTime.fromISO(notification.time).toRelative({ base: DateTime.fromMillis(now) })  }}

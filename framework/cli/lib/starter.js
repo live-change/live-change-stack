@@ -26,6 +26,8 @@ import {
 
 } from "@live-change/server"
 
+import { DaoCache } from '@live-change/dao'
+
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
 })
@@ -266,6 +268,15 @@ async function describe(argv) {
       const model = service.models[modelName]
       const properties = Object.keys(model.properties ?? {})
       console.log("    ", modelName, "(", properties.join(', '), ")")
+      for(const indexName in model.indexes) {
+        const index = model.indexes[indexName]
+        console.log("      ", indexName)
+      }
+    }
+    console.log("  indexes:")
+    for(const indexName in service.indexes) {
+      const index = service.indexes[indexName]
+      console.log("    ", indexName)
     }
     console.log("  actions:")
     for(const actionName in service.actions) {
@@ -277,7 +288,14 @@ async function describe(argv) {
     for(const viewName in service.views) {
       const view = service.views[viewName]
       const properties = Object.keys(view.properties ?? {})
-      console.log("    ", viewName, "(", properties.join(', '), ")")
+      console.log("    ", viewName, "(", properties.join(', '), ")",
+          view.global ? "global" : "", view.internal ? "internal" : "", view.remote ? "remote" : "")
+    }
+    console.log("  triggers:")
+    for(const triggerName in service.triggers) {
+      const trigger = service.triggers[triggerName]
+      const properties = Object.keys(trigger.properties ?? {})
+      console.log("    ", triggerName, "(", properties.join(', '), ")")
     }
     console.log("  events:")
     for(const eventName in service.events) {
@@ -357,6 +375,8 @@ async function server(argv, dev) {
     await setupApiEndpoints(expressApp, apiServer)
   }
 
+  if(argv.appCache || process.env.APP_CACHE === "YES") app.dao = new DaoCache(app.dao)
+
   console.log("ENDPOINTS INSTALLED! CREATING WEB SERVER!")
 
   const ssrServer = new SsrServer(expressApp, manifest, {
@@ -376,7 +396,6 @@ async function server(argv, dev) {
     )
   })
   await ssrServer.start()
-
 
   console.log("SSR INSTALLED! CREATING HTTP SERVER!")
 

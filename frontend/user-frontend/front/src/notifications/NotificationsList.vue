@@ -41,7 +41,7 @@
 
   const workingZone = inject('workingZone')
 
-  import {notificationTypes} from "./notificationTypes.js"
+  import { notificationTypes } from "./notificationTypes.js"
 
   import NotificationButtons from "./NotificationButtons.vue"
 

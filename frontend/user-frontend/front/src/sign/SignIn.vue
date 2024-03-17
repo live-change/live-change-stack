@@ -61,7 +61,7 @@
   import Checkbox from "primevue/checkbox"
   import Button from "primevue/button"
   import Divider from "primevue/divider"
-  import Password from "primevue/password"
+  import Password from "../password/Password.vue"
 
   import { onMounted, ref } from 'vue'
   const isMounted = ref(false)

@@ -1,14 +1,15 @@
 <template>
   <a v-if="unreadNotificationsCount"
      v-ripple
-     @click="showNotifications"
-     class="flex mx-2 px-3 p-3 py-3 align-items-center text-600 hover:text-900 hover:surface-100
+     v-styleclass="{ selector: '@next', enterClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
+     class="flex mx-0 px-3 p-3 py-3 align-items-center text-600 hover:text-900 hover:surface-100 overflow-visible
             font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
     <i class="pi pi-bell text-base text-2xl p-overlay-badge">
       <Badge v-if="unreadNotificationsCount?.count" :value="unreadNotificationsCount?.count ?? 0"></Badge>
     </i>
   </a>
-  <OverlayPanel v-if="isMounted" ref="overlayPanel" class="notifications-panel">
+  <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto surface-overlay
+       right-0 top-100 z-1 shadow-2 overflow-x-hidden overflow-y-auto" style="max-height: calc(100vh - 8rem)">
     <loading-zone suspense>
       <template v-slot:loading>
         <div class="flex align-items-center justify-content-center top-0 left-0 notifications-loading">
@@ -30,20 +31,17 @@
         </working-zone>
       </template>
     </loading-zone>
-  </OverlayPanel>
+  </div>
 </template>
 
 <script setup>
 
   import Badge from "primevue/badge"
-  import OverlayPanel from 'primevue/overlaypanel'
   import ProgressSpinner from "primevue/progressspinner"
 
   import NotificationsList from "./NotificationsList.vue"
 
   import { ref, onMounted } from 'vue'
-
-  const overlayPanel = ref()
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)

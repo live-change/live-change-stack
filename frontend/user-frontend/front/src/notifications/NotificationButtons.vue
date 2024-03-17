@@ -11,7 +11,6 @@
 
 <script setup>
   import Button from "primevue/button"
-  import Menu from "primevue/menu"
 
   import { useToast } from 'primevue/usetoast'
   import { useConfirm } from 'primevue/useconfirm'
@@ -20,14 +19,14 @@
 
   import { actions } from "@live-change/vue3-ssr"
 
+  import { inject, defineProps, defineExpose } from "vue"
+
   const { notification } = defineProps({
     notification: {
       type: Object,
       required: true
     }
   })
-
-  import { inject } from "vue"
 
   const workingZone = inject('workingZone')
 
@@ -62,6 +61,10 @@
       })
     })())
   }
+
+  defineExpose({
+    markRead, markUnread, deleteNotification
+  })
 
 </script>
 

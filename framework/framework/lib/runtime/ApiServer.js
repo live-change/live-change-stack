@@ -27,7 +27,7 @@ class ApiServer {
   }
 
   async daoFactory(credentialsp, ip) {
-    let credentials = { ...credentialsp, ip, roles: [] }
+    let credentials = { ...credentialsp, ip, roles: [], ignoreRemoteViews: false }
     const allAuthenticators = []
     if(this.config.authenticators) {
       const auth = Array.isArray(this.config.authenticators)

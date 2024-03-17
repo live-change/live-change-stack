@@ -1,4 +1,4 @@
-import { uidGenerator, randomString } from '@live-change/uid'
+import {randomString, uidGenerator} from '@live-change/uid'
 
 import ReactiveDao from "@live-change/dao"
 
@@ -36,6 +36,7 @@ import SplitEmitQueue from "./utils/SplitEmitQueue.js"
 import SingleEmitQueue from "./utils/SingleEmitQueue.js"
 
 import Debug from 'debug'
+
 const debug = Debug('framework')
 
 class App {
@@ -86,6 +87,7 @@ class App {
 
     this.startedServices = {}
     this.triggerRoutes = {}
+    this.globalViews = {}
   }
 
   createServiceDefinition( definition ) {
@@ -177,10 +179,16 @@ class App {
     console.log("service started", serviceDefinition.name, "!")
     await this.profileLog.end(profileOp)
     this.startedServices[serviceDefinition.name] = service
+
+    for(const viewName in serviceDefinition.views) {
+      const view = serviceDefinition.views[viewName]
+      if(view.global) this.globalViews[viewName] = view
+    }
+
     return service
   }
 
-  async createReactiveDao( config, clientData ) {
+  async createDao( config, clientData ) {
     return new Dao(config, clientData)
   }
 
@@ -539,6 +547,35 @@ class App {
       clearTimeout(timeout)
     }
     this.dao.dispose()
+  }
+
+
+  serviceViewObservable(serviceName, viewName, params) {
+    const service = this.startedServices[serviceName]
+    const view = service.views[viewName]
+    if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
+    const result = view.observable(params)
+    return result.then ? new LcDao.ObservablePromiseProxy(result) : result
+  }
+
+  async serviceViewGet(serviceName, viewName, params) {
+    const service = this.startedServices[serviceName]
+    const view = service.views[viewName]
+    if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
+    return await view.get(params)
+  }
+
+  viewObservable(viewName, params) {
+    const view = this.globalViews[viewName]
+    if(!view) throw new Error(`Global view ${viewName} not found`)
+    const result = view.observable(params)
+    return result.then ? new LcDao.ObservablePromiseProxy(result) : result
+  }
+
+  async viewGet(viewName, params) {
+    const view = this.globalViews[viewName]
+    if(!view) throw new Error(`Global view ${viewName} not found`)
+    return await view.get(params)
   }
 
 }

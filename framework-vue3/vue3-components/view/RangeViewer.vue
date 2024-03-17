@@ -85,19 +85,19 @@
       default: false
     },
     loadTopSensorSize: {
-      type: Number,
+      type: String,
       default: '500px'
     },
     loadBottomSensorSize: {
-      type: Number,
+      type: String,
       default: '500px'
     },
     dropTopSensorSize: {
-      type: Number,
+      type: String,
       default: '5000px'
     },
     dropBottomSensorSize: {
-      type: Number,
+      type: String,
       default: '5000px'
     },
     loadTopDelay: {
