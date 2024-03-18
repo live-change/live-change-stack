@@ -400,6 +400,7 @@ class Store {
   }
 
   async handleChannelMessage(message) {
+    console.log("CHANNEL MESSAGE", message)
     switch(message.type) {
       case 'put' : {
         const { object: objectJson, oldObjectJson } = message
@@ -679,7 +680,7 @@ class Store {
     for(const rangeObservable of rangeObservables) {
       rangeObservable.deleteObject(object)
     }
-    this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object)  })
+    if(object) this.channel.postMessage({ type: "delete", object: this.serialization.stringify(object)  })
     return object
   }
 

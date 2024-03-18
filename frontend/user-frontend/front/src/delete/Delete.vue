@@ -6,7 +6,7 @@
         <div class="text-900 text-3xl font-medium mb-3">Delete account</div>
       </div>
 
-      <div>
+      <div v-if="client.user">
         <p>
           Account deletion is irreversible, check the box below only if you are
           100% sure that you want to delete your account.
@@ -18,6 +18,9 @@
 
         <Button id="delete" label="Delete account" icon="pi pi-user-minus" class="p-button-lg"
                 :disabled="!wantDelete" @click="deleteUser" />
+      </div>
+      <div v-else>
+        Account already deleted.
       </div>
     </div>
   </div>
@@ -31,6 +34,8 @@
   import { inject, ref } from 'vue'
   import { useRouter } from 'vue-router'
   const router = useRouter()
+  import { useClient } from '@live-change/vue3-ssr'
+  const client = useClient()
 
   const workingZone = inject('workingZone')
 

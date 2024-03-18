@@ -1,10 +1,10 @@
 <template>
   <a v-ripple
      v-styleclass="{ selector: '@next', enterClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
-     class="static w-auto w-full left-0 top-100 z-1 shadow-none p-ripple">
+     class="relative w-auto left-0 top-100 z-1 shadow-none p-ripple border-circle">
     <ul class="list-none p-0 m-0 flex align-items-center select-none flex-row border-top-none">
       <li class="border-top-none">
-        <span class="flex p-0 px-3 align-items-center hover:surface-100 font-medium border-round
+        <span class="flex p-0 align-items-center hover:surface-100 font-medium border-round
            cursor-pointer transition-colors transition-duration-150 p-ripple">
           <Image v-if="myIdentification?.image" :image="myIdentification.image"
                  class="mr-0 border-circle border-1 surface-border" style="width: 38px; height: 38px" />

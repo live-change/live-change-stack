@@ -8,7 +8,7 @@
 
         <SettingsMenuItem name="user:identification" icon="id-card" label="Identification" class="hidden md:block" />
 
-        <SettingsMenuItem name="user:settings" icon="id-card" label="General Settings" class="hidden md:block" />
+        <SettingsMenuItem v-if="client.user" name="user:settings" icon="id-card" label="General Settings" class="hidden md:block" />
 
 <!--        <SettingsMenuItem name="user:notificationsSettings" icon="exclamation-circle" label="Notifications" />-->
 
@@ -19,15 +19,15 @@
           <div class="p-3 text-500 font-medium">AUTHORIZATION</div>
         </li>
 
-        <SettingsMenuItem name="user:connected" icon="users" label="Connected Accounts" />
+        <SettingsMenuItem v-if="client.user" name="user:connected" icon="users" label="Connected Accounts" />
 
-        <SettingsMenuItem name="user:changePassword" icon="key" label="Change Password" />
+        <SettingsMenuItem v-if="client.user" name="user:changePassword" icon="key" label="Change Password" />
 
       </ul>
 
       <ul class="list-none p-2 m-0 border-top-1 surface-border">
 
-        <SettingsMenuItem name="user:delete" icon="trash" label="Delete Account" />
+        <SettingsMenuItem v-if="client.user" name="user:delete" icon="trash" label="Delete Account" />
 
       </ul>
     </div>
@@ -73,6 +73,10 @@
 
   import { useRoute } from 'vue-router'
   const route = useRoute()
+
+  import { client as useClient } from '@live-change/vue3-ssr'
+
+  const client = useClient()
 
 </script>
 
