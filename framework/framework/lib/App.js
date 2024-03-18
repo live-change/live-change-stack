@@ -192,6 +192,10 @@ class App {
     return new Dao(config, clientData)
   }
 
+  async createReactiveDao( config, clientData ) {
+    return new Dao(config, clientData)
+  }
+
   async createApiServer( config ) {
     return new ApiServer({ ...config, app: this })
   }
