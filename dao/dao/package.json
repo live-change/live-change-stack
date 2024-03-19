@@ -35,5 +35,5 @@
   "scripts": {
     "test": "NODE_ENV=test tape tests/*"
   },
-  "version": "0.8.7"
+  "version": "0.8.8"
 }
