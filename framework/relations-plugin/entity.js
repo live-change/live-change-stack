@@ -32,7 +32,7 @@ function defineView(config, context) {
     returns: {
       type: model,
     },
-    access: config.access,
+    access: config.readAccess,
     accessControl: entityAccessControl(context, config.readAccessControl || config.writeAccessControl),
     daoPath(properties, { client, context }) {
       const id = properties[modelPropertyName]
@@ -170,7 +170,7 @@ function defineUpdateAction(config, context) {
       const entity = await modelRuntime().get(id)
       if(!entity) throw 'not_found'
       const data = extractObjectData(writeableProperties, properties, entity)
-      await App.validation.validate({ ...identifiers, ...data }, validators,
+      await App.validation.validate({ ...data }, validators,
         { source: action, action, service, app, client })
       await fireChangeTriggers(context, null, id,
           entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
