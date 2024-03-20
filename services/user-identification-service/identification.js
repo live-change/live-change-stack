@@ -30,4 +30,27 @@ const Identification = definition.model({
   }
 })
 
+definition.view({
+  name: "identification",
+  global: true,
+  internal: true,
+  properties: {
+    sessionOrUserType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    sessionOrUser: {
+      validation: ['nonEmpty']
+    }
+  },
+  returns: {
+    type: Object
+  },
+  async daoPath({ sessionOrUserType, sessionOrUser }, { client, service }) {
+    const owner = [sessionOrUserType, sessionOrUser]
+    const id = owner.map(p => JSON.stringify(p)).join(':')
+    return Identification.path(id)
+  }
+})
+
 export { Identification }

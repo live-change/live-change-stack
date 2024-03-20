@@ -3,6 +3,7 @@ import Pages from 'vite-plugin-pages'
 
 let version = process.env.VERSION ?? 'unknown'
 
+// @ts-ignore
 import baseViteConfig from '@live-change/frontend-base/vite-config.js'
 
 export default defineConfig(async ({ command, mode }) => {

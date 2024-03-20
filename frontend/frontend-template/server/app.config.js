@@ -27,6 +27,9 @@ app.config = {
       name: 'userIdentification',
     },
     {
+      name: 'localeSettings',
+    },
+    {
       name: 'identicon',
     },
     {

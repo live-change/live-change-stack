@@ -181,8 +181,8 @@ class App {
     this.startedServices[serviceDefinition.name] = service
 
     for(const viewName in serviceDefinition.views) {
-      const view = serviceDefinition.views[viewName]
-      if(view.global) this.globalViews[viewName] = view
+      const viewDefinition = serviceDefinition.views[viewName]
+      if(viewDefinition.global) this.globalViews[viewName] = service.views[viewName]
     }
 
     return service
@@ -579,7 +579,7 @@ class App {
   async viewGet(viewName, params) {
     const view = this.globalViews[viewName]
     if(!view) throw new Error(`Global view ${viewName} not found`)
-    return await view.get(params)
+    return await view.get(params, { internal: true, roles: ['admin'] })
   }
 
 }

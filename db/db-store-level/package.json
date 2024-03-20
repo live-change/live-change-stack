@@ -32,7 +32,7 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.8.8",
+    "@live-change/dao": "0.8.8",
     "@live-change/interval-tree": "^1.0.12"
   },
   "gitHead": "81b4ac5a36ab1abdf9d521e3c4fbea6d194bb892"

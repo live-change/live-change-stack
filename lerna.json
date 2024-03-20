@@ -56,6 +56,7 @@
     "services/smsapi-service",
     "services/slug-service",
     "services/vote-service",
+    "services/locale-settings-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
