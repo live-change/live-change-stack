@@ -1,15 +1,44 @@
 import got from 'got'
-import inlineCss from 'inline-css'
 import juice from 'juice'
 import { JSDOM } from 'jsdom'
 import { convert as htmlToText } from 'html-to-text'
 import path from 'path'
 import { URL } from 'url'
 
+import crypto from 'crypto'
+import { ObservableValue } from '@live-change/dao'
+
 import definition from './definition.js'
 const config = definition.config
 
 const publicDir = config.publicDir || 'front/public/'
+
+const authenticationKey = new ObservableValue(crypto.randomBytes(24).toString('hex'))
+definition.view({
+  internal: true,
+  global: true,
+  remote: true,
+  name: 'emailRendererAuthenticationKey',
+  properties: { },
+  returns: { type: String },
+  async get() {
+    return authenticationKey.getValue()
+  },
+  observable() {
+    return authenticationKey
+  }
+})
+
+definition.authenticator({
+  async prepareCredentials(credentials) {
+    console.log("EMAIL AUTHENTICATOR", credentials, authenticationKey.getValue())
+    if(credentials.sessionKey === authenticationKey.getValue()) {
+      credentials.roles.push('admin')
+      credentials.internal = true
+    }
+  }
+})
+
 
 function processElement(element, images) {
   for(let i = 0; i < element.attributes.length; i++) {
@@ -50,11 +79,11 @@ async function renderEmail(data) {
 
   const encodedData = encodeURIComponent(JSON.stringify(data))
   const url = `${baseUrl}/_email/${data.action}/${data.contact}/${encodedData}`
+    +`?sessionKey=${await authenticationKey.getValue()}`
   console.log("RENDER EMAIL", data, "URL", url)
   const response = await got(url)
   let body = response.body
   console.log("BASE URL", baseUrl)
-  //body = await inlineCss(body, { url })
   const juiceOptions = {
     webResources: {
       scripts: false,
@@ -70,7 +99,7 @@ async function renderEmail(data) {
       else resolve(html)
     })
   })
-  console.log("HTML", body)
+  //console.log("HTML", body)
   const dom = new JSDOM(body)
   const headers = JSON.parse(dom.window.document.querySelector('[data-headers]').textContent)
   const messageElements = dom.window.document.querySelectorAll("[data-html],[data-text]")

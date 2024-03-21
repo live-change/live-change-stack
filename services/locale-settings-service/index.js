@@ -10,21 +10,41 @@ const LocaleSettings = definition.model({
     ownerWriteAccess: () => true,
   },
   properties: {
-    locale: {
-      type: String,
-      validation: ['nonEmpty']
-    },
-    timeZone: {
-      type: String,
-      validation: ['nonEmpty']
-    },
     language: {
-      type: String,
-      validation: ['nonEmpty']
+      type: String
     },
     currency: {
-      type: String,
-      validation: ['nonEmpty']
+      type: String
+    },
+    dateTime: {
+      type: Object
+    },
+    list: {
+      type: Object
+    },
+    number: {
+      type: Object
+    },
+    plural: {
+      type: Object
+    },
+    relativeTime: {
+      type: Object
+    },
+    capturedLanguage: {
+      type: String
+    },
+    capturedCurrency: {
+      type: String
+    },
+    capturedDateTime: {
+      type: Object
+    },
+    capturedNumber: {
+      type: Object
+    },
+    capturedPlural: {
+      type: Object
     }
   }
 })

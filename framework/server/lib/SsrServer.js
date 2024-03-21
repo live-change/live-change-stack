@@ -81,7 +81,11 @@ class SsrServer {
   async setupSsr() {
     const readCredentials = this.settings.readCredentials || ((req) => {
       const cookies = cookie.parse(req.headers.cookie || '')
-      return { sessionKey: cookies.sessionKey || crypto.randomBytes(64).toString('base64').slice(0, 48) }
+      return {
+        sessionKey: req.query.sessionKey
+          || cookies.sessionKey
+          || crypto.randomBytes(64).toString('base64').slice(0, 48)
+      }
     })
     const writeCredentials = this.settings.writeCredentials || ((res, credentials) => {
       //console.log("WRITE CREDENTIALS", credentials)

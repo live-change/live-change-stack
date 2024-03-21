@@ -93,6 +93,9 @@ export async function createApp(config, api, App, createRouter, host, headers, r
     fallbackLocale: config.fallbackLocale || defaultLocale,
     ...config.i18n
   })
+
+  globalThis.i18n = i18n
+
   console.log("I18N MESSAGES", config.i18nMessages)
   app.use(i18n)
 

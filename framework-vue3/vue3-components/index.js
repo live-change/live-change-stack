@@ -21,3 +21,6 @@ export { createReactiveObject }
 import { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList } from "./logic"
 export { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList }
 
+export {
+  useLocale, watchLocale, getLocale, getLocaleObservable, updateLocale, captureLocale, localTime, getOtherOwnerLocale
+} from './logic/locale'
