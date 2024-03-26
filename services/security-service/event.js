@@ -9,13 +9,14 @@ import lcpDb from '@live-change/pattern-db'
 import { request } from 'http'
 
 const securityPatterns = definition.config?.patterns ?? []
-const relationsStore = lcpDb.relationsStore(app.dao, app.databaseName, 'security_relations')
 lcp.prepareModelForLive(securityPatterns)
 //console.log("SECURITY PATTERNS", securityPatterns)
 
 const securityCounters = definition.config?.counters ?? []
 
+let relationsStore
 definition.beforeStart(service => {
+  relationsStore = lcpDb.relationsStore(app.dao, app.databaseName, 'security_relations')
   relationsStore.createTable()
 })
 

@@ -62,6 +62,9 @@
 
   const workingZone = inject('workingZone')
 
+  const [ userData ] = await Promise.all([ dataPromise ])
+
+  const updateMethod = computed(() => userData.value ? 'updateMyIdentification' : 'setMyIdentification')
 
   function openImageEditor() {
     dialog.open(ComponentDialog, {
@@ -80,7 +83,8 @@
       data: {
         component: shallowRef(ImageEditor),
         props: {
-          type: 'circle'
+          type: 'circle',
+          modelValue: userData.value?.image,
         }
       },
       onClose: (options) => {
@@ -88,7 +92,7 @@
         console.log("EDITOR RESULT", data)
         console.log("WZ", workingZone)
         workingZone.addPromise('update user image', (async () => {
-          await api.command(['userIdentification', updateMethod.value], { image: data.value })
+          await api.command(['userIdentification', updateMethod.value], { image: data?.value })
           toast.add({ severity:'info', summary: 'User image saved', life: 1500 })
         })())
       }
@@ -99,9 +103,6 @@
     toast.add({ severity:'info', summary: 'User name saved', life: 1500 })
   }
 
-  const [ userData ] = await Promise.all([ dataPromise ])
-
-  const updateMethod = computed(() => userData.value ? 'updateMyIdentification' : 'setMyIdentification')
 
 </script>
 

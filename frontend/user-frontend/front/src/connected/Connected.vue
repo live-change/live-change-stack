@@ -22,11 +22,12 @@
 
       </ul>
 
-      <div class="flex flex-row">
-        <router-link :to="{ name: 'user:connect' }" class="mr-2 no-underline">
-          <Button label="Connect Account" icon="pi pi-user-plus" class="p-button-lg" id="connect"></Button>
+        <router-link :to="{ name: 'user:connect-email' }" class="mr-2 no-underline block mb-1">
+          <Button label="Add email" icon="pi pi-envelope" id="connect"></Button>
         </router-link>
-      </div>
+        <router-link :to="{ name: 'user:connect-phone' }" class="mr-2 no-underline block mb-1">
+          <Button label="Add phone number" icon="pi pi-envelope" id="connect"></Button>
+        </router-link>
     </div>
 
   </div>

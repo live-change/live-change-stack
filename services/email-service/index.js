@@ -7,9 +7,6 @@ import './send.js'
 import './auth.js'
 
 import validator from './emailValidator.js'
-
-definition.processor(function(service, app) {
-  service.validators.email = validator
-})
+definition.validator('email', validator)
 
 export default definition

@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 import { findFreePorts } from 'find-free-ports'
 import path from 'path'
 import vuePlugin from '@vitejs/plugin-vue'

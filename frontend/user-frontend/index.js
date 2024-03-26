@@ -4,8 +4,9 @@ export { UserIdentification, ObjectIdentification }
 
 import NotificationsIcon from "./front/src/notifications/NotificationsIcon.vue"
 import SimpleNotification from "./front/src/notifications/SimpleNotification.vue"
+import UnknownNotification from './front/src/notifications/UnknownNotification.vue'
 import { notificationTypes } from "./front/src/notifications/notificationTypes.js"
-export { NotificationsIcon, SimpleNotification, notificationTypes }
+export { NotificationsIcon, SimpleNotification, notificationTypes, UnknownNotification }
 
 import UserIcon from "./front/src/nav/UserIcon.vue"
 export { UserIcon }

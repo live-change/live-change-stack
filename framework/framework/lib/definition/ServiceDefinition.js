@@ -162,8 +162,9 @@ class ServiceDefinition {
     this.endpoints.push(endpoint)
   }
 
-  validator(validator) {
-    this.validators.push(validator)
+  validator(name, validator) {
+    this.validators[name] = validator
+    console.log("VALIDATOR DEFINED", name, validator)
   }
 
   clientSideFilter(filter) {
@@ -213,7 +214,6 @@ class ServiceDefinition {
         "Model", "model", { }))
     return changes
   }
-
 }
 
 export default ServiceDefinition

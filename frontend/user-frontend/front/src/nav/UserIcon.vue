@@ -1,20 +1,17 @@
 <template>
   <a v-ripple
      v-styleclass="{ selector: '@next', enterClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
-     class="relative w-auto left-0 top-100 z-1 shadow-none p-ripple border-circle">
-    <ul class="list-none p-0 m-0 flex align-items-center select-none flex-row border-top-none">
-      <li class="border-top-none">
-        <span class="flex p-0 align-items-center hover:surface-100 font-medium border-round
-           cursor-pointer transition-colors transition-duration-150 p-ripple">
-          <Image v-if="myIdentification?.image" :image="myIdentification.image"
-                 class="mr-0 border-circle border-1 surface-border" style="width: 38px; height: 38px" />
-          <img v-else-if="ownerType == 'session_Session'" src="/images/empty-user-photo.svg"
-               class="mr-0 border-circle" style="width: 38px; height: 38px" />
-          <img v-else :src="identiconUrl"
-               class="mr-0 border-circle border-1 surface-border" style="width: 38px; height: 38px" />
-        </span>
-      </li>
-    </ul>
+     class="relative shadow-none">
+      <span class="flex mx-0 px-3 align-items-center font-medium
+         cursor-pointer transition-colors transition-duration-150 border-round">
+        <Image v-if="myIdentification?.image" :image="myIdentification.image"
+               class="mr-0 border-circle border-1 surface-border" style="width: 3rem; " />
+        <img v-else-if="ownerType == 'session_Session'" src="/images/empty-user-photo.svg"
+             class="mr-0 border-circle" style="width: 3rem;" />
+        <img v-else :src="identiconUrl"
+             class="mr-0 border-circle border-1 surface-border" style="width: 3rem;" />
+      </span>
+
   </a>
   <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto surface-overlay
        right-0 top-100 z-1 shadow-2">

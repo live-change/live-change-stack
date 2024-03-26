@@ -86,6 +86,16 @@ class Services {
         }
       }
     }
+    // push validators from services to other services
+    for(const sourceServiceDefinition of this.serviceDefinitions) {
+      for(const validatorName in sourceServiceDefinition.validators) {
+        for(const destinationServiceDefinition of this.serviceDefinitions) {
+          if(!destinationServiceDefinition.validators[validatorName]) {
+            destinationServiceDefinition.validators[validatorName] = sourceServiceDefinition.validators[validatorName]
+          }
+        }
+      }
+    }
 
     /// TODO: load dependent services!!!
   }

@@ -1,4 +1,4 @@
-const lcp = require("@live-change/pattern")
+import lcp from "@live-change/pattern"
 
 const clientKeys = (client) => [
   { key: 'user', value: client.user },
@@ -46,7 +46,7 @@ const counters = [
   }
 ]
 
-module.exports = {
+export default {
   clientKeys,
   patterns,
   counters

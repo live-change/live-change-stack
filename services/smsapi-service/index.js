@@ -4,10 +4,7 @@ const app = App.app()
 import definition from './definition.js'
 
 import phoneValidator from './phoneValidator.js'
-
-definition.processor(function(service, app) {
-  service.validators.phone = phoneValidator
-})
+definition.validator('phone', phoneValidator)
 
 import './send.js'
 import './auth.js'

@@ -38,8 +38,6 @@ definition.authenticator({
     }
   }
 })
-
-
 function processElement(element, images) {
   for(let i = 0; i < element.attributes.length; i++) {
     const attribute = element.attributes[i]

@@ -1,6 +1,11 @@
-const contactTypes = ['email']
+import App from "@live-change/framework"
+const app = App.app()
 
-module.exports = {
+const contactTypes = ['email', 'phone']
+
+import securityConfig from './security.config.js'
+
+app.config = {
   services: [
     {
       name: 'timer',
@@ -17,6 +22,10 @@ module.exports = {
     },
     {
       name: 'email',
+      path: '@live-change/email-service'
+    },
+    {
+      name: 'smsapi',
       path: '@live-change/email-service'
     },
     {
@@ -44,7 +53,7 @@ module.exports = {
     {
       name: 'security',
       path: '@live-change/security-service',
-      ...require('./security.config.js')
+      ...securityConfig
     },
     {
       name: 'userIdentification',
@@ -76,3 +85,5 @@ module.exports = {
     //  { path: '@live-change/google-account-service' },
   ]
 }
+
+export default app.config

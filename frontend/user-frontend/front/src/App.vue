@@ -37,8 +37,10 @@
 
   const api = useApi()
   import emailValidator from "@live-change/email-service/clientEmailValidator.js"
+  import phoneValidator from "@live-change/smsapi-service/clientPhoneValidator.js"
   import passwordValidator from "@live-change/password-authentication-service/clientPasswordValidator.js"
   api.validators.email = emailValidator
+  api.validators.phone = phoneValidator
   api.validators.password = passwordValidator
 
 </script>

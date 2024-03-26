@@ -12,7 +12,7 @@
          :style="{ backgroundz: `hsl(${bucket.id * 11}, 100%, 80%)` }">
       <div v-for="(notification, index) in bucket.data" :key="notification.id" :ref="el => bucket.domElements[index] = el"
            class="notification border-bottom-1 surface-border"
-           :class="{ selected: selectedNotification == notification.to }">
+           :class="{ selected: selectedNotification === notification.to }">
         <component :is="notificationComponent(notification)" :notification="notification" />
         <Button @click="() => selectNotification(notification)"
                 icon="pi pi-ellipsis-h" class="p-button-rounded p-button-text notification-more-button" />
