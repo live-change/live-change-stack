@@ -45,7 +45,7 @@
 
   import NotificationButtons from "./NotificationButtons.vue"
 
-  import { path, live, actions, api, rangeBuckets, reverseRange } from '@live-change/vue3-ssr'
+  import { actions, api, rangeBuckets, reverseRange } from '@live-change/vue3-ssr'
 
   const notificationApi = actions().notification
 
@@ -90,16 +90,12 @@
     },
   ]
 
-  const wait = new Promise(r => setTimeout(r, 100))
-
-  const [ notificationsBuckets ] = await Promise.all([
+/*  const [ notificationsBuckets ] = await Promise.all([
     rangeBuckets(
         (range, p) => p.notification.myNotifications(reverseRange(range)),
         { bucketSize: 10 }
     )
-  ])
-
-  await wait
+  ])*/
 
 </script>
 

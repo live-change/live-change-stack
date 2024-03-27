@@ -128,7 +128,7 @@ class Renderer {
     }
   }
 
-  async getSitemap() {
+  async getSitemapRenderFunction() {
     if(this.settings.dev) {
       /// Reload every request
       const entryPath = path.resolve(this.root, this.settings.serverEntry || 'src/entry-server.js')
@@ -138,19 +138,22 @@ class Renderer {
     }
   }
 
-  async renderSitemap({ dao }, res) {
+  async renderSitemap(params, res) {
     try {
+      const { url, headers, dao, clientIp, credentials, windowId, version, now } = params
+
       res.header('Content-Type', 'application/xml')
       res.status(200)
       const smStream = new SitemapStream({ hostname: (process.env.BASE_HREF || "https://sitemap.com")+'/' })
       smStream.pipe(res)
-      const sitemapFunction = await this.getSitemap()
-      const { sitemap, router } = await sitemapFunction({ dao })
-      function route(location, opts) {
-        smStream.write({ url: router.resolve(location).href, changefreq: 'daily', priority: 0.5, ...opts })
+      const sitemapFunction = await this.getSitemapRenderFunction()
+
+      function write(routeInfo) {
+        console.log("SM WRITE", routeInfo)
+        smStream.write(routeInfo)
       }
-      console.log("SR", sitemap, router)
-      await sitemap(route)
+
+      await sitemapFunction(params, write)
       //route({ name: 'index' })
       smStream.end()
     } catch(err) {

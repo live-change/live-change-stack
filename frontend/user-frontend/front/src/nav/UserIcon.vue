@@ -15,7 +15,6 @@
   </a>
   <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto surface-overlay
        right-0 top-100 z-1 shadow-2">
-<!--  <OverlayPanel v-if="isMounted" ref="overlayPanel" class="notifications-panel">-->
     <loading-zone suspense>
       <template v-slot:loading>
         <div class="flex align-items-center justify-content-center top-0 left-0 notifications-loading">
@@ -37,7 +36,6 @@
         </working-zone>
       </template>
     </loading-zone>
-<!--  </OverlayPanel>-->
   </div>
 </template>
 
@@ -46,18 +44,12 @@
   import ProgressSpinner from "primevue/progressspinner"
   import UserMenu from "./UserMenu.vue"
 
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, onMounted, toRefs } from 'vue'
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
 
-  function showUserMenu(event) {
-    overlayPanel.value.toggle(event)
-  }
-
-  import { path, live, actions } from '@live-change/vue3-ssr'
-  import { client as useClient } from '@live-change/vue3-ssr'
-  import { toRefs } from '@vueuse/core'
+  import { usePath, live, useClient } from '@live-change/vue3-ssr'
 
   const client = useClient()
 
@@ -67,12 +59,14 @@
       : ['session_Session', client.value.session]
   )
 
-  const [ownerType, owner] = toRefs(ownerData)
+  const identiconUrl = computed(
+    () => `/api/identicon/jdenticon/${ownerData.value[0]}:${ownerData.value[1]}/28.svg`
+  )
 
-  const identiconUrl = computed( () => `/api/identicon/jdenticon/${ownerType.value}:${owner.value}/28.svg` )
+  const path = usePath()
 
   const [ myIdentification ] = await Promise.all([
-    live(path().userIdentification.myIdentification())
+    live(path.userIdentification.myIdentification())
   ])
 
 </script>

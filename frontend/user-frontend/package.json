@@ -2,10 +2,10 @@
   "name": "@live-change/user-frontend",
   "version": "0.8.10",
   "scripts": {
-    "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
+    "memDev": "node --inspect --expose-gc server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; node server/start.js localDev --enableSessions --initScript ./init.js",
-    "localDev": "node server/start.js localDev --enableSessions",
-    "dev": "node server/start.js dev --enableSessions",
+    "localDev": "node --inspect --expose-gc server/start.js localDev --enableSessions",
+    "dev": "node --inspect --expose-gc server/start.js dev --enableSessions",
     "ssrDev": "node server/start.js ssrDev --enableSessions",
     "serveAllMem": "cross-env NODE_ENV=production lcli ssrServer --withApi --withServices --updateServices --enableSessions --withDb --dbBackend mem --createDb",
     "serveAll": "cross-env NODE_ENV=production lcli ssrServer --withApi --withServices --updateServices --enableSessions",

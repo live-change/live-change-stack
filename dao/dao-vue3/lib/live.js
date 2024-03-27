@@ -29,6 +29,8 @@ async function fetch(api, path) {
   const paths = [ path ]
   const preFetchPaths = await api.get({ paths })
   debug("PRE FETCH DATA", preFetchPaths)
+  /*console.log("PATHS", paths)
+  return null*/
   const preFetchMap = new Map(preFetchPaths.map((res) => [JSON.stringify(res.what), res] ))
   function createObject(what, more) {
     const res = preFetchMap.get(JSON.stringify(what))

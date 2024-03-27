@@ -49,8 +49,7 @@ export {
 }
 
 export async function sitemap(route, api) {
-  route({ name: 'SignIn' })
-  route({ name: 'SignUp' })
+  route({ name: 'index' })
 }
 
 import { client as useClient } from '@live-change/vue3-ssr'
@@ -85,7 +84,7 @@ export function createRouter(app, config) {
     // import.meta.env.SSR is injected by Vite.
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes: [
-      { path: '/', component: () => import('./Index.vue') },
+      { name: 'index', path: '/', component: () => import('./Index.vue') },
       ...userRoutes(config),
       ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) })
     ]

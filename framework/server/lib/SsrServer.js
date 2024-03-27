@@ -100,10 +100,33 @@ class SsrServer {
     })
 
     this.express.get('/sitemap.xml', async (req, res) => {
-      const sitemap = await this.renderer.getSitemap()
+      if(this.settings.spa) {
+        res.status(404).end()
+        return
+      }
+
+      const url = req.originalUrl
       const clientIp = getIp(req)
-      const dao = await this.createDao({ sessionKey: 'sitemap' })
-      this.renderer.renderSitemap({ dao, clientIp }, res)
+      const credentials = readCredentials(req)
+      const windowId = this.uidGenerator()
+      const now = Date.now()
+
+      try {
+        const dao = await this.createDao({ sessionKey: 'sitemap' }, clientIp)
+        try {
+          const version = this.version
+          await this.renderer.renderSitemap({
+            url, headers: req.headers, dao, clientIp, credentials, windowId, version, now
+          }, res)
+        } catch (e) {
+          console.error("SITEMAP RENDERING ERROR", e.stack || e)
+          res.status(500).end(e.stack || e)
+        }
+        dao.dispose()
+      } catch (e) {
+        console.error("SITEMAP DAO ERROR", e.stack || e)
+        res.status(500).end(e.stack || e)
+      }
     })
     this.express.use('*', async (req, res) => {
       if(fbRedirect(req, res)) return
@@ -124,6 +147,8 @@ class SsrServer {
       try {
         const dao = await this.createDao(credentials, clientIp)
 
+        //dao.dispose(); return res.end('dao test!!\n')
+
         try {
           const version = this.version
 
@@ -141,6 +166,9 @@ class SsrServer {
               error = e
             }
           }
+
+          //dao.dispose(); return res.end('render page test!!\n')
+
           if(result) {
             const { html, response } = result
             res.status(response?.status || 200)

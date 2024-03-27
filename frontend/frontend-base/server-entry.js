@@ -67,6 +67,40 @@ export function serverEntry(App, createRouter, config = {}) {
     const data = {}
     const ctx = { modules: [] }*/
 
-    return {html, data, meta: renderedHead, modules: ctx.modules, response}
+    return { html, data, meta: renderedHead, modules: ctx.modules, response }
+  }
+}
+
+export function sitemapEntry(App, createRouter, routerSitemap, config = {}) {
+  return async function({ url, headers, dao, windowId, now }, write) {
+    setTime(now)
+
+    console.log("SM DAO", dao)
+
+    const api = await serverApi(dao, {
+      use: [],
+      windowId
+    })
+
+    const host = headers['host']
+    console.error('URL', host, url)
+
+    const response = {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html'
+      }
+    }
+
+    const { app, router, head } = await createApp(
+      config, api, App, createRouter, host, headers, response, url
+    )
+
+    const sitemapPrefix = `https://${ENV_BRAND_DOMAIN}`
+
+    return routerSitemap((location, opts) => {
+      write({ url: sitemapPrefix + router.resolve(location).href, changefreq: 'daily', priority: 0.5, ...opts })
+    }, api)
+
   }
 }

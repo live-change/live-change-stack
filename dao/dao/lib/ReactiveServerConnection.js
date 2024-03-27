@@ -414,7 +414,13 @@ class ReactiveServerConnection extends EventEmitter {
       for(let observation of this.observations.values()) {
         if(observation.observed) observation.dispose()
       }
-      if(this.dao) this.dao.dispose()
+
+      //console.log("SERVER ON CONNECTION CLOSE!", this.dao)
+      if(this.dao) {
+        this.dao.dispose()
+      } else if(this.daoPromise) {
+        this.daoPromise.then(dao => this.dao.dispose())
+      }
       this.server.handleConnectionClose(this)
     })
 
