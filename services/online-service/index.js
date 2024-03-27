@@ -24,6 +24,7 @@ async function sendOnlineEvent(path) {
   try {
     if(type == 'object') {
       const { group } = params
+      console.log("PARAMs", params)
       const triggerName = `${group}Online`
       console.log("TRIGGER", triggerName)
       await app.trigger({
@@ -260,12 +261,19 @@ definition.view({
 
 definition.view({
   name: "object",
-  properties: {},
-  async get(params, { client, service }) {
-    return onlineClient.get(['online', 'object', params])
+  properties: {
+    objectType: {
+      type: String
+    },
+    objectId: {
+      type: String
+    }
   },
-  async observable(params, { client, service }) {
-    return onlineClient.observable(['online', 'object', params], ReactiveDao.ObservableValue)
+  async get({ objectType, objectId }, { client, service }) {
+    return onlineClient.get(['online', 'object', { objectType, objectId }])
+  },
+  async observable({ objectType, objectId }, { client, service }) {
+    return onlineClient.observable(['online', 'object', { objectType, objectId }], ReactiveDao.ObservableValue)
   }
 })
 

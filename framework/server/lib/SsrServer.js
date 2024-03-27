@@ -120,48 +120,50 @@ class SsrServer {
 
       const credentials = readCredentials(req)
       const windowId = this.uidGenerator()
-      let dao
+
       try {
-        dao = await this.createDao(credentials, clientIp)
+        const dao = await this.createDao(credentials, clientIp)
+
+        try {
+          const version = this.version
+
+          let result
+          let error
+
+          for(let retry = 0; retry < 3; retry ++) {
+            try {
+              const now = Date.now()
+              result = await this.renderer.renderPage({
+                url, headers: req.headers, dao, clientIp, credentials, windowId, version, now
+              })
+              break
+            } catch(e) {
+              error = e
+            }
+          }
+          if(result) {
+            const { html, response } = result
+            res.status(response?.status || 200)
+            writeCredentials(res, credentials)
+            res.set(response?.headers ?? {
+              'Content-Type': 'text/html'
+            })
+            res.end(html)
+          } else {
+            if(error.stack) this.renderer.fixStackTrace(error)
+            console.error("RENDERING ERROR", error.stack || error)
+            res.status(500).end(error.stack || error)
+          }
+        } catch (e) {
+          console.error("ERROR", e.stack || e)
+          res.status(500).end(e.stack || e)
+        }
+
+        dao.dispose()
       } catch (e) {
         console.error("DAO ERROR", e.stack || e)
         res.status(500).end(e.stack || e)
       }
-      try {
-        const version = this.version
-
-        let result
-        let error
-
-        for(let retry = 0; retry < 3; retry ++) {
-          try {
-            const now = Date.now()
-            result = await this.renderer.renderPage({
-              url, headers: req.headers, dao, clientIp, credentials, windowId, version, now
-            })
-            break
-          } catch(e) {
-            error = e
-          }
-        }
-        if(result) {
-          const { html, response } = result
-          res.status(response?.status || 200)
-          writeCredentials(res, credentials)
-          res.set(response?.headers ?? {
-            'Content-Type': 'text/html'
-          })
-          res.end(html)
-        } else {
-          if(error.stack) this.renderer.fixStackTrace(error)
-          console.error("RENDERING ERROR", error.stack || error)
-          res.status(500).end(error.stack || error)
-        }
-      } catch (e) {
-        console.error("ERROR", e.stack || e)
-        res.status(500).end(e.stack || e)
-      }
-      dao.dispose()
     })
   }
 
