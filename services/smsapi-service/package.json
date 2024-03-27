@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.11",
-    "@live-change/relations-plugin": "^0.8.11",
+    "@live-change/framework": "0.8.11",
+    "@live-change/relations-plugin": "0.8.11",
     "got": "^11.8.3",
     "html-to-text": "8.1.0",
     "jsdom": "^18.1.1",

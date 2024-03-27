@@ -8,11 +8,11 @@
       <Badge v-if="unreadNotificationsCount?.count" :value="unreadNotificationsCount?.count ?? 0"></Badge>
     </i>
   </a>
-  <div v-if="isMounted"
+  <div
        class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto surface-overlay
          right-0 top-100 z-1 shadow-2 overflow-x-hidden overflow-y-auto"
        style="max-height: calc(100vh - 8rem)">
-    <loading-zone suspense>
+    <loading-zone suspense  v-if="isMounted">
       <template v-slot:loading>
         <div class="flex align-items-center justify-content-center top-0 left-0 notifications-loading">
           <ProgressSpinner animationDuration=".5s"/>

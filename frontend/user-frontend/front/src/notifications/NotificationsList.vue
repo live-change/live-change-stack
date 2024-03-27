@@ -90,12 +90,12 @@
     },
   ]
 
-/*  const [ notificationsBuckets ] = await Promise.all([
+  const [ notificationsBuckets ] = await Promise.all([
     rangeBuckets(
         (range, p) => p.notification.myNotifications(reverseRange(range)),
         { bucketSize: 10 }
     )
-  ])*/
+  ])
 
 </script>
 
