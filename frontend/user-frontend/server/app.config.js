@@ -25,8 +25,8 @@ app.config = {
       path: '@live-change/email-service'
     },
     {
-      name: 'smsapi',
-      path: '@live-change/email-service'
+      name: 'phone',
+      path: '@live-change/phone-service'
     },
     {
       name: 'secretLink',

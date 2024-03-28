@@ -8,20 +8,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/live-change-services.git"
+    "url": "git+https://github.com/live-change/live-change-stack.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-services/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
-  "homepage": "https://github.com/live-change/live-change-services",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "author": {
     "email": "michal@laszczewski.pl",
     "name": "Michał Łaszczewski",
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.8.12",
+    "@live-change/framework": "0.8.12",
     "got": "^11.8.3",
     "html-to-text": "8.1.0",
     "inline-css": "4.0.2",

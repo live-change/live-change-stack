@@ -31,7 +31,7 @@ definition.view({
 
 definition.authenticator({
   async prepareCredentials(credentials) {
-    console.log("EMAIL AUTHENTICATOR", credentials, authenticationKey.getValue())
+    //console.log("EMAIL AUTHENTICATOR", credentials, authenticationKey.getValue())
     if(credentials.sessionKey === authenticationKey.getValue()) {
       credentials.roles.push('admin')
       credentials.internal = true

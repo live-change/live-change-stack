@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/live-change-framework.git"
+    "url": "git+https://github.com/live-change/live-change-stack.git"
   },
   "author": {
     "email": "m8@em8.pl",
@@ -17,9 +17,9 @@
   },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-framework/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
-  "homepage": "https://github.com/live-change/live-change-framework",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
     "@codeceptjs/helper": "^2.0.1"
   },

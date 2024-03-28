@@ -10,7 +10,7 @@ function setupApiSockJs(httpServer, apiServer) {
       console.error("NULL SOCKJS connection")
       return;
     }
-    console.log("SOCKJS connection")
+    //console.log("SOCKJS connection")
     apiServer.handleConnection(conn)
   })
   sockJsServer.attach(httpServer)

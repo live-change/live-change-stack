@@ -3,7 +3,7 @@ const app = App.app()
 import user from '@live-change/user-service'
 
 const definition = app.createServiceDefinition({
-  name: "smsapi",
+  name: "phone",
   use: [ user ]
 })
 

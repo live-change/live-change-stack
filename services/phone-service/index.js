@@ -8,7 +8,6 @@ definition.validator('phone', phoneValidator)
 
 import './send.js'
 import './auth.js'
-
 export default definition
 
 

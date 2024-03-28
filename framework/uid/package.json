@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/live-change-framework.git"
+    "url": "git+https://github.com/live-change/live-change-stack.git"
   },
   "author": {
     "email": "michal@laszczewski.com",
@@ -18,8 +18,8 @@
   "type": "module",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-framework/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
-  "homepage": "https://github.com/live-change/live-change-framework",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "gitHead": "362dd55bd2773195e4cefd84080c10bd9fbaaf45"
 }

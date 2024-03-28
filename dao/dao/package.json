@@ -4,13 +4,13 @@
     "name": "Michał Łaszczewski",
     "url": "https://www.viamage.com/"
   },
-  "homepage": "https://github.com/live-change/live-change-dao",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-dao/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/live-change/live-change-dao.git"
+    "url": "https://github.com/live-change/live-change-stack.git"
   },
   "dependencies": {
     "debug": "^4.3.4"

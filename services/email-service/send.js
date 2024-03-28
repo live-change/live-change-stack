@@ -27,8 +27,8 @@ const smtp = nodemailer.createTransport(config.transport || {
 const SentEmail = definition.model({
   name: "SentEmail",
   properties: {
-    email: {
-      type: Object
+    content: {
+      type: Object,
     },
     error: {
       type: Object
@@ -42,7 +42,7 @@ const SentEmail = definition.model({
 definition.trigger({
   name: "sendEmailMessage",
   properties: {
-    emailId: {
+    message: {
       type: String
     },
     email: {
@@ -52,19 +52,22 @@ definition.trigger({
       type: Object
     }
   },
-  async execute({ emailId = app.generateUid(), email, render }, context, emit) {
-    if(render) {
-      email = await renderEmail(render)
-    }
-    if(!email) throw new Error('email must be defined')
+  async execute({ message, content, render }, context, emit) {
+    if(render) content = await renderEmail(render)
+    if(!message) message = app.generateUid()
+    if(!content) throw new Error('email must be defined')
 
-    if(email.to.match(/@test\.com>?$/)) {
-      console.log("TEST EMAIL TO", email.to)
+    const { to, text } = content
+    if(!to) throw new Error('to must be defined')
+    if(!text) throw new Error('text must be defined')
+
+    if(to.match(/@test\.com>?$/)) {
+      console.log("TEST EMAIL TO", content.to)
       emit({
         type: 'sent',
-        emailId,
-        email: email,
-        smtp: {
+        message,
+        content,
+        result: {
           test: true
         }
       })
@@ -72,13 +75,13 @@ definition.trigger({
     }
     const doSendEmail = async () => { // async it can be very slow :/
       try {
-        console.log("SEND EMAIL", email);
-        const info = await smtp.sendMail(email)
+        console.log("SEND EMAIL", content);
+        const info = await smtp.sendMail(content)
         emit({
           type: 'sent',
-          emailId,
-          email: email,
-          smtp: {
+          message,
+          content,
+          result: {
             messageId: info.messageId,
             response: info.response
           }
@@ -88,8 +91,8 @@ definition.trigger({
         console.error("EMAIL ERROR", error)
         emit({
           type: 'error',
-          emailId,
-          email: email,
+          message,
+          content,
           error: error
         })
       }
@@ -101,36 +104,35 @@ definition.trigger({
 definition.event({
   name: "sent",
   properties: {
-    emailId: {
+    message: {
       type: String
     },
-    email: {
+    content: {
       type: Object
     },
-    smtp: {
+    result: {
       type: Object
     }
   },
-  async execute(event) {
-    await SentEmail.create({ id: event.emailId, email: event.email, smtp: event.smtp })
+  async execute({ message, content, result }) {
+    await SentEmail.create({ id: message, content, result })
   }
 })
-
 
 definition.event({
   name: "error",
   properties: {
-    emailId: {
+    message: {
       type: String
     },
-    email: {
+    content: {
       type: Object
     },
     error: {
       type: Object
     }
   },
-  async execute(event) {
-    await SentEmail.create({ id: event.emailId, email: event.email, error: event.error })
+  async execute({ message, content, error }) {
+    await SentEmail.create({ id: message, content, error })
   }
 })

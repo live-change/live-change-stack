@@ -6,7 +6,7 @@
          cursor-pointer transition-colors transition-duration-150 border-round">
         <Image v-if="myIdentification?.image" :image="myIdentification.image"
                class="mr-0 border-circle border-1 surface-border" style="width: 3rem; " />
-        <img v-else-if="ownerType == 'session_Session'" src="/images/empty-user-photo.svg"
+        <img v-else-if="ownerData[0] === 'session_Session'" src="/images/empty-user-photo.svg"
              class="mr-0 border-circle" style="width: 3rem;" />
         <img v-else :src="identiconUrl"
              class="mr-0 border-circle border-1 surface-border" style="width: 3rem;" />

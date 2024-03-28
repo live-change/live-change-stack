@@ -52,6 +52,7 @@ export default async ({ command, mode }, options = {
       ENV_BASE_HREF: JSON.stringify(process.env.BASE_HREF || 'http://localhost:8001'),
       ENV_BRAND_NAME: JSON.stringify(process.env.BRAND_NAME || "Example"),
       ENV_BRAND_DOMAIN: JSON.stringify(process.env.BRAND_DOMAIN || "example.com"),
+      ENV_BRAND_SMS_FROM: JSON.stringify(process.env.BRAND_PHONE_FROM || null),
       ENV_MODE: JSON.stringify(mode),
       ENV_VERSION: JSON.stringify(version),
     },

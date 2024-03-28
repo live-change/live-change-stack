@@ -51,11 +51,11 @@ export default defineConfig(async ({ command, mode }) => {
         transformMixedEsModules: true,
         include: [
           /node_modules/,
-          /live-change-framework\/framework\//,
-          /live-change-framework\/uid\//,
-          /live-change-dao\/dao\//,
-          /live-change-dao\/dao-sockjs\//,
-          /live-change-dao\/dao-websocket\//,
+          /live-change-stack\/framework\//,
+          /live-change-stack\/uid\//,
+          /live-change-stack\/dao\//,
+          /live-change-stack\/dao-sockjs\//,
+          /live-change-stack\/dao-websocket\//,
         ]
       }
     },

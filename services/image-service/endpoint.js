@@ -12,6 +12,9 @@ const config = definition.config
 
 const imagesPath = config.imagesPath || `./storage/images/`
 
+import Debug from 'debug'
+const debug = Debug("image-service:endpoint")
+
 function normalizeFormat(f1) {
   f1 = f1.toLowerCase().trim()
   if(f1 == 'jpg') f1 = 'jpeg'
@@ -36,7 +39,7 @@ function delay(ms) {
 async function getImageMetadata(image, version) {
   for(let t = 0; t < 5; t++) {
     const metadata = await Image.get(image)
-    console.log("MD", metadata)
+    debug("METADATA READ RESULT", metadata)
     if(metadata) return metadata
     await delay(200 * Math.pow(2, t))
   }
@@ -50,7 +53,7 @@ function sanitizeImageId(id) {
 async function handleImageGet(req, res, params) {
   const { image } = params
   const metadata = await getImageMetadata(image)
-  console.log("PIC METADATA", image, "=>", metadata)
+  debug("PIC METADATA", image, "=>", metadata)
   if(!metadata) {
     res.status(404)
     res.send("Image " + image + " not found")
@@ -58,7 +61,7 @@ async function handleImageGet(req, res, params) {
   }
   const imagePrefix = imagesPath + sanitizeImageId(image) + '/'
   const sourceFilePath = path.resolve(imagePrefix + 'original.' + metadata.extension)
-  console.log("SOURCE IMAGE PATH", sourceFilePath)
+  debug("SOURCE IMAGE PATH", sourceFilePath)
   if(!(await fileExists(sourceFilePath))) {
     res.status(404)
     console.error("IMAGE FILE NOT FOUND", sourceFilePath)
@@ -71,7 +74,7 @@ async function handleImageGet(req, res, params) {
   switch(params.type) {
     case "original": {
       if(params.format && !isFormatsIdentical(params.format, metadata.extension)) {
-        console.log("CONVERTING IMAGE!", metadata.extension, params.format)
+        debug("CONVERTING IMAGE!", metadata.extension, params.format)
         const normalized = normalizeFormat(params.format)
         const convertedFilePath = path.resolve(imagePrefix + 'converted.' + normalized)
         if(!(await fileExists(convertedFilePath))) {

@@ -57,7 +57,7 @@
     "services/backup-service",
     "services/google-authentication-service",
     "services/sms-confirm-service",
-    "services/smsapi-service",
+    "services/phone-service",
     "services/slug-service",
     "services/vote-service",
     "services/locale-settings-service",

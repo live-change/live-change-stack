@@ -8,4 +8,10 @@ const definition = app.createServiceDefinition({
   use: [ security ]
 })
 
+const config = definition.config
+
+definition.clientConfig = {
+  contactTypes: config.contactTypes
+}
+
 export default definition

@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/live-change-framework.git"
+    "url": "git+https://github.com/live-change/live-change-stack.git"
   },
   "author": {
     "email": "m8@em8.pl",
@@ -20,17 +20,17 @@
   },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-framework/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "type": "module",
-  "homepage": "https://github.com/live-change/live-change-framework",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao": "^0.8.12",
-    "@live-change/dao-sockjs": "^0.8.12",
-    "@live-change/dao-websocket": "^0.8.12",
-    "@live-change/db-server": "^0.8.12",
-    "@live-change/framework": "^0.8.12",
-    "@live-change/server": "^0.8.12",
+    "@live-change/dao": "0.8.12",
+    "@live-change/dao-sockjs": "0.8.12",
+    "@live-change/dao-websocket": "0.8.12",
+    "@live-change/db-server": "0.8.12",
+    "@live-change/framework": "0.8.12",
+    "@live-change/server": "0.8.12",
     "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "http-proxy-middleware": "2.0.6",

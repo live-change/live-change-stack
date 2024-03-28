@@ -23,8 +23,8 @@ import { createHead } from "@vueuse/head"
 export async function createApp(config, api, App, createRouter, host, headers, response, url) {
   const isSSR = response !== undefined
   const isSPA = (typeof window !== 'undefined') && !window.__DAO_CACHE__
-  console.log("IS SPA", isSPA)
-  console.log("IS SSR", isSSR)
+  //console.log("IS SPA", isSPA)
+  //console.log("IS SSR", isSSR)
   const app = isSPA ? createSPAApp(App) : createSSRApp(App)
 
   app.config.devtools = !isSSR//true
@@ -96,7 +96,6 @@ export async function createApp(config, api, App, createRouter, host, headers, r
 
   globalThis.i18n = i18n
 
-  console.log("I18N MESSAGES", config.i18nMessages)
   app.use(i18n)
 
   return { app, router, head }

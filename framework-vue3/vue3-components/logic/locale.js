@@ -7,6 +7,8 @@ let localeRef = ref()
 
 export async function getOtherOwnerLocale(owner, context) {
   if(localeObservable) localeObservable.unbindProperty(localeRef, 'value')
+  context = context ?? getCurrentInstance().appContext
+  const api = useApi(context)
   if(typeof window === 'undefined') {
     const value = await api.get(api.views.localeSettings.localeSettings(owner))
     localeObservable = new ObservableValue(value)
@@ -64,31 +66,50 @@ export function captureLocale(context) {
   if(typeof navigator === 'undefined') return
   return (async () => {
     const localeSettings = await getLocale(context)
-    console.log("LOCALE SETTINGS", localeSettings)
+    //console.log("LOCALE SETTINGS", JSON.stringify(localeSettings, null, '  '))
 
-    const dateTimeOptions = new Intl.DateTimeFormat().resolvedOptions()
-    const listOptions = new Intl.ListFormat().resolvedOptions()
-    const numberOptions = new Intl.NumberFormat().resolvedOptions()
-    const pluralOptions = new Intl.PluralRules().resolvedOptions()
-    const relativeTimeOptions = new Intl.RelativeTimeFormat().resolvedOptions()
+    const capturedLanguage = navigator.language
+    const capturedDateTime = new Intl.DateTimeFormat().resolvedOptions()
+    const capturedList = new Intl.ListFormat().resolvedOptions()
+    const capturedNumber = new Intl.NumberFormat().resolvedOptions()
+    const capturedPlural = new Intl.PluralRules().resolvedOptions()
+    const capturedRelativeTime = new Intl.RelativeTimeFormat().resolvedOptions()
 
+    const capturedLocaleSettings = {
+      capturedLanguage,
+      capturedDateTime,
+      capturedList,
+      capturedNumber,
+      capturedPlural,
+      capturedRelativeTime
+    }
+
+    //console.log("CAPTURED LOCALE SETTINGS", JSON.stringify(capturedLocaleSettings, null, '  '))
+
+    /*console.log("language", localeSettings.capturedLanguage !== capturedLanguage)
+    console.log("dateTime", JSON.stringify(capturedDateTime) !== JSON.stringify(localeSettings.capturedDateTime))
+    console.log("list", JSON.stringify(capturedList) !== JSON.stringify(localeSettings.capturedList))
+    console.log("number", JSON.stringify(capturedNumber) !== JSON.stringify(localeSettings.capturedNumber))
+    console.log("plural", JSON.stringify(capturedPlural) !== JSON.stringify(localeSettings.capturedPlural))
+    console.log("relativeTime", JSON.stringify(capturedRelativeTime) !== JSON.stringify(localeSettings.capturedRelativeTime))
+*/
     if(!localeSettings
-      || localeSettings.capturedLanguage !== navigator.language
-      || JSON.stringify(localeSettings.capturedDateTime) !== JSON.stringify(dateTimeOptions)
-      || JSON.stringify(localeSettings.capturedList) !== JSON.stringify(listOptions)
-      || JSON.stringify(localeSettings.capturedNumber) !== JSON.stringify(numberOptions)
-      || JSON.stringify(localeSettings.capturedPlural) !== JSON.stringify(pluralOptions)
-      || JSON.stringify(localeSettings.capturedRelativeTime) !== JSON.stringify(relativeTimeOptions)
+      || localeSettings.capturedLanguage !== capturedLanguage
+      || JSON.stringify(localeSettings.capturedDateTime) !== JSON.stringify(capturedDateTime)
+      || JSON.stringify(localeSettings.capturedList) !== JSON.stringify(capturedList)
+      || JSON.stringify(localeSettings.capturedNumber) !== JSON.stringify(capturedNumber)
+      || JSON.stringify(localeSettings.capturedPlural) !== JSON.stringify(capturedPlural)
+      || JSON.stringify(localeSettings.capturedRelativeTime) !== JSON.stringify(capturedRelativeTime)
     ) {
       const update = {
-        capturedLanguage: navigator.language,
-        capturedDateTime: dateTimeOptions,
-        capturedList: listOptions,
-        capturedNumber: numberOptions,
-        capturedPlural: pluralOptions,
-        capturedRelativeTime: relativeTimeOptions
+        capturedLanguage,
+        capturedDateTime,
+        capturedList,
+        capturedNumber,
+        capturedPlural,
+        capturedRelativeTime
       }
-      console.log("CAPTURED LOCALE SETTINGS", update)
+      console.log("UPDATE LOCALE SETTINGS", update)
       await updateLocale(update, context)
     }
   })()

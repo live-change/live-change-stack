@@ -7,10 +7,10 @@
     "url": "http://www.viamage.com/"
   },
   "bugs": {
-    "url": "https://github.com/live-change/live-change-dao/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.8.12",
+    "@live-change/dao": "0.8.12",
     "debug": "^4.3.4",
     "sockjs-client": "git+https://github.com/sockjs/sockjs-client.git",
     "supports-color": "^9.4.0"
@@ -24,7 +24,7 @@
     "mocha": "^9.0.0"
   },
   "description": "live-change dao sockjs transport",
-  "homepage": "https://github.com/live-change/live-change-dao",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "license": "BSD-3-Clause",
   "main": "index.js",
   "module": "index.js",

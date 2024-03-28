@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/live-change-services.git"
+    "url": "git+https://github.com/live-change/live-change-stack.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-services/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
-  "homepage": "https://github.com/live-change/live-change-services",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "author": {
     "email": "michal@laszczewski.pl",
     "name": "Michał Łaszczewski",

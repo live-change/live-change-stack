@@ -93,8 +93,8 @@ class Api extends DaoProxy {
         console.log("API NOT CHANGED")
         return
       }
+      if(lastApiJson) console.log("API CHANGED", lastApiJson, JSON.stringify(newApi))
       lastApiJson = JSON.stringify(newApi)
-      console.log("API CHANGED")
       api.value = JSON.parse(lastApiJson)
       this.generateServicesApi()
     })

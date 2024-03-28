@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/live-change-services.git"
+    "url": "git+https://github.com/live-change/live-change-stack.git"
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-services/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
-  "homepage": "https://github.com/live-change/live-change-services",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "author": {
     "email": "michal@laszczewski.pl",
     "name": "Michał Łaszczewski",
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.12",
-    "@live-change/relations-plugin": "^0.8.12",
+    "@live-change/framework": "0.8.12",
+    "@live-change/relations-plugin": "0.8.12",
     "lru-cache": "^7.12.0",
     "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0",

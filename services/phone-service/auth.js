@@ -3,7 +3,6 @@ const validation = App.validation
 import definition from './definition.js'
 
 const User = definition.foreignModel('user', 'User')
-
 const Phone = definition.model({
   name: 'Phone',
   properties: {
@@ -14,6 +13,23 @@ const Phone = definition.model({
   },
   userItem: {
     userReadAccess: () => true
+  }
+})
+
+definition.view({
+  name: "userPhones",
+  global: true,
+  internal: true,
+  properties: {
+    user: {
+      type: String
+    }
+  },
+  returns: {
+    type: Object
+  },
+  async daoPath({ user }) {
+    return Phone.indexRangePath('byUser', [user])
   }
 })
 

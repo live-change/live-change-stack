@@ -15,19 +15,19 @@ async function renderSms(data) {
   const response = await got(url)
   let body = response.body
   console.log("BASE URL", baseUrl)
-  console.log("HTML", body)
+  //console.log("HTML", body)
   const dom = new JSDOM(body)
   const headers = JSON.parse(dom.window.document.querySelector('[data-headers]').textContent)
-  const messageElements = dom.window.document.querySelectorAll("[data-html],[data-text]")
+  const messageElements = dom.window.document.querySelectorAll("[data-text]")
   const sms = { ...headers }
   for(let messageElement of messageElements) {
     const toText = messageElement.getAttribute('data-text')
     if(toText !== null) {
       sms.text = htmlToText(messageElement.outerHTML)
-      if(messageElement.tagName == 'PRE') {
+      if(messageElement.tagName === 'PRE') {
         const indentation = sms.text.match(/^ */)[0]
         const indentationRegex = new RegExp('\n' + indentation, 'g')
-        sms.text = sms.text.slice(indentation.length).replace(indentationRegex, '\n')
+        sms.text = sms.text.slice(indentation.length).replace(indentationRegex, '\n').trim()
       }
     }
   }

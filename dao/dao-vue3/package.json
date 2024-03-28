@@ -7,14 +7,14 @@
     "url": "http://www.viamage.com/"
   },
   "bugs": {
-    "url": "https://github.com/live-change/live-change-dao/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.8.12"
+    "@live-change/dao": "0.8.12"
   },
   "type": "module",
   "description": "Vue.js integration for live-change dao",
-  "homepage": "https://github.com/live-change/live-change-dao",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "license": "BSD-3-Clause",
   "main": "index.js",
   "module": "index.js",

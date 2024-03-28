@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/live-change-db.git"
+    "url": "git+https://github.com/live-change/live-change-stack.git"
   },
   "author": {
     "email": "m8@em8.pl",
@@ -17,15 +17,15 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-db/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
-  "homepage": "https://github.com/live-change/live-change-db",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
     "tape": "^5.7.4"
   },
   "type": "module",
   "dependencies": {
-    "@live-change/dao": "^0.8.12",
+    "@live-change/dao": "0.8.12",
     "@live-change/interval-tree": "^1.0.12",
     "functional-red-black-tree": "^1.0.1"
   },

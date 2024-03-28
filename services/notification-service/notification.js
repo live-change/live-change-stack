@@ -190,7 +190,7 @@ definition.view({
     const id = client.user
         ? `"user_User":"${client.user}"`
         : `"session_Session":"${client.session}"`
-    console.log("UNREAD", 'unreadNotificationsCount', id)
+    //console.log("UNREAD", 'unreadNotificationsCount', id)
     return ['database', 'indexObject', app.databaseName, 'notification_Notification_unreadNotificationsCount', id]
   }
 })

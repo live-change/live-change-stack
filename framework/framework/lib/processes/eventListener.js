@@ -1,5 +1,8 @@
 import EventSourcing from '../utils/EventSourcing.js'
 
+import Debug from 'debug'
+const debug = Debug("framework:eventListener")
+
 async function startEventListener(service, config) {
   if(!config.handleEvents) return
 
@@ -19,7 +22,7 @@ async function startEventListener(service, config) {
       return await service.profileLog.profile({ operation: "handleEvent", eventName, id: ev.id,
             bucketId: bucket.id, triggerId: bucket.triggerId, commandId: bucket.commandId },
           () => {
-            console.log("EXECUTING EVENT", ev)
+            debug("EXECUTING EVENT", ev)
             return event.execute(ev, bucket)
           }
       )

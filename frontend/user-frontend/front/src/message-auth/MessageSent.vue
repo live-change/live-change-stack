@@ -10,7 +10,7 @@
       <p class="mt-0 mb-4 p-0 line-height-3">Click on the link or enter the code you found in that message.</p>
       <Secured :events="['wrong-secret-code']" :actions="['checkSecretCode']">
         <command-form service="messageAuthentication" action="finishMessageAuthentication"
-                      :parameters="{ secretType: 'code', authentication }"
+                      :parameters="{ secretType: 'code', authentication }" :key="authentication"
                       @submit="handleSubmit" @done="handleAuthenticated" @error="handleError"
                       v-slot="{ data }">
           <div class="flex justify-content-center">

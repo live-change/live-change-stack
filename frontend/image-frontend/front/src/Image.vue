@@ -83,7 +83,7 @@
   const stableDomSize = refDebounced(domSize, 500)
   const element = ref()
 
-  console.log("DR", props.domResize)
+  //console.log("DR", props.domResize)
   if(props.domResize) {
     useResizeObserver(element, (entries) => {
       const entry = entries[0]
@@ -119,7 +119,7 @@
   }
 
   function updateUrl() {
-    console.log("UPDATE URL!", upload.value)
+    //console.log("UPDATE URL!", upload.value)
     if(upload.value && upload.value.url) { // available upload
       size.value = { ...upload.value.size }
       url.value = upload.value.url

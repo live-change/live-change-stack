@@ -40,10 +40,16 @@ const LocaleSettings = definition.model({
     capturedDateTime: {
       type: Object
     },
+    capturedList: {
+      type: Object
+    },
     capturedNumber: {
       type: Object
     },
     capturedPlural: {
+      type: Object
+    },
+    capturedRelativeTime: {
       type: Object
     }
   }

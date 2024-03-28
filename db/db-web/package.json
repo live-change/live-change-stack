@@ -12,13 +12,13 @@
       "name": "Michał Łaszczewski"
     }
   ],
-  "homepage": "https://github.com/live-change/live-change-db",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-db/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/live-change/live-change-db.git"
+    "url": "https://github.com/live-change/live-change-stack.git"
   },
   "description": "live data access object",
   "readme": "README.md",
@@ -29,11 +29,11 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/dao": "^0.8.12",
-    "@live-change/db": "^0.8.12",
-    "@live-change/db-store-indexeddb": "^0.8.12",
-    "@live-change/db-store-localstorage": "^0.8.12",
-    "@live-change/db-store-rbtree": "^0.8.12",
+    "@live-change/dao": "0.8.12",
+    "@live-change/db": "0.8.12",
+    "@live-change/db-store-indexeddb": "0.8.12",
+    "@live-change/db-store-localstorage": "0.8.12",
+    "@live-change/db-store-rbtree": "0.8.12",
     "debug": "^4.3.4"
   },
   "gitHead": "362dd55bd2773195e4cefd84080c10bd9fbaaf45"

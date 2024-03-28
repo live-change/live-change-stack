@@ -10,11 +10,12 @@ export function getIp(connection) {
 }
 
 export function waitForSignal(observable, timeout = 1000, filter = () => true) {
+  //console.trace("WAIT FOR SIGNAL")
   let observer
   let done = false
   return new Promise((resolve, reject) => {
     observer = (signal, value) => {
-      console.log("SIGNAL", signal, value)
+      //console.log("SIGNAL", signal, value)
       if(done) return
       if(signal != 'set') return reject('unknownSignal')
       if(filter(value)) {

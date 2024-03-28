@@ -47,7 +47,7 @@ class LiveDao extends LcDao.DaoProxy {
       const observable = result.then ? new LcDao.ObservablePromiseProxy(result) : result
       const observer = {
         set: (data) => {
-          console.log("NEW CREDENTIALS", data)
+          //console.log("NEW CREDENTIALS", data)
           if(data) {
             const { id, ...newCredentials } = data
             state.credentials = newCredentials

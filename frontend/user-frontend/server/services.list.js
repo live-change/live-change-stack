@@ -1,7 +1,7 @@
 import session from '@live-change/session-service'
 import user from '@live-change/user-service'
 import email from '@live-change/email-service'
-import smsapi from '@live-change/smsapi-service'
+import phone from '@live-change/phone-service'
 import passwordAuthentication from '@live-change/password-authentication-service'
 import userIdentification from '@live-change/user-identification-service'
 import identicon from '@live-change/identicon-service'
@@ -21,7 +21,7 @@ export {
   session,
   user,
   email,
-  smsapi,
+  phone,
   passwordAuthentication,
   userIdentification,
   identicon,

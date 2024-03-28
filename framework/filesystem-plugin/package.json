@@ -8,13 +8,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/live-change/live-change-framework.git"
+    "url": "git+https://github.com/live-change/live-change-stack.git"
   },
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/live-change/live-change-framework/issues"
+    "url": "https://github.com/live-change/live-change-stack/issues"
   },
-  "homepage": "https://github.com/live-change/live-change-framework",
+  "homepage": "https://github.com/live-change/live-change-stack",
   "author": {
     "email": "michal@laszczewski.pl",
     "name": "Michał Łaszczewski",
