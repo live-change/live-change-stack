@@ -1,6 +1,6 @@
 {
   "name": "@live-change/vote-service",
-  "version": "0.8.12",
+  "version": "0.8.13",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.8.12",
-    "@live-change/relations-plugin": "0.8.12"
+    "@live-change/framework": "^0.8.13",
+    "@live-change/relations-plugin": "^0.8.13"
   },
   "gitHead": "362dd55bd2773195e4cefd84080c10bd9fbaaf45"
 }
