@@ -370,4 +370,26 @@ definition.action({
   }
 })
 
+definition.action({
+  name: 'testNotification',
+  properties: {
+    notificationType: {
+      type: String
+    },
+    ...config.fields
+  },
+  async execute({ notificationType, ...data }, { client, service }, emit) {
+    if(!notificationType) notificationType = 'example_TestNotification'
+    const fields = {}
+    for(const key in config.fields) fields[key] = data[key]
+    service.trigger({
+      type: 'notify',
+      sessionOrUserType: client.user ? 'user_User' : 'session_Session',
+      sessionOrUser: client.user || client.session,
+      notificationType,
+      ...fields
+    })
+  }
+})
+
 export default definition

@@ -38,7 +38,7 @@ class DaoPrerenderCache {
       debug("OBSERVABLE EXISTS", cacheKey)
       return observable
     }
-    if(this.mode == 'save') {
+    if(this.mode === 'save') {
       observable = new ObservableValue()
       this.get(what).then(value => observable.set(value)).catch(error => observable.error(error))
     } else {
@@ -52,12 +52,12 @@ class DaoPrerenderCache {
       // do not save extended values
     }
     if(observable.isInitialized && observable.isInitialized()) {
-      if(this.mode == 'save') {
+      if(this.mode === 'save') {
         this.cache.set(cacheKey, observable.save())
       }
       return observable
     }
-    if(this.mode == 'load') {
+    if(this.mode === 'load') {
       // if (this.cache.has(cacheKey)) observable.restore(this.cache.get(cacheKey))
       // it was loaded earlier
     }
@@ -77,10 +77,11 @@ class DaoPrerenderCache {
       debug("GET FROM EXTENDED CACHE", cacheKey, " => ", value)
       return Promise.resolve(value)
     }
-    if(this.mode == 'load') {
+    if(this.mode === 'load') {
     }
     const promise = this.dao.get(what)
-    if(this.mode == 'save') {
+
+    if(this.mode === 'save') {
       if(!promise) throw new Error("GET NOT FOUND: "+what)
       promise.then(result => {
         let observable = this.observables.get(cacheKey)
@@ -111,6 +112,7 @@ class DaoPrerenderCache {
         }
       })
     }
+
     return promise
   }
 

@@ -61,12 +61,12 @@ class Observation {
   removeObservable(observable) {
     if(this.disposed) throw new Error(`observation ${JSON.stringify(this.what)} use after disposal`)
     let id = this.observables.indexOf(observable)
-    if(id == -1) throw new Error("could not remove not existing observable")
+    if(id === -1) throw new Error("could not remove not existing observable")
     this.observables.splice(id, 1)
-    if(this.connection.connected && this.observables.length == 0) {
+    if(this.connection.connected && this.observables.length === 0) {
       this.connection.sendUnobserve(this)
     }
-    if(this.observables.length == 0 && !this.pushed) {
+    if(this.observables.length === 0 && !this.pushed) {
       const whatId = JSON.stringify(this.what)
       this.connection.observations.delete(whatId)
       this.disposed = true
@@ -76,7 +76,7 @@ class Observation {
   handleDisconnect() {
     if(this.disposed) throw new Error(`observation ${JSON.stringify(this.what)} use after disposal`)
     this.pushed = false
-    if(this.observables.length == 0) {
+    if(this.observables.length === 0) {
       const whatId = JSON.stringify(this.what)
       this.connection.observations.delete(whatId)
       this.disposed = true
@@ -147,7 +147,7 @@ class Connection extends EventEmitter {
           this.waitingRequests.delete(msg.requestId)
           return reject(err)
         }
-        if (resp.type == 'error') {
+        if (resp.type === 'error') {
           reject(resp.error)
           return false
         }
@@ -164,7 +164,7 @@ class Connection extends EventEmitter {
           this.requestsQueue.push(request)
           if(settings.requestSendTimeout && settings.requestSendTimeout < Infinity) {
             setTimeout(() => {
-              if(queuedConnectionId == this.connectedCounter) {
+              if(queuedConnectionId === this.connectedCounter) {
                 this.requestsQueue[queueId] = null
                 reject('disconnected')
               }
@@ -186,7 +186,7 @@ class Connection extends EventEmitter {
           for(let i = 0; i < this.requestsQueue.length; i++) {
             let req = this.requestsQueue[i]
             if(!req) continue
-            if(req.msg.requestId == msg.requestId) {
+            if(req.msg.requestId === msg.requestId) {
               const req = this.requestsQueue[i]
               this.requestsQueue[i] = null
               req.handler('timeout')
@@ -253,18 +253,18 @@ class Connection extends EventEmitter {
   }
 
   handleMessage(message) {
-    if(message.type == "pong") {
+    if(message.type === "pong") {
       this.emit('pong', message)
     }
-    if(message.type == "ping") {
+    if(message.type === "ping") {
       this.emit('ping', message)
       message.type = "pong"
       this.send(message)
     }
-    if(message.type == "timeSync") {
+    if(message.type === "timeSync") {
       this.emit('timeSync', message)
     }
-    if(message.type == "authenticationError") {
+    if(message.type === "authenticationError") {
       this.finished = true
       this.closeConnection()
       this.emit('authenticationError', message.error)
@@ -276,12 +276,12 @@ class Connection extends EventEmitter {
       request.handler(null, message)
       return
     }
-    if(message.type == "notify") {
+    if(message.type === "notify") {
       const whatId = JSON.stringify(message.what)
       const observation = this.observations.get(whatId)
       if(observation) observation.handleNotifyMessage(message)
     }
-    if(message.type == "push") {
+    if(message.type === "push") {
       const whatId = JSON.stringify(message.what)
       const observation = this.observations.get(whatId)
       if(observation) {
@@ -291,12 +291,12 @@ class Connection extends EventEmitter {
         this.observations.set(whatId, observation)
       }
     }
-    if(message.type == "unpush") {
+    if(message.type === "unpush") {
       const whatId = JSON.stringify(message.what)
       const observation = this.observations.get(whatId)
       if(!observation || !observation.pushed) throw Error("observation that is not pushed can not be unpushed")
       observation.pushed = false
-      if(observation.observables.length == 0) {
+      if(observation.observables.length === 0) {
         this.observations.delete(whatId)
         this.observations.disposed = true
       }
@@ -451,6 +451,9 @@ class Connection extends EventEmitter {
   dispose() {
     debug("DISPOSE REACTIVE CONNECTION")
     this.finished = true
+    this.waitingRequests = new Map()
+    this.requestsQueue = []
+    this.observations = new Map()
     for(const timeout of this.activeTimeouts) clearTimeout(timeout)
   }
 

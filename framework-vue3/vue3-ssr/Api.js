@@ -270,7 +270,7 @@ class Api extends DaoProxy {
     return {
       gt: range.lt,
       gte: range.lte,
-      lt: range.gt == '' ? '\xFF\xFF\xFF\xFF' : range.gt,
+      lt: range.gt === '' ? '\xFF\xFF\xFF\xFF' : range.gt,
       lte: range.gte,
       limit: range.limit,
       reverse: !range.reverse
@@ -278,7 +278,7 @@ class Api extends DaoProxy {
   }
 
   getServiceDefinition(serviceName) {
-    return this.metadata.api.value.services.find(s => s.name == serviceName)
+    return this.metadata.api.value.services.find(s => s.name === serviceName)
   }
 
   uploadFile(purpose, fileName, blob, id) {
@@ -290,8 +290,8 @@ class Api extends DaoProxy {
       state.value = { ...state.value, percent, transferred: evt.loaded }
     }, false)
     xhr.addEventListener("readystatechange", (evt) => {
-      if (xhr.readyState == 4) {
-        if (xhr.status == 200) {
+      if (xhr.readyState === 4) {
+        if (xhr.status === 200) {
           state.value = { ...state.value, state: "done" }
         } else {
           state.value = { ...state.value, state: "failed", error: xhr.status + " " + xhr.responseText }

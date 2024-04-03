@@ -52,12 +52,14 @@
 
 <script setup>
 
-  import { NotificationsIcon } from "@live-change/user-frontend"
+  import NotificationsIcon from './notifications/NotificationsIcon.vue'
+  import NotificationsList from './notifications/NotificationsList.vue'
 
   import { UserIcon } from "@live-change/user-frontend"
 
   import { useApi } from "@live-change/vue3-ssr"
   import { computed } from "vue"
+
 
   const api = useApi()
 

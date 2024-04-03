@@ -10,7 +10,7 @@ import { starter } from '@live-change/cli'
 
 starter(appConfig)
 
-/*
+//*
 import os from 'os'
 const formatMemoryUsage = (data) => `${Math.round(data / 1024 / 1024 * 100) / 100} MB`;
 const formatUptime = (data) => // dd:hh:mm:ss

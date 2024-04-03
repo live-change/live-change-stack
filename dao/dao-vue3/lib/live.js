@@ -77,7 +77,8 @@ async function fetch(api, path) {
     }
     return ref(data)
   }
-  return createObject(path.what, path.more)
+  const object = createObject(path.what, path.more)
+  return object
 }
 
 async function live(api, path, onUnmountedCb) {
@@ -87,6 +88,7 @@ async function live(api, path, onUnmountedCb) {
       debug("FETCH", path.value)
       const data = path.value ? await fetch(api, path.value) : ref(null)
       debug("FETCHED", data)
+      await new Promise(resolve => process.nextTick(resolve))
       return data
     }
     let liveRef = shallowRef()
@@ -95,7 +97,7 @@ async function live(api, path, onUnmountedCb) {
     let updatePromise = null
     async function update() {
       const newPath = path.value
-      if(JSON.stringify(newPath) == oldPath) return
+      if(JSON.stringify(newPath) === oldPath) return
       if(!updatePromise) updatePromise = (async () => {
         const newUnmountedCallbacks = []
         let newLive = null
@@ -126,7 +128,11 @@ async function live(api, path, onUnmountedCb) {
     }
   }
 
-  if(typeof window == 'undefined') return fetch(api, path)
+  if(typeof window == 'undefined') {
+    const result = await fetch(api, path)
+    await new Promise(resolve => process.nextTick(resolve))
+    return result
+  }
   if(Array.isArray(path)) path = { what: path }
   const paths = [ path ]
   const preFetchPaths = api.observable({ paths })
@@ -159,7 +165,7 @@ async function live(api, path, onUnmountedCb) {
               function computePointers() {
                 while(true) {
                   const pointers = collectPointers(newElement, moreElement.schema, getSource)
-                  if(requiredSrcs.length == 0) return pointers
+                  if(requiredSrcs.length === 0) return pointers
                   for(const requiredSrc of requiredSrcs) {
                     const observable = api.observable(requiredSrc)
                     const observer = () => {
@@ -185,8 +191,8 @@ async function live(api, path, onUnmountedCb) {
                   extendedElement[moreElement.to] = newArray
                 } else if(pointers.length > 0) {
                   const oldBound = prop.bounds
-                  if(!oldBound || oldBound.length == 0 ||
-                    JSON.stringify(oldBound[0].what) != JSON.stringify(pointers[0])) {
+                  if(!oldBound || oldBound.length === 0 ||
+                    JSON.stringify(oldBound[0].what) !== JSON.stringify(pointers[0])) {
                     if(oldBound) {
                       prop.bounds.forEach(b => b.dispose())
                     }

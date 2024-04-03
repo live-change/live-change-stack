@@ -28,7 +28,7 @@ function useFetch(path, context) {
 }
 
 async function rangeBuckets(pathFunction, options, app = getCurrentInstance()) {
-  const lc = useApi()
+  const lc = useApi(app?.appContext)
   const extendedPathFunction = (range) => pathFunction(range, lc.fetch)
   const buckets = new RangeBuckets(lc, extendedPathFunction, options)
   if(app) {

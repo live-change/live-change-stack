@@ -83,7 +83,7 @@ class Dao extends EventEmitter {
   }
 
   get(what) {
-    let  defn = this.findDefinition(what)
+    let defn = this.findDefinition(what)
     defn = this.prepareSource(defn)
     return defn.source.get(what)
   }
