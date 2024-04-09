@@ -53,4 +53,45 @@ definition.view({
   }
 })
 
+definition.trigger({
+  name: 'setIdentification',
+  properties: {
+    sessionOrUserType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    sessionOrUser: {
+      validation: ['nonEmpty']
+    },
+    overwrite: {
+      type: Boolean
+    },
+    ...identificationFields
+  },
+  async execute({ sessionOrUserType, sessionOrUser, overwrite, ...identificationData }, { service }, emit) {
+    const identification = {}
+    for(const field in identificationFields) {
+      identification[field] = identificationData[field]
+    }
+    const id = [sessionOrUserType, sessionOrUser].map(p => JSON.stringify(p)).join(':')
+    const currentIdentification = (await Identification.get(id))
+    const newIdentification = overwrite
+      ? { ...currentIdentification, ...identification }
+      : { ...identification, ...currentIdentification }
+    if(currentIdentification) {
+      emit({
+        type: 'sessionOrUserOwnedIdentificationUpdated',
+        identifiers: { sessionOrUserType, sessionOrUser },
+        data: newIdentification
+      })
+    } else {
+      emit({
+        type: 'sessionOrUserOwnedIdentificationSet',
+        identifiers: { sessionOrUserType, sessionOrUser },
+        data: newIdentification
+      })
+    }
+  }
+})
+
 export { Identification }

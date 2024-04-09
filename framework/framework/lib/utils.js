@@ -183,7 +183,9 @@ function generateDefault(properties) {
     const property = properties[propName]
     if(property.hasOwnProperty('defaultValue')) {
       result[propName] = property.defaultValue
-    } else if(property.type == Object) {
+    } else if(property.hasOwnProperty('default')) {
+      result[propName] = property.default
+    } else if(property.type === Object) {
       result[propName] = generateDefault(property.properties)
     }
   }
@@ -193,7 +195,7 @@ function generateDefault(properties) {
 function prefixRange({ gt, lt, gte, lte, limit, reverse }, prefix, from = "") {
   function getPrefix(id) {
     if(id.length > from.length) {
-      if(id.slice(0, from.length) != from) {
+      if(id.slice(0, from.length) !== from) {
         console.error("ID:", id, "does not start with", from)
         throw new Error("id does not match prefix")
       }

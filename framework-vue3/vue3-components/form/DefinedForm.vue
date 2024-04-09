@@ -71,7 +71,7 @@
 
     reset(initialValue) {
       if(this.definition.type) {
-        let defaultValue = this.definition.defaultValue
+        let defaultValue = this.definition.defaultValue ?? this.definition.default
         if(defaultValue === undefined) {
           switch(this.definition.type) {
             case "String" : defaultValue = ""; break;
@@ -164,7 +164,7 @@
     }
 
     reset(initialValue) {
-      if(this.definition.type == 'Object') {
+      if(this.definition.type === 'Object') {
         this.data[this.property] = JSON.parse(JSON.stringify(initialValue ||
           (this.definition.hasOwnProperty('defaultValue') ? this.definition.defaultValue : {} )))
         this.object = this.data[this.property]

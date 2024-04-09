@@ -2,6 +2,7 @@ import App from "@live-change/framework"
 const app = App.app()
 
 const contactTypes = ['email', 'phone']
+const remoteAccountTypes = ['google']
 
 import securityConfig from './security.config.js'
 
@@ -18,7 +19,8 @@ app.config = {
     },
     {
       name: 'user',
-      path: '@live-change/user-service'
+      path: '@live-change/user-service',
+      remoteAccountTypes
     },
     {
       name: 'email',
@@ -49,6 +51,10 @@ app.config = {
       path: '@live-change/password-authentication-service',
       contactTypes,
       signInWithoutPassword: true
+    },
+    {
+      name: 'googleAuthentication',
+      path: '@live-change/google-authentication-service',
     },
     {
       name: 'security',

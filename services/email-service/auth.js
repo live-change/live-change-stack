@@ -64,7 +64,7 @@ definition.event({
       validation: ['nonEmpty']
     }
   },
-  async execute({ user, email }) {
+  async execute({ email }) {
     await Email.delete(email)
   }
 })
@@ -91,7 +91,7 @@ definition.trigger({
       validation: ['nonEmpty', 'email']
     }
   },
-  async execute({ email }, context, emit) {
+  async execute({ email }, context, _emit) {
     const emailData = await Email.get(email)
     if(emailData) throw { properties: { email: 'taken' } }
     return true
@@ -106,7 +106,7 @@ definition.trigger({
       validation: ['nonEmpty', 'email']
     }
   },
-  async execute({ email }, context, emit) {
+  async execute({ email }, context, _emit) {
     const emailData = await Email.get(email)
     if(!emailData) throw { properties: { email: 'notFound' } }
     return emailData
@@ -121,9 +121,8 @@ definition.trigger({
       validation: ['nonEmpty', 'email']
     }
   },
-  async execute({ email }, context, emit) {
-    const emailData = await Email.get(email)
-    return emailData
+  async execute({ email }, context, _emit) {
+    return await Email.get(email)
   }
 })
 
@@ -172,7 +171,7 @@ definition.trigger({
   async execute({ user, email }, { client, service }, emit) {
     const emailData = await Email.get(email)
     if(!emailData) throw { properties: { email: 'notFound' } }
-    if(emailData.user != user) throw { properties: { email: 'notFound' } }
+    if(emailData.user !== user) throw { properties: { email: 'notFound' } }
     emit({
       type: 'emailDisconnected',
       user, email
@@ -188,7 +187,8 @@ definition.trigger({
       type: String
     }
   },
-  async execute({ email, session }, { client, service }, emit) {
+  waitForEvents: true,
+  async execute({ email, session }, { service }, _emit) {
     const emailData = await Email.get(email)
     if(!emailData) throw { properties: { email: 'notFound' } }
     const { user } = emailData
@@ -207,7 +207,7 @@ definition.trigger({
       validation: ['nonEmpty', 'email']
     }
   },
-  async execute({ user }, context, emit) {
+  async execute({ user }, context, _emit) {
     const emails = await Email.indexRangeGet('byUser', user)
     return emails.map(email => ({ ...email, type: 'email', contact: email.email }))
   }

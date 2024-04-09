@@ -8,4 +8,10 @@ const definition = app.createServiceDefinition({
   use: [ relationsPlugin ]
 })
 
+const config = definition.config
+
+definition.clientConfig = {
+  remoteAccountTypes: config.remoteAccountTypes
+}
+
 export default definition

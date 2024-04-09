@@ -15,7 +15,9 @@
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
 
-  import { actions } from '@live-change/vue3-ssr'
+  import { actions, useApi } from '@live-change/vue3-ssr'
+  const api = useApi()
+
   import { inject } from 'vue'
   import { useRouter } from 'vue-router'
   const router = useRouter()
@@ -27,7 +29,10 @@
   if(typeof window != 'undefined') {
     workingZone.addPromise('signOut', (async () => {
       await signOut({})
-      router.push({name: 'user:signOutFinished'})
+      while(api.client.value.user) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      router.push({ name: 'user:signOutFinished' })
     })())
   }
 </script>

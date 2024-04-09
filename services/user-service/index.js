@@ -60,6 +60,7 @@ definition.trigger({
 
 definition.action({
   name: 'signOut',
+  waitForEvents: true,
   async execute({ }, { client, service }, emit) {
     if(!client.user) throw "notSignedIn"
     await service.trigger({

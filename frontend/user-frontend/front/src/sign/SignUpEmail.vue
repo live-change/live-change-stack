@@ -4,7 +4,7 @@
       <div class="text-center mb-5">
         <div class="text-900 text-3xl font-medium mb-3">Sign Up</div>
         <span class="text-600 font-medium line-height-3">Already have an account?</span>
-        <router-link :to="{ name: 'user:signUp' }"
+        <router-link :to="{ name: 'user:signUpEmail' }"
                      class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
           Sign in</router-link>
       </div>
@@ -22,18 +22,30 @@
           <small v-if="data.emailError" id="email-help" class="p-error">{{ data.emailError }}</small>
         </div>
 
-        <Button label="Sign Up with email" icon="pi pi-user" class="w-full" type="submit"></Button>
+        <Button label="Sign Up with email" icon="pi pi-user" class="w-full" type="submit" />
 
       </command-form>
+
+      <Divider align="center" class="my-4">
+        <span class="text-600 font-normal text-sm">OR</span>
+      </Divider>
+
+      <!--        <Button label="Sign In with GitHub" icon="pi pi-github" class="w-full p-button-secondary mb-2" />-->
+      <router-link :to="{ name: 'user:googleAuth', params: { action: 'signInOrSignUp' } }" class="no-underline">
+        <Button
+          label="Sign Up with Google"
+          icon="pi pi-google"
+          class="w-full p-button-secondary mb-1"
+        />
+      </router-link>
+
     </div>
   </div>
 </template>
 
 <script setup>
   import InputText from "primevue/inputtext"
-  import Checkbox from "primevue/checkbox"
   import Button from "primevue/button"
-  import Divider from "primevue/divider"
 
   import { useRouter } from 'vue-router'
   const router = useRouter()

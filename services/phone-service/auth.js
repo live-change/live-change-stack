@@ -189,6 +189,7 @@ definition.trigger({
       type: String
     }
   },
+  waitForEvents: true,
   async execute({ phone, session }, { client, service }, emit) {
     const phoneData = await Phone.get(phone)
     if(!phoneData) throw { properties: { phone: 'notFound' } }

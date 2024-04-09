@@ -1,51 +1,236 @@
 import App from '@live-change/framework'
 const app = App.app()
 
+import Debug from 'debug'
+const debug = Debug('services:googleAuthentication')
+
 import { OAuth2Client } from 'google-auth-library'
 
-const googClientId = process.env.GOOGLE_CLIENT_ID
-const googClient = new OAuth2Client(googClientId)
+import user from '@live-change/user-service'
 
 const definition = app.createServiceDefinition({
   name: "googleAuthentication",
-  eventSourcing: true
+  use: [ user ]
+})
+const config = definition.config
+
+const googleClientId = config.clientId || process.env.GOOGLE_CLIENT_ID
+const googleClient = new OAuth2Client(googleClientId)
+
+const User = definition.foreignModel("user", "User")
+
+const googleProperties = {
+  email: {
+    type: String
+  },
+  email_verified: {
+    type: Boolean
+  },
+  name: {
+    type: String
+  },
+  given_name: {
+    type: String
+  },
+  family_name: {
+    type: String
+  },
+  picture: {
+    type: String
+  },
+  locale: {
+    type: String
+  }
+}
+
+const Account = definition.model({
+  name: "Account",
+  properties: {
+    ...googleProperties
+  },
+  userItem: {
+    userReadAccess: () => true
+  }
 })
 
-
-const User = definition.foreignModel("users", "User")
-
-const Login = definition.model({
-  name: "Login",
+definition.event({
+  name: 'accountConnected',
   properties: {
-    name: {
-      type: String
-    },
-    id: {
-      type: String
-    },
-    email: {
-      type: String
+    account: {
+      type: String,
+      validation: ['nonEmpty']
     },
     user: {
-      type: User
+      type: User,
+      validation: ['nonEmpty']
+    },
+    data: {
+      type: Object,
+      properties: googleProperties,
+      validation: ['nonEmpty']
     }
   },
-  indexes: {
-    byUser: {
-      property: "user"
+  async execute({ user, account, data }) {
+    await Account.create({
+      ...data,
+      id: account,
+      user
+    })
+  }
+})
+
+definition.event({
+  name: "accountDisconnected",
+  properties: {
+    account: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    user: {
+      type: User,
+      validation: ['nonEmpty']
     }
   },
-  crud: {
-    options: {
-      access: (params, {client, service, visibilityTest}) => {
-        return client.roles.includes('admin')
+  async execute({ account }) {
+    await Account.delete(account)
+  }
+})
+
+definition.trigger({
+  name: "signInGoogle",
+  properties: {
+    account: {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  },
+  async execute({ account, session }, { service }, _emit) {
+    const accountData = await Account.get(account)
+    if(!accountData) throw { properties: { email: 'notFound' } }
+    const { user } = accountData
+    return service.trigger({
+      type: 'signIn',
+      user, session
+    })
+  }
+})
+
+async function downloadData(user, data, service) {
+  await service.trigger({
+    type: 'setIdentification',
+    sessionOrUserType: 'user',
+    sessionOrUser: user,
+    overwrite: false,
+    name: data.name,
+    givenName: data.given_name,
+    firstName: data.given_name,
+    familyName: data.family_name,
+    lastName: data.family_name,
+  })
+  if(data.picture) {
+    const downloadAndUpdateImage = (async () => {
+      const picture = await service.trigger('pictures', {
+        type: "createPictureFromUrl",
+        ownerType: 'user_User',
+        owner: user,
+        name: "google-profile-picture",
+        purpose: "users-updatePicture-picture",
+        url: data.picture,
+        cropped: true
+      })
+      await service.trigger({
+        type: 'setIdentification',
+        sessionOrUserType: 'user',
+        sessionOrUser: user,
+        overwrite: false,
+        picture
+      })
+    })
+    downloadAndUpdateImage()
+  }
+  if(data.email_verified) {
+    await service.trigger({
+      type: 'connectEmail',
+      email: data.email,
+      user
+    })
+  }
+}
+
+definition.trigger({
+  name: "connectGoogle",
+  properties: {
+    user: {
+      type: User,
+      validation: ['nonEmpty']
+    },
+    account: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    data: {
+      type: Object,
+      properties: googleProperties,
+      validation: ['nonEmpty']
+    },
+    transferOwnership: {
+      type: Boolean,
+      default: false
+    }
+  },
+  async execute({ user, account, data, transferOwnership }, { service }, emit) {
+    const accountData = await Account.get(account)
+    if(accountData) {
+      if(accountData.user !== user) {
+        if(transferOwnership) {
+          emit({
+            'type': 'userOwnedAccountTransferred',
+            account, to: user
+          })
+          await downloadData(user, data, service)
+          return
+        }
+        throw 'alreadyConnectedElsewhere'
       }
+      throw 'alreadyConnected'
     }
+    emit({
+      type: 'accountConnected',
+      account, user, data
+    })
+    await service.trigger({
+      type: 'googleConnected',
+      user, account, data
+    })
+    await downloadData(user, data, service)
+  }
+})
+
+definition.trigger({
+  name: "disconnectGoogle",
+  properties: {
+    account: {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  },
+  async execute({ account }, { client, service }, emit) {
+    const accountData = await Account.get(account)
+    if(!accountData) throw 'notFound'
+    const { user } = accountData
+    emit({
+      type: 'accountDisconnected',
+      account, user
+    })
+    await service.trigger({
+      type: 'googleDisconnected',
+      user, account
+    })
   }
 })
 
 definition.action({
-  name: "registerOrLogin",
+  name: "signIn",
   properties: {
     accessToken: {
       type: String
@@ -55,188 +240,172 @@ definition.action({
     type: User,
     idOnly: true
   },
-  async execute({ accessToken, userData: userDataParams }, { client, service }, emit) {
-    const ticket = await googClient.verifyIdToken({
+  waitForEvents: true,
+  async execute({ accessToken }, { client, service }, emit) {
+    const ticket = await googleClient.verifyIdToken({
       idToken: accessToken,
-      audience: googClientId
+      audience: googleClientId
     })
-    const googUser = ticket.getPayload()
-    console.log("GOOGLE USER", googUser)
-    const existingLogin = await Login.get(googUser.sub)
-    if(existingLogin) { /// Login
-      let userRow = await User.get(existingLogin.user)
-      const user = existingLogin.user
-      if(!userRow) throw new Error("internalServerError")
-      emit("session", [{
-        type: "loggedIn",
-        user: existingLogin.user,
-        session: client.sessionId,
-        expire: null,
-        roles: userRow.roles || []
-      }])
+    const googleUser = ticket.getPayload()
+    debug("GOOGLE USER", googleUser)
+    const account = googleUser.sub
+    const existingLogin = await Account.get(account)
+    const { session } = client
+    if(existingLogin) { /// Sign In
+      const { user } = existingLogin
       await service.trigger({
-        type: "OnLogin",
-        user,
-        session: client.sessionId
+        type: 'signIn',
+        user, session
       })
-      return existingLogin.user
-    } else { // Register
-      const user = app.generateUid()
-      console.log("PIC", googUser.picture)
-      let userData = JSON.parse(JSON.stringify({
-        name: googUser.name,
-        email: googUser.email,
-        firstName: googUser.given_name,
-        lastName: googUser.family_name
-      }))
-
-      userData = { ...userDataParams, ...userData }
-
-      await service.trigger({
-        type:"OnRegisterStart",
-        session: client.sessionId,
-        user: user
-      })
-
-      emit("googleAuthentication", [{
-        type: "LoginCreated",
-        login: googUser.sub,
-        data: {
-          id: googUser.sub,
-          user,
-          ...userData
-        }
-      }])
-      emit("users", [{
-        type: "UserCreated",
-        user,
-        data: {
-          userData,
-          //display: await userDataDefinition.getDisplay({ userData })
-          // TODO: add identification
-        }
-      },{
-        type: "loginMethodAdded",
-        user,
-        method: {
-          type: "google",
-          id: googUser.sub,
-          goog: googUser
-        }
-      }])
-      await service.trigger({
-        type:"OnRegister",
-        session: client.sessionId,
-        user: user,
-        userData
-      })
-      emit("session", [{
-        type: "loggedIn",
-        user,
-        session: client.sessionId,
-        expire: null,
-        roles: []
-      }])
-      await service.trigger({
-        type: "OnLogin",
-        user,
-        session: client.sessionId
-      })
-
-      // Completly asynchronous
-      service.triggerService('pictures',{
-        type: "createPictureFromUrl",
-        owner: user,
-        name: "google-profile-picture",
-        purpose: "users-updatePicture-picture",
-        url: googUser.picture,
-        cropped: true
-      }).then(picture => {
-        emit('users', [{
-          type: "UserUpdated",
-          user,
-          data: {
-            userData: {
-              picture
-            }
-          }
-        }])
-      }).catch(e => {})
-
-
-      return user
+      return {
+        action: 'signIn',
+        user
+      }
+    } else { // Sign up
+      throw 'notFound'
     }
   }
-
 })
 
-/*definition.action({
-  name: "removeConnection", // override CRUD operation
-  properties: {},
+definition.action({
+  name: "signUp",
+  properties: {
+    accessToken: {
+      type: String
+    }
+  },
   returns: {
     type: User,
     idOnly: true
   },
-  async execute({ }, { client, service }, emit) {
-    if(!client.user) throw new new Error("notAuthorized")
-    const user = client.user
-    const results = await (service.dao.get(['database', 'query', service.databaseName, `(${
-        async (input, output, { user }) =>
-            await input.table("googleLogin_Login").onChange((obj, oldObj) => {
-              if(obj && obj.user == user) output.put(obj)
-            })
-    })`, { user }]))
-    if(results.length == 0) throw 'notFound'
-    let events = []
-    for(let row of results) {
-      events.push({
-        type: "LoginRemoved",
-        login: row.id
+  waitForEvents: true,
+  async execute({ accessToken }, { client, service }, emit) {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: accessToken,
+      audience: googleClientId
+    })
+    const googleUser = ticket.getPayload()
+    debug("GOOGLE USER", googleUser)
+    const account = googleUser.sub
+    const existingLogin = await Account.get(account)
+    const { session } = client
+    if(existingLogin) { /// Sign In
+      throw 'alreadyConnected'
+    } else { // Sign up
+      const user = app.generateUid()
+      await service.trigger({
+        type: 'connectGoogle',
+        user, account, data: googleUser
       })
+      await service.trigger({
+        type: 'signUpAndSignIn',
+        user, session
+      })
+      return {
+        action: 'signUp',
+        user
+      }
     }
-    emit("facebookLogin", events)
-  }
-})*/
-
-definition.event({
-  name: "UserDeleted",
-  properties: {
-    user: {
-      type: User
-    }
-  },
-  async execute({ user }) {
-    await app.dao.request(['database', 'query'], app.databaseName, `(${
-        async (input, output, { table, index, user }) => {
-          const prefix = `"${user}"_`
-          await (await input.index(index)).range({
-            gte: prefix,
-            lte: prefix+"\xFF\xFF\xFF\xFF"
-          }).onChange((ind, oldInd) => {
-            if(ind && ind.to) {
-              output.table(table).delete(ind.to)
-            }
-          })
-        }
-    })`, { table: Login.tableName, index: Login.tableName + '_byUser', user })
   }
 })
 
-definition.trigger({
-  name: "UserDeleted",
+definition.action({
+  name: "signInOrSignUp",
   properties: {
-    user: {
-      type: User,
-      idOnly: true
+    accessToken: {
+      type: String
     }
   },
-  async execute({ user }, context, emit) {
-    emit([{
-      type: "UserDeleted",
-      user
-    }])
+  returns: {
+    type: User,
+    idOnly: true
+  },
+  waitForEvents: true,
+  async execute({ accessToken }, { client, service }, emit) {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: accessToken,
+      audience: googleClientId
+    })
+    const googleUser = ticket.getPayload()
+    debug("GOOGLE USER", googleUser)
+    const account = googleUser.sub
+    const existingLogin = await Account.get(account)
+    const { session } = client
+    if(existingLogin) { /// Sign In
+      const { user } = existingLogin
+      await service.trigger({
+        type: 'signIn',
+        user, session
+      })
+      return {
+        action: 'signIn',
+        user: existingLogin.user
+      }
+    } else { // Sign up
+      const user = app.generateUid()
+      await service.trigger({
+        type: 'connectGoogle',
+        user, account, data: googleUser
+      })
+      await service.trigger({
+        type: 'signUpAndSignIn',
+        user, session
+      })
+      return {
+        action: 'signUp',
+        user
+      }
+    }
   }
 })
 
+definition.action({
+  name: "connectGoogle",
+  properties: {
+    accessToken: {
+      type: String
+    },
+    transferOwnership: {
+      type: Boolean,
+      default: false
+    }
+  },
+  async execute({ accessToken, transferOwnership }, { client, service }, emit) {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: accessToken,
+      audience: googleClientId
+    })
+    const user = client.user
+    if(!user) throw 'notAuthorized'
+    const googleUser = ticket.getPayload()
+    debug("GOOGLE USER", googleUser)
+    const account = googleUser.sub
+    await service.trigger({
+      type: 'connectGoogle',
+      user, account, data: googleUser,
+      transferOwnership
+    })
+  }
+})
+
+definition.action({
+name: "disconnectGoogle",
+  properties: {
+    account: {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  },
+  async execute({ account }, { client, service }, emit) {
+    const accountData = await Account.get(account)
+    if(!accountData) throw 'notFound'
+    const { user } = accountData
+    if(user !== client.user) throw 'notAuthorized'
+    await service.trigger({
+      type: 'disconnectGoogle',
+      user, account
+    })
+  }
+})
 
 export default definition

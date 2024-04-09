@@ -2,7 +2,7 @@ import { getCurrentInstance } from 'vue'
 
 export function defaultData(definition, otherSrc) {
   if(!definition) return undefined
-  let result = definition.defaultValue || otherSrc
+  let result = definition.defaultValue || definition.default || otherSrc
   if(definition.properties) {
     result = result || {}
     for(let name in definition.properties) {

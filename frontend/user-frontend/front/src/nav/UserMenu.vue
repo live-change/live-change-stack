@@ -11,7 +11,7 @@
       </router-link>
     </li>
     <li v-if="!client.user">
-      <router-link :to="{ name: 'user:signUp' }"
+      <router-link :to="{ name: 'user:signUpEmail' }"
                    v-ripple
                    class="flex px-6 py-2 align-items-center text-600 hover:text-900 hover:surface-100
                font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
@@ -21,7 +21,7 @@
       </router-link>
     </li>
     <li v-if="!client.user">
-      <router-link :to="{ name: 'user:signIn' }"
+      <router-link :to="{ name: 'user:signInEmail' }"
                    v-ripple
                    class="flex px-6 py-2 align-items-center text-600 hover:text-900 hover:surface-100
                font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"

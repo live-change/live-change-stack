@@ -11,7 +11,7 @@ definition.trigger({
   properties: {
     ...contactProperties
   },
-  async execute({ contactType, contact, session }, { service }, emit) {
+  async execute({ contactType, contact, session }, { service }, _emit) {
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     const user = app.generateUid()
     await service.trigger({
@@ -33,7 +33,7 @@ definition.trigger({
   properties: {
     ...contactProperties
   },
-  async execute({ contactType, contact, session }, { client, service }, emit) {
+  async execute({ contactType, contact, session }, { service }, _emit) {
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     const user = await service.trigger({
       type: 'signIn' + contactTypeUpperCase,
@@ -50,7 +50,7 @@ definition.trigger({
   properties: {
     ...contactProperties
   },
-  async execute({ contactType, contact, user }, { client, service }, emit) {
+  async execute({ contactType, contact, user }, { client, service }, _emit) {
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     await service.trigger({
       type: 'connect' + contactTypeUpperCase,
@@ -81,7 +81,7 @@ for(const contactType of config.contactTypes) {
       properties: {
         ...contactTypeProperties
       },
-      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
+      async execute({ [contactTypeName]: contact }, { service }, _emit) {
         await service.trigger({
           type: 'checkNew' + contactTypeUName,
           [contactTypeName]: contact,
@@ -104,7 +104,7 @@ for(const contactType of config.contactTypes) {
       properties: {
         ...contactTypeProperties
       },
-      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
+      async execute({ [contactTypeName]: contact }, { _client, service }, _emit) {
         const contactData = await service.trigger({
           type: 'get' + contactTypeUName,
           [contactTypeName]: contact,
@@ -133,7 +133,7 @@ for(const contactType of config.contactTypes) {
       access: (params, { client }) => {
         return !!client.user
       },
-      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
+      async execute({ [contactTypeName]: contact }, { client, service }, _emit) {
         await service.trigger({
           type: 'checkNew' + contactTypeUName,
           [contactTypeName]: contact,
@@ -162,15 +162,17 @@ for(const contactType of config.contactTypes) {
       access: (params, { client }) => {
         return !!client.user
       },
-      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
+      async execute({ [contactTypeName]: contact }, { client, service }, _emit) {
         const contacts = (await service.trigger({
           type: 'getConnectedContacts',
           user: client.user
         })).flat()
         console.log("CONTACTS", contacts, contactTypeName, contact)
-        const contactData = contacts.find(c => c.type == contactTypeName && c.contact == contact)
+        const contactData = contacts.find(c =>
+          c.type === contactTypeName && c.contact === contact
+        )
         if(!contactData) throw 'notFound'
-        if(contacts.length == 1) throw 'lastOne'
+        if(contacts.length === 1) throw 'lastOne'
         console.log("DISCONNECT", contact)
         return await service.trigger({
           type: 'disconnect' + contactTypeUName,
@@ -188,7 +190,7 @@ for(const contactType of config.contactTypes) {
       properties: {
         ...contactTypeProperties
       },
-      async execute({ [contactTypeName]: contact }, { client, service }, emit) {
+      async execute({ [contactTypeName]: contact }, { client, service }, _emit) {
         const contactData = await service.trigger({
           type: 'get' + contactTypeUName + 'OrNull',
           [contactTypeName]: contact,

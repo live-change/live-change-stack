@@ -1,10 +1,11 @@
 <template>
   <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="surface-card p-4 shadow-2 border-round">
+
       <div class="text-center mb-5">
         <div class="text-900 text-3xl font-medium mb-3">Welcome Back</div>
         <span class="text-600 font-medium line-height-3">Don't have an account?</span>
-        <router-link :to="{ name: 'user:signUp' }"
+        <router-link :to="{ name: 'user:signUpEmail' }"
                      class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
           Create today!</router-link>
       </div>
@@ -32,7 +33,7 @@
 
         <div class="flex align-items-center justify-content-between mb-6">
           <div class="flex align-items-center">
-            <Checkbox id="rememberme" :binary="true" class="mr-2"></Checkbox>
+            <Checkbox id="rememberme" :binary="true" class="mr-2" />
             <label for="rememberme">Remember me</label>
           </div>
           <router-link :to="{ name: 'user:resetPassword' }"
@@ -43,14 +44,21 @@
 
         <Button label="Sign In" icon="pi pi-user" class="w-full" type="submit"></Button>
 
-        <Divider align="center" class="my-4">
-          <span class="text-600 font-normal text-sm">OR</span>
-        </Divider>
-
-        <Button label="Sign In with GitHub" icon="pi pi-github" class="w-full p-button-secondary mb-2"></Button>
-        <Button label="Sign In with Google" icon="pi pi-google" class="w-full p-button-secondary mb-1"></Button>
-
       </command-form>
+
+      <Divider align="center" class="my-4">
+        <span class="text-600 font-normal text-sm">OR</span>
+      </Divider>
+
+      <!--        <Button label="Sign In with GitHub" icon="pi pi-github" class="w-full p-button-secondary mb-2" />-->
+      <router-link :to="{ name: 'user:googleAuth', params: { action: 'signInOrSignUp' } }" class="no-underline">
+        <Button
+          label="Sign In with Google"
+          icon="pi pi-google"
+          class="w-full p-button-secondary mb-1"
+        />
+      </router-link>
+
     </div>
   </div>
 </template>
@@ -72,7 +80,7 @@
 
   function handleDone({ parameters, result }) {
     console.log("DONE RESULT", result)
-    if(result.type == 'sent') {
+    if(result.type === 'sent') {
       const { authentication } = result
       router.push({
         name: 'user:sent',

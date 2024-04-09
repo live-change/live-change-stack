@@ -6,10 +6,10 @@
     </div>
 
     <div class="flex flex-column relative flex-auto">
-      <div v-if="viewType == 'simple'" class="p-5 flex flex-column flex-auto align-items-center">
+      <div v-if="viewType === 'simple'" class="p-5 flex flex-column flex-auto align-items-center">
         <router-view></router-view>
       </div>
-      <template v-if="viewType == 'wide'">
+      <template v-if="viewType === 'wide'">
         <router-view></router-view>
       </template>
     </div>
@@ -17,14 +17,15 @@
 </template>
 
 <script setup>
-import SettingsMenu from "./SettingsMenu.vue"
 
-import { computed } from 'vue'
+  import SettingsMenu from "./SettingsMenu.vue"
 
-import { useRoute } from 'vue-router'
-const route = useRoute()
+  import { computed } from 'vue'
 
-const viewType = computed(() => route.meta.viewType ?? 'simple' )
+  import { useRoute } from 'vue-router'
+  const route = useRoute()
+
+  const viewType = computed(() => route.meta.viewType ?? 'simple' )
 
 </script>
 

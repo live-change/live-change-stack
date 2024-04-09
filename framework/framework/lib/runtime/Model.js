@@ -31,6 +31,9 @@ class Model extends ReaderModel {
         if (prop.hasOwnProperty('defaultValue')) {
           prepData[key] = prop.defaultValue
         }
+        if (prop.hasOwnProperty('default')) {
+          prepData[key] = prop.default
+        }
       }
     }
     //console.log("CREATE PREP DATA", prepData)
