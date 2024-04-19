@@ -471,6 +471,10 @@ class Index extends Table {
     })
     const queryFunction = this.scriptContext.getOrCreateFunction(this.code,
       `userCode:${this.database.name}/indexes/${this.name}`)
+    if(typeof queryFunction != 'function') {
+      console.error("INDEX CODE", this.code)
+      throw new Error("Index code is not a function")
+    }
     this.codeFunction = (input, output) => queryFunction(input, output, this.params)
     this.writer = new IndexWriter(this)
     this.reader = null

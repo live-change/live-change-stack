@@ -51,7 +51,7 @@
     phone: 'pi-phone'
   }
   function contactText(contact, type) {
-    if(type == 'web') return 'Web'
+    if(type === 'web') return 'Web'
     return contact
   }
 
@@ -89,7 +89,7 @@
   const settings = computed(() => clientConfig.notificationTypes.map(notificationType => {
     const contacts = allContacts.map(contactsData => contactsData.list.value.map(contact => {
       const contactType = contactsData.type
-      const settingSource = computed(() => contact.settings.find(s => s.notificationType == notificationType))
+      const settingSource = computed(() => contact.settings.find(s => s.notificationType === notificationType))
       const setting = synchronized({
         source: settingSource,
         update: notificationApi.setOrUpdateContactAndNotificationOwnedNotificationSetting,

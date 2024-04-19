@@ -1,5 +1,5 @@
 <template>
-  <div v-if="state == 'edit'">
+  <div v-if="state === 'edit'">
     <ImageCrop v-if="sourceImage || sourceUpload"
                :crop="cropData"
                :aspectRatio="aspectRatio"
@@ -8,33 +8,34 @@
                :sourceUpload="sourceUpload"
                :type="type"
                v-model:ready="cropReady"
-               ref="imageCrop" />
-    <div class="flex p-4">
-      <div class="flex-grow-1 flex">
-        <Button type="button" label="Add Image" icon="pi pi-plus" class="p-button-primary"
+               ref="imageCrop" style="max-height: 60vh" />
+    <div class="flex p-3 pb-2 flex-wrap">
+      <div class="flex-grow-1 flex justify-content-center">
+        <Button type="button" label="Upload" icon="pi pi-upload" class="p-button-primary mb-2"
                 @click="() => state = 'upload' "/>
       </div>
-      <div class="flex">
-        <Button type="button" label="Save Image" icon="pi pi-save" class="p-button-warning ml-2"
+      <div class="flex flex-grow-1 justify-content-center">
+        <Button type="button" label="Save" icon="pi pi-save" class="p-button-warning ml-2 mb-2"
                 :disabled="!cropReady" @click="saveImage" />
-        <Button type="button" label="Remove Image" icon="pi pi-trash" class="p-button-danger ml-2"
+        <Button type="button" label="Remove" icon="pi pi-times" class="p-button-danger ml-2 mb-2"
                 @click="removeImage"/>
       </div>
     </div>
   </div>
-  <div v-else-if="state == 'upload'">
-    <DropZone class="w-full relative p-6 md:p-8 lg:p-8" :accept="acceptList" @input="handleFile">
-      <div class="w-auto border-dashed border-primary-500 flex align-items-center justify-content-center"
-                :style="`aspect-ratio: ${aspectRatio}`">
-        <p class="text-primary text-xl">Drop image here!</p>
+  <div v-else-if="state === 'upload'" class="flex flex-column align-items-center">
+    <DropZone class="flex-grow-1 w-full relative p-4 md:p-5 lg:p-6 pt-2 md:pt-3 lg:pt-4 surface-section"
+              :accept="acceptList" @input="handleFile">
+      <div class="w-auto flex flex-row align-items-center justify-content-center">
+        <div class="w-full border-dashed border-primary-500 flex align-items-center justify-content-center"
+             :style="`aspect-ratio: ${aspectRatio}; max-width: 50vh`">
+          <p class="text-primary text-xl">Drop image here!</p>
+        </div>
       </div>
     </DropZone>
-    <div class="flex p-4">
-      <div class="flex-grow-1 flex">
-        <FileInput :accept="acceptList" @input="handleFile" class="block">
-          <Button type="button" label="Upload Image" icon="pi pi-upload" class="p-button-primary" />
-        </FileInput>
-      </div>
+    <div class="w-full flex justify-content-center px-4 pt-3 pb-3 flex-grow-0">
+      <FileInput :accept="acceptList" @input="handleFile" class="block">
+        <Button type="button" label="Upload Image" icon="pi pi-upload" class="p-button-primary" />
+      </FileInput>
     </div>
   </div>
   <div v-else>

@@ -34,7 +34,7 @@ export async function sitemap(route, api) {
 import { client as useClient } from '@live-change/vue3-ssr'
 
 export function createRouter(app, config) {
-  console.log("APP CTX", app._context)
+  //console.log("APP CTX", app._context)
   const client = useClient(app._context)
   const router = _createRouter({
     // use appropriate history implementation for server/client

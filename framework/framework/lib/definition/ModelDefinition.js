@@ -46,7 +46,8 @@ class ModelDefinition {
     }
     return {
       ... this,
-      properties
+      properties,
+      indexes
     }
   }
 

@@ -164,13 +164,6 @@ class Services {
 
 
   async update() {
-    /*await Promise.all(this.serviceDefinitions.map(defn => {
-      if(!defn.processed) {
-        app.processServiceDefinition(defn)
-        defn.processed = true
-      }
-      return app.updateService(defn)
-    }))*/
     for(const defn of this.serviceDefinitions) {
       console.group()
       console.log("#### UPDATE SERVICE", defn.name)

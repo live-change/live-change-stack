@@ -3,7 +3,7 @@ import ReactiveDao from "@live-change/dao"
 function localRequests(server, scriptContext) {
   return {
     createDatabase: async (dbName, options = {}) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       if(server.metadata.databases[dbName]) throw new Error("databaseAlreadyExists")
       server.metadata.databases[dbName] = options
       const database = await server.initDatabase(dbName, options)
@@ -18,7 +18,7 @@ function localRequests(server, scriptContext) {
       return 'ok'
     },
     deleteDatabase: async (dbName) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       if(!server.metadata.databases[dbName]) throw new Error("databaseNotFound")
       delete server.metadata.databases[dbName]
       const database = server.databases.get(dbName)
@@ -56,7 +56,7 @@ function localRequests(server, scriptContext) {
       return index.clearOpLog(lastTimestamp || Date.now() - 60 * 1000, limit)
     },
     createTable: async (dbName, tableName, options = {}) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const table = await db.createTable(tableName, options)
@@ -67,15 +67,15 @@ function localRequests(server, scriptContext) {
       })
       return 'ok'
     },
-    deleteTable: async (dbName, tableName, options) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+    deleteTable: async (dbName, tableName) => {
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
-      if(tableName[tableName.length - 1] == "*") {
+      if(tableName[tableName.length - 1] === "*") {
         const list = db.tablesListObservable.list.slice()
         for(const foundTableName of list) {
           const base = tableName.slice(0, -1)
-          if(foundTableName.slice(0, base.length) != base) continue
+          if(foundTableName.slice(0, base.length) !== base) continue
           const table = db.table(foundTableName)
           if(!table) throw new Error("tableNotFound")
           const uid = table.configObservable.value.uid
@@ -92,7 +92,7 @@ function localRequests(server, scriptContext) {
       return 'ok'
     },
     renameTable: async (dbName, tableName, newTableName) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const table = db.table(tableName)
@@ -104,7 +104,7 @@ function localRequests(server, scriptContext) {
       return db.renameTable(tableName, newTableName)
     },
     createIndex: async (dbName, indexName, code, params, options = {}) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const index = await db.createIndex(indexName, code, params, options)
@@ -115,15 +115,15 @@ function localRequests(server, scriptContext) {
       })
       return 'ok'
     },
-    deleteIndex: async (dbName, indexName, options) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+    deleteIndex: async (dbName, indexName) => {
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
-      if(indexName[indexName.length - 1] == "*") {
+      if(indexName[indexName.length - 1] === "*") {
         const base = indexName.slice(0, -1)
         const list = db.indexesListObservable.list.slice()
         for(const foundIndexName of list) {
-          if(foundIndexName.slice(0, base.length) != base) continue
+          if(foundIndexName.slice(0, base.length) !== base) continue
           const index = await db.index(foundIndexName)
           if(!index) throw new Error("indexNotFound")
           const uid = index.configObservable.value.uid
@@ -140,7 +140,7 @@ function localRequests(server, scriptContext) {
       return 'ok'
     },
     renameIndex: async (dbName, indexName, newIndexName) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw await new Error('databaseNotFound')
       const index = await db.index(indexName)
@@ -152,7 +152,7 @@ function localRequests(server, scriptContext) {
       return db.renameIndex(indexName, newIndexName)
     },
     createLog: async (dbName, logName, options = {}) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const log = await db.createLog(logName, options)
@@ -163,8 +163,8 @@ function localRequests(server, scriptContext) {
       })
       return 'ok'
     },
-    deleteLog: async (dbName, logName, options) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+    deleteLog: async (dbName, logName) => {
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const log = db.log(logName)
@@ -175,7 +175,7 @@ function localRequests(server, scriptContext) {
       return 'ok'
     },
     renameLog: async (dbName, logName, newLogName) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const log = db.log(logName)
@@ -187,7 +187,7 @@ function localRequests(server, scriptContext) {
       return db.renameLog(logName, newLogName)
     },
     put: (dbName, tableName, object) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const table = db.table(tableName)
@@ -195,7 +195,7 @@ function localRequests(server, scriptContext) {
       return table.put(object)
     },
     delete: (dbName, tableName, id) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const table = db.table(tableName)
@@ -203,7 +203,7 @@ function localRequests(server, scriptContext) {
       return table.delete(id)
     },
     update: (dbName, tableName, id, operations, options) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const table = db.table(tableName)
@@ -212,7 +212,7 @@ function localRequests(server, scriptContext) {
       return table.update(id, operations, options)
     },
     putLog: (dbName, logName, object) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const log = db.log(logName)
@@ -220,7 +220,7 @@ function localRequests(server, scriptContext) {
       return log.put(object)
     },
     putOldLog: (dbName, logName, object) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const log = db.log(logName)
@@ -228,7 +228,7 @@ function localRequests(server, scriptContext) {
       return log.putOld(object)
     },
     query: (dbName, code, params) => {
-      if(dbName == 'system') throw new Error("system database is not writable")
+      if(dbName === 'system') throw new Error("system database is not writable")
       if(!dbName) throw new Error("databaseNameRequired")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
@@ -389,122 +389,122 @@ function localReads(server, scriptContext) {
       }
     },
     tablesList: {
-      observable: (dbName, tableName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.tablesListObservable
       },
-      get: async (dbName, tableName, id) =>{
+      get: async (dbName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.tablesListObservable.list
       }
     },
     indexesList: {
-      observable: (dbName, indexName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.indexesListObservable
       },
-      get: async (dbName, indexName, id) =>{
+      get: async (dbName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.indexesListObservable.list
       }
     },
     logsList: {
-      observable: (dbName, logName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.logsListObservable
       },
-      get: async (dbName, logName, id) => {
+      get: async (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.logsListObservable.list
       }
     },
     tablesCount: {
-      observable: (dbName, tableName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.tablesListObservable.next(tables => tables.length ?? 0)
       },
-      get: async (dbName, tableName, id) =>{
+      get: async (dbName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.tablesListObservable.list.length
       }
     },
     indexesCount: {
-      observable: (dbName, tableName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.indexesListObservable.next(tables => tables.length ?? 0)
       },
-      get: async (dbName, tableName, id) =>{
+      get: async (dbName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.indexesListObservable.list.length
       }
     },
     logsCount: {
-      observable: (dbName, tableName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.logsListObservable.next(tables => tables.length ?? 0)
       },
-      get: async (dbName, tableName, id) =>{
+      get: async (dbName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.logsListObservable.list.length
       }
     },
     tables: {
-      observable: (dbName, tableName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.tablesListObservable.next(list => list.map(dbName => ({ id: dbName })))
       },
-      get: async (dbName, tableName, id) =>{
+      get: async (dbName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.tablesListObservable.list.map(dbName => ({ id: dbName }))
       }
     },
     indexes: {
-      observable: (dbName, indexName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.indexesListObservable.next(list => list.map(dbName => ({ id: dbName })))
       },
-      get: async (dbName, indexName, id) =>{
+      get: async (dbName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.indexesListObservable.list.map(dbName => ({ id: dbName }))
       }
     },
     logs: {
-      observable: (dbName, logName, id) => {
+      observable: (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         return db.logsListObservable.next(list => list.map(dbName => ({ id: dbName })))
       },
-      get: async (dbName, logName, id) => {
+      get: async (dbName) => {
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         return db.logsListObservable.list.map(dbName => ({ id: dbName }))
       }
     },
     tableConfig: {
-      observable: (dbName, tableName, id) => {
+      observable: (dbName, tableName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         const table = db.table(tableName)
         if(!table) return new ReactiveDao.ObservableError('tableNotFound')
         return table.configObservable
       },
-      get: async (dbName, tableName, id) => {
+      get: async (dbName, tableName) => {
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         const table = db.table(tableName)
@@ -513,14 +513,14 @@ function localReads(server, scriptContext) {
       }
     },
     indexConfig: {
-      observable: async (dbName, indexName, id) => {
+      observable: async (dbName, indexName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         const index = await db.index(indexName)
         if(!index) return new ReactiveDao.ObservableError('indexNotFound')
         return index.configObservable
       },
-      get: async (dbName, indexName, id) =>{
+      get: async (dbName, indexName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         const index = await db.index(indexName)
@@ -529,14 +529,14 @@ function localReads(server, scriptContext) {
       }
     },
     indexCode: {
-      observable: async (dbName, indexName, id) => {
+      observable: async (dbName, indexName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         const index = await db.index(indexName)
         if(!index) return new ReactiveDao.ObservableError('indexNotFound')
         return index.codeObservable
       },
-      get: async (dbName, indexName, id) =>{
+      get: async (dbName, indexName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         const index = await db.index(indexName)
@@ -545,14 +545,14 @@ function localReads(server, scriptContext) {
       }
     },
     logConfig: {
-      observable: (dbName, logName, id) => {
+      observable: (dbName, logName) => {
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         const log = db.log(logName)
         if(!log) return new ReactiveDao.ObservableError('logNotFound')
         return log.configObservable
       },
-      get: async (dbName, logName, id) =>{
+      get: async (dbName, logName) =>{
         const db = server.databases.get(dbName)
         if(!db) throw new Error('databaseNotFound')
         const log = db.log(logName)

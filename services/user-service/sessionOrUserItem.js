@@ -139,7 +139,7 @@ definition.processor(function(service, app) {
               lte: '_'+ params[propertyName]
             }
             const path = modelRuntime().indexObjectPath('bySessionOrUser', owner, range )
-            //console.log("DAO PATH", path, "range", range, 'params', params)
+            //console.log("DAO PATH", path, "range", range, 'params', params, 'result', await app.dao.get(path))
             return path
           }
         })
@@ -171,7 +171,7 @@ definition.processor(function(service, app) {
             properties: App.rangeProperties,
             daoPath(range, { client, context }) {
               const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
-              return modelRuntime().sortedIndexRangePath('bySsessionOrUser' + sortFieldUc, owner, App.extractRange(range))
+              return modelRuntime().sortedIndexRangePath('bySessionOrUser' + sortFieldUc, owner, App.extractRange(range))
             }
           })
         }
@@ -232,11 +232,11 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw 'not_found'
-            if(entity.sessionOrUserType == 'user_User') {
-              if(entity.sessionOrUser != client.user) throw 'not_authorized'
+            if(entity.sessionOrUserType === 'user_User') {
+              if(entity.sessionOrUser !== client.user) throw 'not_authorized'
             }
-            if(entity.sessionOrUserType == 'session_Session') {
-              if(entity.sessionOrUser != client.session) throw 'not_authorized'
+            if(entity.sessionOrUserType === 'session_Session') {
+              if(entity.sessionOrUser !== client.session) throw 'not_authorized'
             }
             let updateObject = {}
             for(const propertyName of writeableProperties) {
@@ -244,7 +244,9 @@ definition.processor(function(service, app) {
                 updateObject[propertyName] = properties[propertyName]
               }
             }
-            const merged = App.utils.mergeDeep({}, entity, updateObject)
+            const merged = App.utils.mergeDeep({ [modelPropertyName]: properties[modelPropertyName] },
+              entity, updateObject)
+
             await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             const identifiers = client.user ? {
               sessionOrUserType: 'user_User',
@@ -281,11 +283,11 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw 'not_found'
-            if(entity.sessionOrUserType == 'user_User') {
-              if(entity.sessionOrUser != client.user) throw 'not_authorized'
+            if(entity.sessionOrUserType === 'user_User') {
+              if(entity.sessionOrUser !== client.user) throw 'not_authorized'
             }
-            if(entity.sessionOrUserType == 'session_Session') {
-              if(entity.sessionOrUser != client.session) throw 'not_authorized'
+            if(entity.sessionOrUserType === 'session_Session') {
+              if(entity.sessionOrUser !== client.session) throw 'not_authorized'
             }
             const identifiers = client.user ? {
               sessionOrUserType: 'user_User',

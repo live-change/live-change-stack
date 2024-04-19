@@ -142,16 +142,22 @@ class App {
     }
   }
 
+  async getOldServiceDefinition( serviceName ) {
+    let oldServiceJson = await this.dao.get(['database', 'tableObject', this.databaseName, 'services', serviceName])
+    if(!oldServiceJson) {
+      oldServiceJson = this.createServiceDefinition({name: serviceName}).toJSON()
+    }
+    return oldServiceJson
+  }
+
   async updateService( service, { updaters, force } = {}) {
     const profileOp = await this.profileLog.begin({
       operation: "updateService", serviceName: service.name, force
     })
 
     this.dao.request(['database', 'createTable'], this.databaseName, 'services').catch(e => 'ok')
-    let oldServiceJson = await this.dao.get(['database', 'tableObject', this.databaseName, 'services', service.name])
-    if(!oldServiceJson) {
-      oldServiceJson = this.createServiceDefinition({name: service.name}).toJSON()
-    }
+    let oldServiceJson = await this.getOldServiceDefinition(service.name)
+
     let changes = this.computeChanges(oldServiceJson, service)
     //console.log("OLD SERVICE", JSON.stringify(oldServiceJson, null, '  '))
     //console.log("NEW SERVICE", JSON.stringify(service.toJSON(), null, '  '))
@@ -436,13 +442,13 @@ class App {
   }
 
   async waitForEvents(reportId, events, timeout) {
-    if(events.length == 0) {
+    if(events.length === 0) {
       console.log("no events, no need to wait", reportId)
       return
     }
     const [action, id] = reportId.split('_')
-    const triggerId = action == 'trigger' ? id : undefined
-    const commandId = action == 'command' ? id : undefined
+    const triggerId = action === 'trigger' ? id : undefined
+    const commandId = action === 'command' ? id : undefined
     const profileOp = await this.profileLog.begin({
       operation: "waitForEvents", action: action, commandId, triggerId, reportId, events, timeout
     })
@@ -451,7 +457,7 @@ class App {
       let finishedEvents = []
       const handleError = (message) => {
         console.error(`waitForEvents error: `, message)
-        const eventsNotDone = events.filter(event => finished.find(e => e.id == event.id))
+        const eventsNotDone = events.filter(event => finished.find(e => e.id === event.id))
         if(eventsNotDone.length > 0) {
           console.error("  pending events:")
           for(const event of eventsNotDone) {
@@ -465,7 +471,7 @@ class App {
           ['database', 'tableObject', this.databaseName, 'eventReports', reportId]
       )
       const reportsObserver = (signal, data) => {
-        if(signal != 'set') {
+        if(signal !== 'set') {
           handleError(`unknown signal ${signal} with data: ${data}`)
         }
         if(data == null) return /// wait for real data
@@ -473,7 +479,7 @@ class App {
           finishedEvents = data.finished
           if(finishedEvents.length >= events.length) {
             const eventsNotDone = events.filter(event => data.finished.find(e => e.id == event.id))
-            if(eventsNotDone.length != 0) {
+            if(eventsNotDone.length !== 0) {
               const eventsDone = events.filter(event => !data.finished.find(e => e.id == event.id))
               console.error("waitForEvents - finished events does not match!")
               console.error("  finished events:")
@@ -498,6 +504,7 @@ class App {
         setTimeout(() => {
           if(done) return
           observable.unobserve(reportsObserver)
+          console.error("events timeout", reportId)
           handleError('timeout')
         }, timeout)
       }

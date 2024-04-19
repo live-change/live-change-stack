@@ -27,7 +27,7 @@ definition.processor({
           config.objects ? config.objects(properties) :
             ((objectType && object) ? [{ objectType, object }] : [])
         )
-        if(objects.length == 0) {
+        if(objects.length === 0) {
           throw new Error('no objects for access control to work')
         }
         const accessible = access.clientHasAccessRoles(client, { objects }, config.roles)
@@ -54,7 +54,7 @@ definition.processor({
           config.objects ? config.objects(properties) :
             ((objectType && object) ? [{ objectType, object }] : [])
         )
-        if(objects.length == 0) {
+        if(objects.length === 0) {
           throw new Error('no objects for access control to work in view ' + viewName)
         }
         console.log("OBJECTS", objects)
@@ -72,7 +72,7 @@ definition.processor({
           config.objects ? config.objects(properties) :
             ((objectType && object) ? [{ objectType, object }] : [])
         )
-        if(objects.length == 0) {
+        if(objects.length === 0) {
           throw new Error('no objects for access control to work')
         }
 

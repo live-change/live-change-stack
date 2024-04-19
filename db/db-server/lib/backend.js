@@ -121,8 +121,8 @@ function createBackend({ name, url, maxDbs, mapSize }) {
         const env = new this.lmdb.Env()
         const envConfig = {
           path: path,
-          maxDbs: maxDbs || 1000,
-          mapSize: mapSize || (10 * 1024 * 1024 * 1024),
+          maxDbs: maxDbs || 1024,
+          mapSize: mapSize || (200 * 1024 * 1024 * 1024),
           ...options
         }
         env.open(envConfig)

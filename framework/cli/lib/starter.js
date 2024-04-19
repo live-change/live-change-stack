@@ -146,115 +146,156 @@ let globalServicesConfig
 export default function starter(servicesConfig = null) {
   globalServicesConfig = servicesConfig
   yargs(process.argv.slice(2))
-      .command('apiServer', 'start server', (yargs) => {
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        await setupApp({...argv, uidBorders: '[]'})
-        await apiServer(argv)
+    .command('apiServer', 'start server', (yargs) => {
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      await setupApp({...argv, uidBorders: '[]'})
+      await apiServer(argv)
+    })
+    .command('devApiServer', 'shortcut for apiServer --withServices --updateServices', (yargs) => {
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      argv = {
+        ...argv,
+        withServices: true, updateServices: true
+      }
+      await setupApp({...argv, uidBorders: '[]'})
+      await apiServer(argv)
+    })
+    .command('memApiServer', 'shortcut for devApiServer --withDb --dbBackend mem --createDb', (yargs) => {
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      argv = {
+        ...argv,
+        withApi: true, withServices: true, updateServices: true,
+        withDb: true, dbBackend: 'mem', createDb: true
+      }
+      await setupApp({...argv, uidBorders: '[]'})
+      await apiServer(argv)
+    })
+    .command('ssrServer', 'start ssr server', (yargs) => {
+      ssrServerOptions(yargs)
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      await setupApp({...argv, uidBorders: '[]'})
+      await server({...argv, uidBorders: '[]'}, false)
+    })
+    .command('server', 'start server', (yargs) => {
+      ssrServerOptions(yargs)
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      await setupApp({...argv, uidBorders: '[]'})
+      await server({...argv, uidBorders: '[]'}, false)
+    })
+    .command('ssrDev', 'start ssr server in development mode', (yargs) => {
+      ssrServerOptions(yargs)
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      await setupApp({...argv, uidBorders: '[]'})
+      await server({...argv, uidBorders: '[]'}, true)
+    })
+    .command('dev', 'shortcut for ssrDev --withApi --withServices --updateServices --createDb', (yargs) => {
+      ssrServerOptions(yargs)
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      argv = {
+        ...argv,
+        withApi: true, withServices: true, updateServices: true, createDb: true,
+      }
+      await setupApp({...argv, uidBorders: '[]'})
+      await server({...argv, uidBorders: '[]'}, true)
+    })
+    .command('memDev', 'shortcut for dev --withDb --dbBackend mem --createDb', (yargs) => {
+      ssrServerOptions(yargs)
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      argv = {
+        ...argv,
+        withApi: true, withServices: true, updateServices: true,
+        withDb: true, dbBackend: 'mem', createDb: true
+      }
+      await setupApp({...argv, uidBorders: '[]'})
+      await server({...argv, uidBorders: '[]'}, true)
+    })
+    .command('localDev', 'shortcut for dev --withDb --createDb', (yargs) => {
+      ssrServerOptions(yargs)
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      argv = {
+        ...argv,
+        withApi: true, withServices: true, updateServices: true,
+        withDb: true, createDb: true
+      }
+      await setupApp({...argv, uidBorders: '[]'})
+      await server({...argv, uidBorders: '[]'}, true)
+    })
+    .command('describe', 'describe server', (yargs) => {
+      yargs.option('service', {
+        describe: 'service that will be described',
+        type: 'string',
+        default: '*'
       })
-      .command('devApiServer', 'shortcut for apiServer --withServices --updateServices', (yargs) => {
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        argv = {
-          ...argv,
-          withServices: true, updateServices: true
-        }
-        await setupApp({...argv, uidBorders: '[]'})
-        await apiServer(argv)
+      yargs.option('json', {
+        describe: 'print json',
+        type: 'boolean'
       })
-      .command('memApiServer', 'shortcut for devApiServer --withDb --dbBackend mem --createDb', (yargs) => {
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        argv = {
-          ...argv,
-          withApi: true, withServices: true, updateServices: true,
-          withDb: true, dbBackend: 'mem', createDb: true
-        }
-        await setupApp({...argv, uidBorders: '[]'})
-        await apiServer(argv)
+    }, async (argv) => {
+      await describe(argv)
+    })
+    .command('changes', 'show changes', (yargs) => {
+      yargs.option('service', {
+        describe: 'service that will be described',
+        type: 'string',
+        default: '*'
       })
-      .command('ssrServer', 'start ssr server', (yargs) => {
-        ssrServerOptions(yargs)
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        await setupApp({...argv, uidBorders: '[]'})
-        await server({...argv, uidBorders: '[]'}, false)
-      })
-      .command('server', 'start server', (yargs) => {
-        ssrServerOptions(yargs)
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        await setupApp({...argv, uidBorders: '[]'})
-        await server({...argv, uidBorders: '[]'}, false)
-      })
-      .command('ssrDev', 'start ssr server in development mode', (yargs) => {
-        ssrServerOptions(yargs)
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        await setupApp({...argv, uidBorders: '[]'})
-        await server({...argv, uidBorders: '[]'}, true)
-      })
-      .command('dev', 'shortcut for ssrDev --withApi --withServices --updateServices --createDb', (yargs) => {
-        ssrServerOptions(yargs)
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        argv = {
-          ...argv,
-          withApi: true, withServices: true, updateServices: true, createDb: true,
-        }
-        await setupApp({...argv, uidBorders: '[]'})
-        await server({...argv, uidBorders: '[]'}, true)
-      })
-      .command('memDev', 'shortcut for dev --withDb --dbBackend mem --createDb', (yargs) => {
-        ssrServerOptions(yargs)
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        argv = {
-          ...argv,
-          withApi: true, withServices: true, updateServices: true,
-          withDb: true, dbBackend: 'mem', createDb: true
-        }
-        await setupApp({...argv, uidBorders: '[]'})
-        await server({...argv, uidBorders: '[]'}, true)
-      })
-      .command('localDev', 'shortcut for dev --withDb --createDb', (yargs) => {
-        ssrServerOptions(yargs)
-        apiServerOptions(yargs)
-        startOptions(yargs)
-      }, async (argv) => {
-        argv = {
-          ...argv,
-          withApi: true, withServices: true, updateServices: true,
-          withDb: true, createDb: true
-        }
-        await setupApp({...argv, uidBorders: '[]'})
-        await server({...argv, uidBorders: '[]'}, true)
-      })
-      .command('describe', 'describe server', (yargs) => {
-        yargs.option('service', {
-          describe: 'service that will be described',
-          type: 'string',
-          default: '*'
-        })
-      }, async (argv) => {
-        await describe(argv)
-      })
-      .option('verbose', {
-        alias: 'v',
-        type: 'boolean',
-        description: 'Run with verbose logging'
-      }).argv
+    }, async (argv) => {
+      await setupApp({...argv, uidBorders: '[]'})
+      await changes(argv)
+    })
+    .option('verbose', {
+      alias: 'v',
+      type: 'boolean',
+      description: 'Run with verbose logging'
+    }).argv
   /// TODO api.gen.js generation command
 }
 
+async function changes(argv) {
+  if(globalServicesConfig) argv.services = globalServicesConfig
+  const services = new Services(argv.services)
+  await services.loadServices()
+  await services.processDefinitions()
+  async function printChanges(service) {
+    const oldServiceJson = app.getOldServiceDefinition(service.name)
+    const changes = service.computeChanges(oldServiceJson)
+    console.log("Service", service.name)
+    for(const change of changes) {
+      console.log(JSON.stringify(change, null, "  "))
+    }
+  }
+  if(argv.service === '*') {
+    for(const service of services.serviceDefinitions) {
+      await printChanges(service)
+    }
+  } else {
+    const service = services.serviceDefinitions.find(s => s.name === argv.service)
+    if(service) {
+      await printChanges(service)
+    } else {
+      console.error("Service", argv.service, "not found")
+    }
+  }
+  process.exit(0)
+}
 
 async function describe(argv) {
   if(globalServicesConfig) argv.services = globalServicesConfig
@@ -263,6 +304,10 @@ async function describe(argv) {
   await services.processDefinitions()
   function describeService(service) {
     console.log("Service", service.name)
+    if(argv.json) {
+      console.log(JSON.stringify(service.toJSON(), null, "  "))
+      return
+    }
     console.log("  models:")
     for(const modelName in service.models) {
       const model = service.models[modelName]
@@ -304,18 +349,19 @@ async function describe(argv) {
       console.log("    ", eventName, "(", properties.join(', '), ")")
     }
   }
-  if(argv.service == '*') {
+  if(argv.service === '*') {
     for(const service of services.serviceDefinitions) {
       describeService(service)
     }
   } else {
-    const service = services.serviceDefinitions.find(s => s.name == argv.service)
+    const service = services.serviceDefinitions.find(s => s.name === argv.service)
     if(service) {
       describeService(service)
     } else {
       console.error("Service", argv.service, "not found")
     }
   }
+  process.exit(0)
 }
 
 async function apiServer(argv) {
@@ -358,7 +404,7 @@ async function server(argv, dev) {
   if(argv.versionFile) argv.version = await readFile(argv.versionFile, 'utf8')
 
   if(!argv.withApi) {
-    const apiServerHost = (argv.apiHost == '0.0.0.0' ? 'localhost' : argv.apiHost) + ':' + argv.apiPort
+    const apiServerHost = (argv.apiHost === '0.0.0.0' ? 'localhost' : argv.apiHost) + ':' + argv.apiPort
     const target = `http://${apiServerHost}/`
     const apiProxy = createProxyMiddleware({
       target,

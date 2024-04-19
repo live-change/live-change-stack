@@ -52,6 +52,7 @@ const Image = definition.model({
 
 import { move, copy, mkdir, rmdir } from './fsUtils.js'
 import fs from 'fs'
+import path from 'path'
 import sharp from 'sharp'
 import download from 'download'
 
@@ -107,10 +108,10 @@ definition.action({
     }
     const uploadRow = await Upload.get(upload)
     if(!uploadRow) throw new Error("upload_not_found")
-    if(uploadRow.state!='done') throw new Error("upload_not_done")
+    if(uploadRow.state !== 'done') throw new Error("upload_not_done")
 
     let extension = uploadRow.fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
-    if(extension == 'jpg') extension = "jpeg"
+    if(extension === 'jpg') extension = "jpeg"
     const dir = `${imagesPath}${image}`
 
     emit({
@@ -173,7 +174,15 @@ definition.trigger({
     const downloadPath = `${uploadsPath}download_${image}`
     await download(url, uploadsPath, { filename: `download_${image}` })
 
-    const metadata = await sharp(downloadPath).metadata()
+    /*console.log("DOWNLOADED", url, uploadsPath, '=>', downloadPath)
+    const downloadExists = await fs.promises.access(downloadPath, fs.constants.F_OK)
+      .then(() => true)
+      .catch(() => false)
+    console.log("DOWNLOAD EXISTS", downloadExists)*/
+
+    const data = await fs.promises.readFile(downloadPath)
+    const metadata = await sharp(data).metadata()
+    //const metadata = await sharp(downloadPath).metadata()
 
     emit({
       type: "ownerOwnedImageCreated",

@@ -146,7 +146,7 @@ export default async ({ command, mode }, options = {
     },
     ssr: {
       external: [
-        ...(command == 'build' ? [
+        ...(command === 'build' ? [
         ]: [
           '@live-change/dao',
         ]),
@@ -163,7 +163,7 @@ export default async ({ command, mode }, options = {
         'pica'
       ],
       noExternal: [
-        ...(command == 'build' ? [
+        ...(command === 'build' ? [
           '@live-change/dao',
         ]: [
 

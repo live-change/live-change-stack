@@ -149,7 +149,6 @@ class Renderer {
       const sitemapFunction = await this.getSitemapRenderFunction()
 
       function write(routeInfo) {
-        console.log("SM WRITE", routeInfo)
         smStream.write(routeInfo)
       }
 

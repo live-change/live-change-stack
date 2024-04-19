@@ -66,7 +66,7 @@ class SsrServer {
     if(this.settings.daoFactory) {
       dao = await this.settings.daoFactory(credentials, clientIp)
     } else {
-      const host = (this.settings.apiHost == '0.0.0.0' || !this.settings.apiHost)
+      const host = (this.settings.apiHost === '0.0.0.0' || !this.settings.apiHost)
         ? 'localhost' : this.settings.apiHost
       dao = await serverDao(credentials, clientIp, {
         remoteUrl: `ws://${host}:${this.settings.apiPort || 8002}/api/ws`

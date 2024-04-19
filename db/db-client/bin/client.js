@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
-const dump = require('../lib/dump.js')
-const exec = require('../lib/exec.js')
-const request = require('../lib/request.js')
-const get = require('../lib/get.js')
-const observe = require('../lib/observe.js')
-const parseList = require('../lib/parseList.js')
+import dump from '../lib/dump.js'
+import exec from '../lib/exec.js'
+import request from '../lib/request.js'
+import get from '../lib/get.js'
+import observe from '../lib/observe.js'
+import parseList from '../lib/parseList.js'
+
+import yargs from 'yargs'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
@@ -51,7 +53,7 @@ function execOptions(yargs) {
   })
 }
 
-const argv = require('yargs') // eslint-disable-line
+yargs(process.argv.slice(2)) // eslint-disable-line
     .command('request <method> [args..]', 'request method on server', (yargs) => {
       clientOptions(yargs)
       yargs.positional('method', {
@@ -65,7 +67,7 @@ const argv = require('yargs') // eslint-disable-line
       yargs.array('args')
     }, argv => {
       const method = parseList(argv.method)
-      const args = argv.args.length == 1 ? parseList(argv.args[0]) : argv.args.map(v => {
+      const args = argv.args.length === 1 ? parseList(argv.args[0]) : argv.args.map(v => {
         try {
           return eval(`(${v})`)
         } catch(err) {

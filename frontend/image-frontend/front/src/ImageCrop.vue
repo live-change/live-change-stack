@@ -9,9 +9,10 @@
        @touchcancel="handleEditorTouchCancel"
        @touchmove="handleEditorTouchMove"
        @wheel="handleEditorWheel">
-    <div class="p-6 md:p-8 lg:p-8">
-      <div class="w-auto relative"
-           :style="`aspect-ratio: ${aspectRatio}`" ref="cropArea">
+    <div class="p-4 md:p-5 lg:p-6 flex flex-row justify-content-center align-items-center">
+      <div class="w-full relative"
+           :style="`aspect-ratio: ${aspectRatio}; max-width: 40vh;`"
+           ref="cropArea">
         <div class="absolute left-50 top-50 w-0 h-0">
           <Image :image="sourceImage"
                  :style="{ width: `${rectSize?.x}px`, transform: imageTransform }"
