@@ -13,7 +13,7 @@
         </span>
         <p v-else>
 
-          Setup your <router-link to="{ name: 'user:identificatio' }">profile</router-link>
+          Setup your <router-link to="{ name: 'user:identification' }">profile</router-link>
           or return to the <router-link to="/">index page</router-link>.
         </p>
       </p>

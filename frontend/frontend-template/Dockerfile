@@ -35,10 +35,13 @@ COPY /server server
 COPY package.json package.json
 
 ARG VERSION='unknown'
+ARG BASE_HREF='http://localhost:8001/'
 
 ENV VERSION=$VERSION
+ENV BASE_HREF=$BASE_HREF
 
 RUN echo "VERSION=$VERSION" >> /etc/environment
+RUN echo "BASE_HREF=$BASE_HREF" >> /etc/environment
 
 RUN npm run build
 

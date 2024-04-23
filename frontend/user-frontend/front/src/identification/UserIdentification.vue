@@ -1,6 +1,6 @@
 <template>
   <span>
-    <router-link v-if="ownerType == 'user_User' && profileRouteExists"
+    <router-link v-if="ownerType === 'user_User' && profileRouteExists"
                  :to="{ name: 'user:profile', params: { user: owner } }"
                  v-ripple
                  :class="inline ? inlineClass : blockClass">
@@ -8,11 +8,11 @@
              :style="imageStyle"/>
       <img v-else :src="identiconUrl" class="mr-2 border-circle" :style="imageStyle" domResize />
       <span class="text-overflow-ellipsis white-space-nowrap overflow-hidden"
-            :class="[ ownerType == 'user_User' ? 'font-medium' : 'font-italic' ]">
+            :class="[ ownerType === 'user_User' ? 'font-medium' : 'font-italic' ]">
         {{ name }}
       </span>
     </router-link>
-    <span v-else-if="ownerType == 'email_Email'">
+    <span v-else-if="ownerType === 'email_Email'">
       <i class="pi pi-envelope mr-2 ml-1"
          style="font-size: 1.3rem; margin-right: 0.7rem !important; position: relative; top: 3px;" />
       <span class="text-overflow-ellipsis white-space-nowrap overflow-hidden">
@@ -24,7 +24,7 @@
              :style="imageStyle"/>
       <img v-else :src="identiconUrl" class="mr-2 border-circle" :style="imageStyle" domResize />
       <span class="text-overflow-ellipsis white-space-nowrap overflow-hidden"
-            :class="[ ownerType == 'user_User' ? 'font-medium' : 'font-italic' ]">
+            :class="[ ownerType === 'user_User' ? 'font-medium' : 'font-italic' ]">
         {{ name }}
       </span>
     </span>
@@ -47,7 +47,7 @@
     },
     data: {
       type: Object,
-      default: null
+      default: undefined
     },
     inline: {
       type: Boolean,
@@ -68,12 +68,15 @@
   const router = useRouter()
   const profileRouteExists = router.hasRoute('user:profile')
 
-  import { path, live, actions } from '@live-change/vue3-ssr'
+  import { usePath, live, actions } from '@live-change/vue3-ssr'
 
-  const dataPromise = data !== undefined ? Promise.resolve(data)
-      : live(path().userIdentification.sessionOrUserOwnedIdentification({
-        sessionOrUserType: ownerType, sessionOrUser: owner
-      }))
+  const path = usePath()
+  const userIdentificationPath = path.userIdentification.sessionOrUserOwnedIdentification({
+    sessionOrUserType: ownerType, sessionOrUser: owner
+  })
+
+  const dataPromise = data.value !== undefined ? Promise.resolve(data) :
+       live(userIdentificationPath)
 
   const identiconUrl = `/api/identicon/jdenticon/${ownerType}:${owner}/28.svg`
 
