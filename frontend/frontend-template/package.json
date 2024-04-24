@@ -50,7 +50,7 @@
     "@live-change/frontend-auto-form": "0.8.17",
     "@live-change/frontend-base": "0.8.17",
     "@live-change/image-frontend": "0.8.17",
-    "@live-change/locale-settings-service": "^0.8.17",
+    "@live-change/locale-settings-service": "0.8.17",
     "@live-change/password-authentication-service": "0.8.17",
     "@live-change/prosemirror-service": "0.8.17",
     "@live-change/secret-code-service": "0.8.17",

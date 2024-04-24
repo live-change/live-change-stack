@@ -63,7 +63,7 @@ export async function createApp(config, api, App, createRouter, host, headers, r
     } catch(error) {
       const text = error.message || error
       const toast = app.config.globalProperties.$toast
-      if(text == 'notAuthorized')  toast.add({ severity:'error', summary: "Not Authorized", life: 5000 })
+      if(text === 'notAuthorized')  toast.add({ severity:'error', summary: "Not Authorized", life: 5000 })
       throw error
     }
   }

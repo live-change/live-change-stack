@@ -72,7 +72,7 @@ class Api extends DaoProxy {
     const versionMismatch = computed(() => {
       if(!version) return
       if(!softwareVersion) return
-      return version.value != softwareVersion.value
+      return version.value !== softwareVersion.value
     })
     const client = computed(() => {
       return api?.value?.client
@@ -85,11 +85,11 @@ class Api extends DaoProxy {
     }
     let lastApiJson = ''
     this.apiObservable.observe((signal, ...args) => {
-      if(signal != 'set') return
+      if(signal !== 'set') return
       //console.log("API OBSERVE SIGNAL", signal, ...args)
       const newApi = args[0]
       //console.log("NEW API", newApi)
-      if(JSON.stringify(newApi) == lastApiJson) {
+      if(JSON.stringify(newApi) === lastApiJson) {
         console.log("API NOT CHANGED")
         return
       }
@@ -111,7 +111,7 @@ class Api extends DaoProxy {
         const ssrCache = window[this.settings.ssrCacheGlobal || '__DAO_CACHE__']
         if(ssrCache) {
           for(const [daoPath, value] of ssrCache) {
-            if(daoPath == cachePath) apiInfo = value
+            if(daoPath === cachePath) apiInfo = value
           }
         }
       } else {
@@ -121,7 +121,7 @@ class Api extends DaoProxy {
     //console.trace("GENERATE API SERVICES!")
     //console.log("GENERATE SERVICES API", apiInfo)
     const definitions = [...(apiInfo?.services ?? []), ...(this.settings.localDefinitions ?? [])]
-    if(JSON.stringify(definitions) == JSON.stringify(api.servicesApiDefinitions)) return
+    if(JSON.stringify(definitions) === JSON.stringify(api.servicesApiDefinitions)) return
     if(!definitions) throw new Error("API DEFINITIONS NOT FOUND! UNABLE TO GENERATE API!")
     api.uidGenerator = uidGenerator(
       apiInfo.client.user || (apiInfo.client.session ? apiInfo.client.session.slice(0, 16) : randomString(10) )
