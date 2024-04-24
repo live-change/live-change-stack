@@ -46,6 +46,7 @@
 <script setup>
   import InputText from "primevue/inputtext"
   import Button from "primevue/button"
+  import Divider from "primevue/divider"
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
