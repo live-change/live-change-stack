@@ -141,7 +141,10 @@ definition.trigger({
   async execute({ user, email }, { service }, emit) {
     if(!email) throw new Error("no email")
     const emailData = await Email.get(email)
-    if(emailData) throw { properties: { email: 'taken' } }
+    if(emailData)  {
+      if(emailData.user === user) return false
+      throw { properties: { email: 'taken' } }
+    }
     await service.trigger({
       type: 'contactConnected',
       contactType: 'email_Email',

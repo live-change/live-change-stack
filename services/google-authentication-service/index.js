@@ -385,6 +385,10 @@ definition.action({
       user, account, data: googleUser,
       transferOwnership
     })
+    return {
+      action: 'connectGoogle',
+      user
+    }
   }
 })
 

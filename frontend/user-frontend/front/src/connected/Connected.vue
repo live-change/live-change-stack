@@ -38,8 +38,13 @@
       <div class="flex flex-row flex-wrap">
         <router-link v-for="contactType in contactsTypes"
                      :to="{ name: 'user:connect-'+contactType.contactType }" class="mr-2 no-underline block mb-1">
-          <Button :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect"></Button>
+          <Button :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
         </router-link>
+        <router-link v-for="accountType in accountTypes"
+                     :to="{ name: 'user:connect-'+accountType.accountType }" class="mr-2 no-underline block mb-1">
+          <Button :label="'Add '+accountType.accountType" icon="pi pi-google" id="connect" />
+        </router-link>
+
       </div>
     </div>
 

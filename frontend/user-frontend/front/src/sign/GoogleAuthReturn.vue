@@ -82,6 +82,8 @@
         router.push({ name: 'user:signInFinished' })
       } else if(actionDone === 'signUp') {
         router.push({ name: 'user:signUpFinished' })
+      } else if(actionDone === 'connectGoogle') {
+        router.push({ name: 'user:connected' })
       } else {
         console.error("Unknown action", actionDone)
       }

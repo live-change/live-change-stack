@@ -4,7 +4,7 @@ export function routes(config = {}) {
   return [
 
     route({ name: 'user:googleAuth', path: prefix + 'google-auth/:action',
-      component: () => import("./GoogleAuth.vue"), props: true, meta: { signedOut: true } }),
+      component: () => import("./GoogleAuth.vue"), props: true, meta: { } }),
     route({ name: 'user:googleAuthReturn', path: prefix + 'google-auth-return/:action',
       component: () => import("./GoogleAuthReturn.vue"), props: true }),
 

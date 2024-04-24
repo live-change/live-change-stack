@@ -84,7 +84,7 @@
     try {
       const result = await workingZone.addPromise(`google ${action.value}`,
         api.command(['googleAuthentication', action.value], {
-         accessToken: response.getAuthResponse().id_token
+          accessToken: response.getAuthResponse().id_token
         })
       )
       //console.log("GAUTH RESULT", result)

@@ -11,6 +11,9 @@ export function routes(config = {}) {
     route({ name: 'user:connect-phone', path: prefix + 'connect-phone',
       component: () => import("./ConnectPhone.vue") }),
 
+    /// redirect user:connect-google to google auth
+    route({ name: 'user:connect-google', path: prefix + 'connect-google',
+      redirect: { name: 'user:googleAuth', params: { action: 'connectGoogle' } } }),
 
     route({ name: 'user:connectFinished', path: prefix + 'connect-finished',
       component: () => import("./ConnectFinished.vue") }),
