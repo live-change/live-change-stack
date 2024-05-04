@@ -30,9 +30,8 @@ class CommandQueue {
     await this.connection.request(['database', 'createIndex'], this.database, this.indexName, `(${
         async function(input, output, { tableName }) {
           await input.table(tableName).onChange(async (obj, oldObj) => {
-            const res = obj && obj.state == 'new' ? { ...obj, id: obj.service + '_' + obj.id } : null
-            const oldRes = oldObj && oldObj.state == 'new' ? { ...oldObj, id: oldObj.service + '_' + oldObj.id } : null
-            //output.debug("CHANGE ", tableName, "INDEX", res, "OLD:", oldRes)
+            const res = obj && obj.state === 'new' ? { ...obj, id: obj.service + '_' + obj.id } : null
+            const oldRes = oldObj && oldObj.state === 'new' ? { ...oldObj, id: oldObj.service + '_' + oldObj.id } : null
             await output.change(res, oldRes)
           })
         }

@@ -19,7 +19,7 @@ class Observation {
     if(this.disposed) throw new Error("observation use after disposal")
     this.observables.push(observable)
     observable.observation = this
-    if(this.observables.length == 1 && this.connection.connected) {
+    if(this.observables.length === 1 && this.connection.connected) {
       this.connection.sendObserve(this)
     }
     //process.nextTick(() => { // next tick will replay events through all layer to the client - it's waste of resources
@@ -32,7 +32,7 @@ class Observation {
   }
   observable(clazz) {
     if(this.disposed) throw new Error("observation use after disposal")
-    let observable = this.observables.find(o => o.clazz == clazz)
+    let observable = this.observables.find(o => o.clazz === clazz)
     if(observable) return observable
 
     const what = this.what
@@ -318,7 +318,7 @@ class Connection extends EventEmitter {
         this.requestsQueue.push(req)
         if(req.settings.requestSendTimeout < Infinity) {
           setTimeout(() => {
-            if(queuedConnectionId == this.connectedCounter && this.requestsQueue[queuedId]) {
+            if(queuedConnectionId === this.connectedCounter && this.requestsQueue[queuedId]) {
               req.handler('disconnected')
               this.requestsQueue[queuedId] = null
             }

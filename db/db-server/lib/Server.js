@@ -283,14 +283,14 @@ class Server {
   }
   async checkInfoIntegrity() {
     for(const dbName in this.metadata.databases) {
-      if(dbName != 'system') {
+      if(dbName !== 'system') {
         const metadata = this.metadata.databases[dbName]
         const indexesTable = this.databases.get('system').table(dbName + '_indexes')
         const indexesInfo = await indexesTable.rangeGet({})
         const infoByName = new Map()
         for(const indexInfo of indexesInfo) {
           const indexMeta = metadata.indexes[indexInfo.name]
-          if(!indexMeta || (indexMeta.uid != indexInfo.id)) {
+          if(!indexMeta || (indexMeta.uid !== indexInfo.id)) {
             console.error("CORRUPTED INDEX INFO", indexInfo.name, indexInfo.id)
             console.log("DELETING CORRUPTED INFO")
             await indexesTable.delete(indexInfo.id)
@@ -370,7 +370,7 @@ class Server {
       })
       wsServer.on("request",(request) => {
         debug("WS URI", request.httpRequest.url, "FROM", request.remoteAddress)
-        if(request.httpRequest.url != "/api/ws") return request.reject()
+        if(request.httpRequest.url !== "/api/ws") return request.reject()
         let serverConnection = new ReactiveDaoWebsocketServer(request)
         this.apiServer.handleConnection(serverConnection)
       })
@@ -412,18 +412,18 @@ class Server {
 
         const databaseName = pathParts[0]
         const objectDir = pathParts[1]
-        if(objectDir == 'query.js') {
+        if(objectDir === 'query.js') {
           console.error("error in query to database", databaseName)
           return
         }
         const database = this.databases.get(databaseName)
-        if(objectDir != 'indexes') {
+        if(objectDir !== 'indexes') {
           console.error(`unknown object dir ${objectDir}, something is wrong, exiting...`)
           process.exit(1)
         }
         const indexName = pathParts[2]
         if(!database) {
-          if(this.initializingDatabase.name != databaseName) {
+          if(this.initializingDatabase.name !== databaseName) {
             console.error('error in non existing database?!', databaseName)
             process.exit(1)
           }

@@ -63,7 +63,7 @@ class TableReader extends ChangeStream {
     while(true) {
       objects = await (await this.#table).rangeGet(range)
       results = results.concat(await Promise.all(objects.map(object => cb(object, null, object.id, this.#time()))))
-      if(objects.length == maxGetLimit)  {
+      if(objects.length === maxGetLimit)  {
         range.gt = objects[objects.length - 1].id
         console.log("GET LIMIT REACHED! GETTING MORE", range)
       } else {

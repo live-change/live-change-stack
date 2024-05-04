@@ -90,11 +90,14 @@ class SsrServer {
     const writeCredentials = this.settings.writeCredentials || ((res, credentials) => {
       //console.log("WRITE CREDENTIALS", credentials)
       const cookieExpireDate =
-        this.settings.sessionExpires ? new Date(Date.now() + this.settings.sessionExpires).toUTCString() : null
+        this.settings.sessionCookieExpire
+          ? new Date(Date.now() + this.settings.sessionCookieExpire * 1000).toUTCString()
+          : null
       if(credentials.sessionKey) {
         res.set({
           'Set-Cookie': `sessionKey=${credentials.sessionKey}; Path=/; HttpOnly`
           + (cookieExpireDate ? `; Expires=${cookieExpireDate}` : '')
+          + (this.settings.sessionCookieDomain ? `; Domain=${this.settings.sessionCookieDomain}` : '')
         })
       }
     })

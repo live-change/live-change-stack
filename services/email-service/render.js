@@ -41,7 +41,7 @@ definition.authenticator({
 function processElement(element, images) {
   for(let i = 0; i < element.attributes.length; i++) {
     const attribute = element.attributes[i]
-    const remove = attribute.nodeName == 'class' || attribute.nodeName.slice(0, 4) == 'data'
+    const remove = attribute.nodeName === 'class' || attribute.nodeName.slice(0, 4) === 'data'
     if(remove) {
       element.removeAttribute(attribute.nodeName)
       i--
@@ -112,7 +112,7 @@ async function renderEmail(data) {
     }
     if(toText !== null) {
       email.text = htmlToText(messageElement.outerHTML)
-      if(messageElement.tagName == 'PRE') {
+      if(messageElement.tagName === 'PRE') {
         const indentation = email.text.match(/^ */)[0]
         const indentationRegex = new RegExp('\n' + indentation, 'g')
         email.text = email.text.slice(indentation.length).replace(indentationRegex, '\n')

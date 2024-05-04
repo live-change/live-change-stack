@@ -139,6 +139,15 @@ function ssrServerOptions(yargs) {
     describe: 'vite mode',
     type: 'string'
   })
+  yargs.option('sessionCookieExpire', {
+    describe: 'time in seconds for session cookie to expire',
+    type: 'number',
+  })
+  yargs.option('sessionCookieDomain', {
+    describe: 'domain for session cookie',
+    type: 'string',
+    default: process.env.SESSION_COOKIE_DOMAIN
+  })
 }
 
 let globalServicesConfig

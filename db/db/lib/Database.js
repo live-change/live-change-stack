@@ -239,22 +239,23 @@ class Database {
       let code = config.code
       const params = config.parameters
       index = new Index(this, name, code, params, config)
+      this.indexes.set(name, index)
       try {
-        debug("STARTING INDEX", name, "IN DATABASE", this.name)
         await index.startIndex()
-        debug("STARTED INDEX", name, "IN DATABASE", this.name)
       } catch(error) {
         console.error("INDEX", name, "ERROR", error, "CODE:\n", code)
-        console.error("DELETING INDEX", name)
+        console.error("DELETINGww INDEX", name)
         delete this.config.indexes[name]
         this.indexesListObservable.remove(name)
         if(this.onAutoRemoveIndex && config) this.onAutoRemoveIndex(name, config.uid)
+        console.error("DELETED INDEX", name)
         await this.saveConfig(this.config)
         throw error
       }
       this.indexes.set(name, index)
       return index
     }
+    await index.startPromise
     return index
   }
 

@@ -25,7 +25,7 @@ class ObjectReader extends ChangeStream {
     return {
       dispose() {
         const callbackIndex = this.callbacks.indexOf(cb)
-        if(callbackIndex == -1) throw new Error('Observer double dispose')
+        if(callbackIndex === -1) throw new Error('Observer double dispose')
         this.callbacks.splice(callbackIndex, 1)
         /// TODO: dispose or ignore reader somehow if no callbacks
       }
@@ -68,6 +68,8 @@ class RangeReader extends ChangeStream {
   }
 }
 
+let commandsReaderCreated = false
+
 class TableReader extends ChangeStream {
 
  /* set opLogPromise(promise) {
@@ -92,6 +94,15 @@ class TableReader extends ChangeStream {
     this.callbacks = []
 
     this.readOpLog(this.opLogReader.currentKey)
+
+    if(table.name === 'commands') {
+      console.trace("TABLE READER CREATED", prefix, table.name)
+      if(commandsReaderCreated) {
+        console.error("TABLE READER CREATED TWICE!!!", prefix, table.name)
+        process.exit(1)
+      }
+      commandsReaderCreated = true
+    }
 
     let firstFull = 0
     /*setInterval(() => {
@@ -160,8 +171,22 @@ class TableReader extends ChangeStream {
   }
   dispose() {
     this.disposed = true
-    for(let objectReader of this.objectReaders) objectReader.dispose()
-    for(let rangeReader of this.objectReaders) rangeReader.dispose()
+    for(let objectReader of this.objectReaders.values()) {
+      try {
+        objectReader.dispose()
+      } catch(e) {
+        console.error("ERROR DISPOSING OBJECT READER", objectReader)
+        throw e
+      }
+    }
+    for(let rangeReader of this.rangeReaders.values()) {
+      try {
+        rangeReader.dispose()
+      } catch(e) {
+        console.error("ERROR DISPOSING RANGE READER", rangeReader)
+        throw e
+      }
+    }
   }
 
   async readOpLog(key) {
@@ -205,7 +230,7 @@ class TableReader extends ChangeStream {
   putByField(field, id, object) {
     //if(this.prefix == 'table_triggers') console.log("TABLE", this.prefix, " READER PUT", object, this.disposed)
     if(this.disposed) return
-    if(field != 'id') throw new Error("incompatible range protocol")
+    if(field !== 'id') throw new Error("incompatible range protocol")
     this.opLogBuffer.push(object)
     this.opLogReader.handleSignal()
   }
@@ -249,10 +274,10 @@ class TableReader extends ChangeStream {
       } else {
         const op = next.operation
         if(op) {
-          if(op.type == 'put') {
+          if(op.type === 'put') {
             await this.change(op.object, op.oldObject, op.object.id, next.id)
           }
-          if(op.type == 'delete') {
+          if(op.type === 'delete') {
             //console.log("DELETE CHANGE", next)
             await this.change(null, op.object, op.object.id, next.id)
           }
@@ -260,7 +285,7 @@ class TableReader extends ChangeStream {
           console.error("NULL OPERATION", next)
         }
       }
-      if(this.opLogBuffer.length == 0 && this.opLogObservable.list.length >= opLogBatchSize) {
+      if(this.opLogBuffer.length === 0 && this.opLogObservable.list.length >= opLogBatchSize) {
         //console.log("ENTER OPLOG READ!")
         await this.readOpLog(this.opLogObservable.list[this.opLogObservable.list.length - 1].id)
         //console.log("READ TO RESULT, OP LOG PROMISE:", this.opLogPromise)
@@ -283,7 +308,7 @@ class OpLogReader {
   }
   table(name) {
     const prefix = 'table_'+name
-    let reader = this.tableReaders.find(tr => tr.prefix == prefix)
+    let reader = this.tableReaders.find(tr => tr.prefix === prefix)
     if(!reader) {
       reader = new TableReader(this, prefix, this.database.table(name))
       this.tableReaders.push(reader)
@@ -293,7 +318,7 @@ class OpLogReader {
   }
   index(name) {
     const prefix = 'index_'+name
-    let reader = this.tableReaders.find(tr => tr.prefix == prefix)
+    let reader = this.tableReaders.find(tr => tr.prefix === prefix)
     if(!reader) {
       reader = new TableReader(this, prefix, this.database.index(name))
       this.tableReaders.push(reader)
@@ -303,7 +328,7 @@ class OpLogReader {
   }
   log(name) {
     const prefix = 'log_'+name
-    let reader = this.tableReaders.find(tr => tr.prefix == prefix)
+    let reader = this.tableReaders.find(tr => tr.prefix === prefix)
     if(!reader) {
       reader = new TableReader(this, prefix, this.database.log(name), true)
       this.tableReaders.push(reader)
@@ -335,7 +360,7 @@ class OpLogReader {
         //console.log("GOT NEXT KEYS")
         if(this.disposed) return
         //console.log("POSSIBLE NEXT KEYS", possibleNextKeys.map(({key, reader}) => [reader.prefix, key]))
-        if(possibleNextKeys.length == 0) { /// It could happen when oplog is cleared
+        if(possibleNextKeys.length === 0) { /// It could happen when oplog is cleared
           return
         }
         let next = null
@@ -348,10 +373,10 @@ class OpLogReader {
         //console.log("NEXT KEY", next && next.reader && next.reader.prefix, next && next.key)
         const lastKey = '\xFF\xFF\xFF\xFF'
         //console.log("NEXT", !!next, "KEY", next && next.key, lastKey)
-        if(!next || next.key == lastKey) break // nothing to read
+        if(!next || next.key === lastKey) break // nothing to read
         let otherReaderNext = null
         for(const possibleKey of possibleNextKeys) {
-          if(possibleKey.reader != next.reader && possibleKey.key
+          if(possibleKey.reader !== next.reader && possibleKey.key
               && (!otherReaderNext || possibleKey.key < otherReaderNext.key))
             otherReaderNext = possibleKey
         }
@@ -408,9 +433,9 @@ class IndexWriter {
     this.index.put(object)
   }
   delete(object) {
-    const id = object.id
+    const id = typeof object === 'string' ? object :  object.id
     if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
-    this.index.delete(object.id)
+    this.index.delete(id)
   }
   update(id, ops) {
     if(typeof id != 'string') {
@@ -463,8 +488,14 @@ class Index extends Table {
     this.codeObservable = new ReactiveDao.ObservableValue(code)
     this.params = params
     this.code = code
+    this.startPromise = null
   }
   async startIndex() {
+    if(!this.startPromise)this.startPromise = this.startIndexInternal()
+    return this.startPromise
+  }
+  async startIndexInternal() {
+    console.error("STARTING INDEX", this.name, "IN DATABASE", this.database.name)
     debug("EXECUTING INDEX CODE", this.name)
     this.scriptContext = this.database.createScriptContext({
       /// TODO: script available routines
@@ -520,6 +551,7 @@ class Index extends Table {
         type: 'indexed'
       }
     })
+    debug("STARTED INDEX", this.name, "IN DATABASE", this.database.name)
   }
   async deleteIndex() {
     this.reader.dispose()
