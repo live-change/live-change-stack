@@ -61,6 +61,7 @@
     "services/slug-service",
     "services/vote-service",
     "services/locale-settings-service",
+    "services/geoip-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
