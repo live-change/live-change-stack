@@ -47,6 +47,9 @@ async function rangeBuckets(pathFunction, options, app = getCurrentInstance()) {
     dropBottom: () => buckets.dropBottom(),
     canLoadTop: () => buckets.isTopLoadPossible(),
     canLoadBottom: () => buckets.isBottomLoadPossible(),
+    freeze: () => buckets.freeze(),
+    unfreeze: () => buckets.unfreeze(),
+    changed: buckets.changed
   }
 }
 
@@ -54,7 +57,7 @@ function reverseRange(range) {
   return {
     gt: range.lt,
     gte: range.lte,
-    lt: range.gt == '' ? '\xFF\xFF\xFF\xFF' : range.gt,
+    lt: range.gt === '' ? '\xFF\xFF\xFF\xFF' : range.gt,
     lte: range.gte,
     limit: range.limit,
     reverse: !range.reverse
@@ -84,7 +87,7 @@ function useUid(context) {
 
 function serviceDefinition(service, context = getCurrentInstance().appContext) {
   const api = useApi(context)
-  return [...api.metadata.api.value.services].find(x => x.name == service)
+  return [...api.metadata.api.value.services].find(x => x.name === service)
 }
 
 // backward compatibility

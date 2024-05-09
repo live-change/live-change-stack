@@ -16,6 +16,7 @@ App.rangeProperties = utils.rangeProperties
 App.encodeIdentifier = utils.encodeIdentifier
 App.extractRange = utils.extractRange
 App.isomorphic = utils.isomorphic
+App.computeDefaults = utils.computeDefaults
 
 export default App
 

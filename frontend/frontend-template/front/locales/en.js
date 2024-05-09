@@ -2,16 +2,6 @@ import messages from "./en.json"
 export { messages }
 
 export const numberFormats ={
-  "ipi": {
-    "style": "currency",
-      "currency": "ipi",
-      "notation": "standard"
-  },
-  "btc": {
-    "style": "currency",
-    "currency": "btc",
-    "notation": "standard"
-  },
   "usd": {
     "style": "currency",
       "currency": "USD",

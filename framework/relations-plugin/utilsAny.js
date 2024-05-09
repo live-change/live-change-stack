@@ -87,7 +87,6 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
       const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
-      const defaults = App.utils.generateDefault(originalModelProperties)
 
       function modelRuntime() {
         return service._runtime.models[modelName]
@@ -122,7 +121,7 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
         const { parentsTypes } = config
 
         const context = {
-          service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
+          service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
           objectType, parentsTypes
         }

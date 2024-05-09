@@ -1,7 +1,7 @@
 import {
   defineProperties, defineIndexes,
   processModelsAnnotation, addAccessControlParents,
-  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers, defineAuthorProperties
 } from './utils.js'
 
 import {
@@ -21,6 +21,7 @@ export default function(service, app) {
     context.reverseRelationWord = 'Owned'
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
+
     addAccessControlParents(context)
     defineIndexes(context.model, context.otherPropertyNames.map(p => p[0].toLowerCase() + p.slice(1)), context.others)
 

@@ -449,7 +449,7 @@ class IndexWriter {
   change(obj, oldObj) {
     try {
       if (obj) {
-        if (oldObj && oldObj.id != obj.id) {
+        if (oldObj && oldObj.id !== obj.id) {
           this.index.delete(oldObj.id)
           this.index.put(obj)
         } else {

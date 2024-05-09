@@ -18,7 +18,7 @@ definition.authenticator({
           await authenticatedTable.object(session).onChange(async (authData, oldAuthData) => {
             output.debug("NEW USER AUTH", authData, "FROM", oldAuthData)
             const newUser = authData ? authData.user : null
-            if(newUser == user) return
+            if(newUser === user) return
             output.debug("USER CHANGE", user, '=>', newUser)
             if(user) {
               if(userObject) {
@@ -41,7 +41,7 @@ definition.authenticator({
                 output.change(newCredentials, oldCredentials)
                 oldCredentials = newCredentials
               }).then(observer => {
-                if(user == newUser) {
+                if(user === newUser) {
                   userObserver = observer
                 } else { // if user changed before observer loaded data
                   currentUserObject.unobserve(observer)

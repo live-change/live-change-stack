@@ -95,7 +95,7 @@ function defineRangeViews(config, context) {
 
 function defineSetAction(config, context) {
   const {
-    service, app, model, defaults, objectType,
+    service, app, model, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
 
@@ -115,7 +115,8 @@ function defineSetAction(config, context) {
     waitForEvents: true,
     async execute(properties, { client, service }, emit) {
       const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
-      const data = extractObjectData(writeableProperties, properties, defaults)
+      const data = extractObjectData(writeableProperties, properties,
+        App.computeDefaults(model, properties, { client, service } ))
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
       await fireChangeTriggers(context, objectType, identifiers, id, null, data)
@@ -170,7 +171,7 @@ function defineUpdateAction(config, context) {
 
 function defineSetOrUpdateAction(config, context) {
   const {
-    service, app, model, modelRuntime, defaults, objectType,
+    service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
@@ -191,7 +192,10 @@ function defineSetOrUpdateAction(config, context) {
       const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
       const id = generateAnyId(otherPropertyNames, properties)
       const entity = await modelRuntime().get(id)
-      const data = extractObjectData(writeableProperties, properties, { ...defaults, ...entity } )
+      const data = extractObjectData(writeableProperties, properties, {
+        ...App.computeDefaults(model, properties, { client, service } ),
+        ...entity
+      })
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
       await fireChangeTriggers(context, objectType, identifiers, id,

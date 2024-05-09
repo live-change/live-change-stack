@@ -108,7 +108,7 @@ function defineDeletedEvent(config, context) {
 
 function defineCreateAction(config, context) {
   const {
-    service, app, model,  defaults, modelPropertyName, modelRuntime, objectType,
+    service, app, model, modelPropertyName, modelRuntime, objectType,
     modelName, writeableProperties
   } = context
   const eventName = modelName + 'Created'
@@ -127,7 +127,9 @@ function defineCreateAction(config, context) {
       const id = properties[modelPropertyName] || app.generateUid()
       const entity = await modelRuntime().get(id)
       if(entity) throw 'exists'
-      const data = extractObjectData(writeableProperties, properties, defaults)
+      const data = extractObjectData(writeableProperties, properties,
+        App.computeDefaults(model, properties, { client, service } ))
+
       await App.validation.validate({ ...data }, validators,
         { source: action, action, service, app, client })
 
@@ -233,7 +235,6 @@ export default function(service, app) {
     const originalModelProperties = { ...model.properties }
     const modelProperties = Object.keys(model.properties)
     const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
-    const defaults = App.utils.generateDefault(originalModelProperties)
 
     function modelRuntime() {
       return service._runtime.models[modelName]
@@ -248,7 +249,7 @@ export default function(service, app) {
     const objectType = service.name + '_' + modelName
 
     const context = {
-      service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
+      service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
       modelName, writeableProperties, annotation, objectType
     }
 

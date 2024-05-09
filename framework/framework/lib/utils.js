@@ -82,7 +82,7 @@ function crudChanges(oldElements, newElements, elementName, newParamName, params
         changes.push(...newElement.computeChanges(oldElement, params, newElementName))
       } else if(
           JSON.stringify({ ...oldElement, created: undefined })
-          != JSON.stringify({ ...newElement, created: undefined })
+          !== JSON.stringify({ ...newElement, created: undefined })
       ) {
         let change = {
           operation: "delete"+elementName,
@@ -285,9 +285,30 @@ function isomorphic( v ) {
   }
 }
 
+function computeDefaults(model, properties, context) {
+  const defaults = generateDefault(model.properties)
+  const result = {}
+  for(const propName in defaults) {
+    switch(typeof defaults[propName]) {
+      case 'function': {
+        result[propName] = defaults[propName](properties, context)
+        break
+      }
+      case 'object': {
+        result[propName] = computeDefaults(defaults[propName], properties[propName])
+        break
+      }
+      default: {
+        result[propName] = defaults[propName]
+      }
+    }
+  }
+  return JSON.parse(JSON.stringify(result))
+}
+
 export {
   typeName, toJSON, setDifference, mapDifference, crudChanges,
   getProperty, setProperty, getField, setField, isObject, mergeDeep, generateDefault,
   prefixRange, rangeProperties, fieldListToFieldsObject,
-  encodeIdentifier, extractRange, isomorphic
+  encodeIdentifier, extractRange, isomorphic, computeDefaults
 }

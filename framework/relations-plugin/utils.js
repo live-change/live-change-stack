@@ -8,11 +8,11 @@ import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } from "@live-change/framework"
 
-import {
+export {
   extractObjectData, extractIdentifiers
 } from './dataUtils.js'
 
-function extractIdParts(otherPropertyNames, properties) {
+export function extractIdParts(otherPropertyNames, properties) {
   const idParts = []
   for (const propertyName of otherPropertyNames) {
     idParts.push(properties[propertyName])
@@ -21,13 +21,13 @@ function extractIdParts(otherPropertyNames, properties) {
 }
 
 
-function generateId(otherPropertyNames, properties) {
+export function generateId(otherPropertyNames, properties) {
   return otherPropertyNames.length > 1
       ? otherPropertyNames.map(p => JSON.stringify(properties[p])).join(':')
       : properties[otherPropertyNames[0]]
 }
 
-function defineProperties(model, types, names) {
+export function defineProperties(model, types, names) {
   const identifiers = {}
   for (let i = 0; i < types.length; i++) {
     identifiers[names[i]] = new PropertyDefinition({
@@ -41,13 +41,28 @@ function defineProperties(model, types, names) {
   return identifiers
 }
 
-function defineIndex(model, what, props) {
+export function defineAuthorProperties() {
+  return {
+    authorType: new PropertyDefinition({
+      type: String,
+      validation: ['nonEmpty'],
+      default: (_props, context) => context.client.user ? 'user_User' : 'session_Session'
+    }),
+    author: new PropertyDefinition({
+      type: String,
+      validation: ['nonEmpty'],
+      default: (_props, context) => context.client.user ? context.client.user : context.client.session
+    })
+  }
+}
+
+export function defineIndex(model, what, props) {
   console.log("DEFINE INDEX", model.name, what, props)
   model.indexes['by' + what] = new IndexDefinition({
     property: props
   })
 }
-function defineIndexes(model, props, types) {
+export function defineIndexes(model, props, types) {
   console.log("DEFINE INDEXES", model.name, props, types)
   const propCombinations = allCombinations(Object.keys(props))
   for(const propCombination of propCombinations) {
@@ -59,7 +74,7 @@ function defineIndexes(model, props, types) {
   }
 }
 
-function processModelsAnnotation(service, app, annotation, multiple, cb) {
+export function processModelsAnnotation(service, app, annotation, multiple, cb) {
   if (!service) throw new Error("no service")
   if (!app) throw new Error("no app")
 
@@ -75,7 +90,6 @@ function processModelsAnnotation(service, app, annotation, multiple, cb) {
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
       const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
-      const defaults = App.utils.generateDefault(originalModelProperties)
 
       function modelRuntime() {
         return service._runtime.models[modelName]
@@ -112,7 +126,7 @@ function processModelsAnnotation(service, app, annotation, multiple, cb) {
         const objectType = service.name + '_' + modelName
 
         const context = {
-          service, app, model, originalModelProperties, modelProperties, modelPropertyName, defaults, modelRuntime,
+          service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName,
           others, annotation, objectType, parentsTypes: others
         }
@@ -123,7 +137,7 @@ function processModelsAnnotation(service, app, annotation, multiple, cb) {
   }
 }
 
-function addAccessControlParents(context) {
+export function addAccessControlParents(context) {
   const { modelRuntime } = context
   context.model.accessControlParents = async (id) => {
     const data = await modelRuntime().get(id)
@@ -141,7 +155,7 @@ function addAccessControlParents(context) {
   )
 }
 
-function prepareAccessControl(accessControl, names, types) {
+export function prepareAccessControl(accessControl, names, types) {
   if(typeof accessControl == 'object') {
     accessControl.objects = accessControl.objects ?? ((params) => names.map((name, index) => ({
       objectType: types[index],
@@ -150,7 +164,7 @@ function prepareAccessControl(accessControl, names, types) {
   }
 }
 
-function defineDeleteByOwnerEvents(config, context, generateId) {
+export function defineDeleteByOwnerEvents(config, context, generateId) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
   } = context
@@ -179,23 +193,16 @@ function defineDeleteByOwnerEvents(config, context, generateId) {
           }])
           const deletePromises = bucket.map(({to}) => runtime.delete(to))
           await Promise.all(deletePromises)
-        } while (bucket.length == bucketSize)
+        } while (bucket.length === bucketSize)
       }
     })
   }
 }
 
-function defineParentDeleteTriggers(config, context) {
+export function defineParentDeleteTriggers(config, context) {
   registerParentDeleteTriggers(context, config)
 }
 
-function defineParentCopyTriggers(config, context) {
+export function defineParentCopyTriggers(config, context) {
   registerParentCopyTriggers(context, config)
-}
-
-
-export {
-  extractIdParts, extractIdentifiers, extractObjectData, defineProperties, defineIndex, defineIndexes,
-  processModelsAnnotation, generateId, addAccessControlParents, prepareAccessControl,
-  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers,
 }

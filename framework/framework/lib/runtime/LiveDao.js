@@ -23,7 +23,7 @@ class LiveDao extends LcDao.DaoProxy {
   async refreshCredentials() {
     if(!this.started) return /// waiting for start
     const newCredentials = this.computeCredentials()
-    if(JSON.stringify(newCredentials) != JSON.stringify(this.credentials)) {
+    if(JSON.stringify(newCredentials) !== JSON.stringify(this.credentials)) {
       this.credentials = newCredentials
       this.buildDao()
     }
@@ -68,7 +68,7 @@ class LiveDao extends LcDao.DaoProxy {
     await Promise.all(this.credentialsObservations.map(observation => observation.promise))
 
     const newCredentials = this.computeCredentials()
-    if(JSON.stringify(newCredentials) != JSON.stringify(this.credentials)) {
+    if(JSON.stringify(newCredentials) !== JSON.stringify(this.credentials)) {
       this.credentials = newCredentials
     }
     this.buildDao()

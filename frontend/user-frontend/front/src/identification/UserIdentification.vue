@@ -52,6 +52,10 @@
     inline: {
       type: Boolean,
       default: false
+    },
+    anonymous: {
+      type: String,
+      default: ''
     }
   })
 
@@ -95,7 +99,9 @@
     seed: ownerType + '_' + owner
   }
 
-  const name = computed(() => userData.value?.name || uniqueNamesGenerator(nameGeneratorConfig))
+  const name = computed(() => userData.value?.name
+    || props.anonymous
+    || uniqueNamesGenerator(nameGeneratorConfig))
 
 </script>
 

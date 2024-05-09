@@ -1,6 +1,6 @@
 <template>
   <defined-form
-      v-if="actionDefinition && (state == 'ready' || state == 'working')"
+      v-if="actionDefinition && (state === 'ready' || state === 'working')"
       :tag="formTag"
       @submit="handleSubmitEvent"
       ref="defined"
@@ -13,10 +13,10 @@
       v-slot="{ data }">
     <slot v-bind="{ data, submit }"></slot>
   </defined-form>
-  <slot v-if="state == 'error'" name="error">
+  <slot v-if="state === 'error'" name="error">
     <div class="alert alert-danger" role="alert">error</div>
   </slot>
-  <slot v-if="state == 'done'" name="done">
+  <slot v-if="state === 'done'" name="done">
     <div class="alert alert-success" role="alert">success</div>
   </slot>
 </template>

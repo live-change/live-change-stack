@@ -52,7 +52,7 @@ function defineView(config, context) {
 
 function defineCreateAction(config, context) {
   const {
-    service, app, model,  defaults, modelPropertyName, modelRuntime, objectType,
+    service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
@@ -74,7 +74,8 @@ function defineCreateAction(config, context) {
       const entity = await modelRuntime().get(id)
       if(entity) throw 'exists'
       const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
-      const data = extractObjectData(writeableProperties, properties, defaults)
+      const data = extractObjectData(writeableProperties, properties,
+        App.computeDefaults(model, properties, { client, service } ))
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
       await fireChangeTriggers(context, objectType, identifiers, id, null, data)
@@ -120,7 +121,7 @@ function defineUpdateAction(config, context) {
       if(!entity) throw 'not_found'
       const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
-      if(JSON.stringify(entityTypeAndIdParts) != JSON.stringify(typeAndIdParts)) {
+      if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts)) {
         throw 'not_authorized'
       }
       const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
@@ -171,7 +172,7 @@ function defineDeleteAction(config, context) {
       const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
       const identifiers = extractIdentifiers(otherPropertyNames, entity)
-      if(JSON.stringify(entityTypeAndIdParts) != JSON.stringify(typeAndIdParts)) {
+      if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts)) {
         throw new Error('not_authorized')
       }
       await fireChangeTriggers(context, objectType, identifiers, id,

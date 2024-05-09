@@ -75,7 +75,7 @@
   onMounted(() => isMounted.value = true)
 
   function optionLabel(option) {
-    if(option == 'none') return 'none'
+    if(option === 'none') return 'none'
     return option
   }
 

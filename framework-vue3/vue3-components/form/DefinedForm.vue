@@ -78,7 +78,7 @@
             case "Object" : defaultValue = {}; break;
             case "Number" : defaultValue = 0; break;
             case "Array"  : defaultValue = []; break;
-            default: defaultValue = null
+            default: defaultValue = undefined
           }
         }
         this.setValue(initialValue ?? defaultValue)
@@ -133,7 +133,7 @@
       this.bindProperties(definition)
 
       this.unwatch = watch(() => this.data[this.property], () => {
-        if(this.object != this.data[this.property]) {
+        if(this.object !== this.data[this.property]) {
           this.object = this.data[this.property]
           console.log("OBJECT OBJECT CHANGE", this.property)
           this.bindProperties(definition)
@@ -145,10 +145,10 @@
       for(let propName in definition.properties) {
         let propDefn = definition.properties[propName]
 
-        if(propDefn.type == "Object") {
+        if(propDefn.type === "Object") {
           this.properties[propName] =
               new FormObject(definition.properties[propName], this.component, this.object, propName)
-        } else if(propDefn.type == 'Array') {
+        } else if(propDefn.type === 'Array') {
           this.properties[propName] =
               new FormArray(definition.properties[propName], this.component, this.object, propName)
         } else {
@@ -263,10 +263,10 @@
       const propDefn = JSON.parse(JSON.stringify(defn))
       this.definition.properties[propName] = propDefn
       const definition = this.definition
-      if(propDefn.type == "Object") {
+      if(propDefn.type === "Object") {
         this.properties[propName] =
             new FormObject(definition.properties[propName], this.component, this.object, propName)
-      } else if(propDefn.type == 'Array') {
+      } else if(propDefn.type === 'Array') {
         this.properties[propName] =
             new FormArray(definition.properties[propName], this.component, this.object, propName)
       } else {
@@ -287,7 +287,7 @@
       this.object = this.data[this.property]
       this.bindElements()
       this.unwatch = watch(() => this.data[this.property], () => {
-        if(this.object != this.data[this.property]) {
+        if(this.object !== this.data[this.property]) {
           //console.log("ARRAY OBJECT CHANGE", this.property)
           this.object = this.data[this.property]
           this.elements = []
@@ -327,9 +327,9 @@
     }
 
     newElement(index) {
-      if(this.elementDefinition.type == "Object") {
+      if(this.elementDefinition.type === "Object") {
         return new FormObject(this.elementDefinition, this.component, this.object, index)
-      } else if(this.elementDefinition.type == 'Array') {
+      } else if(this.elementDefinition.type === 'Array') {
         return new FormArray(this.elementDefinition, this.component, this.object, index)
       } else {
         return new FormValue(this.elementDefinition, this.component, this.object, index)
@@ -355,7 +355,7 @@
     check() {
       console.log("ARRAY", this, JSON.stringify(this.data))
       for(let i = 0; i < this.elements.length; i++) {
-        console.log("ELEMENT", i, this.elements[i].data[i] == this.object[i])
+        console.log("ELEMENT", i, this.elements[i].data[i] === this.object[i])
       }
     }
 
@@ -421,7 +421,7 @@
     }
 
     setValue(value) {
-      if(value != this.object) {
+      if(value !== this.object) {
         this.data[this.property] = value
         this.object = value
         this.elements = []
@@ -447,7 +447,7 @@
 
     updateElementIndices() {
       for(let i = 0; i < this.elements.length; i++) {
-        if(this.elements[i].property != i) {
+        if(this.elements[i].property !== i) {
           this.elements[i].setProperty(i)
         }
       }
@@ -643,7 +643,7 @@
       removeBarrier(name, barrier) {
         let barriers = this.getNode(name).barriers
         let id = barriers.indexOf(barrier)
-        if(id == -1) throw new Error("barrier not found")
+        if(id === -1) throw new Error("barrier not found")
         barriers.splice(id)
       },
 

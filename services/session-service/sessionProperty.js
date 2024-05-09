@@ -14,7 +14,6 @@ definition.processor(function(service, app) {
 
       const originalModelProperties = {...model.properties}
       const modelProperties = Object.keys(model.properties)
-      const defaults = App.utils.generateDefault(model.properties)
 
       function modelRuntime() {
         return service._runtime.models[modelName]
@@ -74,7 +73,8 @@ definition.processor(function(service, app) {
                 newObject[propertyName] = properties[propertyName]
               }
             }
-            const data = App.utils.mergeDeep({}, defaults, newObject)
+            const data = App.utils.mergeDeep({},
+              App.computeDefaults(model, properties, { client, service } ), newObject)
             await App.validation.validate(data, validators, { source: action, action, service, app, client })
             emit({
               type: eventName,

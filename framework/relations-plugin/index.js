@@ -11,6 +11,7 @@ import relatedToAny from './relatedToAny.js'
 
 import boundTo from './boundTo.js'
 import boundToAny from './boundToAny.js'
+import saveAuthor from './saveAuthor.js'
 
 
 const processors = [
@@ -18,7 +19,8 @@ const processors = [
   propertyOf, itemOf,
   propertyOfAny, itemOfAny,
   relatedTo, relatedToAny,
-  boundTo, boundToAny
+  boundTo, boundToAny,
+  saveAuthor
 ]
 
 const plugin = function(app, services) {

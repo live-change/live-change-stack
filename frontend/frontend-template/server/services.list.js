@@ -16,6 +16,8 @@ import messageAuthentication from '@live-change/message-authentication-service'
 import url from '@live-change/url-service'
 import prosemirror from '@live-change/prosemirror-service'
 import content from '@live-change/content-service'
+import geoIp from '@live-change/geoip-service'
+import vote from '@live-change/vote-service'
 import backup from '@live-change/backup-service'
 import init from './init.js'
 
@@ -38,6 +40,8 @@ export {
   url,
   prosemirror,
   content,
+  geoIp,
+  vote,
   backup,
   init
 }

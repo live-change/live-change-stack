@@ -1,5 +1,6 @@
 import live from "./live.js"
-import { computed, reactive, ref, unref, watch } from "vue"
+import freezable from './freezable.js'
+import { computed, reactive, ref, unref, watch, shallowRef, isRef } from "vue"
 
 class Bucket {
 
@@ -16,10 +17,14 @@ class Bucket {
     this.onDispose = []
     this.domElements = []
 
+    this.freeze = () => {}
+    this.unfreeze = () => {}
+    this.changed = ref(false)
+
     this.data = computed(() => {
       const ldv = this.liveData.value
       if(!ldv) return []
-      let source = unref(ldv)
+      let source = unref(unref(ldv))
       if(this.range.reverse) {
         source = source.slice()
         source.reverse()
@@ -35,6 +40,7 @@ class Bucket {
       ))
     })
     this.liveData = ref(null)
+    this.rawLiveData = ref(null)
 
     this.load()
 
@@ -48,8 +54,16 @@ class Bucket {
   async load() {
     this.path = this.pathFunction(this.range)
     this.dataPromise = live(this.api(), this.path, fun => this.onDispose.push(fun))
-    this.dataPromise.then(data => {
-      this.liveData.value = data
+    this.dataPromise.then(dataRef => {
+      this.rawLiveData.value = dataRef
+      const { freeze, unfreeze, output, changed } = freezable(dataRef)
+      this.freeze = freeze
+      this.unfreeze = unfreeze
+      watch(() => changed.value, v => {
+        if(isRef(this.changed)) this.changed.value = v
+          else this.changed = v
+      }, { immediate: true })
+      this.liveData.value = output
     })
     return this.dataPromise
   }
@@ -64,7 +78,7 @@ class Bucket {
 
   canClose() {
     const data = unref(this.data)
-    return data && data.length == this.bucketSize
+    return data && data.length === this.bucketSize
   }
 
   async closeTop() {
@@ -105,17 +119,19 @@ class RangeBuckets {
     this.canLoadTop = computed(() => this.isTopLoadPossible())
     this.canLoadBottom = computed(() => this.isBottomLoadPossible())
 
+    this.changed = computed(() => this.buckets.some(bucket => bucket.changed))
+
     this.loadFirstBucket()
   }
 
   isTopLoadPossible() {
-    if(this.buckets.length == 0) return false
+    if(this.buckets.length === 0) return false
     const firstBucket = this.buckets[0]
     return firstBucket.isTopClosed() || firstBucket.canClose()
   }
 
   isBottomLoadPossible() {
-    if(this.buckets.length == 0) return false
+    if(this.buckets.length === 0) return false
     const lastBucket = this.buckets[this.buckets.length - 1]
     return lastBucket.isBottomClosed() || lastBucket.canClose()
   }
@@ -141,11 +157,11 @@ class RangeBuckets {
 
   async loadTop() {
     //console.log("LOAD TOP!", this.isTopLoadPossible())
-    if(this.buckets.length == 0) return this.loadFirstBucket()
+    if(this.buckets.length === 0) return this.loadFirstBucket()
     const firstBucket = this.buckets[0]
     await firstBucket.promise
     if(!this.isTopLoadPossible()) return
-    if(firstBucket != this.buckets[0]) {
+    if(firstBucket !== this.buckets[0]) {
       return this.buckets[0].promise
     }
     let range = { limit: this.bucketSize, reverse: true }
@@ -174,11 +190,11 @@ class RangeBuckets {
 
   async loadBottom() {
     //console.log("LOAD BOTTOM!", this.isBottomLoadPossible())
-    if(this.buckets.length == 0) return this.loadFirstBucket()
+    if(this.buckets.length === 0) return this.loadFirstBucket()
     const lastBucket = this.buckets[this.buckets.length - 1]
     await lastBucket.promise
     if(!this.isBottomLoadPossible()) return
-    if(lastBucket != this.buckets[this.buckets.length - 1]) {
+    if(lastBucket !== this.buckets[this.buckets.length - 1]) {
       return this.buckets[this.buckets.length - 1].promise
     }
     let range = { limit: this.bucketSize }
@@ -205,7 +221,7 @@ class RangeBuckets {
   }
 
   dropTop() {
-    if(this.buckets.length == 0) throw new Error('impossible to drop from empty')
+    if(this.buckets.length === 0) throw new Error('impossible to drop from empty')
     //console.log("DROP TOP!")
     const droppedBucket = this.buckets[0]
     const height = droppedBucket.domElements.reduce((acc, el) => acc + (el?.offsetHeight || 0), 0)
@@ -217,12 +233,24 @@ class RangeBuckets {
 
   dropBottom() {
     //console.log("DROP BOTTOM!")
-    if(this.buckets.length == 0) throw new Error('impossible to drop from empty')
+    if(this.buckets.length === 0) throw new Error('impossible to drop from empty')
     const droppedBucket = this.buckets[this.buckets.length - 1]
     const height = droppedBucket.domElements.reduce((acc, el) => acc + el?.offsetHeight, 0)
     this.buckets.pop()
     droppedBucket.dispose()
     return height
+  }
+
+  freeze() {
+    for(const bucket of this.buckets) {
+      bucket.freeze()
+    }
+  }
+
+  unfreeze() {
+    for(const bucket of this.buckets) {
+      bucket.unfreeze()
+    }
   }
 
   dispose() {

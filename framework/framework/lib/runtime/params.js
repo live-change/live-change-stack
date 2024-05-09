@@ -23,16 +23,16 @@ async function preFilterParameters(parameters, definition) {
 }
 
 async function prepareParameter(parameter, prop, service) {
-  if(prop.type == Object) {
+  if(prop.type === Object) {
     if(!parameter) return null
     return await prepareParameters(parameter, prop.properties)
   }
-  if(prop.type == Array) {
+  if(prop.type === Array) {
     if(!parameter) return parameter
     if(!prop.of) return parameter
     return await Promise.all(parameter.map(item => prepareParameter(item, prop.of, service)))
   }
-  if(prop.type == Date) {
+  if(prop.type === Date && parameter) {
     return new Date(parameter)
   }
   let modelName = getModelName(prop.type)

@@ -80,6 +80,14 @@ app.config = {
       name: 'content',
     },
     {
+      name: 'geoIp',
+      geoIpCountryPath: "./data/GeoLite2-Country.mmdb",
+      //geoIpDefaultCountry: "pl"
+    },
+    {
+      name: 'vote',
+    },
+    {
       name: 'backup',
       port: 8007
     },

@@ -14,7 +14,6 @@ definition.processor(function(service, app) {
       if (model.properties.user) throw new Error('user property already exists!!!')
       const originalModelProperties = {...model.properties}
       const modelProperties = Object.keys(model.properties)
-      const defaults = App.utils.generateDefault(model.properties)
       const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
 
       function modelRuntime() {

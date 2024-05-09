@@ -85,11 +85,12 @@ export async function createApp(config, api, App, createRouter, host, headers, r
   })
 
   const defaultLocale = config.defaultLocale || 'en'
+  const selectedLocale = config.localeSelector   // TODO: read stored language
+    ? await config.localeSelector({ api, host, url, headers })
+    : defaultLocale
   const i18n = createI18n({
     legacy: false,
-    locale: config.localeSelector   // TODO: read stored language
-      ? await config.localeSelector({ api, host, url, headers })
-      : defaultLocale,
+    locale: selectedLocale,
     fallbackLocale: config.fallbackLocale || defaultLocale,
     ...config.i18n
   })

@@ -21,15 +21,6 @@ async function getGeoIp(ip) {
   })
 }
 
-async function getCitiesByCountry(countryCode) {
-  let country = csc.getAllCountries().find(
-    country => country.sortname.toUpperCase() === countryCode.toUpperCase()
-  )
-  let states = csc.getStatesOfCountry(country.id)
-  let cities = [].concat(...states.map(state => csc.getCitiesOfState(state.id))).map(c => c.name)
-  return cities
-}
-
 definition.view({
   name: "myCountry",
   properties: {

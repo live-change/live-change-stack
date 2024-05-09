@@ -15,6 +15,8 @@
 
     <slot v-if="loadingTop" name="loadingTop"></slot>
 
+    <slot v-if="frozen && buckets?.changed" name="changedTop"></slot>
+
     <template v-for="(bucket, bucketIndex) in buckets.buckets" :key="bucket.id">
 
       <slot v-for="(item, itemIndex) in bucket.data" v-bind="{ item, bucket, itemIndex, bucketIndex }">
@@ -23,6 +25,8 @@
       </slot>
 
     </template>
+
+    <slot v-if="frozen && buckets?.changed" name="changedBottom"></slot>
 
     <slot v-if="loadingBottom" name="loadingBottom"></slot>
 
@@ -115,18 +119,23 @@
     dropBottomDelay: {
       type: Number,
       default: 200
+    },
+    frozen: {
+      type: Boolean,
+      default: false
     }
   })
 
   const {
     pathFunction, bucketSize, initialPosition, softClose,
     loadTopSensorSize, loadBottomSensorSize, dropTopSensorSize, dropBottomSensorSize,
-    loadTopDelay, loadBottomDelay, dropTopDelay, dropBottomDelay,
+    loadTopDelay, loadBottomDelay, dropTopDelay, dropBottomDelay, frozen
   } = toRefs(props)
 
   const emit = defineEmits([
       'loadTop', 'loadBottom', 'loadedTop', 'loadedBottom',
-      'dropTop', 'dropBottom', 'droppedTop', 'droppedBottom'
+      'dropTop', 'dropBottom', 'droppedTop', 'droppedBottom',
+      'changed'
   ])
 
   const loadingTop = ref(false)
@@ -161,6 +170,15 @@
   } else {
     throw new Error("Either buckets or pathFunction must be provided")
   }
+
+  watch(() => frozen.value, (frozen) => {
+    if(frozen) buckets.value.freeze()
+      else buckets.value.unfreeze()
+  }, { immediate: true })
+
+  watch(() => buckets.value?.changed, () => {
+    emit('changed')
+  })
 
   function canLoadBottom() {
     return props.canLoadBottom && buckets.value.canLoadBottom()
@@ -220,6 +238,7 @@
     console.log("DROPPED BOTTOM", result)
     return result
   }
+
 
 </script>
 

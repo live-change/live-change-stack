@@ -45,7 +45,7 @@ function defineView(config, context) {
 
 function defineCreateAction(config, context) {
   const {
-    service, app, model,  defaults, modelPropertyName, modelRuntime, objectType,
+    service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
@@ -67,7 +67,8 @@ function defineCreateAction(config, context) {
       const entity = await modelRuntime().get(id)
       if(entity) throw 'exists'
       const identifiers = extractIdentifiers(otherPropertyNames, properties)
-      const data = extractObjectData(writeableProperties, properties, defaults)
+      const data = extractObjectData(writeableProperties, properties,
+        App.computeDefaults(model, properties, { client, service } ))
       await App.validation.validate({ ...identifiers, ...data }, validators,
           { source: action, action, service, app, client })
       await fireChangeTriggers(context, objectType, identifiers, id, null, data)

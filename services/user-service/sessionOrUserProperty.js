@@ -20,14 +20,13 @@ definition.processor(function(service, app) {
 
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
-      const defaults = App.utils.generateDefault(model.properties)
 
       function modelRuntime() {
         return service._runtime.models[modelName]
       }
 
       const config = model.sessionOrUserProperty
-      const writeableProperties = modelProperties || config.writableProperties
+      const writeableProperties = modelProperties || config.writeableProperties
 
       if(model.propertyOf) throw new Error("model " + modelName + " already have owner")
       if(model.propertyOfAny) throw new Error("model " + modelName + " already have owner")
@@ -39,6 +38,8 @@ definition.processor(function(service, app) {
         ...config,
         to: ['sessionOrUser', ...extendedWith]
       }
+
+      modelProperties.push(...extendedWith.map(p => [p, p+'Type']).flat())
 
       const transferEventName = ['sessionOrUser', ...(extendedWith.map(e => e[0].toUpperCase() + e.slice(1)))]
         .join('And') + 'Owned' + modelName + 'Transferred'
@@ -253,7 +254,8 @@ definition.processor(function(service, app) {
                 newObject[propertyName] = properties[propertyName]
               }
             }
-            const data = App.utils.mergeDeep({}, defaults, newObject)
+            const data = App.utils.mergeDeep({},
+              App.computeDefaults(model, properties, { client, service } ), newObject)
             await App.validation.validate(data, validators, { source: action, action, service, app, client })
             const identifiers = client.user ? {
               sessionOrUserType: 'user_User',
@@ -363,7 +365,8 @@ definition.processor(function(service, app) {
               identifiers[key]=properties[key]
             }
             if(!entity) {
-              const data = App.utils.mergeDeep({}, defaults, updateObject)
+              const data = App.utils.mergeDeep({},
+                App.computeDefaults(model, properties, { client, service } ), updateObject)
               //console.log('V', { ...identifiers, ...data}, validators)
               await App.validation.validate({ ...identifiers, ...data}, validators,
                   { source: action, action, service, app, client })

@@ -52,4 +52,6 @@
     StyleModule.mount(window.document, defaultHighlightStyle.module)
   }
 
+  import "./analytics"
+
 </script>
