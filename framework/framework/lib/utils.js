@@ -181,6 +181,7 @@ function generateDefault(properties) {
   let result = {}
   for(const propName in properties) {
     const property = properties[propName]
+    console.log("GENERATE DEFAULT", propName, property, property.hasOwnProperty('defaultValue'), property.hasOwnProperty('default'))
     if(property.hasOwnProperty('defaultValue')) {
       result[propName] = property.defaultValue
     } else if(property.hasOwnProperty('default')) {
@@ -295,7 +296,7 @@ function computeDefaults(model, properties, context) {
         break
       }
       case 'object': {
-        result[propName] = computeDefaults(defaults[propName], properties[propName])
+        result[propName] = defaults[propName] && computeDefaults(defaults[propName], properties[propName])
         break
       }
       default: {

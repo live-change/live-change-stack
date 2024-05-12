@@ -94,14 +94,14 @@
         if(this.serviceDefinitionSource) {
           if(typeof this.servicesDefinitionSource == 'string') {
             const definition = this.$api.serviceDefinitions.value
-                .find(service => service.name == this.serviceDefinitionSource)
+                .find(service => service.name === this.serviceDefinitionSource)
             return definition
           } else {
             return this.serviceDefinitionSource
           }
         }
         if(!this.$api.servicesDefinitions.value) return
-        const definition = this.$api.servicesDefinitions.value.find(service => service.name == this.service)
+        const definition = this.$api.servicesDefinitions.value.find(service => service.name === this.service)
         return definition
       },
       actionDefinition() {
@@ -171,7 +171,7 @@
       removeValidator(name, validator) {
         let validators = this.getNode(name).validators
         let id = validators.indexOf(validator)
-        if(id == -1) throw new Error("validator not found")
+        if(id === -1) throw new Error("validator not found")
         validators.splice(id)
       },
       validateField(name) {
@@ -210,7 +210,7 @@
         this.$refs.defined.scrollToError()
       },
       async submit(additionalParameters) {
-        if(!(this.state == 'ready' || this.state == 'error')) return
+        if(!(this.state === 'ready' || this.state === 'error')) return
         this.state = 'working'
         this.workingTask = this.workingZone.started({ name: `service ${this.service} action ${this.action}` })
 
@@ -297,7 +297,7 @@
                 this.workingZone.failed(this.workingTask, error)
               }
             } else if(Array.isArray(this.ignoreError)) {
-              if(this.ignoreError.indexOf(error) != -1) {
+              if(this.ignoreError.indexOf(error) !== -1) {
                 this.state = 'ready'
                 this.workingZone.finished(this.workingTask)
               } else {
@@ -348,7 +348,7 @@
     },
     watch: {
       actionDefinition(def) {
-        if(def && this.state == 'loading') {
+        if(def && this.state === 'loading') {
           this.state = 'ready'
           if(this.loadingTask) {
             this.loadingZone.finished(this.loadingTask)
@@ -357,7 +357,7 @@
         }
       },
       loadingError(error) {
-        if(error && this.state == 'loading') {
+        if(error && this.state === 'loading') {
           this.state = 'loadingError'
           if(this.loadingTask) {
             this.loadingZone.failed(this.loadingTask, error)

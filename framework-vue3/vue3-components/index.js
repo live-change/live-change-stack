@@ -22,5 +22,5 @@ import { analytics, useAnalytics, installRouterAnalytics, synchronized, synchron
 export { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList }
 
 export {
-  useLocale, watchLocale, getLocale, getLocaleObservable, updateLocale, captureLocale, localTime, getOtherOwnerLocale
+  useLocale, Locale
 } from './logic/locale'

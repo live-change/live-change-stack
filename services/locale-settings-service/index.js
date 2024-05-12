@@ -17,19 +17,24 @@ const LocaleSettings = definition.model({
       type: String
     },
     dateTime: {
-      type: Object
+      type: Object,
+      default: undefined,
     },
     list: {
-      type: Object
+      type: Object,
+      default: undefined,
     },
     number: {
-      type: Object
+      type: Object,
+      default: undefined,
     },
     plural: {
-      type: Object
+      type: Object,
+      default: undefined,
     },
     relativeTime: {
-      type: Object
+      type: Object,
+      default: undefined,
     },
     capturedLanguage: {
       type: String

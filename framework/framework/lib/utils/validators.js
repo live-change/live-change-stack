@@ -6,11 +6,11 @@ function nonEmpty(value) {
     if(!value.trim()) return 'empty'
   }
   if(Array.isArray(value)) {
-    if(value.length == 0) return 'empty'
+    if(value.length === 0) return 'empty'
   } else if(value instanceof Date) {
     return
   } if(typeof value == 'object') {
-    if(Object.keys(value).length == 0) return 'empty'
+    if(Object.keys(value).length === 0) return 'empty'
   }
 }
 
@@ -18,7 +18,7 @@ function getField(context, fieldName) {
   const propPath = context.propName ? context.propName.split('.') : []
   propPath.pop()
   let path
-  if(fieldName[0] == '/') {
+  if(fieldName[0] === '/') {
     path = fieldName.slice(1).split('.')
   } else {
     path = propPath.concat(fieldName.split('.'))

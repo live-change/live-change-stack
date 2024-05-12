@@ -11,6 +11,10 @@
   import 'primevue/resources/themes/saga-green/theme.css'
   import "@fortawesome/fontawesome-free/css/all.min.css"
 
+  import { useLocale } from '@live-change/vue3-components'
+  const locale = useLocale()
+  locale.captureLocale()
+
   import { ViewRoot, NavBar, UpdateBanner } from "@live-change/frontend-base"
 
   import { computed } from 'vue'

@@ -10,6 +10,8 @@
 
         <SettingsMenuItem v-if="client.user" name="user:settings" icon="id-card" label="General Settings" class="hidden md:block" />
 
+        <SettingsMenuItem name="user:locale" icon="id-card" label="Language and Locale" class="hidden md:block" />
+
 <!--        <SettingsMenuItem name="user:notificationsSettings" icon="exclamation-circle" label="Notifications" />-->
 
       </ul>

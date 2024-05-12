@@ -6,7 +6,7 @@
 </template>
 
 <script>
-  import { reactive, computed, watch } from 'vue'
+  import { computed, watch } from 'vue'
   import { getElementPositionInDocument } from '../utils/dom.mjs'
 
   const errorSufix = 'Error'
@@ -101,7 +101,7 @@
       return Promise.all(promises).then(results => {
         for(let error of results) {
           if(error) {
-            if(this.data[this.property+errorSufix] == error) return error
+            if(this.data[this.property+errorSufix] === error) return error
             this.setError(error)
             return error
           }
@@ -311,7 +311,7 @@
       this.property = name
       this.object = this.data[this.property]
       this.unwatch = watch(() => this.data[this.property], () => {
-        if(this.object != this.data[this.property]) {
+        if(this.object !== this.data[this.property]) {
           //console.log("ARRAY OBJECT CHANGE", this.property)
           this.object = this.data[this.property]
           this.elements = []
@@ -523,7 +523,7 @@
           addBarrier: (propName, validator) => this.addBarrier(propName, validator),
           removeBarrier: (propName, validator) => this.removeBarrier(propName, validator),
           waitForFieldBarriers: (propName) => this.waitForFieldBarriers(propName),
-          waitForBarriers: (propName) => this.waitForBarriers(),
+          waitForBarriers: () => this.waitForBarriers(),
 
           addElementToArray: (propName, initialValue) => this.addElementToArray(propName, initialValue),
           removeElementFromArray: (propName, index) => this.removeElementFromArray(propName, index),
@@ -615,7 +615,7 @@
       removeValidator(name, validator) {
         let validators = this.getNode(name).validators
         let id = validators.indexOf(validator)
-        if(id == -1) throw new Error("validator not found")
+        if(id === -1) throw new Error("validator not found")
         validators.splice(id)
       },
       validateField(name, context) {

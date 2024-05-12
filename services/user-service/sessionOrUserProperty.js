@@ -168,7 +168,7 @@ definition.processor(function(service, app) {
           access(params, context) {
             return config.ownerReadAccess ? config.ownerReadAccess(params, context) : true
           },
-          daoPath(params, { client, context }) {
+          async daoPath(params, { client, context }) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
             for(const key of extendedWith) {
               owner.push(params[key+'Type'], params[key])

@@ -1,5 +1,7 @@
 <template>
 
+  <ConfirmPopup v-if="isMounted" />
+
   <PathEditor v-model="path"
               @update:read="v => { read = v; version++ }"
               @update:write="v => write = v"
@@ -7,24 +9,31 @@
 
 <!--  <p>{{ path }}</p>-->
 
-  <CreateObject v-if="write" :dbApi="dbApi" :write="write.result" class="mt-2" />
+  <working-zone>
 
-  <template v-if="read?.external?.includes('range')">
-    <DataRangeView v-if="read && write && remove" :key="'rangeView' + version"
-                   :dbApi="dbApi" :read="read.result" :write="write.result" :remove="remove.result" />
-  </template>
-  <template v-else>
-    <DataView v-if="read && write && remove" :key="'view' + version"
-              :dbApi="dbApi" :read="read.result" :write="write.result" :remove="remove.result" />
-  </template>
+    <CreateObject v-if="write" :dbApi="dbApi" :write="write.result" class="mt-2" />
 
-  <CreateObject v-if="write" :dbApi="props.dbApi" :write="write.result" class="mt-2" />
+    <template v-if="read?.external?.includes('range')">
+      <DataRangeView v-if="read && write && remove" :key="'rangeView' + version"
+                     :dbApi="dbApi" :read="read.result" :write="write.result" :remove="remove.result" />
+    </template>
+    <template v-else>
+      <DataView v-if="read && write && remove" :key="'view' + version"
+                :dbApi="dbApi" :read="read.result" :write="write.result" :remove="remove.result" />
+    </template>
+
+    <CreateObject v-if="write" :dbApi="props.dbApi" :write="write.result" class="mt-2" />
+
+  </working-zone>
 
 </template>
 
 <script setup>
-  import { computed } from 'vue'
+  import { computed, onMounted, ref } from 'vue'
+  const isMounted = ref(false)
+  onMounted(() => isMounted.value = true)
 
+  import ConfirmPopup from 'primevue/confirmpopup'
   import PathEditor from "./PathEditor.vue"
   import DataRangeView from "./DataRangeView.vue"
   import DataView from "./DataView.vue"
@@ -57,7 +66,7 @@
     }
   })
 
-  import { ref, watch } from 'vue'
+  import { watch } from 'vue'
   import { useRouter, useRoute } from 'vue-router'
 
   function computePath() {

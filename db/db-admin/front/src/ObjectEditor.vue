@@ -1,5 +1,6 @@
 <template>
   <div class="flex flex-row">
+
     <div class="flex-grow-1 pt-1 pb-1">
       <CodeEditor :readOnly="readOnly" :initialData="initialData" @result="result => handleEditResult(result)"
         :ref="el => editorElementFound(el)" />
@@ -9,7 +10,7 @@
               icon="pi pi-refresh" class="p-button-rounded p-button-warning m-1 mr-2 mt-2" />
       <Button v-if="edited" @click="ev => updateObject(ev)"
               icon="pi pi-save" class="p-button-rounded p-button-primary m-1 mr-2" />
-      <Button @click="ev => deleteObject(ev)"
+      <Button v-if="remove" @click="ev => deleteObject(ev)"
               icon="pi pi-trash" class="p-button-rounded p-button-danger m-1 mr-2 mb-2" />
     </div>
   </div>
@@ -59,7 +60,7 @@
   const initialData = ref(JSON.parse(props.currentData))
   const editedData = ref(JSON.parse(props.currentData))
 
-  const edited = computed(() => JSON.stringify(initialData.value) != JSON.stringify(editedData.value))
+  const edited = computed(() => JSON.stringify(initialData.value) !== JSON.stringify(editedData.value))
 
   watch(() => props.currentData, currentData => {
     const refresh = !edited.value

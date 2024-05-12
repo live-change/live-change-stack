@@ -1,6 +1,6 @@
 import { createSSRApp, createApp as createSPAApp } from 'vue'
 
-import { registerComponents } from '@live-change/vue3-components'
+import { registerComponents, useLocale } from '@live-change/vue3-components'
 import ReactiveDaoVue from '@live-change/dao-vue3'
 
 import PrimeVue from 'primevue/config'
@@ -85,12 +85,17 @@ export async function createApp(config, api, App, createRouter, host, headers, r
   })
 
   const defaultLocale = config.defaultLocale || 'en'
-  const selectedLocale = config.localeSelector   // TODO: read stored language
+  const selectedLocale = config.localeSelector
     ? await config.localeSelector({ api, host, url, headers })
     : defaultLocale
+
+  const locale = useLocale(app)
+  const userLocale = await locale.getLocale()
+  console.log("USER LOCALE", userLocale)
+
   const i18n = createI18n({
     legacy: false,
-    locale: selectedLocale,
+    locale: userLocale?.language ?? selectedLocale,
     fallbackLocale: config.fallbackLocale || defaultLocale,
     ...config.i18n
   })

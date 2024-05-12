@@ -11,6 +11,7 @@ import identificationRoutes from "./identification/routes.js"
 import deleteRoutes from "./delete/routes.js"
 import { passwordResetRoutes, passwordChangeRoutes } from "./password/routes.js"
 import { notificationsSettingsRoutes, notificationsRoutes } from "./notifications/routes.js"
+import localeSettingsRoutes from "./locale/routes.js"
 
 import { dbAdminRoutes } from "@live-change/db-admin"
 
@@ -35,7 +36,8 @@ export function userRoutes(config = {}) {
         ...passwordChangeRoutes({ ...config, prefix: '' }),
         ...connectedRoutes({ ...config, prefix: '' }),
         ...identificationRoutes({ ...config, prefix: '' }),
-        ...notificationsSettingsRoutes({ ...config, prefix: '' })
+        ...notificationsSettingsRoutes({ ...config, prefix: '' }),
+        ...localeSettingsRoutes({ ...config, prefix: '' })
       ]
     })
 
