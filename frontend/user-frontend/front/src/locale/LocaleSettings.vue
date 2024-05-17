@@ -57,6 +57,8 @@
     return getLocaleMessage(option).languageName
   }
 
+  console.log("availableLocales", availableLocales)
+
   const localePath = path.localeSettings.myLocaleSettings({})
 
   const [localeSettings] = await Promise.all([live(localePath)])

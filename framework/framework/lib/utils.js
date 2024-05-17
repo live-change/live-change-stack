@@ -181,7 +181,6 @@ function generateDefault(properties) {
   let result = {}
   for(const propName in properties) {
     const property = properties[propName]
-    console.log("GENERATE DEFAULT", propName, property, property.hasOwnProperty('defaultValue'), property.hasOwnProperty('default'))
     if(property.hasOwnProperty('defaultValue')) {
       result[propName] = property.defaultValue
     } else if(property.hasOwnProperty('default')) {

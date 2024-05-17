@@ -54,7 +54,7 @@ class RangeReader extends ChangeStream {
     return {
       dispose() {
         const callbackIndex = this.callbacks.indexOf(cb)
-        if(callbackIndex == -1) throw new Error('Observer double dispose')
+        if(callbackIndex === -1) throw new Error('Observer double dispose')
         this.callbacks.splice(callbackIndex, 1)
         /// TODO: dispose or ignore reader somehow if no callbacks
       }

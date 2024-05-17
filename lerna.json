@@ -57,6 +57,7 @@
     "services/vote-service",
     "services/locale-settings-service",
     "services/geoip-service",
+    "services/task-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
@@ -72,7 +73,8 @@
     "frontend/content-frontend",
     "frontend/blog-frontend",
     "frontend/frontend-template",
-    "frontend/flow-frontend"
+    "frontend/flow-frontend",
+    "frontend/task-frontend"
   ],
   "publishConfig": {
     "access": "public"

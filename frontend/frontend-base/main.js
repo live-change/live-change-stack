@@ -91,7 +91,7 @@ export async function createApp(config, api, App, createRouter, host, headers, r
 
   const locale = useLocale(app)
   const userLocale = await locale.getLocale()
-  console.log("USER LOCALE", userLocale)
+  //console.log("USER LOCALE", userLocale)
 
   const i18n = createI18n({
     legacy: false,
