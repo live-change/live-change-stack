@@ -115,7 +115,7 @@ definition.processor(function(service, app) {
               }
             }
             const merged = App.utils.mergeDeep({}, entity, updateObject)
-            await App.validation.validate(merged, validators, { source: action, action, service, app, client })
+            await App.validation.validate(merged, validators, validationContext)
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,

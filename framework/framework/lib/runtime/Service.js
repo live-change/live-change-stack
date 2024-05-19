@@ -55,6 +55,11 @@ class Service {
 
     this.triggers = {}
     for(let triggerName in this.definition.triggers) {
+      if(!this.definition.triggers[triggerName].map) {
+        console.error("SERVICE", this.name,
+          "TRIGGER", triggerName, this.definition.triggers[triggerName])
+        process.exit(1)
+      }
       this.triggers[triggerName] = this.definition.triggers[triggerName]
         .map(trigger => new TriggerHandler( trigger, this ))
     }

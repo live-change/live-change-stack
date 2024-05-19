@@ -106,7 +106,7 @@ function defineDeletedEvent(config, context) {
   })
 }
 
-function getCreateFunction(validators, config, context) {
+function getCreateFunction( validators, validationContext, config, context) {
   const {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     modelName, writeableProperties
@@ -120,7 +120,7 @@ function getCreateFunction(validators, config, context) {
       App.computeDefaults(model, properties, { client, service } ))
 
     await App.validation.validate({ ...data }, validators,
-      { source: action, action, service, app, client })
+      validationContext)
 
     await fireChangeTriggers(context, objectType, null, id,
       entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
@@ -151,7 +151,8 @@ function defineCreateAction(config, context) {
     execute: () => { throw new Error("not generated yet") }
   })
   const validators = App.validation.getValidators(action, service, action)
-  action.execute = getCreateFunction(validators, config, context)
+  const validationContext = { source: action, action }
+  action.execute = getCreateFunction( validators, validationContext, config, context)
   service.actions[actionName] = action
 }
 
@@ -170,11 +171,12 @@ function defineCreateTrigger(config, context) {
     execute:  () => { throw new Error("not generated yet") }
   })
   const validators = App.validation.getValidators(trigger, service, trigger)
-  trigger.execute = getCreateFunction(validators, config, context)
+  const validationContext = { source: trigger, trigger }
+  trigger.execute = getCreateFunction( validators, validationContext, config, context)
   service.triggers[triggerName] = [trigger]
 }
 
-function getUpdateFunction(validators, config, context) {
+function getUpdateFunction( validators, validationContext, config, context) {
   const {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     modelName, writeableProperties
@@ -184,12 +186,12 @@ function getUpdateFunction(validators, config, context) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
     if(!entity) throw 'not_found'
-    const data = App.utils.mergeDeep(
+    const data = App.utils.mergeDeep({},
       extractObjectData(writeableProperties, properties, entity),
       App.computeUpdates(model, { ...entity, ...properties }, { client, service })
     )
     await App.validation.validate({ ...data }, validators,
-      { source: action, action, service, app, client })
+      validationContext)
     await fireChangeTriggers(context, null, id,
       entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
     emit({
@@ -224,7 +226,8 @@ function defineUpdateAction(config, context) {
     execute: () => { throw new Error("not generated yet") }
   })
   const validators = App.validation.getValidators(action, service, action)
-  action.execute = getUpdateFunction(validators, config, context)
+  const validationContext = { source: action, action }
+  action.execute = getUpdateFunction( validators, validationContext, config, context)
   service.actions[actionName] = action
 }
 
@@ -248,7 +251,8 @@ function defineUpdateTrigger(config, context) {
     execute: () => { throw new Error("not generated yet") }
   })
   const validators = App.validation.getValidators(trigger, service, trigger)
-  trigger.execute = getUpdateFunction(validators, config, context)
+  const validationContext = { source: trigger, trigger }
+  trigger.execute = getUpdateFunction( validators, validationContext, config, context)
   service.triggers[triggerName] = [trigger]
 }
 

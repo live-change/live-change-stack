@@ -113,7 +113,7 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw 'not_found'
-            if(entity.user != client.user) throw 'not_authorized'
+            if(entity.user !== client.user) throw 'not_authorized'
             let updateObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -152,7 +152,7 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw 'not_found'
-            if(entity.user != client.user) throw 'not_authorized'
+            if(entity.user !== client.user) throw 'not_authorized'
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,

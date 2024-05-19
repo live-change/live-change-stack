@@ -41,7 +41,7 @@ function defineView(config, context, external = true) {
   })
 }
 
-function getSetFunction(validators, config, context) {
+function getSetFunction( validators, validationContext, config, context) {
   const {
     service, app, model, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
@@ -54,7 +54,7 @@ function getSetFunction(validators, config, context) {
     const data = extractObjectData(writeableProperties, properties,
       App.computeDefaults(model, properties, { client, service } ))
     await App.validation.validate({ ...identifiers, ...data }, validators,
-      { source: action, action, service, app, client })
+      validationContext)
     await fireChangeTriggers(context, objectType, identifiers, id, null, data)
     emit({
       type: eventName,
@@ -83,7 +83,8 @@ function defineSetAction(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
-  action.execute = getSetFunction(validators, config, context)
+  const validationContext = { source: action, action }
+  action.execute = getSetFunction( validators, validationContext, config, context)
   service.actions[actionName] = action
 }
 
@@ -103,11 +104,12 @@ function defineSetTrigger(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(trigger, service, trigger)
-  trigger.execute = getSetFunction(validators, config, context)
-  service.triggers = [trigger]
+  const validationContext = { source: trigger, trigger }
+  trigger.execute = getSetFunction( validators, validationContext, config, context)
+  service.triggers[triggerName] = [trigger]
 }
 
-function getUpdateFunction(validators, config, context) {
+function getUpdateFunction( validators, validationContext, config, context) {
   const {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
@@ -118,9 +120,12 @@ function getUpdateFunction(validators, config, context) {
     const id = generateId(otherPropertyNames, properties)
     const entity = await modelRuntime().get(id)
     if (!entity) throw new Error('not_found')
-    const data = extractObjectData(writeableProperties, properties, entity)
+    const data = App.utils.mergeDeep({},
+      extractObjectData(writeableProperties, properties, entity),
+      App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+    )
     await App.validation.validate({ ...identifiers, ...data }, validators,
-      { source: action, action, service, app, client })
+      validationContext)
     const oldData = extractObjectData(writeableProperties, entity, {})
     await fireChangeTriggers(context, objectType, identifiers, id,
       entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
@@ -152,7 +157,8 @@ function defineUpdateAction(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
-  action.execute = getUpdateFunction(validators, config, context)
+  const validationContext = { source: action, action }
+  action.execute = getUpdateFunction( validators, validationContext, config, context)
   service.actions[actionName] = action
 }
 
@@ -174,11 +180,12 @@ function defineUpdateTrigger(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(trigger, service, trigger)
-  trigger.execute = getUpdateFunction(validators, config, context)
-  service.triggers = [trigger]
+  const validationContext = { source: trigger, trigger }
+  trigger.execute = getUpdateFunction( validators, validationContext, config, context)
+  service.triggers[triggerName] = [trigger]
 }
 
-function getSetOrUpdateFunction(validators, config, context) {
+function getSetOrUpdateFunction( validators, validationContext, config, context) {
   const {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
@@ -188,12 +195,12 @@ function getSetOrUpdateFunction(validators, config, context) {
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const id = generateId(otherPropertyNames, properties)
     const entity = await modelRuntime().get(id)
-    const data = extractObjectData(writeableProperties, properties, {
-      ...App.computeDefaults(model, properties, { client, service } ),
-      ...entity
-    })
-    await App.validation.validate({ ...identifiers, ...data }, validators,
-      { source: action, action, service, app, client })
+    const data = App.utils.mergeDeep({},
+      App.computeDefaults(model, properties, { client, service } ),
+      extractObjectData(writeableProperties, properties, entity),
+      App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+    )
+    await App.validation.validate({ ...identifiers, ...data },  validators, { ...validationContext, service, app, client })
     await fireChangeTriggers(context, objectType, identifiers, id,
       entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
     emit({
@@ -225,7 +232,8 @@ function defineSetOrUpdateAction(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
-  action.execute = getSetOrUpdateFunction(validators, config, context)
+  const validationContext = { source: action, action }
+  action.execute = getSetOrUpdateFunction( validators, validationContext, config, context)
   service.actions[actionName] = action
 }
 
@@ -247,11 +255,12 @@ function defineSetOrUpdateTrigger(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(trigger, service, trigger)
-  trigger.execute = getSetOrUpdateFunction(validators, config, context)
-  service.triggers = [trigger]
+  const validationContext = { source: trigger, trigger }
+  trigger.execute = getSetOrUpdateFunction( validators, validationContext, config, context)
+  service.triggers[triggerName] = [trigger]
 }
 
-function getResetFunction(validators, config, context) {
+function getResetFunction( validators, validationContext, config, context) {
   const {
     service, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
@@ -276,7 +285,6 @@ function defineResetAction(config, context) {
     service, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Reset'
   const actionName = 'reset' + joinedOthersClassName + 'Owned' + modelName
   const accessControl = config.resetAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
@@ -295,7 +303,8 @@ function defineResetAction(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
-  action.execute = getResetFunction(validators, config, context)
+  const validationContext = { source: action, action }
+  action.execute = getResetFunction( validators, validationContext, config, context)
   service.actions[actionName] = action
 }
 
@@ -319,8 +328,9 @@ function defineResetTrigger(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(trigger, service, trigger)
-  trigger.execute = getResetFunction(validators, config, context)
-  service.triggers = [trigger]
+  const validationContext = { source: trigger, trigger }
+  trigger.execute = getResetFunction( validators, validationContext, config, context)
+  service.triggers[triggerName] = [trigger]
 }
 
 export {

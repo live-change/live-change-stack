@@ -195,8 +195,8 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw 'not_found'
-            if(entity.ownerType == 'user_User') {
-              if(entity.owner != client.user) throw 'not_authorized'
+            if(entity.ownerType === 'user_User') {
+              if(entity.owner !== client.user) throw 'not_authorized'
             } else throw 'not_authorized'
             let updateObject = {}
             for(const propertyName of writeableProperties) {
@@ -242,8 +242,8 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw 'not_found'
-            if(entity.ownerType == 'user_User') {
-              if(entity.owner != client.user) throw 'not_authorized'
+            if(entity.ownerType === 'user_User') {
+              if(entity.owner !== client.user) throw 'not_authorized'
             } else throw 'not_authorized'
             const identifiers = client.user ? {
               ownerType: 'user_User',

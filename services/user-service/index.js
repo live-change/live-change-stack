@@ -20,6 +20,7 @@ definition.trigger({
       type: User
     },
   },
+  waitForEvents: true,
   async execute({ user }, { client, service }, emit) {
     if(!user) {
       user = app.generateUid()
@@ -44,6 +45,7 @@ definition.trigger({
       validation: ['nonEmpty']
     }
   },
+  waitForEvents: true,
   async execute({ user, session }, { client, service }, emit) {
     const userData = await User.get(user)
     if(!userData) throw 'userNotFound'
@@ -87,6 +89,7 @@ definition.trigger({
       validation: ['nonEmpty']
     }
   },
+  waitForEvents: true,
   async execute({ user, session }, { client, service }, emit) {
     if(!user) {
       user = app.generateUid()
@@ -149,6 +152,7 @@ definition.action({
   access: (params, { client }) => {
     return !!client.user
   },
+  waitForEvents: true,
   async execute({ }, { client, service }, emit) {
     const user = client.user
     await service.trigger({
