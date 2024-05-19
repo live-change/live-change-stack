@@ -48,7 +48,7 @@ export default function(service, app) {
       return service._runtime.models[modelName]
     }
 
-    const defaults = utils.generateDefault(model.properties)
+    const defaults = utils.getDefaults(model.properties)
 
     if(!service.events[genName("Created")]) { // Events:
       service.event({

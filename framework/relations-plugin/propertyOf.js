@@ -7,7 +7,9 @@ import {
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
 
 import {
-  defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
+  defineView,
+  defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction,
+  defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
 } from './singularRelationUtils.js'
 
 export default function(service, app) {
@@ -22,12 +24,11 @@ export default function(service, app) {
     addAccessControlParents(context)
     defineIndexes(context.model, context.otherPropertyNames, context.others)
 
-    if(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl) {
-      defineView({ ...config }, context)
-    }
+    defineView({ ...config }, context,
+      config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
     if(config.views) {
       for(const view of config.views) {
-        defineView({ ...config, ...view }, context)
+        defineView({ ...config, ...view }, context, !view.internal)
       }
     }
 
@@ -36,6 +37,11 @@ export default function(service, app) {
     defineTransferredEvent(config, context, generateId)
     defineResetEvent(config, context, generateId)
     defineDeleteByOwnerEvents(config, context)
+
+    defineSetTrigger(config, context)
+    defineUpdateTrigger(config, context)
+    defineSetOrUpdateTrigger(config, context)
+    defineResetTrigger(config, context)
 
     if(config.setAccess || config.writeAccess || config.setAccessControl || config.writeAccessControl) {
       defineSetAction(config, context)

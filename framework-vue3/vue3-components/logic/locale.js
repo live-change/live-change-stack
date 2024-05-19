@@ -66,6 +66,7 @@ export class Locale {
   async getLocaleObservable() {
     return (async () => {
       if(this.localeObservable) return this.localeObservable
+      if(!this.api.views.localeSettings) return ObservableValue(null) // no locale settings service available
       if(typeof window === 'undefined') {
         const value = await this.api.get(this.api.views.localeSettings.myLocaleSettings({}))
         this.localeObservable = new ObservableValue(value)
@@ -89,6 +90,7 @@ export class Locale {
   }
 
   updateLocale(localSettingsUpdate) {
+    if(!this.api.actions.localeSettings) return console.error("No locale settings service available!")
     return this.api.actions.localeSettings.setOrUpdateMyLocaleSettings(localSettingsUpdate)
   }
 

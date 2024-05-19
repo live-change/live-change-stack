@@ -1,10 +1,13 @@
-import { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition } from "@live-change/framework"
+import App from '@live-change/framework'
+import {
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
+} from "@live-change/framework"
 import {
   extractIdentifiers, extractObjectData, generateId, extractIdParts, prepareAccessControl
 } from "./utils.js"
 import { fireChangeTriggers } from "./changeTriggers.js"
 
-function defineView(config, context) {
+function defineView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
   const viewProperties = {}
@@ -16,7 +19,7 @@ function defineView(config, context) {
   }
   const viewName = config.name || ((config.prefix ? (config.prefix + joinedOthersClassName) : joinedOthersPropertyName) +
       'Owned' + modelName + (config.suffix || ''))
-  const accessControl = config.readAccessControl || config.writeAccessControl
+  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
   prepareAccessControl(accessControl, otherPropertyNames, others)
   service.views[viewName] = new ViewDefinition({
     name: viewName,
@@ -26,7 +29,8 @@ function defineView(config, context) {
     returns: {
       type: model,
     },
-    access: config.readAccess || config.writeAccess,
+    internal: !external,
+    access: external && (config.readAccess || config.writeAccess),
     accessControl,
     daoPath(properties, { client, context }) {
       const idParts = extractIdParts(otherPropertyNames, properties)
@@ -37,42 +41,94 @@ function defineView(config, context) {
   })
 }
 
-function defineSetAction(config, context) {
+function getSetFunction(validators, config, context) {
   const {
     service, app, model, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Set'
+  async function execute(properties, { client, service }, emit) {
+    const idParts = extractIdParts(otherPropertyNames, properties)
+    const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
+    const identifiers = extractIdentifiers(otherPropertyNames, properties)
+    const data = extractObjectData(writeableProperties, properties,
+      App.computeDefaults(model, properties, { client, service } ))
+    await App.validation.validate({ ...identifiers, ...data }, validators,
+      { source: action, action, service, app, client })
+    await fireChangeTriggers(context, objectType, identifiers, id, null, data)
+    emit({
+      type: eventName,
+      identifiers, data
+    })
+  }
+  return execute
+}
+
+function defineSetAction(config, context) {
+  const {
+    service, app, model, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
   const actionName = 'set' + joinedOthersClassName + 'Owned' + modelName
   const accessControl = config.setAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
-    properties: {
-      ...(model.properties)
-    },
+    properties: { ...(model.properties) },
     access: config.setAccess || config.writeAccess,
     accessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const idParts = extractIdParts(otherPropertyNames, properties)
-      const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
-      const identifiers = extractIdentifiers(otherPropertyNames, properties)
-      const data = extractObjectData(writeableProperties, properties,
-        App.computeDefaults(model, properties, { client, service } ))
-      await App.validation.validate({ ...identifiers, ...data }, validators,
-          { source: action, action, service, app, client })
-      await fireChangeTriggers(context, objectType, identifiers, id, null, data)
-      emit({
-        type: eventName,
-        identifiers, data
-      })
-    }
+    execute: () => { throw new Error('not generated yet') }
   })
-  const action = service.actions[actionName]
   const validators = App.validation.getValidators(action, service, action)
+  action.execute = getSetFunction(validators, config, context)
+  service.actions[actionName] = action
+}
+
+function defineSetTrigger(config, context) {
+  const {
+    service, app, model, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const actionName = 'set' + joinedOthersClassName + 'Owned' + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: { ...(model.properties) },
+    skipValidation: true,
+    queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getSetFunction(validators, config, context)
+  service.triggers = [trigger]
+}
+
+function getUpdateFunction(validators, config, context) {
+  const {
+    service, app, model, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
+  return async function execute(properties, { client, service }, emit) {
+    const identifiers = extractIdentifiers(otherPropertyNames, properties)
+    const id = generateId(otherPropertyNames, properties)
+    const entity = await modelRuntime().get(id)
+    if (!entity) throw new Error('not_found')
+    const data = extractObjectData(writeableProperties, properties, entity)
+    await App.validation.validate({ ...identifiers, ...data }, validators,
+      { source: action, action, service, app, client })
+    const oldData = extractObjectData(writeableProperties, entity, {})
+    await fireChangeTriggers(context, objectType, identifiers, id,
+      entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
+    emit({
+      type: eventName,
+      identifiers, data
+    })
+  }
 }
 
 function defineUpdateAction(config, context) {
@@ -80,11 +136,10 @@ function defineUpdateAction(config, context) {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
   const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
@@ -94,25 +149,58 @@ function defineUpdateAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const identifiers = extractIdentifiers(otherPropertyNames, properties)
-      const id = generateId(otherPropertyNames, properties)
-      const entity = await modelRuntime().get(id)
-      if (!entity) throw new Error('not_found')
-      const data = extractObjectData(writeableProperties, properties, entity)
-      await App.validation.validate({ ...identifiers, ...data }, validators,
-          { source: action, action, service, app, client })
-      const oldData = extractObjectData(writeableProperties, entity, {})
-      await fireChangeTriggers(context, objectType, identifiers, id,
-          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
-      emit({
-        type: eventName,
-        identifiers, data
-      })
-    }
+    execute: () => { throw new Error('not generated yet') }
   })
-  const action = service.actions[actionName]
   const validators = App.validation.getValidators(action, service, action)
+  action.execute = getUpdateFunction(validators, config, context)
+  service.actions[actionName] = action
+}
+
+function defineUpdateTrigger(config, context) {
+  const {
+    service, app, model, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      ...(model.properties)
+    },
+    skipValidation: true,
+    queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getUpdateFunction(validators, config, context)
+  service.triggers = [trigger]
+}
+
+function getSetOrUpdateFunction(validators, config, context) {
+  const {
+    service, app, model, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
+  return async function execute(properties, { client, service }, emit) {
+    const identifiers = extractIdentifiers(otherPropertyNames, properties)
+    const id = generateId(otherPropertyNames, properties)
+    const entity = await modelRuntime().get(id)
+    const data = extractObjectData(writeableProperties, properties, {
+      ...App.computeDefaults(model, properties, { client, service } ),
+      ...entity
+    })
+    await App.validation.validate({ ...identifiers, ...data }, validators,
+      { source: action, action, service, app, client })
+    await fireChangeTriggers(context, objectType, identifiers, id,
+      entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
+    emit({
+      type: eventName,
+      identifiers, data
+    })
+  }
 }
 
 function defineSetOrUpdateAction(config, context) {
@@ -124,7 +212,7 @@ function defineSetOrUpdateAction(config, context) {
   const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
@@ -134,26 +222,53 @@ function defineSetOrUpdateAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const identifiers = extractIdentifiers(otherPropertyNames, properties)
-      const id = generateId(otherPropertyNames, properties)
-      const entity = await modelRuntime().get(id)
-      const data = extractObjectData(writeableProperties, properties, {
-        ...App.computeDefaults(model, properties, { client, service } ),
-        ...entity
-      })
-      await App.validation.validate({ ...identifiers, ...data }, validators,
-          { source: action, action, service, app, client })
-      await fireChangeTriggers(context, objectType, identifiers, id,
-          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
-      emit({
-        type: eventName,
-        identifiers, data
-      })
-    }
+    execute: () => { throw new Error('not generated yet') }
   })
-  const action = service.actions[actionName]
   const validators = App.validation.getValidators(action, service, action)
+  action.execute = getSetOrUpdateFunction(validators, config, context)
+  service.actions[actionName] = action
+}
+
+function defineSetOrUpdateTrigger(config, context) {
+  const {
+    service, app, model, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      ...(model.properties)
+    },
+    skipValidation: true,
+    queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getSetOrUpdateFunction(validators, config, context)
+  service.triggers = [trigger]
+}
+
+function getResetFunction(validators, config, context) {
+  const {
+    service, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
+  } = context
+  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Reset'
+  return async function execute(properties, { client, service }, emit) {
+    const identifiers = extractIdentifiers(otherPropertyNames, properties)
+    const id = generateId(otherPropertyNames, properties)
+    const entity = await modelRuntime().get(id)
+    if (!entity) throw new Error('not_found')
+    await fireChangeTriggers(context, objectType, identifiers, id,
+        entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
+    emit({
+      type: eventName,
+      identifiers
+    })
+  }
 }
 
 function defineResetAction(config, context) {
@@ -165,7 +280,7 @@ function defineResetAction(config, context) {
   const actionName = 'reset' + joinedOthersClassName + 'Owned' + modelName
   const accessControl = config.resetAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
     properties: {
       [modelPropertyName]: {
@@ -177,19 +292,39 @@ function defineResetAction(config, context) {
     accessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const identifiers = extractIdentifiers(otherPropertyNames, properties)
-      const id = generateId(otherPropertyNames, properties)
-      const entity = await modelRuntime().get(id)
-      if (!entity) throw new Error('not_found')
-      await fireChangeTriggers(context, objectType, identifiers, id,
-          entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
-      emit({
-        type: eventName,
-        identifiers
-      })
-    }
+    execute: () => { throw new Error('not generated yet') }
   })
+  const validators = App.validation.getValidators(action, service, action)
+  action.execute = getResetFunction(validators, config, context)
+  service.actions[actionName] = action
 }
 
-export { defineView, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction }
+function defineResetTrigger(config, context) {
+  const {
+    service, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
+  } = context
+  const actionName = 'reset' + joinedOthersClassName + 'Owned' + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      }
+    },
+    queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getResetFunction(validators, config, context)
+  service.triggers = [trigger]
+}
+
+export {
+  defineView,
+  defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction,
+  defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
+}

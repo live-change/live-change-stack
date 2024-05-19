@@ -9,7 +9,9 @@ import {
 } from './propertyEvents.js'
 
 import {
-  defineObjectView, defineRangeViews, defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction
+  defineObjectView, defineRangeViews,
+  defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction,
+  defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
 } from './singularRelationAnyUtils.js'
 
 export default function(service, app) {
@@ -25,15 +27,15 @@ export default function(service, app) {
     addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames, false)
 
-    if(config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl) {
-      defineObjectView(config, context)
-    }
-    if(config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl) {
-      defineRangeViews(config, context)
-    }
+    defineObjectView(config, context,
+      config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl
+    )
+    defineRangeViews(config, context,
+      config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl
+    )
     if(config.views) {
       for(const view of config.views) {
-        defineObjectView({ ...config, ...view }, context)
+        defineObjectView({ ...config, ...view }, context, !view.internal)
       }
     }
 
@@ -42,6 +44,11 @@ export default function(service, app) {
     defineTransferredEvent(config, context, generateAnyId)
     defineResetEvent(config, context, generateAnyId)
     defineDeleteByOwnerEvents(config, context, generateAnyId)
+
+    defineSetTrigger(config, context)
+    defineUpdateTrigger(config, context)
+    defineSetOrUpdateTrigger(config, context)
+    defineResetTrigger(config, context)
 
     if(config.setAccess || config.writeAccess || config.setAccessControl || config.writeAccessControl) {
       defineSetAction(config, context)

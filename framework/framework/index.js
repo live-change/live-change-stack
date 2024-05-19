@@ -17,6 +17,7 @@ App.encodeIdentifier = utils.encodeIdentifier
 App.extractRange = utils.extractRange
 App.isomorphic = utils.isomorphic
 App.computeDefaults = utils.computeDefaults
+App.computeUpdates = utils.computeUpdates
 
 export default App
 

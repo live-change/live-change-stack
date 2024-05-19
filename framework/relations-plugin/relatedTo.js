@@ -7,7 +7,10 @@ import {
 } from './itemEvents.js'
 
 import {
-  defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex
+  defineView,
+  defineCreateAction, defineUpdateAction, defineDeleteAction, defineCopyAction,
+  defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger, defineCopyTrigger,
+  defineSortIndex,
 } from './pluralRelationUtils.js'
 
 export default function(service, app) {
@@ -25,15 +28,19 @@ export default function(service, app) {
       }
     }
 
-    if(config.readAccess || config.readAccessControl || config.writeAccessControl) {
-      defineView(config, context)
-    }
+    defineView(config, context,
+      config.readAccess || config.readAccessControl || config.writeAccessControl
+    )
     /// TODO: multiple views with limited fields
 
     defineCreatedEvent(config, context)
     defineUpdatedEvent(config, context)
     defineTransferredEvent(config, context)
     defineDeletedEvent(config, context)
+
+    defineCreateTrigger(config, context)
+    defineUpdateTrigger(config, context)
+    defineDeleteTrigger(config, context)
 
     if(config.createAccess || config.writeAccess || config.createAccessControl || config.writeAccessControl) {
       defineCreateAction(config, context)

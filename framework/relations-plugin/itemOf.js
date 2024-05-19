@@ -10,7 +10,10 @@ import {
 } from './itemEvents.js'
 
 import {
-  defineView, defineCreateAction, defineUpdateAction, defineDeleteAction, defineSortIndex,
+  defineView,
+  defineCreateAction, defineUpdateAction, defineDeleteAction,
+  defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger, defineCopyTrigger,
+  defineSortIndex,
   defineCopyAction, defineCopyOnParentCopyTrigger
 } from './pluralRelationUtils.js'
 
@@ -31,9 +34,8 @@ export default function(service, app) {
       }
     }
 
-    if(config.readAccess || config.readAccessControl || config.writeAccessControl) {
-      defineView(config, context)
-    }
+    defineView(config, context,
+      config.readAccess || config.readAccessControl || config.writeAccessControl)
     /// TODO: multiple views with limited fields
 
     defineCreatedEvent(config, context)
@@ -42,6 +44,11 @@ export default function(service, app) {
     defineDeletedEvent(config, context)
     defineDeleteByOwnerEvents(config, context)
     defineCopyEvent(config, context)
+
+    defineCreateTrigger(config, context)
+    defineUpdateTrigger(config, context)
+    defineDeleteTrigger(config, context)
+    defineCopyTrigger(config, context)
 
     if(config.createAccess || config.writeAccess || config.createAccessControl || config.writeAccessControl) {
       defineCreateAction(config, context)

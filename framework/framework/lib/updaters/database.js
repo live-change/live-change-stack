@@ -211,7 +211,8 @@ async function update(changes, service, app, force) {
         const table = generateTableName(change.model)
         const property = change.property
         let update = {}
-        update[change.name] = property.defaultValue ?? property.default
+        const defaultValue = property.defaultValue ?? property.default
+        if(typeof defaultValue !== 'function') update[change.name] = defaultValue // functions not supported here
         debug("CREATE PROPERTY UPDATE", update)
         await dao.request(['database', 'query'], database, `(${
             async (input, output, { table, update }) =>

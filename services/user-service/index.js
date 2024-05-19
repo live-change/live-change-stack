@@ -107,6 +107,42 @@ definition.trigger({
 })
 
 definition.action({
+  name: 'switchUser',
+  properties: {
+    to: {
+      type: User
+    }
+  },
+  waitForEvents: true,
+  access: (params, { client }) => {
+    return client.roles && client.roles.includes('admin')
+  },
+  async execute({ user }, { client, service }, emit) {
+    const userData = await User.get(user)
+    if(!userData) throw 'userNotFound'
+    await service.trigger({
+      type: 'signedOut',
+      session: client.session,
+      user: client.user
+    })
+    emit({
+      type: "signedOut",
+      user: client.user,
+      session: client.session
+    })
+    const session = client.session
+    await service.trigger({
+      type: 'signedIn',
+      session, user
+    })
+    emit({
+      type: "signedIn",
+      user, session
+    })
+  }
+})
+
+definition.action({
   name: 'deleteMe',
   properties: {
   },

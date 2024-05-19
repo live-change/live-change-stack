@@ -15,7 +15,7 @@ class Log {
 
   put(log) {
     const now = Date.now()
-    if(now == this.lastTime) {
+    if(now === this.lastTime) {
       this.lastId ++
     } else {
       this.lastId = 0

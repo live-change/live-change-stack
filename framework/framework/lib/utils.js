@@ -177,7 +177,7 @@ function mergeDeep(target, ...sources) {
   return mergeDeep(target, ...sources);
 }
 
-function generateDefault(properties) {
+function getDefaults(properties) {
   let result = {}
   for(const propName in properties) {
     const property = properties[propName]
@@ -186,7 +186,22 @@ function generateDefault(properties) {
     } else if(property.hasOwnProperty('default')) {
       result[propName] = property.default
     } else if(property.type === Object) {
-      result[propName] = generateDefault(property.properties)
+      const defaults = getDefaults(property.properties)
+      if(Object.keys(defaults).length > 0) result[propName] = defaults
+    }
+  }
+  return result
+}
+
+function getUpdates(properties) {
+  let result = {}
+  for(const propName in properties) {
+    const property = properties[propName]
+    if(property.hasOwnProperty('updated')) {
+      result[propName] = property.updated
+    } else if(property.type === Object) {
+      const updates = getUpdates(property.properties)
+      if(Object.keys(updates).length > 0) result[propName] = updates
     }
   }
   return result
@@ -285,30 +300,39 @@ function isomorphic( v ) {
   }
 }
 
-function computeDefaults(model, properties, context) {
-  const defaults = generateDefault(model.properties)
+function computeValues(source, properties, context) {
   const result = {}
-  for(const propName in defaults) {
-    switch(typeof defaults[propName]) {
+  for(const propName in source) {
+    switch(typeof source[propName]) {
       case 'function': {
-        result[propName] = defaults[propName](properties, context)
+        result[propName] = source[propName](properties, context)
         break
       }
       case 'object': {
-        result[propName] = defaults[propName] && computeDefaults(defaults[propName], properties[propName])
+        result[propName] = source[propName] && computeValues(source[propName], properties[propName], context)
         break
       }
       default: {
-        result[propName] = defaults[propName]
+        result[propName] = source[propName]
       }
     }
   }
   return JSON.parse(JSON.stringify(result))
 }
 
+function computeDefaults(model, properties, context) {
+  const defaults = getDefaults(model.properties)
+  return computeValues(defaults, properties, context)
+}
+
+function computeUpdates(model, properties, context) {
+  const updates = getUpdates(model.properties)
+  return computeValues(updates, properties, context)
+}
+
 export {
   typeName, toJSON, setDifference, mapDifference, crudChanges,
-  getProperty, setProperty, getField, setField, isObject, mergeDeep, generateDefault,
+  getProperty, setProperty, getField, setField, isObject, mergeDeep, getDefaults,
   prefixRange, rangeProperties, fieldListToFieldsObject,
-  encodeIdentifier, extractRange, isomorphic, computeDefaults
+  encodeIdentifier, extractRange, isomorphic, computeDefaults, computeUpdates
 }

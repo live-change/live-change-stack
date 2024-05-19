@@ -5,7 +5,7 @@ import {
 import { fireChangeTriggers } from "./changeTriggers.js"
 import App from '@live-change/framework'
 import {
-  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } from "@live-change/framework"
 
 const annotation = 'entity'
@@ -18,7 +18,7 @@ function entityAccessControl({service, modelName, modelPropertyName}, accessCont
   }
 }
 
-function defineView(config, context) {
+function defineView(config, context, external) {
   const { service, modelRuntime, modelPropertyName, modelName, model } = context
   const viewName = (config.prefix || '' ) + (config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
   service.views[viewName] = new ViewDefinition({
@@ -32,8 +32,9 @@ function defineView(config, context) {
     returns: {
       type: model,
     },
-    access: config.readAccess,
-    accessControl: entityAccessControl(context, config.readAccessControl || config.writeAccessControl),
+    internal: !external,
+    access: external && config.readAccess,
+    accessControl: external && entityAccessControl(context, config.readAccessControl || config.writeAccessControl),
     daoPath(properties, { client, context }) {
       const id = properties[modelPropertyName]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
@@ -105,46 +106,99 @@ function defineDeletedEvent(config, context) {
   })
 }
 
+function getCreateFunction(validators, config, context) {
+  const {
+    service, app, model, modelPropertyName, modelRuntime, objectType,
+    modelName, writeableProperties
+  } = context
+  const eventName = modelName + 'Created'
+  async function execute(properties, { client, service }, emit) {
+    const id = properties[modelPropertyName] || app.generateUid()
+    const entity = await modelRuntime().get(id)
+    if(entity) throw 'exists'
+    const data = extractObjectData(writeableProperties, properties,
+      App.computeDefaults(model, properties, { client, service } ))
+
+    await App.validation.validate({ ...data }, validators,
+      { source: action, action, service, app, client })
+
+    await fireChangeTriggers(context, objectType, null, id,
+      entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
+    emit({
+      type: eventName,
+      [modelPropertyName]: id,
+      data
+    })
+    return id
+  }
+  return execute
+}
 
 function defineCreateAction(config, context) {
   const {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     modelName, writeableProperties
   } = context
-  const eventName = modelName + 'Created'
   const actionName = 'create' + modelName
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
-    properties: {
-      ...(model.properties)
-    },
+    properties: { ...model.properties },
     access: config.createAccess || config.writeAccess,
     accessControl: entityAccessControl(context, config.createAccessControl || config.writeAccessControl),
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const id = properties[modelPropertyName] || app.generateUid()
-      const entity = await modelRuntime().get(id)
-      if(entity) throw 'exists'
-      const data = extractObjectData(writeableProperties, properties,
-        App.computeDefaults(model, properties, { client, service } ))
-
-      await App.validation.validate({ ...data }, validators,
-        { source: action, action, service, app, client })
-
-      await fireChangeTriggers(context, objectType, null, id,
-          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
-      emit({
-        type: eventName,
-        [modelPropertyName]: id,
-        data
-      })
-      return id
-    }
+    execute: () => { throw new Error("not generated yet") }
   })
-  const action = service.actions[actionName]
   const validators = App.validation.getValidators(action, service, action)
+  action.execute = getCreateFunction(validators, config, context)
+  service.actions[actionName] = action
+}
+
+function defineCreateTrigger(config, context) {
+  const {
+    service, app, model, modelPropertyName, modelRuntime, objectType,
+    modelName, writeableProperties
+  } = context
+  const actionName = 'create' + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: { ...model.properties },
+    skipValidation: true,
+    waitForEvents: true,
+    execute:  () => { throw new Error("not generated yet") }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getCreateFunction(validators, config, context)
+  service.triggers[triggerName] = [trigger]
+}
+
+function getUpdateFunction(validators, config, context) {
+  const {
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    modelName, writeableProperties
+  } = context
+  const eventName = modelName + 'Updated'
+  async function execute(properties, { client, service }, emit) {
+    const id = properties[modelPropertyName]
+    const entity = await modelRuntime().get(id)
+    if(!entity) throw 'not_found'
+    const data = App.utils.mergeDeep(
+      extractObjectData(writeableProperties, properties, entity),
+      App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+    )
+    await App.validation.validate({ ...data }, validators,
+      { source: action, action, service, app, client })
+    await fireChangeTriggers(context, null, id,
+      entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
+    emit({
+      type: eventName,
+      [modelPropertyName]: id,
+      data
+    })
+  }
+  return execute
 }
 
 function defineUpdateAction(config, context) {
@@ -152,9 +206,9 @@ function defineUpdateAction(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     modelName, writeableProperties
   } = context
-  const eventName = modelName + 'Updated'
   const actionName = 'update' + modelName
-  service.actions[actionName] = new ActionDefinition({
+  const triggerName = `${service.name}_${actionName}`
+  const action = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties),
@@ -167,33 +221,64 @@ function defineUpdateAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const id = properties[modelPropertyName]
-      const entity = await modelRuntime().get(id)
-      if(!entity) throw 'not_found'
-      const data = extractObjectData(writeableProperties, properties, entity)
-      await App.validation.validate({ ...data }, validators,
-        { source: action, action, service, app, client })
-      await fireChangeTriggers(context, null, id,
-          entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
-      emit({
-        type: eventName,
-        [modelPropertyName]: id,
-        data
-      })
-    }
+    execute: () => { throw new Error("not generated yet") }
   })
-  const action = service.actions[actionName]
   const validators = App.validation.getValidators(action, service, action)
+  action.execute = getUpdateFunction(validators, config, context)
+  service.actions[actionName] = action
 }
 
-function defineDeleteAction(config, context) {
+function defineUpdateTrigger(config, context) {
+  const {
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    modelName, writeableProperties
+  } = context
+  const actionName = 'update' + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      ...(model.properties),
+      [modelPropertyName]: {
+        type: modelPropertyName
+      }
+    },
+    skipValidation: true,
+    waitForEvents: true,
+    execute: () => { throw new Error("not generated yet") }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getUpdateFunction(validators, config, context)
+  service.triggers[triggerName] = [trigger]
+}
+
+function getDeleteFunction(config, context) {
   const {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, modelName, writeableProperties,
   } = context
   const eventName = modelName + 'Deleted'
+  async function execute(properties, { client, service }, emit) {
+    const id = properties[modelPropertyName]
+    const entity = await modelRuntime().get(id)
+    if(!entity) throw new Error('not_found')
+    await fireChangeTriggers(context, objectType, null, id,
+      entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
+    emit({
+      type: eventName,
+      [modelPropertyName]: id
+    })
+  }
+  return execute
+}
+
+function defineDeleteAction(config, context) {
+  const {
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    modelName, writeableProperties
+  } = context
   const actionName = 'delete' + modelName
+  const triggerName = `${service.name}_${actionName}`
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
@@ -206,18 +291,29 @@ function defineDeleteAction(config, context) {
     accessControl: entityAccessControl(context, config.deleteAccessControl || config.writeAccessControl),
     skipValidation: true,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const id = properties[modelPropertyName]
-      const entity = await modelRuntime().get(id)
-      if(!entity) throw new Error('not_found')
-      await fireChangeTriggers(context, objectType, null, id,
-          entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
-      emit({
-        type: eventName,
-        [modelPropertyName]: id
-      })
-    }
+    execute: getDeleteFunction(config, context)
   })
+}
+
+function defineDeleteTrigger(config, context) {
+  const {
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    modelName, writeableProperties
+  } = context
+  const actionName = 'delete' + modelName
+  const triggerName = `${service.name}_${actionName}`
+  service.triggers[triggerName] = [new TriggerDefinition({
+    name: actionName,
+    properties: {
+      ...(model.properties),
+      [modelPropertyName]: {
+        type: modelPropertyName
+      }
+    },
+    skipValidation: true,
+    waitForEvents: true,
+    execute: getDeleteFunction(config, context)
+  })]
 }
 
 export default function(service, app) {
@@ -253,14 +349,16 @@ export default function(service, app) {
       modelName, writeableProperties, annotation, objectType
     }
 
-    if (config.readAccess || config.readAccessControl || config.writeAccessControl) {
-      defineView(config, context)
-    }
+    defineView(config, context, config.readAccess || config.readAccessControl || config.writeAccessControl)
     /// TODO: multiple views with limited fields
 
     defineCreatedEvent(config, context)
     defineUpdatedEvent(config, context)
     defineDeletedEvent(config, context)
+
+    defineCreateTrigger(config, context)
+    defineUpdateTrigger(config, context)
+    defineDeleteTrigger(config, context)
 
     if (config.createAccess || config.writeAccess || config.createAccessControl || config.writeAccessControl) {
       defineCreateAction(config, context)

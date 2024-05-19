@@ -209,14 +209,14 @@ class WriteQueue {
   }
 
   async update(operations, options) {
-    const first = this.operations.length == 0
+    const first = this.operations.length === 0
     this.operations.push({ operations, options })
     //console.log("QUEUE UPDATE", this.id, this.operations, "FIRST", first)
     if(first) {
       if(this.writePromise) {
         //console.log("GOT WRITE PROMISE")
         this.updatePromise = this.writePromise.then(async written => {
-          if(this.operations.length == 0) return
+          if(this.operations.length === 0) return
           //console.log("VALUE WRITTEN -> DOING NEXT UPDATE", this.id, this.operations)
           let value = JSON.parse(JSON.stringify(this.writeValue))
           for(const { operations, options } of this.operations) {
@@ -236,7 +236,7 @@ class WriteQueue {
         this.updatePromise = this.readPromise.then(async readed => {
           this.readPromise = null
           //console.log("VALUE READED -> DOING UPDATE", this.id, this.operations)
-          if(this.operations.length == 0) return
+          if(this.operations.length === 0) return
           let value = JSON.parse(JSON.stringify(readed))
           for(const { operations, options } of this.operations) {
             //console.log("UPDATE OPS", operations, "OPTIONS", options)

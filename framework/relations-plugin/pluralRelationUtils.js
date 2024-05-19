@@ -6,7 +6,7 @@ import { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessCon
 import { fireChangeTriggers } from "./changeTriggers.js"
 import pluralize from 'pluralize'
 
-function defineView(config, context) {
+function defineView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
   const indexName = 'by'+context.joinedOthersClassName
@@ -18,7 +18,7 @@ function defineView(config, context) {
     })
   }
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
-  const accessControl = config.readAccessControl || config.writeAccessControl
+  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
   prepareAccessControl(accessControl, otherPropertyNames, others)
   service.views[viewName] = new ViewDefinition({
     name: viewName,
@@ -32,7 +32,8 @@ function defineView(config, context) {
         type: model
       }
     },
-    access: config.readAccess,
+    internal: !external,
+    access: external && (config.readAccess || config.writeAccess),
     accessControl: config.readAccessControl || config.writeAccessControl,
     daoPath(properties, { client, context }) {
       const idParts = extractIdParts(otherPropertyNames, properties)
@@ -43,16 +44,40 @@ function defineView(config, context) {
   })
 }
 
-function defineCreateAction(config, context) {
+function getCreateFunction(validators, config, context) {
   const {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
+  return async function execute(properties, { client, service }, emit) {
+    const id = properties[modelPropertyName] || app.generateUid()
+    const entity = await modelRuntime().get(id)
+    if(entity) throw 'exists'
+    const identifiers = extractIdentifiers(otherPropertyNames, properties)
+    const data = extractObjectData(writeableProperties, properties,
+      App.computeDefaults(model, properties, { client, service } ))
+    await App.validation.validate({ ...identifiers, ...data }, validators,
+      { source: action, action, service, app, client })
+    await fireChangeTriggers(context, objectType, identifiers, id, null, data)
+    emit({
+      type: eventName,
+      [modelPropertyName]: id,
+      identifiers, data
+    })
+    return id
+  }
+}
+
+function defineCreateAction(config, context) {
+  const {
+    service, app, model, modelPropertyName, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
   const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
   const accessControl = config.createAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
@@ -62,26 +87,63 @@ function defineCreateAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const id = properties[modelPropertyName] || app.generateUid()
-      const entity = await modelRuntime().get(id)
-      if(entity) throw 'exists'
-      const identifiers = extractIdentifiers(otherPropertyNames, properties)
-      const data = extractObjectData(writeableProperties, properties,
-        App.computeDefaults(model, properties, { client, service } ))
-      await App.validation.validate({ ...identifiers, ...data }, validators,
-          { source: action, action, service, app, client })
-      await fireChangeTriggers(context, objectType, identifiers, id, null, data)
-      emit({
-        type: eventName,
-        [modelPropertyName]: id,
-        identifiers, data
-      })
-      return id
-    }
+    execute: () => { throw new Error('not generated yet') }
   })
-  const action = service.actions[actionName]
   const validators = App.validation.getValidators(action, service, action)
+  action.execute = getCreateFunction(validators, config, context)
+  service.actions[actionName] = action
+}
+
+function defineCreateTrigger(config, context) {
+  const {
+    service, app, model, modelPropertyName, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      ...(model.properties)
+    },
+    skipValidation: true,
+    //queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getCreateFunction(validators, config, context)
+  service.triggers[triggerName] = [trigger]
+}
+
+function getUpdateFunction(validators, config, context) {
+  const {
+    service, app, model, modelPropertyName, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
+  return async function execute(properties, { client, service }, emit) {
+    const id = properties[modelPropertyName]
+    const entity = await modelRuntime().get(id)
+    if(!entity) throw 'not_found'
+    const entityIdParts = extractIdParts(otherPropertyNames, entity)
+    const idParts = extractIdParts(otherPropertyNames, properties)
+    if(JSON.stringify(entityIdParts) !== JSON.stringify(idParts)) {
+      throw 'not_authorized'
+    }
+    const identifiers = extractIdentifiers(otherPropertyNames, properties)
+    const data = extractObjectData(writeableProperties, properties, entity)
+    await App.validation.validate({ ...identifiers, ...data }, validators,
+      { source: action, action, service, app, client })
+    await fireChangeTriggers(context, objectType, identifiers, id,
+      extractObjectData(writeableProperties, entity, {}), data)
+    emit({
+      type: eventName,
+      [modelPropertyName]: id,
+      identifiers,
+      data
+    })
+  }
 }
 
 function defineUpdateAction(config, context) {
@@ -93,7 +155,7 @@ function defineUpdateAction(config, context) {
   const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
     properties: {
       [modelPropertyName]: {
@@ -103,37 +165,67 @@ function defineUpdateAction(config, context) {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
-    accessControl: config.updateAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      console.log("UPDATE", actionName, properties)
-      const id = properties[modelPropertyName]
-      const entity = await modelRuntime().get(id)
-      if(!entity) throw 'not_found'
-      const entityIdParts = extractIdParts(otherPropertyNames, entity)
-      const idParts = extractIdParts(otherPropertyNames, properties)
-      if(JSON.stringify(entityIdParts) != JSON.stringify(idParts)) {
-        throw 'not_authorized'
-      }
-      const identifiers = extractIdentifiers(otherPropertyNames, properties)
-      const data = extractObjectData(writeableProperties, properties, entity)
-      const dataWithIdentifiers = { [modelPropertyName]: id, ...identifiers, ...data }
-      await App.validation.validate(dataWithIdentifiers, validators,
-          { source: action, action, service, app, client })
-      await fireChangeTriggers(context, objectType, identifiers, id,
-          extractObjectData(writeableProperties, entity, {}), data)
-      emit({
-        type: eventName,
-        [modelPropertyName]: id,
-        identifiers,
-        data
-      })
-    }
+    execute: () => { throw new Error('not generated yet') }
   })
-  const action = service.actions[actionName]
   const validators = App.validation.getValidators(action, service, action)
+  action.execute = getUpdateFunction(validators, config, context)
+  service.actions[actionName] = action
+}
+
+function defineUpdateTrigger(config, context) {
+  const {
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
+  const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      },
+      ...(model.properties)
+    },
+    skipValidation: true,
+    //queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getUpdateFunction(validators, config, context)
+  service.triggers[triggerName] = [trigger]
+}
+
+function getDeleteFunction(validators, config, context) {
+  const {
+    service, app, model, modelPropertyName, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
+  return async function execute(properties, { client, service }, emit) {
+    const id = properties[modelPropertyName]
+    const entity = await modelRuntime().get(id)
+    if(!entity) throw 'not_found'
+    const entityIdParts = extractIdParts(otherPropertyNames, entity)
+    const idParts = extractIdParts(otherPropertyNames, properties)
+    if(JSON.stringify(entityIdParts) !== JSON.stringify(idParts)) {
+      throw 'not_authorized'
+    }
+    const identifiers = extractIdentifiers(otherPropertyNames, entity)
+    await fireChangeTriggers(context, objectType, identifiers, id,
+      extractObjectData(writeableProperties, entity, {}), null)
+    emit({
+      type: eventName,
+      [modelPropertyName]: id
+    })
+  }
 }
 
 function defineDeleteAction(config, context) {
@@ -145,7 +237,7 @@ function defineDeleteAction(config, context) {
   const actionName = 'delete' + joinedOthersClassName + context.reverseRelationWord + modelName
   const accessControl = config.deleteAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
     properties: {
       [modelPropertyName]: {
@@ -160,24 +252,91 @@ function defineDeleteAction(config, context) {
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
     timeout: config.deleteTimeout,
-    async execute(properties, { client, service }, emit) {
-      const id = properties[modelPropertyName]
-      const entity = await modelRuntime().get(id)
-      if(!entity) throw new Error('not_found')
-      const entityIdParts = extractIdParts(otherPropertyNames, entity)
-      const idParts = extractIdParts(otherPropertyNames, properties)
-      const identifiers = extractIdentifiers(otherPropertyNames, entity)
-      if(JSON.stringify(entityIdParts) != JSON.stringify(idParts)) {
-        throw new Error('not_authorized')
-      }
-      await fireChangeTriggers(context, objectType, identifiers, id,
-          extractObjectData(writeableProperties, entity, {}), null)
-      emit({
-        type: eventName,
-        [modelPropertyName]: id
-      })
-    }
+    execute: () => { throw new Error('not generated yet') }
   })
+  const validators = App.validation.getValidators(action, service, action)
+  action.execute = getDeleteFunction(validators, config, context)
+  service.actions[actionName] = action
+}
+
+function defineDeleteTrigger(config, context) {
+  const {
+    service, app, model, modelPropertyName, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
+  const actionName = 'delete' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      },
+      ...(model.properties)
+    },
+    skipValidation: true,
+    //queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getDeleteFunction(validators, config, context)
+  service.triggers[triggerName] = [trigger]
+}
+
+function getCopyFunction(validators, config, context) {
+  const {
+    service, app, model, modelPropertyName, modelRuntime, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
+  return async function execute(properties, { client, service }, emit) {
+    const id = properties[modelPropertyName]
+    const entity = await modelRuntime().get(id)
+    if(!entity) throw new Error('not_found')
+    const entityIdParts = extractIdParts(otherPropertyNames, entity)
+    const idParts = extractIdParts(otherPropertyNames, properties)
+    const identifiers = extractIdentifiers(otherPropertyNames, entity)
+    if(JSON.stringify(entityIdParts) !== JSON.stringify(idParts)) {
+      throw new Error('not_authorized')
+    }
+    const srcData = extractObjectData(writeableProperties, properties, entity)
+    const updatedData = App.utils.mergeDeep(srcData, properties.updates)
+    const newId = app.generateUid()
+    const dataWithIdentifiers = { [modelPropertyName]: newId, ...identifiers, ...updatedData }
+    await App.validation.validate(dataWithIdentifiers, validators,
+      { source: action, action, service, app, client })
+    app.trigger({
+      type: 'copy'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+      objectType,
+      object: newId,
+      from: id,
+      identifiers,
+      data: updatedData
+    }),
+      app.trigger({
+        type: 'copyObject',
+        objectType,
+        object: newId,
+        from: id,
+        identifiers,
+        data: updatedData
+      })
+    await fireChangeTriggers(context, objectType, identifiers, newId, null, updatedData)
+    emit({
+      type: eventName,
+      [modelPropertyName]: newId,
+      ['from'+modelPropertyName[0].toUpperCase() + modelPropertyName.slice(1)]: id,
+      identifiers,
+      data: updatedData
+    })
+    return {
+      newId,
+    }
+  }
+
 }
 
 function defineCopyAction(config, context) {
@@ -190,7 +349,7 @@ function defineCopyAction(config, context) {
   const actionName = 'copy' + joinedOthersClassName + context.reverseRelationWord + modelName
   const accessControl = config.copyAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.actions[actionName] = new ActionDefinition({
+  const action = new ActionDefinition({
     name: actionName,
     properties: {
       [modelPropertyName]: {
@@ -209,53 +368,45 @@ function defineCopyAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
-    async execute(properties, { client, service }, emit) {
-      const id = properties[modelPropertyName]
-      const entity = await modelRuntime().get(id)
-      if(!entity) throw new Error('not_found')
-      const entityIdParts = extractIdParts(otherPropertyNames, entity)
-      const idParts = extractIdParts(otherPropertyNames, properties)
-      const identifiers = extractIdentifiers(otherPropertyNames, entity)
-      if(JSON.stringify(entityIdParts) != JSON.stringify(idParts)) {
-        throw new Error('not_authorized')
-      }
-      const srcData = extractObjectData(writeableProperties, properties, entity)
-      const updatedData = App.utils.mergeDeep(srcData, properties.updates)
-      const newId = app.generateUid()
-      const dataWithIdentifiers = { [modelPropertyName]: newId, ...identifiers, ...updatedData }
-      await App.validation.validate(dataWithIdentifiers, validators,
-          { source: action, action, service, app, client })
-      app.trigger({
-        type: 'copy'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
-        objectType,
-        object: newId,
-        from: id,
-        identifiers,
-        data: updatedData
-      }),
-      app.trigger({
-        type: 'copyObject',
-        objectType,
-        object: newId,
-        from: id,
-        identifiers,
-        data: updatedData
-      })
-      await fireChangeTriggers(context, objectType, identifiers, newId, null, updatedData)
-      emit({
-        type: eventName,
-        [modelPropertyName]: newId,
-        ['from'+modelPropertyName[0].toUpperCase() + modelPropertyName.slice(1)]: id,
-        identifiers,
-        data: updatedData
-      })
-      return {
-        newId,
-      }
-    }
+    execute: () => { throw new Error('not generated yet') }
   })
-  const action = service.actions[actionName]
   const validators = App.validation.getValidators(action, service, action)
+  action.execute = getCopyFunction(validators, config, context)
+  service.actions[actionName] = action
+}
+
+function defineCopyTrigger(config, context) {
+  const {
+    service, app, model, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
+    identifiers
+  } = context
+  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
+  const actionName = 'copy' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties: {
+      [modelPropertyName]: {
+        type: model,
+        validation: ['nonEmpty']
+      },
+      ...(identifiers),
+      updates: {
+        type: 'object',
+        properties: {
+          ...(model.properties)
+        }
+      }
+    },
+    skipValidation: true,
+    //queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  trigger.execute = getCopyFunction(validators, config, context)
+  service.triggers[triggerName] = [trigger]
 }
 
 function defineCopyOnParentCopyTrigger(config, context) {
@@ -297,7 +448,7 @@ function defineCopyOnParentCopyTrigger(config, context) {
       }
       for(let i = 0; i < others.length; i++) {
         const other = others[i]
-        if(other == parentType) {
+        if(other === parentType) {
           newIdentifiers[otherPropertyNames[i]] = parent
         }
       }
@@ -343,6 +494,7 @@ function defineSortIndex(context, sortFields) {
 export {
   defineView,
   defineCreateAction, defineUpdateAction, defineDeleteAction, defineCopyAction,
+  defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger, defineCopyTrigger,
   defineCopyOnParentCopyTrigger,
   defineSortIndex,
 }
