@@ -10,36 +10,44 @@ const task = (taskDefinition) => { /// TODO: modify to use triggers
       .update(taskDefinition.name + ':' + propertiesJson)
       .digest('hex')
 
-    const similarTasks = Task.indexRangeGet('byCauseAndHash',
-      [context.causeType, context.cause, hash],
-      { limit: 23 } // sha256 collisions are very unlikely
-    )
-
+    const similarTasks = App.serviceViewGet('task', 'tasksByCauseAndHash', {
+      causeType: context.causeType,
+      cause: context.cause,
+      hash
+    })
     const oldTask = similarTasks.find(similarTask => similarTask.name === taskDefinition.name
       && JSON.stringify(similarTask.properties) === propertiesJson)
 
-    let taskObject = oldTask ? await Task.get(oldTask.id) : {
-      id: app.generateUid(),
-      name: taskDefinition.name,
-      properties: props,
-      hash,
-      state: 'created'
-    }
+    let taskObject = oldTask
+      ? await App.serviceViewGet('task', 'task', { task: oldTask.to })
+      : {
+        id: app.generateUid(),
+        name: taskDefinition.name,
+        properties: props,
+        hash,
+        state: 'created'
+      }
 
     if(!oldTask) {
       /// app.emitEvents
-      await Task.create({
+      await App.triggerService('task', 'task_createCaseOwnedTask', {
         ...taskObject,
         causeType: context.causeType,
-        cause: context.cause
+        cause: context.cause,
+        task: taskObject.id
       })
     }
 
     const maxRetries = taskDefinition.maxRetries ?? 5
 
     async function updateTask(data) {
-      await Task.update(taskObject.id, data)
-      taskObject = await Task.get(taskObject.id)
+      await App.triggerService('task', 'task_updateCaseOwnedTask', {
+        ...data,
+        causeType: context.causeType,
+        cause: context.cause,
+        task: taskObject.id
+      })
+      taskObject = await App.serviceViewGet('task', 'task', { task: oldTask.to })
     }
 
     const runTask = async () => {
@@ -56,7 +64,8 @@ const task = (taskDefinition) => { /// TODO: modify to use triggers
                 ...context,
                 causeType: definition.name + '_Task',
                 cause: taskObject.id
-              }, (events) => app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {}))
+              }, (events) => app.emitEvents(definition.name,
+                Array.isArray(events) ? events : [events], {}))
             },
             async progress(current, total) {
               await updateTask({

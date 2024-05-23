@@ -1,3 +1,4 @@
+.nv
 .env
 yarn.lock
 node_modules
@@ -7,3 +8,7 @@ stats.html
 *.db
 storage
 backups
+kubeconfig
+package-deps.json
+front/components.d.ts
+build-stats

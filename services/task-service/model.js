@@ -3,7 +3,6 @@ const app = App.app()
 
 import definition from './definition.js'
 
-
 const taskProperties = {
   name: {
     type: String,
@@ -81,5 +80,46 @@ const Task = definition.model({
     byCauseAndState: {
       property: ['causeType', 'cause', 'state']
     }
+  }
+})
+
+definition.view({
+  name: 'tasksByCauseAndHash',
+  internal: true,
+  properties: {
+    causeType: {
+      type: String
+    },
+    cause: {
+      type: String
+    },
+    hash: {
+      type: String
+    }
+  },
+  returns: {
+    type: Array,
+    of: {
+      type: Task
+    }
+  },
+  async daoPath({ hash }) {
+    return Task.indexRangePath('byCauseAndHash', [causeType, cause, hash], { limit: 23 })
+  }
+})
+
+definition.view({
+  name: 'task',
+  internal: true,
+  properties: {
+    task: {
+      type: String
+    }
+  },
+  returns: {
+    type: Task
+  },
+  async daoPath({ task }) {
+    return Task.path(task)
   }
 })

@@ -86,6 +86,7 @@ app.config = {
     {
       name: 'backup',
       path: '@live-change/backup-service',
+      clearEvents: true
     }
 
     //  { path: '@live-change/google-account-service' },

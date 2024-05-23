@@ -10,6 +10,7 @@ const expressApp = express()
 import fs from 'fs'
 import { createBackup, currentBackupPath, removeOldBackups } from './backup.js'
 import { restoreBackup } from './restore.js'
+import { getLastEventId, removeOldEvents } from './clearEvents.js'
 
 import progress from "progress-stream"
 
@@ -46,14 +47,17 @@ if(Object.keys(users) > 0) {
 }
 
 function doBackup() {
+  console.log("DOING BACKUP!")
   if(currentBackup) return currentBackup
   const path = currentBackupPath(backupsDir)
   const filename = path.slice(path.lastIndexOf('/')+1)
   currentBackup = {
     path, filename,
     promise: queue.add(async () => {
-      await removeOldBackups(backupsDir, 10*TWENTY_FOUR_HOURS, 10)
+      const lastEventId = await getLastEventId()
+      await removeOldBackups(backupsDir, 10 * TWENTY_FOUR_HOURS, 10)
       await createBackup(path)
+      if(config.clearEvents) await removeOldEvents(lastEventId)
     })
   }
   currentBackup.promise.then(done => {

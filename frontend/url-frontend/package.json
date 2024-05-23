@@ -4,7 +4,7 @@
   "scripts": {
     "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --enableSessions --initScript ./init.js",
-    "localDev": "node server/start.js localDev --enableSessions",
+    "localDev": "node server/start.js localDev --enableSessions --dbAccess",
     "dev": "node server/start.js dev --enableSessions",
     "ssrDev": "node server/start.js ssrDev --enableSessions",
     "serveAllMem": "cross-env NODE_ENV=production lcli ssrServer --withApi --withServices --updateServices --enableSessions --withDb --dbBackend mem --createDb",

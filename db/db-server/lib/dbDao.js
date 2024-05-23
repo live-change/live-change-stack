@@ -227,6 +227,14 @@ function localRequests(server, scriptContext) {
       if(!log) throw new Error("logNotFound")
       return log.putOld(object)
     },
+    clearLog: (dbName, logName, before) => {
+      if(dbName === 'system') throw new Error("system database is not writable")
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound '+dbName)
+      const log = db.log(logName)
+      if(!log) throw new Error("logNotFound")
+      return log.clear(before)
+    },
     query: (dbName, code, params) => {
       if(dbName === 'system') throw new Error("system database is not writable")
       if(!dbName) throw new Error("databaseNameRequired")
@@ -356,6 +364,14 @@ function remoteRequests(server) {
       const log = db.log(logName)
       if(!log) throw new Error("logNotFound")
       return server.masterDao.request(['database', 'putOldLog'], dbName, logName, object )
+    },
+    clearLog: (dbName, logName, before) => {
+      if(dbName === 'system') throw new Error("system database is not writable")
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      const log = db.log(logName)
+      if(!log) throw new Error("logNotFound")
+      return server.masterDao.request(['database', 'clearLog'], dbName, logName, before )
     },
     query: (dbName, code, params) => {
       if(!dbName) throw new Error("databaseNameRequired")
@@ -762,7 +778,6 @@ function localReads(server, scriptContext) {
     },
     logObject: {
       observable: (dbName, logName, id) => {
-
         const db = server.databases.get(dbName)
         if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
         const log = db.log(logName)

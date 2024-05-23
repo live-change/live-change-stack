@@ -92,7 +92,7 @@ class App {
 
   createServiceDefinition( definition ) {
     const sourceConfig = this.config && this.config.services && this.config.services.find
-      && this.config.services.find(c => c.name == definition.name)
+      && this.config.services.find(c => c.name === definition.name)
     const config = { ...sourceConfig, module: null }
     return new ServiceDefinition({ ...definition, config })
   }
@@ -111,7 +111,7 @@ class App {
     processUse(sourceService)
     //console.log("FOUND PROCESSORS", processors.length)
     processors = processors.filter(function(item, pos, self) {
-      return self.indexOf(item) == pos
+      return self.indexOf(item) === pos
     })
     processors = processors.map(p => {
       if(typeof p == 'function') {
@@ -262,7 +262,7 @@ class App {
       const triggers = service.triggers[data.type]
       if(!triggers) return []
       const result = await Promise.all(triggers.map(t => t.execute(data)))
-      if(!returnArray && Array.isArray(result) && result.length == 1) return result[0]
+      if(!returnArray && Array.isArray(result) && result.length === 1) return result[0]
       return result
     }
     if(!data.id) data.id = this.generateUid()
@@ -285,10 +285,10 @@ class App {
     let observer
     const promise = new Promise((resolve, reject) => {
       observer = (signal, value) => {
-        if(signal != 'set') return reject('unknownSignal')
+        if(signal !== 'set') return reject('unknownSignal')
         if(!value) return
-        if(value.state == 'done') return resolve(value.result)
-        if(value.state == 'failed') return reject(value.error)
+        if(value.state === 'done') return resolve(value.result)
+        if(value.state === 'failed') return reject(value.error)
       }
       objectObservable.observe(observer)
     }).finally(() => {
@@ -297,7 +297,7 @@ class App {
     await this.profileLog.endPromise(profileOp, promise)
 
     const result = await promise
-    if(!returnArray && Array.isArray(result) && result.length == 1) return result[0]
+    if(!returnArray && Array.isArray(result) && result.length === 1) return result[0]
     return result
   }
 
@@ -390,10 +390,10 @@ class App {
       let observer
       const promise = new Promise((resolve, reject) => {
         observer = (signal, value) => {
-          if (signal != 'set') return reject('unknownSignal')
+          if (signal !== 'set') return reject('unknownSignal')
           if (!value) return
-          if (value.state == 'done') return resolve(value.result)
-          if (value.state == 'failed') return reject(value.error)
+          if (value.state === 'done') return resolve(value.result)
+          if (value.state === 'failed') return reject(value.error)
         }
         objectObservable.observe(observer)
         if (!requestTimeout) {
@@ -478,9 +478,9 @@ class App {
         if(data.finished) {
           finishedEvents = data.finished
           if(finishedEvents.length >= events.length) {
-            const eventsNotDone = events.filter(event => data.finished.find(e => e.id == event.id))
+            const eventsNotDone = events.filter(event => data.finished.find(e => e.id === event.id))
             if(eventsNotDone.length !== 0) {
-              const eventsDone = events.filter(event => !data.finished.find(e => e.id == event.id))
+              const eventsDone = events.filter(event => !data.finished.find(e => e.id === event.id))
               console.error("waitForEvents - finished events does not match!")
               console.error("  finished events:")
               for(const event of eventsDone) {

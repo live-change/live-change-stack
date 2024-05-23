@@ -13,7 +13,8 @@
     <DataTable v-if="tables.length > 0" :value="tables" responsiveLayout="scroll">
       <Column field="id" header="Table">
         <template #body="slotProps">
-          <form v-if="tableRename == slotProps.data.id" @submit="ev => finishTableRename(ev, slotProps.data.id)">
+          <form v-if="tableRename === slotProps.data.id"
+                @submit="ev => finishTableRename(ev, slotProps.data.id)">
             <InputText v-model="tableNewName" />
           </form>
           <router-link v-else :to="tableLink(dbName, slotProps.data.id)">
@@ -22,9 +23,9 @@
         </template>
       </Column>
       <Column field="rows" header="Rows" :headerStyle="{ 'width': '60px' }"></Column>
-      <Column :headerStyle="{ 'width': '120px' }">
+      <Column :headerStyle="{ 'width': '140px' }">
         <template #body="slotProps">
-          <Button v-if="tableRename == slotProps.data.id"
+          <Button v-if="tableRename === slotProps.data.id"
                   @click="ev => finishTableRename(ev, slotProps.data.id)" type="button"
                   icon="pi pi-save" class="p-button-rounded p-button-primary mr-2" />
           <Button v-else
@@ -52,7 +53,7 @@
     <DataTable v-if="logs.length > 0" :value="logs" responsiveLayout="scroll">
       <Column field="id" header="Log">
         <template #body="slotProps">
-          <form v-if="logRename == slotProps.data.id" @submit="ev => finishLogRename(ev, slotProps.data.id)">
+          <form v-if="logRename === slotProps.data.id" @submit="ev => finishLogRename(ev, slotProps.data.id)">
             <InputText v-model="logNewName" />
           </form>
           <router-link v-else :to="logLink(dbName, slotProps.data.id)">
@@ -61,9 +62,9 @@
         </template>
       </Column>
       <Column field="rows" header="Rows" :headerStyle="{ 'width': '60px' }"></Column>
-      <Column :headerStyle="{ 'width': '120px' }">
+      <Column :headerStyle="{ 'width': '140px' }">
         <template #body="slotProps">
-          <Button v-if="logRename == slotProps.data.id"
+          <Button v-if="logRename === slotProps.data.id"
                   @click="ev => finishLogRename(ev, slotProps.data.id)" type="button"
                   icon="pi pi-save" class="p-button-rounded p-button-primary mr-2" />
           <Button v-else
@@ -91,7 +92,7 @@
     <DataTable v-if="indexes.length > 0" :value="indexes" responsiveLayout="scroll">
       <Column field="id" header="Index">
         <template #body="slotProps">
-          <form v-if="indexRename == slotProps.data.id" @submit="ev => finishIndexRename(ev, slotProps.data.id)">
+          <form v-if="indexRename === slotProps.data.id" @submit="ev => finishIndexRename(ev, slotProps.data.id)">
             <InputText v-model="indexNewName" />
           </form>
           <router-link v-else :to="indexLink(dbName, slotProps.data.id)">
@@ -100,7 +101,7 @@
         </template>
       </Column>
       <Column field="rows" header="Rows" :headerStyle="{ 'width': '60px' }"></Column>
-      <Column :headerStyle="{ 'width': '120px' }">
+      <Column :headerStyle="{ 'width': '140px' }">
         <template #body="slotProps">
           <Button v-if="indexRename == slotProps.data.id"
                   @click="ev => finishIndexRename(ev, slotProps.data.id)" type="button"
@@ -298,7 +299,7 @@
     const oldIndexName = indexRename.value
     const indexName = indexNewName.value
     indexRename.value = null
-    if(oldIndexName == indexName) return
+    if(oldIndexName === indexName) return
     workingZone.addPromise('renameIndex', (async () => {
       try {
         await dao.request([dbApi, 'renameIndex'], dbName, oldIndexName, indexName)

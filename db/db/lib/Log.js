@@ -13,7 +13,7 @@ class Log {
     this.lastId = 0
   }
 
-  put(log) {
+  async put(log) {
     const now = Date.now()
     if(now === this.lastTime) {
       this.lastId ++
@@ -22,12 +22,16 @@ class Log {
       this.lastTime = now
     }
     const id = ((''+this.lastTime).padStart(16, '0'))+':'+((''+this.lastId).padStart(6, '0'))
-    this.data.put({ ...log, id, timestamp: this.lastTime })
+    await this.data.put({ ...log, id, timestamp: this.lastTime })
     return id
   }
 
-  putOld(log) {
-    this.data.put(log)
+  async putOld(log) {
+    await this.data.put(log)
+  }
+
+  async clear(before) {
+    await this.data.rangeDelete({ lt: before })
   }
 
   objectGet(key) {
