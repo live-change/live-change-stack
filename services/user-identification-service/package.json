@@ -1,6 +1,6 @@
 {
   "name": "@live-change/user-identification-service",
-  "version": "0.8.26",
+  "version": "0.8.27",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.8.26",
-    "@live-change/relations-plugin": "0.8.26",
+    "@live-change/framework": "^0.8.27",
+    "@live-change/relations-plugin": "^0.8.27",
     "pluralize": "^8.0.0"
   },
   "gitHead": "e62696aa9fa6e5b86312dfb64c97efa300d41147"
