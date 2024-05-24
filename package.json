@@ -21,6 +21,7 @@
     "db/db-store-observable-db",
     "db/db-store-rbtree",
     "db/db-admin",
+    "db/flatten-interval-tree",
     "framework/uid",
     "framework/framework",
     "framework/server",

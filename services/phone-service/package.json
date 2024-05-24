@@ -22,12 +22,12 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.26",
-    "@live-change/relations-plugin": "^0.8.26",
+    "@live-change/framework": "0.8.26",
+    "@live-change/relations-plugin": "0.8.26",
     "got": "^11.8.3",
     "html-to-text": "8.1.0",
     "jsdom": "^18.1.1",
     "smsapi": "2.0.9"
   },
-  "gitHead": "63e942caccbcb1c9bfbd1a3ef1d097124514c5a7"
+  "gitHead": "e62696aa9fa6e5b86312dfb64c97efa300d41147"
 }

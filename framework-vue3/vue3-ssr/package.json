@@ -21,10 +21,10 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao-vue3": "^0.8.26",
-    "@live-change/uid": "^0.8.26",
+    "@live-change/dao-vue3": "0.8.26",
+    "@live-change/uid": "0.8.26",
     "@vueuse/core": "^10.9.0",
     "debug": "^4.3.4"
   },
-  "gitHead": "63e942caccbcb1c9bfbd1a3ef1d097124514c5a7"
+  "gitHead": "e62696aa9fa6e5b86312dfb64c97efa300d41147"
 }
