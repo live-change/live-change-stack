@@ -70,6 +70,9 @@ app.config = {
       path: '@live-change/identicon-service'
     },
     {
+      name: 'localeSettings'
+    },
+    {
       name: 'notification',
       path: '@live-change/notification-service',
       contactTypes,

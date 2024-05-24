@@ -427,10 +427,6 @@ class Store {
 
   async rangeDelete(range) {
     if(!range) throw new Error("range not defined")
-    const rangeObservables = this.rangeObservablesTree.search(
-        range.gt || range.gte || '',
-        range.lt || range.lte || '\xFF\xFF\xFF\xFF'
-    )
     return new Promise((resolve, reject) => {
       let keys = []
       let count, last

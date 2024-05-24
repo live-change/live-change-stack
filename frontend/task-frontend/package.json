@@ -99,7 +99,7 @@
     "txtgen": "^3.0.6",
     "webdriverio": "^8.31.1"
   },
-  "author": "",
+  "author":"Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "ISC",
   "description": "",
   "gitHead": "63e942caccbcb1c9bfbd1a3ef1d097124514c5a7"

@@ -10,6 +10,7 @@
     "db/db-client",
     "db/db-server",
     "db/db-web",
+    "db/flatten-interval-tree",
     "db/db-store-indexeddb",
     "db/db-store-localstorage",
     "db/db-store-level",

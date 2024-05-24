@@ -1,0 +1,51 @@
+{
+  "name": "@live-change/flatten-interval-tree",
+  "version": "0.8.25",
+  "description": "Interval search tree - this is a fork of the original project that support strings as keys.",
+  "author": "Michał Łaszczewski <michal@lasczewski.pl>",
+  "contributors": [
+    {
+      "name": "Alex",
+      "email": "alexbol99@gmail.com",
+  ],
+  "license": "MIT",
+  "main": "dist/main.cjs.js",
+  "umd:main": "dist/main.umd.js",
+  "unpkg": "dist/main.umd.js",
+  "module": "dist/main.esm.js",
+  "types": "index.d.ts",
+  "nyc": {
+    "require": [
+      "@babel/register"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  },
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "test": "nyc --reporter=html --reporter=text mocha --exit",
+    "generate-docs": "jsdoc -t ./node_modules/minami -d ./docs ./src -r README.md",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "publish-npm": "npm publish --access public"
+  },
+  "keywords": [
+    "interval tree",
+    "binary search tree"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/node": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "@babel/register": "^7.0.0",
+    "babel-plugin-istanbul": "^5.1.1",
+    "chai": "^3.5.0",
+    "coveralls": "^3.0.3",
+    "jsdoc": "^3.6.2",
+    "minami": "^1.2.3",
+    "mocha": "^5.2.0",
+    "nyc": "^14.1.1",
+    "rollup": "^1.6.0"
+  }
+}
