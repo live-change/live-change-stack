@@ -1,12 +1,13 @@
 {
   "name": "@live-change/flatten-interval-tree",
-  "version": "0.8.25",
+  "version": "0.8.26",
   "description": "Interval search tree - this is a fork of the original project that support strings as keys.",
   "author": "Michał Łaszczewski <michal@lasczewski.pl>",
   "contributors": [
     {
       "name": "Alex",
-      "email": "alexbol99@gmail.com",
+      "email": "alexbol99@gmail.com"
+    }
   ],
   "license": "MIT",
   "main": "dist/main.cjs.js",
@@ -32,7 +33,6 @@
     "interval tree",
     "binary search tree"
   ],
-  "dependencies": {},
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
