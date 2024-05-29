@@ -1,6 +1,6 @@
 {
   "name": "@live-change/google-authentication-service",
-  "version": "0.8.30",
+  "version": "0.8.31",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.8.30",
-    "@live-change/relations-plugin": "^0.8.30",
+    "@live-change/framework": "^0.8.31",
+    "@live-change/relations-plugin": "^0.8.31",
     "google-auth-library": "9.0.0"
   },
   "gitHead": "e62696aa9fa6e5b86312dfb64c97efa300d41147",
