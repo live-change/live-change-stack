@@ -1,7 +1,7 @@
-FROM node:16
+FROM node:20
 USER root
 
-RUN npm -g config set user root
+#RUN npm -g config set user root
 
 RUN npm install -g encoding-down
 RUN npm install -g leveldown
