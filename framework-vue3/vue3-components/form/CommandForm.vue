@@ -11,7 +11,7 @@
       :class="class"
       :style="style"
       v-slot="{ data }">
-    <slot v-bind="{ data, submit }"></slot>
+    <slot v-bind="{ data, submit, definition: actionDefinition }"></slot>
   </defined-form>
   <slot v-if="state === 'error'" name="error">
     <div class="alert alert-danger" role="alert">error</div>

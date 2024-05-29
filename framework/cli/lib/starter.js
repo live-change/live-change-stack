@@ -347,9 +347,11 @@ async function describe(argv) {
     }
     console.log("  triggers:")
     for(const triggerName in service.triggers) {
-      const trigger = service.triggers[triggerName]
-      const properties = Object.keys(trigger.properties ?? {})
-      console.log("    ", triggerName, "(", properties.join(', '), ")")
+      const triggers = service.triggers[triggerName]
+      for(const trigger of triggers) {
+        const properties = Object.keys(trigger.properties ?? {})
+        console.log("    ", triggerName, "(", properties.join(', '), ")")
+      }
     }
     console.log("  events:")
     for(const eventName in service.events) {

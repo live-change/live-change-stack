@@ -165,19 +165,28 @@
 
     reset(initialValue) {
       if(this.definition.type === 'Object') {
-        this.data[this.property] = JSON.parse(JSON.stringify(initialValue ||
-          (this.definition.hasOwnProperty('defaultValue') ? this.definition.defaultValue : {} )))
+        this.data[this.property] = JSON.parse(JSON.stringify(initialValue
+          || (this.definition.hasOwnProperty('defaultValue') ? this.definition.defaultValue : {} )
+          || (this.definition.hasOwnProperty('default') ? this.definition.default : {} )
+        ))
         this.object = this.data[this.property]
         if(this.object) {
           for(const key in this.object) {
             if(!this.object[key]) delete this.object[key]
           }
         }
+        for(let propName in this.properties) {
+          this.properties[propName].data = this.object
+        }
       }
       if(this.object) {
+        console.log("PROPS RESET START", this.property)
         for(let propName in this.properties) {
+          console.log("PROP RESET", propName, this.object[propName])
           this.properties[propName].reset(initialValue && initialValue[propName])
+          console.log("PROP RESET", propName, this.object[propName])
         }
+        console.log("PROPS RESET", this.object)
       }
     }
     afterError(initialValue) {

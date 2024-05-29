@@ -79,6 +79,9 @@ const Task = definition.model({
     },
     byCauseAndState: {
       property: ['causeType', 'cause', 'state']
+    },
+    byState: {
+      property: ['state']
     }
   }
 })

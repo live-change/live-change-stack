@@ -1,53 +1,107 @@
 import App from '@live-change/framework'
 const app = App.app()
 
-const task = (taskDefinition) => { /// TODO: modify to use triggers
-  return async (props, context, emit) => {
-    if(!emit) emit = (events) => app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {})
-    const propertiesJson = JSON.stringify(props)
-    const hash = crypto
-      .createHash('sha256')
-      .update(taskDefinition.name + ':' + propertiesJson)
-      .digest('hex')
+import crypto from 'crypto'
 
-    const similarTasks = App.serviceViewGet('task', 'tasksByCauseAndHash', {
-      causeType: context.causeType,
-      cause: context.cause,
-      hash
-    })
-    const oldTask = similarTasks.find(similarTask => similarTask.name === taskDefinition.name
-      && JSON.stringify(similarTask.properties) === propertiesJson)
+function upperFirst(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1)
+}
 
-    let taskObject = oldTask
-      ? await App.serviceViewGet('task', 'task', { task: oldTask.to })
-      : {
-        id: app.generateUid(),
-        name: taskDefinition.name,
-        properties: props,
-        hash,
-        state: 'created'
-      }
+async function triggerOnTaskStateChange(taskObject, causeType, cause) {
+  await app.trigger({
+    ...taskObject,
+    type: 'task'+upperFirst(taskObject.state),
+    task: taskObject.id,
+    causeType,
+    cause
+  })
+  await app.trigger({
+    ...taskObject,
+    type: 'task'+upperFirst(taskObject.name)+upperFirst(taskObject.state),
+    task: taskObject.id,
+    causeType,
+    cause
+  })
+  await app.trigger({
+    ...taskObject,
+    type: `${taskObject.causeType}_${taksObject.cause}OwnedTask`
+      +`${upperFirst(taskObject.name)}${upperFirst(taskObject.state)}`,
+    task: taskObject.id,
+    causeType,
+    cause
+  })
+}
 
-    if(!oldTask) {
-      /// app.emitEvents
-      await App.triggerService('task', 'task_createCaseOwnedTask', {
-        ...taskObject,
-        causeType: context.causeType,
-        cause: context.cause,
-        task: taskObject.id
-      })
+async function createOrReuseTask(taskDefinition, props, causeType, cause) {
+
+  const propertiesJson = JSON.stringify(props)
+  const hash = crypto
+    .createHash('sha256')
+    .update(taskDefinition.name + ':' + propertiesJson)
+    .digest('hex')
+
+  const similarTasks = await app.serviceViewGet('task', 'tasksByCauseAndHash', {
+    causeType,
+    cause,
+    hash
+  })
+  const oldTask = similarTasks.find(similarTask => similarTask.name === taskDefinition.name
+    && JSON.stringify(similarTask.properties) === propertiesJson)
+
+  let taskObject = oldTask
+    ? await app.serviceViewGet('task', 'task', { task: oldTask.to })
+    : {
+      id: app.generateUid(),
+      name: taskDefinition.name,
+      properties: props,
+      hash,
+      state: 'created'
     }
 
-    const maxRetries = taskDefinition.maxRetries ?? 5
+  if(!oldTask) {
+    /// app.emitEvents
+    await app.triggerService('task', {
+      ...taskObject,
+      type: 'task_createCaseOwnedTask',
+      causeType,
+      cause,
+      task: taskObject.id
+    })
+    await triggerOnTaskStateChange(taskObject, causeType, cause)
+  }
+
+}
+
+async function startTask(taskFunction, props, causeType, cause){
+  const taskObject = createOrReuseTask(taskFunction.definition, props, causeType, cause)
+  const context = {
+    causeType,
+    cause,
+    taskObject
+  }
+  const promise = taskFunction(props, context)
+  return { task: taskObject.id, taskObject, promise }
+}
+
+export default function task(definition) {
+  const taskFunction = async (props, context, emit) => {
+    if(!emit) emit = (events) =>
+      app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {})
+
+    let taskObject = context.taskObject
+      ?? await createOrReuseTask(taskDefinition, props, context.causeType, context.cause)
+
+    const maxRetries = definition.maxRetries ?? 5
 
     async function updateTask(data) {
-      await App.triggerService('task', 'task_updateCaseOwnedTask', {
+      await app.triggerService('task', {
         ...data,
+        type: 'task_updateCaseOwnedTask',
         causeType: context.causeType,
         cause: context.cause,
         task: taskObject.id
       })
-      taskObject = await App.serviceViewGet('task', 'task', { task: oldTask.to })
+      taskObject = await app.serviceViewGet('task', 'task', { task: oldTask.to })
     }
 
     const runTask = async () => {
@@ -55,8 +109,9 @@ const task = (taskDefinition) => { /// TODO: modify to use triggers
         state: 'running',
         startedAt: new Date()
       })
+      await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
       try {
-        const result = await taskDefinition.execute(props, {
+        const result = await definition.execute(props, {
           ...context,
           task: {
             async run(taskFunction, props) {
@@ -79,6 +134,7 @@ const task = (taskDefinition) => { /// TODO: modify to use triggers
           doneAt: new Date(),
           result
         })
+        await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
       } catch(error) {
         if(taskObject.retries.length >= maxRetries) {
           await updateTask({
@@ -86,6 +142,7 @@ const task = (taskDefinition) => { /// TODO: modify to use triggers
             doneAt: new Date(),
             error: error.message
           })
+          await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
         }
         await updateTask(taskObject.id, {
           state: 'retrying',
@@ -95,6 +152,7 @@ const task = (taskDefinition) => { /// TODO: modify to use triggers
             error: error.message
           }]
         })
+        await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
       }
     }
 
@@ -105,4 +163,11 @@ const task = (taskDefinition) => { /// TODO: modify to use triggers
 
     return taskObject.result
   }
+
+  taskFunction.definition = definition
+  taskFunction.start = async (props, causeType, cause) => {
+    return await startTask(taskFunction, props, causeType, cause)
+  }
+  return taskFunction
+
 }

@@ -78,7 +78,7 @@ class Services {
           debug("SERVICE", service, 'ENTRY FILE', entryFile)
           const module = await import(entryFile)
           const definition = module.default
-          if (definition.name != service.name) {
+          if (definition.name !== service.name) {
             console.error("SERVICE", service, "NAME", service.name, "MISMATCH", definition.name)
             process.exit(1)
           }

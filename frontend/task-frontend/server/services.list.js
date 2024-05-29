@@ -47,3 +47,8 @@ export {
   task,
   init
 }
+
+import testTasks from './testTasks.js'
+export {
+  testTasks
+}

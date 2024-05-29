@@ -94,6 +94,9 @@ app.config = {
       name: 'backup',
       port: 8007
     },
+    {
+      name: 'testTasks'
+    }
   ]
 }
 

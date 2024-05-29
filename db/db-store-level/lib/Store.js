@@ -1,4 +1,4 @@
-import IntervalTreeLib from '@live-change/interval-tree'
+import IntervalTreeLib from '@live-change/flatten-interval-tree'
 const IntervalTree = IntervalTreeLib.default
 import ReactiveDao from "@live-change/dao"
 
