@@ -111,8 +111,7 @@ definition.processor(function(service, app) {
               }
             } else {
               if(!userProperty) {
-                await service.trigger({
-                  type: 'contactOrUserOwned' + modelName + 'Moved',
+                await service.trigger({ type: 'contactOrUserOwned' + modelName + 'Moved' }, {
                   from: {
                     sessionOrUserType: 'session_Session',
                     sessionOrUser: session,

@@ -138,8 +138,7 @@ definition.action({
     ])
     if(!documentData) throw new Error("Document not found")
     if(version > documentData.version) throw new Error("Version not found")
-    await service.triggerService("prosemirror", {
-      type: 'takeSnapshot',
+    await service.triggerService({ service: "prosemirror", type: 'takeSnapshot' }, {
       targetType: objectType,
       target: object,
       documentType: type || 'content',

@@ -108,16 +108,14 @@ definition.trigger({
     const accountData = await Account.get(account)
     if(!accountData) throw { properties: { email: 'notFound' } }
     const { user } = accountData
-    return service.trigger({
-      type: 'signIn',
+    return service.trigger({ type: 'signIn' }, {
       user, session
     })
   }
 })
 
 async function downloadData(user, data, service) {
-  await service.trigger({
-    type: 'setIdentification',
+  await service.trigger({ type: 'setIdentification' }, {
     sessionOrUserType: 'user',
     sessionOrUser: user,
     overwrite: false,
@@ -129,8 +127,7 @@ async function downloadData(user, data, service) {
   })
   if(data.picture) {
     const downloadAndUpdateImage = (async () => {
-      const picture = await service.trigger('pictures', {
-        type: "createPictureFromUrl",
+      const picture = await service.trigger({ service: 'pictures', type: "createPictureFromUrl"  }, {
         ownerType: 'user_User',
         owner: user,
         name: "google-profile-picture",
@@ -138,8 +135,7 @@ async function downloadData(user, data, service) {
         url: data.picture,
         cropped: true
       })
-      await service.trigger({
-        type: 'setIdentification',
+      await service.trigger({ type: 'setIdentification' }, {
         sessionOrUserType: 'user',
         sessionOrUser: user,
         overwrite: false,
@@ -149,8 +145,7 @@ async function downloadData(user, data, service) {
     downloadAndUpdateImage()
   }
   if(data.email_verified) {
-    await service.trigger({
-      type: 'connectEmail',
+    await service.trigger({ type: 'connectEmail' }, {
       email: data.email,
       user
     })
@@ -198,8 +193,7 @@ definition.trigger({
       type: 'accountConnected',
       account, user, data
     })
-    await service.trigger({
-      type: 'googleConnected',
+    await service.trigger({ type: 'googleConnected'  }, {
       user, account, data
     })
     await downloadData(user, data, service)
@@ -222,8 +216,7 @@ definition.trigger({
       type: 'accountDisconnected',
       account, user
     })
-    await service.trigger({
-      type: 'googleDisconnected',
+    await service.trigger({ type: 'googleDisconnected'  }, {
       user, account
     })
   }
@@ -253,8 +246,7 @@ definition.action({
     const { session } = client
     if(existingLogin) { /// Sign In
       const { user } = existingLogin
-      await service.trigger({
-        type: 'signIn',
+      await service.trigger({ type: 'signIn'  }, {
         user, session
       })
       return {
@@ -293,12 +285,10 @@ definition.action({
       throw 'alreadyConnected'
     } else { // Sign up
       const user = app.generateUid()
-      await service.trigger({
-        type: 'connectGoogle',
+      await service.trigger({ type: 'connectGoogle' }, {
         user, account, data: googleUser
       })
-      await service.trigger({
-        type: 'signUpAndSignIn',
+      await service.trigger({ type: 'signUpAndSignIn' }, {
         user, session
       })
       return {
@@ -333,8 +323,7 @@ definition.action({
     const { session } = client
     if(existingLogin) { /// Sign In
       const { user } = existingLogin
-      await service.trigger({
-        type: 'signIn',
+      await service.trigger({ type: 'signIn' }, {
         user, session
       })
       return {
@@ -343,12 +332,10 @@ definition.action({
       }
     } else { // Sign up
       const user = app.generateUid()
-      await service.trigger({
-        type: 'connectGoogle',
+      await service.trigger({ type: 'connectGoogle' }, {
         user, account, data: googleUser
       })
-      await service.trigger({
-        type: 'signUpAndSignIn',
+      await service.trigger({ type: 'signUpAndSignIn' }, {
         user, session
       })
       return {
@@ -380,8 +367,7 @@ definition.action({
     const googleUser = ticket.getPayload()
     debug("GOOGLE USER", googleUser)
     const account = googleUser.sub
-    await service.trigger({
-      type: 'connectGoogle',
+    await service.trigger({ type: 'connectGoogle' }, {
       user, account, data: googleUser,
       transferOwnership
     })
@@ -405,8 +391,7 @@ name: "disconnectGoogle",
     if(!accountData) throw 'notFound'
     const { user } = accountData
     if(user !== client.user) throw 'notAuthorized'
-    await service.trigger({
-      type: 'disconnectGoogle',
+    await service.trigger({ type: 'disconnectGoogle' }, {
       user, account
     })
   }

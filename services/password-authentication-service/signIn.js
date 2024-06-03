@@ -27,8 +27,7 @@ for(const contactType of config.contactTypes) {
       ...secretProperties
     },
     async execute({ [contactTypeName]: contact, passwordHash }, { client, service }, emit) {
-      const contactData = (await service.trigger({
-        type: 'get' + contactTypeUName,
+      const contactData = (await service.trigger({ type: 'get' + contactTypeUName }, {
         [contactType]: contact,
       }))[0]
       const { user } = contactData
@@ -39,8 +38,8 @@ for(const contactType of config.contactTypes) {
         if(!passwordAuthenticationData || passwordAuthenticationData.passwordHash != passwordHash)
           throw { properties: { passwordHash: 'wrongPassword' } }
         const { session } = client
-        await service.trigger({
-          type: 'signIn', user, session
+        await service.trigger({ type: 'signIn' }, {
+          user, session
         })
         return user
       } else { // login without password - with message
@@ -48,8 +47,7 @@ for(const contactType of config.contactTypes) {
         const messageData = {
           user
         }
-        const results = await service.trigger({
-          type: 'authenticateWithMessage',
+        const results = await service.trigger({ type: 'authenticateWithMessage' }, {
           contactType,
           contact,
           messageData,

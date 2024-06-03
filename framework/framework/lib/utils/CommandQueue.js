@@ -104,7 +104,7 @@ class CommandQueue {
         // hold it for one second in case of delayed event:
         setTimeout(() => this.commandsStarted.delete(command.id), 1000)
       }).catch(async error => {
-        return this.connection.request(['database', 'update'], this.database, this.tableName, command.id, [
+        const result = await this.connection.request(['database', 'update'], this.database, this.tableName, command.id, [
           {
             op: 'merge', property: null,
             value: { state: 'failed', error: (error && (error.stack || error.message)) || error }
@@ -112,13 +112,13 @@ class CommandQueue {
         ])
         // hold it for one second in case of delayed event:
         setTimeout(() => this.commandsStarted.delete(command.id), 1000)
+        return result
       })
     } catch(e) {
       console.error(`COMMAND ${JSON.stringify(command, null, "  ")} HANDLING ERROR`, e, ' => STOPPING!')
-      this.dispose()
+      await this.dispose()
       throw e
     }
-    return 'ok'
   }
   set(value) {
     if(this.resolveStart) {

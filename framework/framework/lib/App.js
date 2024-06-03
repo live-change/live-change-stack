@@ -234,20 +234,26 @@ class App {
     return definition
   }
 
-  async trigger(data) {
+  async trigger(trigger, data) {
+    if(!trigger) throw new Error("trigger must have type")
+    if(typeof trigger !== 'object') throw new Error("trigger must be object")
+    if(typeof trigger.type !== 'string') throw new Error("trigger type must be string")
+    if(!data) throw new Error("trigger must have data")
+    if(typeof data !== 'object') throw new Error("trigger must be object")
+    if(trigger.service) return await this.triggerService(trigger, data, true)
     if(this.shortTriggers) {
-      const triggers = this.triggerRoutes[data.route]
+      const triggers = this.triggerRoutes[trigger.type] /// TODO: check if it is right
       return await Promise.all(triggers.map(t => t.execute(data)))
     }
     const profileOp = await this.profileLog.begin({
-      operation: "callTrigger", triggerType: data.type, id: data.id, by: data.by
+      operation: "callTrigger", triggerType: trigger.type, id: data.id, by: data.by
     })
     const routes = await this.dao.get(['database', 'tableRange', this.databaseName, 'triggerRoutes',
-      { gte: data.type+'=', lte: data.type+'=\xFF\xFF\xFF\xFF' }])
-    console.log("TRIGGER ROUTES", data.type, '=>', routes)
+      { gte: trigger.type+'=', lte: trigger.type+'=\xFF\xFF\xFF\xFF' }])
+    console.log("TRIGGER ROUTES", trigger.type, '=>', routes)
     let promises = []
     for(const route of routes) {
-      promises.push(this.triggerService(route.service, { ...data }, true))
+      promises.push(this.triggerService({ ...trigger, service: route.service }, { ...data }, true))
     }
     const promise = Promise.all(promises)
     await this.profileLog.endPromise(profileOp, promise)
@@ -256,31 +262,37 @@ class App {
     return result
   }
 
-  async triggerService(service, data, returnArray = false) {
+  async triggerService(trigger, data, returnArray = false) {
+    if(!trigger.service) throw new Error("trigger must have service")
+    if(typeof trigger !== 'object') throw new Error("trigger must be object")
+    if(typeof trigger.service !== 'string') throw new Error("trigger service must be string")
+    if(typeof trigger.type !== 'string') throw new Error("trigger type must be string")
+    trigger.data = data
+    if(!trigger.data) throw new Error("trigger must have data")
+    if(typeof trigger.data !== 'object') throw new Error("trigger must be object")
     if(this.shortTriggers) {
-      const service = this.startedServices[service]
-      const triggers = service.triggers[data.type]
+      const service = this.startedServices[trigger.service]
+      const triggers = service.triggers[trigger.type]
       if(!triggers) return []
       const result = await Promise.all(triggers.map(t => t.execute(data)))
       if(!returnArray && Array.isArray(result) && result.length === 1) return result[0]
       return result
     }
-    if(!data.id) data.id = this.generateUid()
-    data.service = service
-    data.state = 'new'
-    if(!data.timestamp) data.timestamp = (new Date()).toISOString()
+    if(!trigger.id) trigger.id = this.generateUid()
+    trigger.state = 'new'
+    if(!trigger.timestamp) trigger.timestamp = (new Date()).toISOString()
 
     const profileOp = await this.profileLog.begin({
-      operation: "callTriggerService", triggerType: data.type, service, triggerId: data.id, by: data.by
+      operation: "callTriggerService", triggerType: trigger.type, service: trigger.service, triggerId: trigger.id, by: data.by
     })
 
     const triggersTable = this.splitCommands ? `${this.name}_triggers` : 'triggers'
     const objectObservable = this.dao.observable(
-        ['database', 'tableObject', this.databaseName, triggersTable, data.id],
+        ['database', 'tableObject', this.databaseName, triggersTable, trigger.id],
         ReactiveDao.ObservableValue
     )
-    await this.dao.request(['database', 'update', this.databaseName, triggersTable, data.id, [
-      { op: 'reverseMerge', value: data }
+    await this.dao.request(['database', 'update', this.databaseName, triggersTable, trigger.id, [
+      { op: 'reverseMerge', value: trigger }
     ]])
     let observer
     const promise = new Promise((resolve, reject) => {

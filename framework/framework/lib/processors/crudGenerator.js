@@ -143,9 +143,7 @@ export default function(service, app) {
         ...writeOptions,
         execute: async function (props, {service}, emit) {
           if(crud.deleteTrigger || crud.triggers) {
-            let trig = { type: genName("Deleted") }
-            trig[idName] = props[idName]
-            await service.trigger(trig)
+            await service.trigger({ type: genName("Deleted") }, { [idName] : props[idName ] })
           }
           emit({
             ...props,

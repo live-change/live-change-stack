@@ -22,30 +22,27 @@ async function sendOnlineEvent(path) {
   const type = path[0]
   const params = path[1]
   try {
-    if(type == 'object') {
+    if(type === 'object') {
       const { group } = params
       console.log("PARAMs", params)
       const triggerName = `${group}Online`
       console.log("TRIGGER", triggerName)
-      await app.trigger({
-        ...params,
-        type: triggerName
+      await app.trigger({ type: triggerName }, {
+        ...params
       })
-    } else if(type == 'user') {
+    } else if(type === 'user') {
       const { group, user } = params
       const triggerName = `user${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Online`
       console.log("TRIGGER", triggerName)
-      await app.trigger({
-        ...params,
-        type: triggerName
+      await app.trigger({ type: triggerName }, {
+        ...params
       })
-    } else if(type == 'session') {
+    } else if(type === 'session') {
       const { group, session } = params
       const triggerName = `session${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Online`
       console.log("TRIGGER", triggerName)
-      await app.trigger({
-        ...params,
-        type: triggerName
+      await app.trigger({ type: triggerName }, {
+        ...params
       })
     }
   } catch(error) {
@@ -57,29 +54,26 @@ async function sendOfflineEvent(path) {
   const type = path[0]
   const params = path[1]
   try {
-    if(type == 'object') {
+    if(type === 'object') {
       const { group } = params
       const triggerName = `${group}Offline`
       console.log("TRIGGER", triggerName)
-      await app.trigger({
-        ...params,
-        type: triggerName
+      await app.trigger({ type: triggerName }, {
+        ...params
       })
-    } else if(type == 'user') {
+    } else if(type === 'user') {
       const { group, user } = params
       const triggerName = `user${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Offline`
       console.log("TRIGGER", triggerName)
-      await app.trigger({
+      await app.trigger({ type: triggerName }, {
         ...params,
-        type: triggerName
       })
-    } else if(type == 'session') {
+    } else if(type === 'session') {
       const { group, session } = params
       const triggerName = `session${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Offline`
       console.log("TRIGGER", triggerName)
-      await app.trigger({
-        ...params,
-        type: triggerName
+      await app.trigger({ type: triggerName }, {
+        ...params
       })
     }
   } catch(error) {
@@ -89,9 +83,7 @@ async function sendOfflineEvent(path) {
 
 async function sendAllOfflineEvent() {
   console.log("SEND ALL OFFLINE EVENT")
-  await app.trigger({
-    type: `allOffline`
-  })
+  await app.trigger({ type: `allOffline` }, { })
 }
 
 const selfObservables = new Map()

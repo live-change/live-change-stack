@@ -145,8 +145,7 @@ definition.trigger({
       if(emailData.user === user) return false
       throw { properties: { email: 'taken' } }
     }
-    await service.trigger({
-      type: 'contactConnected',
+    await service.trigger({ type: 'contactConnected'  }, {
       contactType: 'email_Email',
       contact: email,
       user
@@ -195,8 +194,7 @@ definition.trigger({
     const emailData = await Email.get(email)
     if(!emailData) throw { properties: { email: 'notFound' } }
     const { user } = emailData
-    return service.trigger({
-      type: 'signIn',
+    return service.trigger({ type: 'signIn' }, {
       user, session
     })
   }

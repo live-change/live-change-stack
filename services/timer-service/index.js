@@ -113,7 +113,7 @@ function fireTimer(timer) {
 async function timersLoop() {
   //console.log("TL", timersQueue.length, timersQueue[0] && (timersQueue[0].timestamp - Date.now()))
   timersLoopTimeout = false
-  if(timersQueue.length == 0) {
+  if(timersQueue.length === 0) {
     timersLoopStarted = false
     setTimeout(checkIfThereIsMore, loadMoreAfter)
     return
@@ -122,7 +122,7 @@ async function timersLoop() {
   let now = Date.now()
   while(nextTs < now) {
     fireTimer(timersQueue.shift())
-    if(timersQueue.length == 0) {
+    if(timersQueue.length === 0) {
       timersLoopStarted = false
       setTimeout(checkIfThereIsMore, loadMoreAfter)
       return
@@ -191,7 +191,7 @@ async function checkIfThereIsMore() {
         })
       }
   })`, { encodedFrom: '', encodedTo: (''+loadTime).padStart(16, '0')+'_' }])
-  if(timers.length == 0) {
+  if(timers.length === 0) {
     //console.log("NO MORE")
     if(!timersLoopStarted) setTimeout(checkIfThereIsMore, loadMoreAfter)
     return
@@ -235,13 +235,13 @@ function runTimerAction(timer) {
   }
   if(timer.trigger) {
     if(timer.service) {
-      return app.triggerService(timer.service, {
-        ...timer.trigger,
+      return app.triggerService({ ...timer.trigger, service: timer.service }, {
+        ...timer.trigger.data,
         origin: { ...(timer.origin || {}), through: "timer" }
       })
     } else {
-      return app.trigger({
-        ...timer.trigger,
+      return app.trigger({ ...timer.trigger }, {
+        ...timer.trigger.data,
         origin: { ...(timer.origin || {}), through: "timer" }
       })
     }
@@ -255,7 +255,7 @@ function insertTimer(timer) {
   for(let i = 0; i < timersQueue.length; i++) {
     if(timer.timestamp < timersQueue[i].timestamp) {
       timersQueue.splice(i, 0, timer)
-      if(i == 0) { // reset timers loop
+      if(i === 0) { // reset timers loop
         resetTimersLoop()
       }
       return;
@@ -271,7 +271,7 @@ function insertTimer(timer) {
 
 function removeTimer(timerId) {
   for(let i = 0; i < timersQueue; i++) {
-    if(timersQueue[i].id == timerId) {
+    if(timersQueue[i].id === timerId) {
       timersQueue.splice(i, 1)
     }
   }

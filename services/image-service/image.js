@@ -130,8 +130,7 @@ definition.action({
     await mkdir(dir)
     await move(`${uploadsPath}${uploadRow.id}`, `${dir}/original.${extension}`)
 
-    await app.trigger({
-      type: 'uploadUsed',
+    await app.trigger({ type: 'uploadUsed' }, {
       upload: uploadRow.id
     })
 

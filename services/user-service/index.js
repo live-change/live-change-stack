@@ -49,8 +49,7 @@ definition.trigger({
   async execute({ user, session }, { client, service }, emit) {
     const userData = await User.get(user)
     if(!userData) throw 'userNotFound'
-    await service.trigger({
-      type: 'signedIn',
+    await service.trigger({ type: 'signedIn' }, {
       session, user
     })
     emit({
@@ -65,8 +64,7 @@ definition.action({
   waitForEvents: true,
   async execute({ }, { client, service }, emit) {
     if(!client.user) throw "notSignedIn"
-    await service.trigger({
-      type: 'signedOut',
+    await service.trigger({ type: 'signedOut' }, {
       session: client.session,
       user: client.user
     })
@@ -94,8 +92,7 @@ definition.trigger({
     if(!user) {
       user = app.generateUid()
     }
-    await service.trigger({
-      type: 'signedIn',
+    await service.trigger({ type: 'signedIn' }, {
       session, user
     })
     emit([{
@@ -123,8 +120,7 @@ definition.action({
   async execute({ user }, { client, service }, emit) {
     const userData = await User.get(user)
     if(!userData) throw 'userNotFound'
-    await service.trigger({
-      type: 'signedOut',
+    await service.trigger({ type: 'signedOut' }, {
       session: client.session,
       user: client.user
     })
@@ -134,8 +130,7 @@ definition.action({
       session: client.session
     })
     const session = client.session
-    await service.trigger({
-      type: 'signedIn',
+    await service.trigger({ type: 'signedIn' }, {
       session, user
     })
     emit({
@@ -155,16 +150,13 @@ definition.action({
   waitForEvents: true,
   async execute({ }, { client, service }, emit) {
     const user = client.user
-    await service.trigger({
-      type: 'signedOut',
+    await service.trigger({ type: 'signedOut' }, {
       session: client.session, user: client.user
     })
-    await service.trigger({
-      type: 'userDeleted',
+    await service.trigger({ type: 'userDeleted' }, {
       user: client.user
     })
-    await service.trigger({
-      type: 'userDeleted',
+    await service.trigger({ type: 'userDeleted'  }, {
       user
     })
     emit([{

@@ -271,6 +271,7 @@ const Shelter = definition.model({
 
 definition.trigger({
   name: 'taskBuildShelterDone',
+}, {
   properties: {
     shelter: {
       type: 'Shelter'

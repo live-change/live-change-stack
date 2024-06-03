@@ -91,19 +91,20 @@ async function processSecurityPatterns(event, time, service) {
 
   let promises = []
   for (const relation of newRelations) {
-    if (relation.type == 'eq') {
+    if (relation.type === 'eq') {
       // will be handled by event
-    } else if (relation.type == 'timeout') {
+    } else if (relation.type === 'timeout') {
       const id = crypto.createHash('md5').update(event.id + relation.relation).digest('hex')
-      promises.push(service.trigger({
-        type: "createTimer",
+      promises.push(service.trigger({ type: "createTimer" }, {
         timer: {
           id,
           timestamp: relation.time,
           service: 'security',
           trigger: {
             type: 'handleTimeout',
-            timeout: relation
+            data: {
+              timeout: relation
+            }
           }
         }
       }))
@@ -121,8 +122,7 @@ async function processSecurityPatterns(event, time, service) {
       // will be handled by event
     } else if (relationModel.wait) {
       const id = crypto.createHash('md5').update(event.id + relation.relation).digest('hex')
-      promises.push(service.trigger({
-        type: "cancelTimerIfExists",
+      promises.push(service.trigger({ type: "cancelTimerIfExists" }, {
         timer: id
       }))
     } else {
@@ -235,10 +235,9 @@ definition.trigger({
     for(const action of actions) {
       const actionTypeUpperCase = action.type[0].toUpperCase() + action.type.slice(1)
       //console.log("ACTION", JSON.stringify(action, null, '  '))
-      promises.push(service.trigger({
+      promises.push(service.trigger({ type: 'securityAction' + actionTypeUpperCase }, {
         ...action,
         event,
-        type: 'securityAction' + actionTypeUpperCase
       }))
     }
 

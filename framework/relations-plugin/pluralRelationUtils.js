@@ -319,6 +319,7 @@ function getCopyFunction( validators, validationContext, config, context) {
       validationContext)
     app.trigger({
       type: 'copy'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+    }, {
       objectType,
       object: newId,
       from: id,
@@ -327,6 +328,7 @@ function getCopyFunction( validators, validationContext, config, context) {
     }),
       app.trigger({
         type: 'copyObject',
+      }, {
         objectType,
         object: newId,
         from: id,
@@ -466,6 +468,7 @@ function defineCopyOnParentCopyTrigger(config, context) {
       const newId = app.generateUid()
       app.trigger({
         type: 'copy'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+      }, {
         objectType,
         object: newId,
         from: object,
@@ -474,6 +477,7 @@ function defineCopyOnParentCopyTrigger(config, context) {
       })
       app.trigger({
         type: 'copyObject',
+      }, {
         objectType,
         object: newId,
         from: object,

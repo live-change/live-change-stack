@@ -7,7 +7,7 @@ function opLogWritter(store) {
   let lastId = 0
   return function(operation) {
     const now = Date.now()
-    if(now == lastTime) {
+    if(now === lastTime) {
       lastId ++
     } else {
       lastId = 0
@@ -77,7 +77,9 @@ class Table {
   }
 
   update(id, operations, options) {
-    if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
+    if(typeof id != 'string')
+      throw new Error(`ID is not string: ${JSON.stringify(id)} while updating table ` + this.name
+        + ' with ops' + JSON.stringify(operations))
     return this.atomicWriter.update(id, operations, options)
   }
 

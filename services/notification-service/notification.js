@@ -224,8 +224,7 @@ definition.trigger({
       notification,
       data: { ...data, sessionOrUserType, sessionOrUser, time, readState: 'new' }
     })
-    await app.trigger({
-      type: 'notificationCreated',
+    await app.trigger({ type: 'notificationCreated' }, {
       notification,
       ...data
     })
@@ -238,8 +237,8 @@ async function notificationAccess({ notification }, { client, visibilityTest }) 
   const notificationRow = await Notification.get(notification)
   if(!notificationRow) throw 'notFound'
   return client.user
-      ? notificationRow.sessionOrUserType == 'user_User' && notificationRow.sessionOrUser == client.user
-      : notificationRow.sessionOrUserType == 'session_Session' && notificationRow.sessionOrUser == client.session
+      ? notificationRow.sessionOrUserType === 'user_User' && notificationRow.sessionOrUser === client.user
+      : notificationRow.sessionOrUserType === 'session_Session' && notificationRow.sessionOrUser === client.session
 }
 
 definition.action({
@@ -382,8 +381,7 @@ definition.action({
     if(!notificationType) notificationType = 'example_TestNotification'
     const fields = {}
     for(const key in config.fields) fields[key] = data[key]
-    service.trigger({
-      type: 'notify',
+    service.trigger({ type: 'notify' }, {
       sessionOrUserType: client.user ? 'user_User' : 'session_Session',
       sessionOrUser: client.user || client.session,
       notificationType,

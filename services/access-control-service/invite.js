@@ -107,10 +107,9 @@ definition.trigger({
       notificationType: 'accessControl_Invitation',
       id: undefined
     })
-    if(to.contactOrUserType == 'user_User') {
-      await service.trigger({
+    if(to.contactOrUserType === 'user_User') {
+      await service.trigger({ type: 'notify', }, {
         ...invitationData,
-        type: 'notify',
         sessionOrUserType: 'user_User',
         sessionOrUser: to.contactOrUser,
         notificationType: 'accessControl_Invitation',
@@ -144,13 +143,11 @@ definition.trigger({
     const { roles } = invitationData
     /// Create account and sign-in:
     const user = app.generateUid()
-    await service.trigger({
-      type: 'connect' + contactTypeUpperCase,
+    await service.trigger({ type: 'connect' + contactTypeUpperCase }, {
       [contactType]: contact,
       user
     })
-    await service.trigger({
-      type: 'signUpAndSignIn',
+    await service.trigger({ type: 'signUpAndSignIn'  }, {
       user, session
     })
     emit({
@@ -238,14 +235,12 @@ for(const contactType of config.contactTypes) {
       const invitationData = { fromType, from }
       for(const propertyName in invitationProperties) invitationData[propertyName] = params[propertyName]
 
-      const contactData = (await service.trigger({
-        type: 'get' + contactTypeUName + 'OrNull',
+      const contactData = (await service.trigger({ type: 'get' + contactTypeUName + 'OrNull'  }, {
         [contactType]: contact,
       }))[0]
       if(contactData?.user) { // user exists
         const { user } = contactData
-        await service.trigger({
-          type: 'notify',
+        await service.trigger({ type: 'notify'  }, {
           sessionOrUserType: 'user_User',
           sessionOrUser: user,
           notificationType: 'accessControl_Invitation',
@@ -265,8 +260,7 @@ for(const contactType of config.contactTypes) {
           objectType, object,
           ...invitationData, id: undefined
         }
-        await service.trigger({
-          type: 'authenticateWithMessage',
+        await service.trigger({ type: 'authenticateWithMessage'  }, {
           contactType,
           contact,
           messageData,

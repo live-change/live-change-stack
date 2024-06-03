@@ -147,7 +147,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
       extractObjectData(writeableProperties, properties, entity),
       App.computeUpdates(model, { ...entity, ...properties }, { client, service })
     )
-    await App.validation.validate({ ...identifiers, ...data }, validators,
+    await App.validation.validate({ ...identifiers, ...data, [modelPropertyName]: id }, validators,
       validationContext)
     await fireChangeTriggers(context, objectType, identifiers, id,
       extractObjectData(writeableProperties, entity, {}), data)

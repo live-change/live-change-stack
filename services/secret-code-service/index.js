@@ -140,8 +140,7 @@ definition.trigger({
     const codeData = await Code.indexObjectGet('byAuthenticationAndSecretCode', [authentication, secret])
     if(!codeData) {
       if(client) {
-        await context.trigger({
-          type: 'securityEvent',
+        await context.trigger({ type: 'securityEvent' }, {
           event: {
             type: 'wrong-secret-code',
             properties: {

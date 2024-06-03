@@ -202,9 +202,9 @@ class ServiceDefinition {
     }
   }
 
-  callTrigger(data) {
+  callTrigger(trigger, data) {
     if(!this._runtime) throw new Error("triggers can be called only on runtime")
-    this._runtime.trigger(data)
+    this._runtime.trigger(trigger, data)
   }
 
   computeChanges( oldModuleParam ) {

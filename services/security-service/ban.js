@@ -284,14 +284,15 @@ definition.trigger({
 
     const ban = app.generateUid()
 
-    service.trigger({
-      type: 'createTimer',
+    service.trigger({ type: 'createTimer' }, {
       timer: {
         timestamp: banExpire.getTime() + 1000,
         service: 'security',
         trigger: {
           type: 'removeExpiredBan',
-          ban
+          data: {
+            ban
+          }
         }
       }
     })

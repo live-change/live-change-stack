@@ -22,8 +22,7 @@ definition.authenticator({
             .update(credentials.sessionKey)
             .digest('base64').slice(0, 32).replace(/\//g, '_').replace(/\+/g, '-')
       } else {
-        const createResult = await app.triggerService(definition.name, {
-          type: "createSessionKeyIfNotExists",
+        const createResult = await app.triggerService({ service: definition.name, type: "createSessionKeyIfNotExists" }, {
           sessionKey
         })
         //console.log("CREATE SESSION RESULT", createResult)

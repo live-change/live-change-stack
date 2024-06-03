@@ -8,7 +8,8 @@ async function fireChangeTriggers(context, objectType, identifiers, object, oldD
   const changeType = data ? (oldData ? 'update' : 'create') : 'delete'
   await Promise.all([
     app.trigger({
-      type: changeType+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+      type: changeType + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
+    }, {
       objectType,
       object,
       identifiers,
@@ -16,7 +17,8 @@ async function fireChangeTriggers(context, objectType, identifiers, object, oldD
       oldData
     }),
     app.trigger({
-      type: changeType+'Object',
+      type: changeType + 'Object',
+    }, {
       objectType,
       object,
       identifiers,
@@ -146,7 +148,8 @@ async function copyObject(context, objectType, object, parentType, parent, ident
 
   const newId = app.generateUid()
   app.trigger({
-    type: 'copy'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+    type: 'copy' + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
+  }, {
     objectType,
     object: newId,
     from: object,
@@ -155,6 +158,7 @@ async function copyObject(context, objectType, object, parentType, parent, ident
   })
   app.trigger({
     type: 'copyObject',
+  }, {
     objectType,
     object: newId,
     from: object,
@@ -187,6 +191,7 @@ async function triggerCopyOnParentCopyTriggers(
     //console.log("COPY TRIGGER", myType, fromId, objectType, object, from, identifiers, data)
     const copyTriggerResults = await app.trigger({
       type: 'copyOnParentCopy'+service.name[0].toUpperCase()+service.name.slice(1)+'_'+modelName,
+    }, {
       objectType: myType,
       object: fromId,
       parentType: objectType,

@@ -16,17 +16,19 @@ class TriggerHandler {
     }
   }
 
-  async doExecute(parameters, emit) {
+  async doExecute(trig, emit) {
     //console.log("PARAMETERS", JSON.stringify(parameters), "DEFN", this.definition.properties)
+    const parameters = trig.data
     const preparedParams = await prepareParameters(parameters, this.definition.properties, this.service)
     //console.log("PREP PARAMS", preparedParams)
 
     let resultPromise = this.definition.execute({
       ...preparedParams
     }, {
+      ...trig,
       action: this,
       service: this.service,
-      trigger: (...args) => this.service.trigger(...args) /// TODO: collect call traces
+      trigger: (...args) => this.service.trigger(...args) /// TODO: collect call traces,
     }, emit)
 
     resultPromise = resultPromise.then(async result => {

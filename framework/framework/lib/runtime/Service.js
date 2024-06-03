@@ -93,12 +93,12 @@ class Service {
     console.log("Service", this.definition.name, "started")
   }
 
-  async trigger(data) {
-    return this.app.trigger(data)
+  async trigger(...args) {
+    return this.app.trigger(args)
   }
 
-  async triggerService(service, data) {
-    return this.app.triggerService(service, data)
+  async triggerService(...args) {
+    return this.app.triggerService(...args)
   }
 
 }

@@ -80,15 +80,13 @@ for(const contactType of config.contactTypes) {
       ...contactTypeProperties
     },
     async execute({ [contactTypeName]: contact }, { client, service }, emit) {
-      const contactData = (await service.trigger({
-        type: 'get' + contactTypeUName,
+      const contactData = (await service.trigger({ type: 'get' + contactTypeUName }, {
         [contactTypeName]: contact,
       }))[0]
       const { user } = contactData
       const messageData = { user }
       const actionProperties = { user }
-      return (await service.trigger({
-        type: 'authenticateWithMessage',
+      return (await service.trigger({ type: 'authenticateWithMessage' }, {
         contactType,
         contact,
         messageData,
@@ -116,8 +114,7 @@ definition.trigger({
     const key = randomString(config.resetKeyLength || 16)
     const expire = new Date()
     expire.setTime(Date.now() + (config.resetExpireTime || 1*60*60*1000))
-    service.trigger({
-      type: 'signIn',
+    service.trigger({ type: 'signIn' }, {
       user, session
     })
     emit({

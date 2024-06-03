@@ -105,14 +105,12 @@ definition.trigger({
   async execute({ contactType, contact, action, actionProperties, targetPage, messageData },
       { client, service }, emit) {
     const authentication = app.generateUid()
-    const secrets = await service.trigger({
-      type: 'authenticationSecret',
+    const secrets = await service.trigger({ type: 'authenticationSecret' }, {
       authentication
     })
-    if(secrets.length == 0) throw new Error('no secrets generated!')
+    if(secrets.length === 0) throw new Error('no secrets generated!')
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
-    await service.trigger({
-      type: 'send' + contactTypeUpperCase + 'Message',
+    await service.trigger({ type: 'send' + contactTypeUpperCase + 'Message' }, {
       render: {
         action,
         contactType,
@@ -157,18 +155,16 @@ definition.action({
   },
   async execute({ secretType, secret, authentication = undefined }, { client, service }, emit) {
     const secretTypeUpperCase = secretType[0].toUpperCase() + secretType.slice(1)
-    const checkResults = await service.trigger({
-      type: 'check' + secretTypeUpperCase + 'Secret',
+    const checkResults = await service.trigger({ type: 'check' + secretTypeUpperCase + 'Secret' }, {
       secret,
       authentication,
       client
     })
     authentication = checkResults[0]
     const authenticationData = await Authentication.get(authentication)
-    if(authenticationData.state == 'used') throw 'authenticationUsed'
+    if(authenticationData.state === 'used') throw 'authenticationUsed'
     const actionName = authenticationData.action
-    const actionResults = await service.trigger({
-      type: actionName+'Authenticated',
+    const actionResults = await service.trigger({ type: actionName+'Authenticated' }, {
       ...authenticationData.actionProperties,
       contactType: authenticationData.contactType,
       contact: authenticationData.contact,
@@ -200,14 +196,12 @@ definition.action({
     const authenticationData = await Authentication.get(authentication)
     if(!authenticationData) throw 'notFound'
     const { contactType, contact, action } = authenticationData
-    const secrets = await service.trigger({
-      type: 'refreshAuthenticationSecret',
+    const secrets = await service.trigger({ type: 'refreshAuthenticationSecret' }, {
       authentication
     })
-    if(secrets.length == 0) throw new Error('no secrets generated!')
+    if(secrets.length === 0) throw new Error('no secrets generated!')
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
-    await service.trigger({
-      type: 'send' + contactTypeUpperCase + 'Message',
+    await service.trigger({ type: 'send' + contactTypeUpperCase + 'Message' }, {
       render: {
         action,
         contactType,

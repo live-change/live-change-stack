@@ -77,8 +77,8 @@ definition.trigger({
   async execute({ session, peer }, context, emit) {
     console.log("PEER ONLINE PARAMS", { session, peer })
     const [ channelType, channel, sessionType, peerSession, instance ] = peer.split(':')
-    if(sessionType != 'session_Session') throw new Error('wrongSessionType')
-    if(peerSession != session) throw new Error('wrongSession')
+    if(sessionType !== 'session_Session') throw new Error('wrongSessionType')
+    if(peerSession !== session) throw new Error('wrongSession')
     /// TODO: check channel access
     emit({
       type: 'peerOnline',

@@ -144,8 +144,7 @@ definition.trigger({
     if(!phone) throw new Error("no phone")
     const phoneData = await Phone.get(phone)
     if(phoneData) throw { properties: { phone: 'taken' } }
-    await service.trigger({
-      type: 'contactConnected',
+    await service.trigger({ type: 'contactConnected' }, {
       contactType: 'phone_Phone',
       contact: phone,
       user
@@ -173,7 +172,7 @@ definition.trigger({
   async execute({ user, phone }, { client, service }, emit) {
     const phoneData = await Phone.get(phone)
     if(!phoneData) throw { properties: { phone: 'notFound' } }
-    if(phoneData.user != user) throw { properties: { phone: 'notFound' } }
+    if(phoneData.user !== user) throw { properties: { phone: 'notFound' } }
     emit({
       type: 'phoneDisconnected',
       user, phone
@@ -194,8 +193,7 @@ definition.trigger({
     const phoneData = await Phone.get(phone)
     if(!phoneData) throw { properties: { phone: 'notFound' } }
     const { user } = phoneData
-    return service.trigger({
-      type: 'signIn',
+    return service.trigger({ type: 'signIn' }, {
       user, session
     })
   }
