@@ -59,7 +59,7 @@ class CommandQueue {
   }
   async handleCommand(command) {
     //console.log("COMMNAD HANDLE!", command)
-    if(command.state != 'new') return
+    if(command.state !== 'new') return
     if(this.commandsStarted.has(command.id)) return
     this.commandsStarted.set(command.id, command)
     const started = new Date()
@@ -69,7 +69,7 @@ class CommandQueue {
       let commandHandlers = this.commandTypeHandlers.get(command.type) || []
       for(let handler of commandHandlers) {
         result = handler(command)
-        if(result != 'ignored') {
+        if(result !== 'ignored') {
           handled = true
           break
         }
@@ -77,7 +77,7 @@ class CommandQueue {
       if(!handled) {
         for(let handler of this.allCommandHandlers) {
           const result = handler(command)
-          if(result != 'ignored') {
+          if(result !== 'ignored') {
             handled = true
             break
           }

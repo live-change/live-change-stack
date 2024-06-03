@@ -4,10 +4,12 @@ const app = App.app()
 import crypto from 'crypto'
 
 function upperFirst(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1)
+  return string[0].toUpperCase() + string.slice(1)
 }
 
 async function triggerOnTaskStateChange(taskObject, causeType, cause) {
+  if(!taskObject?.state) throw new Error('Task object state is not defined in ' + taskObject)
+  if(!taskObject?.id) throw new Error('Task object id is not defined in '+taskObject)
   await app.trigger({
     ...taskObject,
     type: 'task'+upperFirst(taskObject.state),
@@ -24,7 +26,7 @@ async function triggerOnTaskStateChange(taskObject, causeType, cause) {
   })
   await app.trigger({
     ...taskObject,
-    type: `${taskObject.causeType}_${taksObject.cause}OwnedTask`
+    type: `${taskObject.causeType}_${taskObject.cause}OwnedTask`
       +`${upperFirst(taskObject.name)}${upperFirst(taskObject.state)}`,
     task: taskObject.id,
     causeType,
@@ -48,21 +50,22 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause) {
   const oldTask = similarTasks.find(similarTask => similarTask.name === taskDefinition.name
     && JSON.stringify(similarTask.properties) === propertiesJson)
 
-  let taskObject = oldTask
+  const taskObject = oldTask
     ? await app.serviceViewGet('task', 'task', { task: oldTask.to })
     : {
       id: app.generateUid(),
       name: taskDefinition.name,
       properties: props,
       hash,
-      state: 'created'
+      state: 'created',
+      retries: []
     }
 
   if(!oldTask) {
     /// app.emitEvents
     await app.triggerService('task', {
       ...taskObject,
-      type: 'task_createCaseOwnedTask',
+      type: 'task_createCauseOwnedTask',
       causeType,
       cause,
       task: taskObject.id
@@ -70,10 +73,12 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause) {
     await triggerOnTaskStateChange(taskObject, causeType, cause)
   }
 
+  return taskObject
+
 }
 
 async function startTask(taskFunction, props, causeType, cause){
-  const taskObject = createOrReuseTask(taskFunction.definition, props, causeType, cause)
+  const taskObject = await createOrReuseTask(taskFunction.definition, props, causeType, cause)
   const context = {
     causeType,
     cause,
@@ -91,17 +96,34 @@ export default function task(definition) {
     let taskObject = context.taskObject
       ?? await createOrReuseTask(taskDefinition, props, context.causeType, context.cause)
 
+    if(!taskObject?.state) throw new Error('Task object state is not defined in ' + taskObject)
+    if(!taskObject?.id) throw new Error('Task object id is not defined in '+taskObject)
+
     const maxRetries = definition.maxRetries ?? 5
 
     async function updateTask(data) {
-      await app.triggerService('task', {
+      if(typeof data !== 'object') throw new Error('Task update data is not an object' + JSON.stringify(data))
+      if(!taskObject?.state) throw new Error('Task object state is not defined in ' + JSON.stringify(taskObject))
+      if(!taskObject?.id) throw new Error('Task object id is not defined in ' + JSON.stringify(taskObject))
+      console.log("UPDATING TASK", {
         ...data,
-        type: 'task_updateCaseOwnedTask',
+        type: 'task_updateCauseOwnedTask',
         causeType: context.causeType,
         cause: context.cause,
         task: taskObject.id
       })
-      taskObject = await app.serviceViewGet('task', 'task', { task: oldTask.to })
+
+      console.trace("UPDATING TASK!")
+      const result = await app.triggerService('task', {
+        ...data,
+        type: 'task_updateCauseOwnedTask',
+        causeType: context.causeType,
+        cause: context.cause,
+        task: taskObject.id
+      })
+      taskObject = await app.serviceViewGet('task', 'task', { task: taskObject.id })
+
+      console.log("UPDATED TASK", taskObject, result)
     }
 
     const runTask = async () => {
@@ -136,22 +158,24 @@ export default function task(definition) {
         })
         await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
       } catch(error) {
-        if(taskObject.retries.length >= maxRetries) {
+        console.log("TASK ERROR", error.message, error.stack)
+        console.log("RETRIES", taskObject.retries?.length, maxRetries)
+        if((taskObject.retries?.length || 0) >= maxRetries) {
           await updateTask({
             state: 'failed',
             doneAt: new Date(),
             error: error.message
           })
-          await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
+        } else {
+          await updateTask({
+            state: 'retrying',
+            retries: [...(taskObject.retries || []), {
+              startedAt: taskObject.startedAt,
+              failedAt: new Date(),
+              error: error.message
+            }]
+          })
         }
-        await updateTask(taskObject.id, {
-          state: 'retrying',
-          retries: [...taskObject.retries, {
-            startedAt: taskObject.startedAt,
-            failedAt: new Date(),
-            error: error.message
-          }]
-        })
         await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
       }
     }
@@ -159,6 +183,7 @@ export default function task(definition) {
     /// TODO: implement task queues
     while(taskObject.state !== 'done' && taskObject.state !== 'failed') {
       await runTask()
+      console.log("TASK OBJECT AFTER RUNTASK", taskObject)
     }
 
     return taskObject.result

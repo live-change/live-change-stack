@@ -106,7 +106,7 @@ definition.view({
       type: Task
     }
   },
-  async daoPath({ hash }) {
+  async daoPath({ causeType, cause, hash }) {
     return Task.indexRangePath('byCauseAndHash', [causeType, cause, hash], { limit: 23 })
   }
 })

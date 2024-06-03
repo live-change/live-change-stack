@@ -16,12 +16,13 @@ import {
   createLoopbackDao
 } from "@live-change/server"
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Promise Rejection', (reason && reason.stack) || reason, "Promise:", promise)
+    //process.exit(1) // TODO: database should not fail because of it, but it should be logged somewhere
 })
 
 process.on('uncaughtException', function (err) {
-  console.error(err.stack)
+  console.error('uncaughtException', err)
 })
 
 function serverOptions(yargs) {

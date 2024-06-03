@@ -134,7 +134,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName]
-    if(!id) throw 'no_id'
+    if(!id) throw new Error('no_id')
     const entity = await modelRuntime().get(id)
     if(!entity) throw 'not_found'
     const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
@@ -158,7 +158,6 @@ function getUpdateFunction( validators, validationContext, config, context) {
       data
     })
   }
-
 }
 
 function defineUpdateAction(config, context) {
