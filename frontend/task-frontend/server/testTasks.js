@@ -98,12 +98,104 @@ const makePlanks = task({
       }
     }
   },
-  async execute({ type }, { service, task }, emit) {
-    const wood = await workerQueue.add(task.run(getWood, { type }))
+  async execute({ woodType }, { service, task }, emit) {
+    console.log("GETTING WOOD!", woodType)
+    const wood = await workerQueue.add(() => task.run(getWood, { woodType, to: task.id }))
+    console.log("GOT WOOD!", woodType, wood)
     await sleep(pauseDuration)
-    const planks = await workerQueue.add(task.run(cutWood, { wood }))
+    const planks = await workerQueue.add(() => task.run(cutWood, { wood, to: task.id }))
     await sleep(pauseDuration)
     return planks
+  }
+})
+
+const placePlank = task({
+  name: 'placePlank',
+  properties: {
+    plank: {
+      type: 'Plank'
+    },
+    to: {
+      type: String
+    },
+    index: {
+      type: Number
+    }
+  },
+  async execute({ plank, to, index }, { service, task }, emit) {
+    await sleep(workDuration)
+    return {
+      type: 'placedPlank',
+      plank, index
+    }
+  }
+})
+
+const buildWall = task({
+  name: 'buildWall',
+  properties: {
+    planks: {
+      type: Array,
+      of: {
+        type: 'Plank'
+      }
+    },
+    wallSize: {
+      type: Number
+    }
+  },
+  returns: {
+    type: 'Wall',
+    properties: {
+      size: {
+        type: Number
+      }
+    }
+  },
+  async execute({ planks, wallSize }, { service, task }, emit) {
+    await sleep(pauseDuration)
+    await Promise.all(planks.map((plank, index) => workerQueue.add(
+      () => task.run(placePlank, { plank, to: task.id, index })
+    )))
+    await sleep(pauseDuration)
+    return {
+      type: 'Wall',
+      size: wallSize
+    }
+  }
+})
+
+const buildRoof = task({
+  name: 'buildRoof',
+  properties: {
+    planks: {
+      type: Array,
+      of: {
+        type: 'Plank'
+      }
+    },
+    roofSize: {
+      type: Number
+    }
+  },
+  returns: {
+    type: 'Roof',
+    properties: {
+      size: {
+        type: Number
+      }
+    }
+  },
+  async execute({ planks, roofSize }, { service, task }, emit) {
+    await sleep(pauseDuration)
+    await Promise.all(planks.map((plank, index) => workerQueue.add(
+      () => task.run(placePlank, { plank, to: task.id, index })
+    )))
+    await sleep(pauseDuration)
+    return {
+      type: 'Roof',
+      size: roofSize
+    }
   }
 })
 
@@ -147,49 +239,50 @@ const buildShelter = task({
     // compute roof size
     const roofSize = width * length
     // compute total plank blocks amount
-    const howManyPlanks = wall1Size * 2 + wall2Size * 2 + roof
+    const howManyPlanks = wall1Size * 2 + wall2Size * 2 + roofSize
 
     let planksCounter = 0
-    task.progress(planksCounter, howManyPlanks)
+    task.progress(planksCounter, howManyPlanks * 2)
     // gather planks
     const planks = await Promise.all( // do planks in parallel
       Array(howManyPlanks / 4)
         .fill(0)
         .map(
-          () => workerQueue.add(async () => {
-            const planks = await task.run(makePlanks, { woodType })
+          async (v, index) => {
+            const planks = await task.run(makePlanks, { woodType, to: task.id, index })
             planksCounter += 4
-            task.progress(planksCounter, howManyPlanks)
+            await task.progress(planksCounter, howManyPlanks * 2)
             return planks
-          })
+          }
         )
     )
 
     await sleep(pauseDuration)
 
-    let placedPlanks = 0
     // build walls
     const walls = await Promise.all( // do walls in parallel
-      [wall1, wall2, wall1, wall2].map(
+      [wall1Size, wall2Size, wall1Size, wall2Size].map(
         async (wallSize) => {
-          const wall = await workerQueue.add(task.run(buildWall, { planks, wallSize }))
-          placedPlanks += wallSize
-          task.progress(planksCounter, howManyPlanks)
+          const wall = await task.run(buildWall, { planks, wallSize })
+          planksCounter += wallSize
+          await task.progress(planksCounter, howManyPlanks * 2)
           return wall
         }
       )
     )
-    
+
     await sleep(pauseDuration)
 
     // build roof
-    const roof = await workerQueue.add(
-      async () => {
-        const roof = await task.run(buildRoof, { planks })
-        placedPlanks += roofSize
+    const roof =
+      await (async () => {
+        const roof = await task.run(buildRoof, { planks, roofSize })
+        planksCounter += roofSize
+        await task.progress(planksCounter, howManyPlanks * 2)
         return roof
-      }
-    )
+      })()
+
+    console.log("ROOF", roof)
     
     await sleep(pauseDuration)
 
@@ -236,7 +329,6 @@ definition.action({
   },
   async execute({ size, woodType, place }, { service, client, command }, emit) {
     await buildShelter.start({ size, woodType, place }, 'userAction', command.id)
-
   }
 })
 
@@ -271,7 +363,6 @@ const Shelter = definition.model({
 
 definition.trigger({
   name: 'taskBuildShelterDone',
-}, {
   properties: {
     shelter: {
       type: 'Shelter'

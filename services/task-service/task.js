@@ -49,7 +49,7 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause) {
     && JSON.stringify(similarTask.properties) === propertiesJson)
 
   const taskObject = oldTask
-    ? await app.serviceViewGet('task', 'task', { task: oldTask.to })
+    ? await app.serviceViewGet('task', 'task', { task: oldTask.to || oldTask.id })
     : {
       id: app.generateUid(),
       name: taskDefinition.name,
@@ -58,6 +58,8 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause) {
       state: 'created',
       retries: []
     }
+
+  console.log("TO", taskObject, 'OT', oldTask)
 
   if(!oldTask) {
     /// app.emitEvents
@@ -77,7 +79,7 @@ async function startTask(taskFunction, props, causeType, cause){
   const context = {
     causeType,
     cause,
-    taskObject
+    taskObject,
   }
   const promise = taskFunction(props, context)
   return { task: taskObject.id, taskObject, promise }
@@ -89,7 +91,7 @@ export default function task(definition) {
       app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {})
 
     let taskObject = context.taskObject
-      ?? await createOrReuseTask(taskDefinition, props, context.causeType, context.cause)
+      ?? await createOrReuseTask(definition, props, context.causeType, context.cause)
 
     if(!taskObject?.state) throw new Error('Task object state is not defined in ' + taskObject)
     if(!taskObject?.id) throw new Error('Task object id is not defined in '+taskObject)
@@ -114,6 +116,7 @@ export default function task(definition) {
         cause: context.cause,
         task: taskObject.id
       })
+
       taskObject = await app.serviceViewGet('task', 'task', { task: taskObject.id })
       //console.log("UPDATED TASK", taskObject, result)
     }
@@ -128,13 +131,19 @@ export default function task(definition) {
         const result = await definition.execute(props, {
           ...context,
           task: {
+            id: taskObject.id,
             async run(taskFunction, props) {
-              return await taskFunction(props, {
+              console.log("SUBTASK RUN", taskFunction.definition.name, props)
+              const result = await taskFunction(props, {
                 ...context,
+                taskObject: undefined,
+                task: taskObject.id,
                 causeType: definition.name + '_Task',
                 cause: taskObject.id
               }, (events) => app.emitEvents(definition.name,
                 Array.isArray(events) ? events : [events], {}))
+              console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
+              return result
             },
             async progress(current, total) {
               await updateTask({
@@ -175,7 +184,7 @@ export default function task(definition) {
     /// TODO: implement task queues
     while(taskObject.state !== 'done' && taskObject.state !== 'failed') {
       await runTask()
-      //console.log("TASK OBJECT AFTER RUNTASK", taskObject)
+      console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
     }
 
     return taskObject.result

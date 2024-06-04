@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
-    "@live-change/dao": "^0.8.32",
-    "@live-change/uid": "^0.8.32"
+    "@live-change/dao": "0.8.32",
+    "@live-change/uid": "0.8.32"
   },
   "gitHead": "e62696aa9fa6e5b86312dfb64c97efa300d41147"
 }

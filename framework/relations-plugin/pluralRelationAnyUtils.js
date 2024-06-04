@@ -139,6 +139,8 @@ function getUpdateFunction( validators, validationContext, config, context) {
     if(!entity) throw 'not_found'
     const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
     const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
+    console.log("UPDATE MATCH", entityTypeAndIdParts, '===', typeAndIdParts,
+      '=>', JSON.stringify(entityTypeAndIdParts) === JSON.stringify(typeAndIdParts))
     if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts)) {
       throw 'not_authorized'
     }
