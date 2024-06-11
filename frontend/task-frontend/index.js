@@ -1,2 +1,3 @@
+import Task from './front/src/components/Task.vue'
 
-export { }
+export { Task }

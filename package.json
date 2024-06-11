@@ -64,6 +64,7 @@
     "services/locale-settings-service",
     "services/geoip-service",
     "services/task-service",
+    "services/comment-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",

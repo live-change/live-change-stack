@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 import App from "@live-change/framework"
 const app = App.app()
 

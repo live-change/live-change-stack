@@ -39,13 +39,20 @@ const getWood = task({
     }
   },
   async execute({ woodType }, { service, task }, emit) {
+    task.progress(0, 1, 'finding tree')
     await sleep(workDuration)
+    if(Math.random() < 0.1) {
+      throw "Getting wood failed"
+    }
+    task.progress(1, 2, 'cutting tree')
+    await sleep(workDuration)
+    task.progress(2, 2, 'done')
     return {
       type: 'Wood',
       woodType
     }
   }
-})
+}, definition)
 
 const cutWood = task({
   name: 'cutWood',
@@ -72,12 +79,13 @@ const cutWood = task({
   },
   async execute({ wood }, { service, task }, emit) {
     await sleep(workDuration)
+    if(Math.random() < 0.1) throw "Wood cutting failed"
     return Array(4).fill(0).map(() => ({
       type: 'Plank',
       woodType: wood.woodType
     }))
   }
-})
+}, definition)
 
 const makePlanks = task({
   name: 'makePlanks',
@@ -99,15 +107,18 @@ const makePlanks = task({
     }
   },
   async execute({ woodType }, { service, task }, emit) {
-    console.log("GETTING WOOD!", woodType)
+    task.progress(0, 4, 'getting wood')
     const wood = await workerQueue.add(() => task.run(getWood, { woodType, to: task.id }))
-    console.log("GOT WOOD!", woodType, wood)
+    task.progress(1, 4, 'waiting')
     await sleep(pauseDuration)
+    task.progress(2, 4, 'cutting wood')
     const planks = await workerQueue.add(() => task.run(cutWood, { wood, to: task.id }))
+    task.progress(3, 4, 'waiting')
     await sleep(pauseDuration)
+    task.progress(4, 4, 'done')
     return planks
   }
-})
+}, definition)
 
 const placePlank = task({
   name: 'placePlank',
@@ -129,7 +140,7 @@ const placePlank = task({
       plank, index
     }
   }
-})
+}, definition)
 
 const buildWall = task({
   name: 'buildWall',
@@ -153,17 +164,27 @@ const buildWall = task({
     }
   },
   async execute({ planks, wallSize }, { service, task }, emit) {
+    task.progress(0, 2 + wallSize, 'planning')
     await sleep(pauseDuration)
+    let plankCounter = 0
+    task.progress(1 + plankCounter, 2 + wallSize, 'building')
     await Promise.all(planks.map((plank, index) => workerQueue.add(
-      () => task.run(placePlank, { plank, to: task.id, index })
+      async () => {
+        const result = await task.run(placePlank, { plank, to: task.id, index })
+        plankCounter ++
+        task.progress(1 + plankCounter, 2 + wallSize, 'building')
+        return result
+      }
     )))
+    task.progress(1 + plankCounter, 2 + wallSize, 'waiting')
     await sleep(pauseDuration)
+    task.progress(2 + plankCounter, 2 + wallSize, 'done')
     return {
       type: 'Wall',
       size: wallSize
     }
   }
-})
+}, definition)
 
 const buildRoof = task({
   name: 'buildRoof',
@@ -197,7 +218,7 @@ const buildRoof = task({
       size: roofSize
     }
   }
-})
+}, definition)
 
 const buildShelter = task({
   name: "buildShelter",
@@ -242,7 +263,7 @@ const buildShelter = task({
     const howManyPlanks = wall1Size * 2 + wall2Size * 2 + roofSize
 
     let planksCounter = 0
-    task.progress(planksCounter, howManyPlanks * 2)
+    task.progress(planksCounter, howManyPlanks * 2, 'gathering materials')
     // gather planks
     const planks = await Promise.all( // do planks in parallel
       Array(howManyPlanks / 4)
@@ -257,7 +278,9 @@ const buildShelter = task({
         )
     )
 
+    task.progress(planksCounter, howManyPlanks * 2, 'waiting')
     await sleep(pauseDuration)
+    task.progress(planksCounter, howManyPlanks * 2, 'building walls')
 
     // build walls
     const walls = await Promise.all( // do walls in parallel
@@ -271,7 +294,9 @@ const buildShelter = task({
       )
     )
 
+    task.progress(planksCounter, howManyPlanks * 2, 'waiting')
     await sleep(pauseDuration)
+    task.progress(planksCounter, howManyPlanks * 2, 'building roof')
 
     // build roof
     const roof =
@@ -283,8 +308,10 @@ const buildShelter = task({
       })()
 
     console.log("ROOF", roof)
-    
+
+    task.progress(planksCounter, howManyPlanks * 2, 'waiting')
     await sleep(pauseDuration)
+    task.progress(planksCounter, howManyPlanks * 2, 'done')
 
     return {
       type: 'Shelter',
@@ -292,7 +319,7 @@ const buildShelter = task({
       roof
     }
   }
-})
+}, definition)
 
 definition.action({
   name: "buildShelter",
@@ -328,7 +355,7 @@ definition.action({
     }
   },
   async execute({ size, woodType, place }, { service, client, command }, emit) {
-    await buildShelter.start({ size, woodType, place }, 'userAction', command.id)
+    return await buildShelter.start({ size, woodType, place }, 'userAction', command.id)
   }
 })
 
@@ -372,6 +399,22 @@ definition.trigger({
     console.log("Task done", props)
     const { result } = props
     console.log("Shelter built", result)
+  }
+})
+
+definition.view({
+  name: 'shelters',
+  properties: {
+    ...App.rangeProperties
+  },
+  returns: {
+    type: Array,
+    of: {
+      type: 'Shelter'
+    }
+  },
+  async daoPath(range) {
+    return Shelter.rangePath(range)
   }
 })
 

@@ -41,21 +41,6 @@ export function defineProperties(model, types, names) {
   return identifiers
 }
 
-export function defineAuthorProperties() {
-  return {
-    authorType: new PropertyDefinition({
-      type: String,
-      validation: ['nonEmpty'],
-      default: (_props, context) => context.client.user ? 'user_User' : 'session_Session'
-    }),
-    author: new PropertyDefinition({
-      type: String,
-      validation: ['nonEmpty'],
-      default: (_props, context) => context.client.user ? context.client.user : context.client.session
-    })
-  }
-}
-
 export function defineIndex(model, what, props) {
   console.log("DEFINE INDEX", model.name, what, props)
   model.indexes['by' + what] = new IndexDefinition({

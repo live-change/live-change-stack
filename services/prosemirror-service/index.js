@@ -248,7 +248,7 @@ definition.action({
     const openDocument = await getDocument(document, type)
     if(!openDocument) throw new Error('document not found')
     console.log("EDIT DOCUMENT", openDocument.version, 'WITH', version)
-    if(openDocument.version != version) {
+    if(openDocument.version !== version) {
       console.error("WRONG VERSION", openDocument.version, '!=', version)
       return 'rejected'
     }
@@ -258,9 +258,9 @@ definition.action({
       //console.log("DOC DATA", documentData)
       //console.log("CONTINUATION", documentData.lastStepsBucket, sessionOrUserType, sessionOrUser)
       if(!openDocument.lastStepsBucket
-          || openDocument.lastStepsBucket.sessionOrUserType != sessionOrUserType
-          || openDocument.lastStepsBucket.sessionOrUser != sessionOrUser
-          || openDocument.lastStepsBucket.window != window) {
+          || openDocument.lastStepsBucket.sessionOrUserType !== sessionOrUserType
+          || openDocument.lastStepsBucket.sessionOrUser !== sessionOrUser
+          || openDocument.lastStepsBucket.window !== window) {
         console.log("CONTINUATION IGNORED!!")
         return 'rejected' // ignore, client will rebase
       }

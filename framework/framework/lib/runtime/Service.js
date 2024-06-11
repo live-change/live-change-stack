@@ -94,7 +94,7 @@ class Service {
   }
 
   async trigger(...args) {
-    return this.app.trigger(args)
+    return this.app.trigger(...args)
   }
 
   async triggerService(...args) {

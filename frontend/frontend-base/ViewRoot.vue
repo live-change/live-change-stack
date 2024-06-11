@@ -29,7 +29,7 @@
             </template>
           </working-zone>
           <template #footer>
-            <slot name="footer">&nbsp;</slot>
+            <slot name="footer"></slot>
           </template>
         </page>
       </template>

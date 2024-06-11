@@ -114,7 +114,7 @@ async function getDocument(documentId, documentType) {
     }
     openDocuments.set(documentId, document)
   }
-  if(document.type != documentType) throw new Error("wrong document type!")
+  if(document.type !== documentType) throw new Error("wrong document type!")
   return document
 }
 

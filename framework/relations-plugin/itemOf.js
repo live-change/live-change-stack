@@ -1,7 +1,7 @@
 import {
   defineProperties, defineIndexes,
   processModelsAnnotation, addAccessControlParents,
-  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers, defineAuthorProperties
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers
 } from './utils.js'
 
 import {

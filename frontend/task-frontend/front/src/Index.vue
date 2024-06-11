@@ -1,15 +1,16 @@
 <template>
   <div class="flex flex-row w-full justify-content-evenly">
     <div class="surface-card shadow-1 border-round px-3 py-1">
-      <h2>Built shelters</h2>
 
       <div>
-
+        <h2>Built shelters</h2>
+        <pre>{{ shelters }}</pre>
       </div>
 
-      <command-form service="testTasks" action="buildShelter" reset-on-done v-slot="{ data, definition }">
-        <pre>{{ definition.properties }}</pre>
-        <pre>{{data}}</pre>
+      <command-form service="testTasks" action="buildShelter" reset-on-done v-slot="{ data, definition }"
+                    @done="handleStarted">
+<!--        <pre>{{ definition.properties }}</pre>
+        <pre>{{ data }}</pre>-->
 
         <div class="text text-xl">
           Size:
@@ -42,16 +43,32 @@
 
       </command-form>
     </div>
-    <div class="surface-card shadow-1 border-round px-3 py-1">
+<!--    <div class="surface-card shadow-1 border-round px-3 py-1">
+      <h2>Root</h2>
+      <pre>{{ tasksRoot }}</pre>
       <h2>Tasks</h2>
-
-    </div>
+      <Task v-for="task in rootTasks" :key="task.id" :task="task" :tasks="tasks" :task-types="taskTypes" />
+    </div>-->
   </div>
 </template>
 
 <script setup>
+  import { ref, computed } from 'vue'
+  import { usePath, live } from '@live-change/vue3-ssr'
+  import { useRouter } from 'vue-router'
 
+  const path = usePath()
 
+  const router = useRouter()
+
+  const [ shelters ] = await Promise.all([
+    live(path.testTasks.shelters({})),
+  ])
+
+  function handleStarted({ parameters, result }) {
+    console.log("Started", parameters, result)
+    router.push({ name: 'progress', params: { action: result.cause }})
+  }
 
 </script>
 

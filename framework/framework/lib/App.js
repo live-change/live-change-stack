@@ -181,15 +181,14 @@ class App {
     if(!(serviceDefinition instanceof ServiceDefinition))
       serviceDefinition = new ServiceDefinition(serviceDefinition)
     let service = new Service(serviceDefinition, this)
-    await service.start(config)
-    console.log("service started", serviceDefinition.name, "!")
-    await this.profileLog.end(profileOp)
-    this.startedServices[serviceDefinition.name] = service
-
     for(const viewName in serviceDefinition.views) {
       const viewDefinition = serviceDefinition.views[viewName]
       if(viewDefinition.global) this.globalViews[viewName] = service.views[viewName]
     }
+    await service.start(config)
+    console.log("service started", serviceDefinition.name, "!")
+    await this.profileLog.end(profileOp)
+    this.startedServices[serviceDefinition.name] = service
 
     return service
   }

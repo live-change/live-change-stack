@@ -24,6 +24,11 @@ export function routes(config = {}) {
       component: () => import("./Index.vue")
     }),
 
+    route({
+      name: 'progress', path: prefix+'progress/:action', meta: { }, props:true,
+      component: () => import("./ShelterProgress.vue")
+    }),
+
     ...pagesRoutes,
 
     ...contentEditRoutes({ ...config }),
@@ -66,7 +71,7 @@ export function createRouter(app, config) {
         return { name: 'user:settings' }
       }
     }
-    if(to && to.name == 'user:signIn' && from?.matched.find(m => m?.meta.saveForSignIn)) {
+    if(to && to.name === 'user:signIn' && from?.matched.find(m => m?.meta.saveForSignIn)) {
       console.log("SAVE FOR LOGIN", from.fullPath)
       localStorage.redirectAfterLogin = from.fullPath
     }

@@ -1,0 +1,29 @@
+{
+  "name": "@live-change/comment-service",
+  "version": "0.8.32",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-stack/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-stack",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "type": "module",
+  "dependencies": {
+    "@live-change/framework": "0.8.32",
+    "@live-change/relations-plugin": "0.8.32"
+  },
+  "gitHead": "e62696aa9fa6e5b86312dfb64c97efa300d41147"
+}
