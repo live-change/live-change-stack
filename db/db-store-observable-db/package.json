@@ -24,10 +24,10 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.8.33",
+    "@live-change/dao": "0.8.33",
     "bufferutil": "^4.0.3",
     "utf-8-validate": "^5.0.4",
     "ws": "^7.4.5"
   },
-  "gitHead": "e62696aa9fa6e5b86312dfb64c97efa300d41147"
+  "gitHead": "98ff6f9c09e5fc1f408010df6cc8038eff571276"
 }

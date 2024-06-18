@@ -50,10 +50,18 @@
     action: {
       type: String,
       default: 'signInOrSignUp'
+    },
+    accessType: {
+      type: String,
+      default: 'offline', //'online'
+    },
+    scope: {
+      type: Array,
+      default: () => ['profile', 'email', 'https://accounts.google.com/o/oauth2/auth']
     }
   })
 
-  const { action } = toRefs(props)
+  const { action, accessType, scope } = toRefs(props)
   const state = ref('waiting')
   const error = ref(null)
 
@@ -62,12 +70,14 @@
     const auth = await loadGoogleAuth2()
     const googleRedirectUri = document.location.protocol + '//' + document.location.host
       + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href
-    const response = await (auth.signIn({
-      scope: 'profile email'
-    }).catch(error => {
+    const args = {
+      scope: scope.value.join(' '),
+      accessType: accessType.value,
+    }
+    const response = await (auth.signIn(args).catch(error => {
       if(error.error === 'popup_blocked_by_browser') {
         return auth.signIn({
-          scope: 'profile email',
+          ...args,
           ux_mode: 'redirect',
           redirect_uri: googleRedirectUri
         })

@@ -92,6 +92,7 @@ export default async ({ command, mode }, options = {
           highlight,
         },
         markdownItSetup(md) {
+          md.disable('code')
           md.use(MarkdownItSub)
           md.use(MarkdownItSup)
           md.use(MarkdownItFootnote)

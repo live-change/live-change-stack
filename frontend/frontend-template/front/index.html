@@ -20,10 +20,10 @@
         our web application.</p>
       <p>In order to use our service, you would need to upgrade to, or install, one of the following browsers:</p>
       <ul>
-        <li>Microsoft Edge 88 or later</li>
-        <li>Mozilla Firefox 78 or later</li>
-        <li>Google Chrome 87 or later</li>
-        <li>Apple Safari 14 or later</li>
+        <li>Microsoft Edge 99 or later</li>
+        <li>Mozilla Firefox 97 or later</li>
+        <li>Google Chrome 99 or later</li>
+        <li>Apple Safari 15 or later</li>
       </ul>
       <p>Please note that our application does not function with older browser versions. We've optimized our service
         for the above-mentioned browsers to ensure robust functionality and a smooth user experience.</p>
@@ -47,6 +47,8 @@
       break
     }
   }
+  const match = ua.match(new RegExp(`Version/([^ ;)]*)`,'i'))
+  if(match) detected.browser = match[1]
   for(const os of oses) {
     const match = ua.match(new RegExp(`(${os}) ?([^;)]*)`,'i'))
     if(match) {
@@ -55,12 +57,19 @@
       break
     }
   }
+
+  if(!(typeof CSSLayerBlockRule === 'function')) {
+    document.getElementById('not-supported').style.display = 'flex'
+    console.error("CSS Layers not supported!")
+  }
+
+  detected.browserVersionMajor = +detected.browserVersion.split('.')[0]
   document.body.classList.add('on-browser-' + detected.browser.toLowerCase())
   document.body.classList.add('on-os-' + detected.os.replace(' ','-').toLowerCase())
   window.onload = function() { setTimeout(function() {
     if(!window.appStarted) {
       document.getElementById('not-supported').style.display = 'flex'
-      console.error("App not started")
+      console.error("App not started!")
     }
   }, 1000) }
 </script>

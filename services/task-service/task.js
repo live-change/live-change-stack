@@ -207,7 +207,12 @@ export default function task(definition, serviceDefinition) {
           await updateTask({
             state: 'failed',
             doneAt: new Date(),
-            error: error.stack ?? error.message ?? error
+            error: error.stack ?? error.message ?? error,
+            retries: [...(taskObject.retries || []), {
+              startedAt: taskObject.startedAt,
+              failedAt: new Date(),
+              error: error.stack ?? error.message ?? error
+            }]
           })
         } else {
           const retriesCount = (taskObject.retries || []).length
@@ -227,7 +232,7 @@ export default function task(definition, serviceDefinition) {
 
     while(taskObject.state !== 'done' && taskObject.state !== 'failed') {
       await runTask()
-      console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
+     // console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
     }
 
     return taskObject.result
@@ -235,7 +240,8 @@ export default function task(definition, serviceDefinition) {
 
   serviceDefinition.beforeStart(async () => {
     setTimeout(async () => {
-      let gt = ""
+      let gt = undefined
+      console.log("GT", gt)
       let tasksToRestart = await app.viewGet('runningTaskRootsByName', {
         name: definition.name,
         gt,
@@ -256,6 +262,7 @@ export default function task(definition, serviceDefinition) {
           await new Promise(resolve => setTimeout(resolve, 1000)) // wait a second
         }
         gt = tasksToRestart[tasksToRestart.length - 1].id
+        console.log("GT", gt)
         tasksToRestart = await app.viewGet('runningTaskRootsByName', {
           name: definition.name,
           gt,
