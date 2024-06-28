@@ -1,6 +1,6 @@
 {
   "name": "@live-change/vue-api",
-  "version": "0.8.33",
+  "version": "0.8.34",
   "description": "Live Change Framework - vue api base",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao": "0.8.33",
-    "@live-change/uid": "0.8.33",
+    "@live-change/dao": "^0.8.34",
+    "@live-change/uid": "^0.8.34",
     "debug": "^4.3.4"
   },
   "gitHead": "98ff6f9c09e5fc1f408010df6cc8038eff571276"
