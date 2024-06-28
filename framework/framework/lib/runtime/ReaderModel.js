@@ -88,11 +88,11 @@ class ReaderModel {
                   }
                 })
                 objectStates.set(ind.to, objectState)
-              } else if(!oldObj || oldObj.to != obj.to) {
+              } else if(!oldObj || oldObj.to !== obj.to) {
                 objectState.refs ++
               }
             }
-            if(oldObj && oldObj.to && (!obj || obj.to != oldObj.to)) {
+            if(oldObj && oldObj.to && (!obj || obj.to !== oldObj.to)) {
               let objectState = objectStates.get(oldObj.to)
               if(objectState) {
                 objectState.refs --
@@ -269,7 +269,7 @@ class ReaderModel {
         return reject(new Error('timeout'))
       }, timeout)
       const observer = (signal, value) => {
-        if(signal != 'set') {
+        if(signal !== 'set') {
           observable.unobserve(observer)
           clearTimeout(timeoutId)
           return reject(new Error(`unknown signal ${signal}`))

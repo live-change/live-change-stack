@@ -173,15 +173,18 @@ definition.trigger({
     const downloadPath = `${uploadsPath}download_${image}`
     await download(url, uploadsPath, { filename: `download_${image}` })
 
-    /*console.log("DOWNLOADED", url, uploadsPath, '=>', downloadPath)
+    /*
+    console.log("DOWNLOADED", url, uploadsPath, '=>', downloadPath)
     const downloadExists = await fs.promises.access(downloadPath, fs.constants.F_OK)
       .then(() => true)
       .catch(() => false)
-    console.log("DOWNLOAD EXISTS", downloadExists)*/
+    console.log("DOWNLOAD EXISTS", downloadExists)//*/
 
     const data = await fs.promises.readFile(downloadPath)
     const metadata = await sharp(data).metadata()
     //const metadata = await sharp(downloadPath).metadata()
+
+    //console.log("IMAGE METADATA", metadata)
 
     emit({
       type: "ownerOwnedImageCreated",

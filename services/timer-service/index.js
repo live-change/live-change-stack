@@ -47,6 +47,12 @@ const Timer = definition.model({
     },
     origin: {
       type: Object
+    },
+    causeType: {
+      type: String
+    },
+    cause: {
+      type: String
     }
   },
   indexes: {
@@ -235,7 +241,11 @@ function runTimerAction(timer) {
   }
   if(timer.trigger) {
     if(timer.service) {
-      return app.triggerService({ ...timer.trigger, service: timer.service }, {
+      return app.triggerService({
+        ...timer.trigger, service: timer.service,
+        causeType: 'timer',
+        cause: timer.id
+      }, {
         ...timer.trigger.data,
         origin: { ...(timer.origin || {}), through: "timer" }
       })
@@ -285,7 +295,7 @@ definition.trigger({
       type: Object
     }
   },
-  async execute({ timer }, { client, service }, emit) {
+  async execute({ timer }, { client, service, trigger }, emit) {
     console.log("CREATE TIMER", timer)
     if(!timer) throw new Error("timer is required")
     let timestamp = new Date(timer.timestamp).getTime()
@@ -294,9 +304,11 @@ definition.trigger({
     let maxRetries = timer.maxRetries || 0
     let retryDelay = timer.retryDelay || 5 * 1000
     let interval = timer.interval || 0
-    if(loops > 0 && interval == 0) throw new Error("impossibleTimer")
+    if(loops > 0 && interval === 0) throw new Error("impossibleTimer")
     const props = {
-      ...timer, timestamp, loops, interval, timerId, maxRetries, retryDelay, retries: 0
+      ...timer, timestamp, loops, interval, timerId, maxRetries, retryDelay, retries: 0,
+      causeType: trigger.causeType,
+      cause: trigger.cause
     }
     emit({
       type: "timerCreated",

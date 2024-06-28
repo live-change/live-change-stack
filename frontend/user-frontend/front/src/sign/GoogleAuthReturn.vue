@@ -9,7 +9,8 @@
       <div v-if="state === 'canceled'" class="text-center">
         <div>Authentication canceled by user</div>
         <div class="flex flex-row">
-          <Button @click="back" label="Go back" icon="pi pi-arrow-left" class="w-full p-button-secondary mb-1" />
+          <Button @click="back" label="Go back" icon="pi pi-arrow-left"
+                  class="w-full p-button-secondary mb-1" />
         </div>
       </div>
       <div v-else-if="state === 'working'" class="text-center">
@@ -28,7 +29,6 @@
 </template>
 
 <script setup>
-  import { loadGoogleAuth2 } from "../utils/googleApi.js"
   import { defineProps, toRefs, ref, onMounted, inject } from 'vue'
 
   import { useApi } from "@live-change/vue3-ssr"
@@ -39,8 +39,9 @@
 
   const workingZone = inject('workingZone')
 
-  import { useRouter } from 'vue-router'
+  import { useRouter, useRoute } from 'vue-router'
   const router = useRouter()
+  const route = useRoute()
 
   const props = defineProps({
     action: {
@@ -53,24 +54,20 @@
   const state = ref('waiting')
   const error = ref(null)
 
-
   onMounted(async () => {
-    const id_token = decodeURIComponent(
-      document.location.hash
-        .slice(1)
-        .split('&')
-        .map(p => p.split('='))
-        .find(a => a[0] === 'id_token')
-        [1]
-    )
-    if(!id_token) {
+    const query = route.query
+    console.log("QUERY", query)
+
+    if(!query.code) {
       state.value = 'canceled'
       return
     }
     try {
       const result = await workingZone.addPromise(`google ${action.value}`,
         api.command(['googleAuthentication', action.value], {
-          accessToken: id_token
+          redirectUri: document.location.protocol + '//' + document.location.host
+            + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href,
+          ...query
         })
       )
       console.log("GAUTH RESULT", result)

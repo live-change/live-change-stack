@@ -28,7 +28,16 @@ class TriggerHandler {
       ...trig,
       action: this,
       service: this.service,
-      trigger: (...args) => this.service.trigger(...args) /// TODO: collect call traces,
+      trigger: (trigger, data) => this.service.trigger({
+        causeType: 'trigger',
+        cause: trig.id,
+        ...trigger
+      }, data),
+      triggerService: (trigger, data, returnArray = false) => this.service.triggerService({
+        causeType: 'trigger',
+        cause: trig.id,
+        ...trigger
+      }, data, returnArray)
     }, emit)
 
     resultPromise = resultPromise.then(async result => {

@@ -78,6 +78,11 @@ definition.trigger({
     const newIdentification = overwrite
       ? { ...currentIdentification, ...identification }
       : { ...identification, ...currentIdentification }
+
+    console.log("CURRENT IDENTIFICATION", currentIdentification)
+    console.log("IDENTIFICATION", identification)
+    console.log("UPDATE IDENTIFICATION", id, newIdentification)
+
     if(currentIdentification) {
       emit({
         type: 'sessionOrUserOwnedIdentificationUpdated',

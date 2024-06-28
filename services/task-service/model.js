@@ -223,6 +223,6 @@ definition.view({
     const { name } = props
     const range = App.extractRange(props)
     if(!range.limit) range.limit = 256
-    return Task.indexRangePath('runningRootsByName', [name], range)
+    return Task.sortedIndexRangePath('runningRootsByName', [name], range)
   }
 })

@@ -471,7 +471,7 @@ class Store {
       //console.log("  DELETE DATA [")
       for(let i = 0; i < keys.length; i++) {
         const key = keys[i]
-        const json = tree.get(key)
+        const json = this.tree.get(key)
         try {
           const obj = this.serialization.parse(json)
           this.tree = this.tree.remove(key)

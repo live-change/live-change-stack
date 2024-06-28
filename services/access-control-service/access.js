@@ -267,9 +267,9 @@ export default (definition) => {
               id: outputObjectId,
               roles: Array.from(new Set([...nodeRoles, ...client.roles]))
             }
-            const existingAccessIndex = accesses.findIndex(acc => acc.id == outputObjectId)
-            if(existingAccessIndex != -1) {
-              if(JSON.stringify(outputObject) != JSON.stringify(accesses[existingAccessIndex])) {
+            const existingAccessIndex = accesses.findIndex(acc => acc.id === outputObjectId)
+            if(existingAccessIndex !== -1) {
+              if(JSON.stringify(outputObject) !== JSON.stringify(accesses[existingAccessIndex])) {
                 output.change(outputObject, accesses[existingAccessIndex])
                 accesses[existingAccessIndex] = outputObject
               } /// else ignore

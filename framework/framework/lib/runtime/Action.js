@@ -21,7 +21,16 @@ class Action {
       service: this.service,
       client: command.client,
       command,
-      trigger: (...args) => this.service.trigger(...args) /// TODO: collet call traces
+      trigger: (trigger, data) => this.service.trigger({
+        causeType: 'action',
+        cause: command.id,
+        ...trigger
+      }, data),
+      triggerService: (trigger, data, returnArray = false) => this.service.triggerService({
+        causeType: 'action',
+        cause: command.id,
+        ...trigger
+      }, data, returnArray)
     }, emit)
 
     resultPromise = resultPromise.then(async result => {

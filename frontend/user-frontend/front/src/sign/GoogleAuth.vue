@@ -14,13 +14,13 @@
         </div>
       </div>
       <div v-else-if="state === 'waiting'" class="text-center">
-        Authentication will open in a new window.
+        Authentication will open in this window.
       </div>
       <div v-else-if="state === 'working'" class="text-center">
         Waiting for server...
       </div>
       <div v-else-if="state === 'error'" class="text-center">
-        <div>Error during authentication</div>
+        <div>Error during authentication:</div>
         <div>{{ error }}</div>
       </div>
       <div v-else>
@@ -32,19 +32,14 @@
 </template>
 
 <script setup>
-  import { loadGoogleAuth2 } from "../utils/googleApi.js"
   import { defineProps, toRefs, ref, onMounted, inject } from 'vue'
-
-  import { useApi } from "@live-change/vue3-ssr"
-  const api = useApi()
-
-  import { useToast } from 'primevue/usetoast'
-  const toast = useToast()
-
-  const workingZone = inject('workingZone')
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
+
+  const workingZone = inject('workingZone')
+
+  import { googleAuthRedirect } from '../utils/googleAuth.js'
 
   const props = defineProps({
     action: {
@@ -57,7 +52,7 @@
     },
     scope: {
       type: Array,
-      default: () => ['profile', 'email', 'https://accounts.google.com/o/oauth2/auth']
+      default: () => ['profile', 'email']
     }
   })
 
@@ -65,56 +60,25 @@
   const state = ref('waiting')
   const error = ref(null)
 
-  async function googleAuth() {
+  function googleAuth() {
     state.value = 'waiting'
-    const auth = await loadGoogleAuth2()
-    const googleRedirectUri = document.location.protocol + '//' + document.location.host
-      + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href
-    const args = {
-      scope: scope.value.join(' '),
-      accessType: accessType.value,
-    }
-    const response = await (auth.signIn(args).catch(error => {
-      if(error.error === 'popup_blocked_by_browser') {
-        return auth.signIn({
-          ...args,
-          ux_mode: 'redirect',
-          redirect_uri: googleRedirectUri
-        })
-      }
-      if(error.error === 'popup_closed_by_user') {
-        toast.add({ severity: 'warning', summary: 'Canceled', detail: 'You closed login window', life: 3000 })
-        state.value = 'canceled'
-        return
-      }
-      throw error
+
+    workingZone.addPromise('google auth', new Promise((resolve, reject) => {
+      setTimeout(() => {
+        state.value = 'error'
+        error.value = 'redirect_timeout'
+        // return reject('redirect timeout?!')
+        return resolve()
+      }, 4000)
     }))
 
-    state.value = 'working'
-    try {
-      const result = await workingZone.addPromise(`google ${action.value}`,
-        api.command(['googleAuthentication', action.value], {
-          accessToken: response.getAuthResponse().id_token
-        })
-      )
-      //console.log("GAUTH RESULT", result)
-      const { action: actionDone, user } = result
-      while(api.client.value.user !== result.user) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-      if(actionDone === 'signIn') {
-        router.push({ name: 'user:signInFinished' })
-      } else if(actionDone === 'signUp') {
-        router.push({ name: 'user:signUpFinished' })
-      } else {
-        console.error("Unknown action", actionDone)
-      }
-    } catch(error) {
-      console.error("Google auth error", error)
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Error during google authentication', life: 3000 })
-      state.value = 'error'
-      error.value = error
-    }
+    googleAuthRedirect({
+      scope: scope.value.join(' '),
+      redirectUri: document.location.protocol + '//' + document.location.host
+        + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href,
+      accessType: accessType.value
+    })
+
   }
 
   async function back() {

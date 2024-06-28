@@ -42,12 +42,12 @@ class EventsReader {
         this.movePositionForward()
       }).catch(error => {
         console.error("EVENT PROCESSING ERROR", error, "AT EVENT", event.id,
-            " -> EVENT PROCESSING STOPPED AT", this.position)
+            " -> EVENT PROCESSING STOPPED AT", this.position,' EVENT:', JSON.stringify(event, null, 2))
         if(this.eventsObservable) this.eventsObservable.unobserve(this)
       })
     }
     this.readCount--
-    if(this.readCount == 0) this.readMore()
+    if(this.readCount === 0) this.readMore()
   }
   movePositionForward() {
     let i

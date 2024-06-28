@@ -93,12 +93,20 @@ class Service {
     console.log("Service", this.definition.name, "started")
   }
 
-  async trigger(...args) {
-    return this.app.trigger(...args)
+  async trigger(trigger, data) {
+    return this.app.trigger({
+      causeType: 'service',
+      cause: this.name,
+      ...trigger
+    }, data)
   }
 
-  async triggerService(...args) {
-    return this.app.triggerService(...args)
+  async triggerService(trigger, data, returnArray = false) {
+    return this.app.triggerService({
+      causeType: 'service',
+      cause: this.name,
+      ...trigger
+    }, data, returnArray)
   }
 
 }

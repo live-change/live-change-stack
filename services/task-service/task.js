@@ -192,6 +192,16 @@ export default function task(definition, serviceDefinition) {
               }
               updateProgress()
             }
+          },
+          async trigger(trigger, props) {
+            return await app.trigger({
+              causeType: 'task_Task',
+              cause: taskObject.id,
+              ...trigger,
+            }, props)
+          },
+          async triggerService(trigger, props, returnArray = false) {
+            return await app.triggerService(trigger, props, returnArray)
           }
         })
         await updateTask({
