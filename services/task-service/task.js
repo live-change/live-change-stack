@@ -82,6 +82,7 @@ async function startTask(taskFunction, props, causeType, cause){
     cause,
     taskObject,
   }
+  console.log("START TASK!", taskFunction.name)
   const promise = taskFunction(props, context)
   return { task: taskObject.id, taskObject, promise, causeType, cause }
 }
@@ -160,6 +161,10 @@ export default function task(definition, serviceDefinition) {
           task: {
             id: taskObject.id,
             async run(taskFunction, props, progressFactor = 1) {
+              if(typeof taskFunction !== 'function') {
+                console.log("TASK FUNCTION", taskFunction)
+                throw new Error('Task function is not a function')
+              }
               //console.log("SUBTASK RUN", taskFunction.definition.name, props)
               const subtaskProgress = { current: 0, total: 1, factor: progressFactor }
               subtasksProgress.push(subtaskProgress)

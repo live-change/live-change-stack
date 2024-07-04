@@ -1,7 +1,19 @@
 import { defineConfig } from 'vite'
 import Pages from 'vite-plugin-pages'
 
-let version = process.env.VERSION ?? 'unknown'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { accessSync, readFileSync } from 'fs'
+const currentModuleDir = dirname(fileURLToPath(import.meta.url))
+const packageJsonPath = dirname(fileURLToPath(import.meta.url))
+  .split('/').map((part, i, arr) =>
+    join(arr.slice(0, arr.length - i).join('/'), 'package.json')
+  ).find(p => { try { accessSync(p); return true } catch(e) { return false }})
+const packageJson = packageJsonPath ? JSON.parse(readFileSync(packageJsonPath, 'utf-8')) : {}
+const name = packageJson.name ?? "Example"
+const version = packageJson.version ?? process.env.VERSION ?? 'unknown'
+const homepage = process.env.BASE_HREF ?? packageJson.homepage
+const domain = (homepage && homepage.match(/https\:\/\/([^\/]+)/)?.[1]) || 'example.com'
 
 // @ts-ignore
 import baseViteConfig from '@live-change/frontend-base/vite-config.js'
@@ -14,8 +26,8 @@ export default defineConfig(async ({ command, mode }) => {
     define: {
       ...baseConfig.define,
       ENV_VERSION: JSON.stringify(version),
-      ENV_BRAND_NAME: JSON.stringify("Example"),
-      ENV_BRAND_DOMAIN: JSON.stringify("example.com"),
+      ENV_BRAND_NAME: JSON.stringify(name[0].toUpperCase() + name.slice(1)),
+      ENV_BRAND_DOMAIN: JSON.stringify(domain),
     },
 
     plugins: [

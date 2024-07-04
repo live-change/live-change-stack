@@ -12,7 +12,6 @@ import Renderer from './Renderer.js'
 
 import { fbRedirect } from './fbRedirect.js'
 
-
 class SsrServer {
   constructor(express, manifest, settings) {
     this.manifest = manifest
@@ -119,7 +118,8 @@ class SsrServer {
         try {
           const version = this.version
           await this.renderer.renderSitemap({
-            url, headers: req.headers, dao, clientIp, credentials, windowId, version, now
+            url, headers: req.headers, dao, clientIp, credentials, windowId, version, now,
+            domain: domain ?? req.headers.host
           }, res)
         } catch (e) {
           console.error("SITEMAP RENDERING ERROR", e.stack || e)

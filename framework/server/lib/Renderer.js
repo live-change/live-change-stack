@@ -44,7 +44,7 @@ class Renderer {
   }
 
   async renderPage(params) {
-    const { url, headers, dao, clientIp, credentials, windowId, version, now } = params
+    const { url, headers, dao, clientIp, credentials, windowId, version, now, domain } = params
 
     const render = await this.getRenderFunction()
     const { html: appHtml, modules, data, meta, response } = await render(params)
@@ -140,11 +140,13 @@ class Renderer {
 
   async renderSitemap(params, res) {
     try {
-      const { url, headers, dao, clientIp, credentials, windowId, version, now } = params
+      const { url, headers, dao, clientIp, credentials, windowId, version, now, domain } = params
 
       res.header('Content-Type', 'application/xml')
       res.status(200)
-      const smStream = new SitemapStream({ hostname: (process.env.BASE_HREF || "https://sitemap.com")+'/' })
+      const smStream = new SitemapStream({
+        hostname: (process.env.BASE_HREF ?? (domain ? `https://${domain}` : "https://sitemap.com"))+'/'
+      })
       smStream.pipe(res)
       const sitemapFunction = await this.getSitemapRenderFunction()
 

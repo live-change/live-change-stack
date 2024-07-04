@@ -100,12 +100,14 @@ function defineRangeViews(config, context, external = true) {
 
 function getSetFunction( validators, validationContext, config, context) {
   const {
-    service, app, model, objectType,
+    service, app, model, objectType, modelRuntime,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Set'
   return async function execute(properties, { client, service }, emit) {
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
+    const id = generateAnyId(otherPropertyNames, properties)
+    const entity = await modelRuntime().get(id)
     const data = extractObjectData(writeableProperties, properties,
       App.computeDefaults(model, properties, { client, service } ))
     await App.validation.validate({ ...identifiers, ...data }, validators,
@@ -115,6 +117,7 @@ function getSetFunction( validators, validationContext, config, context) {
       type: eventName,
       identifiers, data
     })
+    return id
   }
 }
 
