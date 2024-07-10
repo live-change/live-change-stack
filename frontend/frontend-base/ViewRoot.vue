@@ -41,7 +41,6 @@
 
   import Toast from 'primevue/toast'
 
-  import 'primevue/resources/primevue.min.css'
   import 'primeflex/primeflex.css'
   import 'primeicons/primeicons.css'
 

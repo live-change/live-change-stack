@@ -3,6 +3,8 @@ import deepmerge from 'deepmerge';
 import * as en from "../locales/en.js"
 import { locales as autoFormLocales } from "@live-change/frontend-auto-form"
 
+import Aura from '@primevue/themes/aura'
+
 export default {
   defaultLocale: 'en',
   i18n: {
@@ -21,6 +23,13 @@ export default {
       en: deepmerge.all([
         en.datetimeFormats
       ])
+    }
+  },
+  primevue: {
+    theme: {
+      preset: Aura,
+      cssLayer: false,
+      darkModeSelector: 'body'
     }
   }
 }
