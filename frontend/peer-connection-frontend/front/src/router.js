@@ -10,7 +10,8 @@ export function routes(config = {}) {
   return [
     route({
       name: 'debugger', path: prefix + '/debugger/:channelType/:channel', meta: { },
-      component: () => import("./components/Debugger.vue")
+      component: () => import("./components/Debugger.vue"),
+      props: true
     }),
     route({
       name: 'testDebugger', path: prefix + '', meta: { },

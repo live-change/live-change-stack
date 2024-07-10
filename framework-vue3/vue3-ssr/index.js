@@ -67,14 +67,16 @@ function reverseRange(range) {
 function inboxReader(pathFunction, callback, start = '', options = {}) {
   const {
     bucketSize = 32,
-    context = getCurrentInstance().appContext
+    context = getCurrentInstance().appContext,
+    idField = 'id',
+    positionFilter = (n, curr) => n > curr
   } = options
   const api = useApi(context)
   return new InboxReader((position, bucketSize) => {
     const path = pathFunction(position, bucketSize)
     console.log("OBSERVE PATH", path)
     return api.observable(path)
-  }, callback, start, bucketSize)
+  }, callback, start, bucketSize, idField, positionFilter)
 }
 
 function useClient(context) {

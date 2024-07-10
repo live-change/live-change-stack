@@ -86,14 +86,29 @@ app.config = {
       name: 'image',
       path: '@live-change/image-service'
     },
-/*    {
-      name: 'backup',
-      path: '@live-change/backup-service',
-      clearEvents: true
-    }*/
-
-    //  { path: '@live-change/google-account-service' },
+    {
+      name: 'session',
+      path: '@live-change/session-service',
+      createSessionOnUpdate: true
+    },
+    {
+      name: 'online',
+      path: '@live-change/online-service',
+      createSessionOnUpdate: true
+    },
+    {
+      name: 'accessControl',
+      path: '@live-change/access-control-service',
+      createSessionOnUpdate: true,
+      contactTypes,
+    },
+    {
+      name: 'peerConnection',
+      path: '@live-change/peer-connection-service',
+      turn: {
+        urls: 'turn:turn.chaosu.pl:4433'
+      }
+    }
   ]
 }
-
 export default app.config

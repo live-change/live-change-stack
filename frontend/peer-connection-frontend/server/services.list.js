@@ -1,5 +1,5 @@
-import timer from '@live-change/timer-service'
-import session from '@live-change/session-service'
+import timer from "@live-change/timer-service"
+import session from "@live-change/session-service"
 import user from '@live-change/user-service'
 import email from '@live-change/email-service'
 import phone from '@live-change/phone-service'
@@ -15,9 +15,9 @@ import secretCode from '@live-change/secret-code-service'
 import secretLink from '@live-change/secret-link-service'
 import messageAuthentication from '@live-change/message-authentication-service'
 import googleAuthentication from '@live-change/google-authentication-service'
+import online from "@live-change/online-service"
+import accessControl from "@live-change/access-control-service"
 
-//import backup from '@live-change/backup-service'
-import init from './init.js'
 
 export {
   timer,
@@ -37,6 +37,14 @@ export {
   messageAuthentication,
   googleAuthentication,
   localeSettings,
-//  backup,
+  online,
+  accessControl
+}
+
+import peerConnection from "@live-change/peer-connection-service"
+import init from './init.js'
+
+export {
+  peerConnection,
   init
 }

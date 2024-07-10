@@ -1,5 +1,5 @@
-const crypto = require('crypto')
-const ReactiveDao = require('@live-change/dao')
+import crypto from 'crypto'
+import ReactiveDao from '@live-change/dao'
 import definition from './definition.js'
 const config = definition.config
 
@@ -7,9 +7,16 @@ const urls = config?.turn?.urls || process.env.TURN_URLS?.split(';')
 const secret = config?.turn?.secret || process.env.TURN_SECRET
 const turnExpireTime = config?.turn?.expire || (+process.env.TURN_EXPIRE) || (60 * 60) // 1 hour for default
 
-const { clientHasAccessRole } = require("../access-control-service/access.js")(definition)
+const {
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'],
+  writerRoles = ['speaker', 'vip', 'moderator', 'owner']
+} = config
 
-const { Peer } = require('./peer.js')
+import accessControl from '@live-change/access-control-service/access.js'
+const { clientHasAccessRoles } = accessControl(definition)
+
+
+import { Peer } from './peer.js'
 
 function randomHexString(size) {
   return new Promise((resolve, reject) => {
@@ -24,11 +31,12 @@ async function createTurnConfiguration({ client }) {
   const expire = Date.now() / 1000 + turnExpireTime | 0
   const username = await randomHexString(10)
   const rusername = expire + ':' + username
+  console.log("TURN SECRET", secret, rusername)
   const password = crypto
     .createHmac('sha1', secret)
     .update(rusername)
     .digest('base64')
-  /// TODO: select nearest servers by geoip
+  /// TODO: select nearest servers by geoip and loadbalancing
   return {
     urls,
     credentialType: 'password',
@@ -51,11 +59,11 @@ definition.view({
   },
   access: async ({ peer },  { client, service, visibilityTest }) => {
     if(visibilityTest) return true
-    const [ channelType, channel, sessionType, session, instance ] = peer.split(':')
-    if(sessionType != 'session_Session') throw new Error('wrongSessionType')
-    if(session != client.session) throw new Error('wrongSession')
-    return clientHasAccessRole(client, { objectType: channelType.split('.')[0], object: channel },
-        ['speaker', 'vip', 'moderator', 'owner'])
+    const [ channelType, channel, session, instance ] = peer.split(':')
+    if(session !== client.session) throw new Error('wrongSession')
+    const result = await clientHasAccessRoles(client, { objectType: channelType.split('.')[0], object: channel },
+        writerRoles)
+    return result
   },
   observable({ peer }, context) {
     const observable = new ReactiveDao.ObservableValue()

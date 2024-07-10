@@ -1,8 +1,14 @@
 import definition from './definition.js'
+const config = definition.config
+const {
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'].
+  writerRoles = ['speaker', 'vip', 'moderator', 'owner']
+} = config
 
-const { clientHasAccessRole } = require("../access-control-service/access.js")(definition)
+import accessControl from '@live-change/access-control-service/access.js'
+const { clientHasAccessRoles } = accessControl(definition)
 
-const Peer = definition.model({
+export const Peer = definition.model({
   name: "Peer",
   itemOfAny: {
     to: ['channel', 'session']
@@ -33,8 +39,7 @@ definition.view({
     if(visibilityTest) return true
     const { channelType, channel } = params
     //console.log("CHECK PEERS ACCESS", params, client, visibilityTest)
-    return clientHasAccessRole(client, { objectType: channelType, object: channel },
-        ['reader', 'speaker', 'vip', 'moderator', 'owner'])
+    return clientHasAccessRoles(client, { objectType: channelType, object: channel }, readerRoles)
   },
   async daoPath({ channelType, channel }, { client, service }, method) {
     return Peer.indexRangePath('byChannel', [ channelType, channel.split('.')[0] ])
@@ -43,16 +48,16 @@ definition.view({
 
 definition.event({
   name: "peerOnline",
-  async execute({ channelType, channel, sessionType, session, instance }) {
-    const peer = channelType + ':' + channel + ':' + sessionType + ':' + session + ':' + instance
-    await Peer.create({ id: peer, channelType, channel, instance, sessionType, session })
+  async execute({ channelType, channel, session, instance }) {
+    const peer = channelType + ':' + channel + ':' + session + ':' + instance
+    await Peer.create({ id: peer, channelType, channel, instance, session })
   }
 })
 
 definition.event({
   name: "peerOffline",
-  async execute({ channelType, channel, sessionType, session, instance }) {
-    const peer = channelType + ':' + channel + ':' + sessionType + ':' + session + ':' + instance
+  async execute({ channelType, channel, session, instance }) {
+    const peer = channelType + ':' + channel + ':' + session + ':' + instance
     Peer.delete(peer)
   }
 })
@@ -76,13 +81,12 @@ definition.trigger({
   },
   async execute({ session, peer }, context, emit) {
     console.log("PEER ONLINE PARAMS", { session, peer })
-    const [ channelType, channel, sessionType, peerSession, instance ] = peer.split(':')
-    if(sessionType !== 'session_Session') throw new Error('wrongSessionType')
+    const [ channelType, channel, peerSession, instance ] = peer.split(':')
     if(peerSession !== session) throw new Error('wrongSession')
     /// TODO: check channel access
     emit({
       type: 'peerOnline',
-      channelType, channel, sessionType, session, instance
+      channelType, channel, session, instance
     })
   }
 })
@@ -93,12 +97,11 @@ definition.trigger({
   },
   async execute({ session, peer }, context, emit) {
     console.log("PEER OFFLINE PARAMS", { session, peer })
-    const [ channelType, channel, sessionType, peerSession, instance ] = peer.split(':')
-    if(sessionType != 'session_Session') throw new Error('wrongSessionType')
-    if(peerSession != session) throw new Error('wrongSession')
+    const [ channelType, channel, peerSession, instance ] = peer.split(':')
+    if(peerSession !== session) throw new Error('wrongSession')
     emit({
       type: 'peerOffline',
-      channelType, channel, sessionType, session, instance
+      channelType, channel, session, instance
     })
   }
 })

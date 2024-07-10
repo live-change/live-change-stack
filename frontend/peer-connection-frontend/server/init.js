@@ -1,7 +1,15 @@
-const App = require('@live-change/framework')
+import App from '@live-change/framework'
 const app = App.app()
 
-module.exports = async function(services) {
+export default async function(services) {
 
+  const { PublicAccess, Access, AccessRequest, AccessInvitation } = services.accessControl.models
+
+  await PublicAccess.create({
+    id: App.encodeIdentifier(['example_Example', 'one']),
+    objectType: 'example_Example', object: 'one',
+    userRoles: ['speaker'],
+    sessionRoles: ['speaker']
+  })
 
 }

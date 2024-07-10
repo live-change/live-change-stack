@@ -3,7 +3,9 @@ const app = App.app()
 
 import definition from './definition.js'
 
-require('./turn.js')
-require('./peer.js')
+import './turn.js'
+import './peer.js'
+import './peerState.js'
+import './message.js'
 
 export default definition

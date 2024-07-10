@@ -17,20 +17,20 @@ class InboxReader {
     this.readPromiseResolve = null
 
     this.observer = (signal, ...args) => {
-      if(signal == 'error') {
+      if(signal === 'error') {
         const error = args[0]
-        console.error("PEER MESSAGE ERROR", error.stack || error)
+        console.error("INBOX READER ERROR", error.stack || error)
         return
       }
-      if(signal == 'putByField') {
-        const [field, id, message] = args
+      if(signal === 'putByField') {
+        const [_field, _id, message] = args
         this.handleMessage(message)
-      } else if(signal == 'set') {
+      } else if(signal === 'set') {
         const value = args[0]
         for (const message of value) {
           this.handleMessage(message)
         }
-      } else if(signal == 'push') {
+      } else if(signal === 'push') {
         const [...messages] = args
         for(const message of messages) this.handleMessage(message)
       } else {

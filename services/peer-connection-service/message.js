@@ -1,4 +1,14 @@
-const Peer = require('./peer.js')
+import definition from './definition.js'
+const config = definition.config
+const {
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'].
+  writerRoles = ['speaker', 'vip', 'moderator', 'owner']
+} = config
+
+import accessControl from '@live-change/access-control-service/access.js'
+const { clientHasAccessRoles } = accessControl(definition)
+
+import { Peer } from './peer.js'
 
 const messageFields = {
   to: {
@@ -73,9 +83,8 @@ definition.view({
   access: async({ peer }, { client, service, visibilityTest }) => {
     if(visibilityTest) return true
     if(!peer) throw new Error("peer parameter is required")
-    const publicSessionInfo = await getPublicInfo(client.sessionId)
-    //console.log('MESSAGES ACCESS', peer.split('_'), "[2] == ", publicSessionInfo.id)
-    return peer.split('_')[2] == publicSessionInfo.id
+    console.log('MESSAGES ACCESS', peer.split(':'), "[2] == ", client.session)
+    return peer.split(':')[2] === client.session
   },
   async daoPath({ peer, gt, lt, gte, lte, limit, reverse }, { client, service }, method) {
     const channelId = peer
@@ -121,8 +130,7 @@ async function postMessage(props, { client, service }, emit, conversation) {
   }
   data.timestamp = now
   if(!data.user) {
-    const publicInfo = await getPublicInfo(client.sessionId)
-    data.session = publicInfo.id
+    data.session = client.session
   }
   emit({
     type: "MessageCreated",
@@ -142,13 +150,10 @@ definition.action({
     if(visibilityTest) return true
     const [fromType, fromId, fromSession] = from.split('_')
     const [toType, toId, toSession] = to.split('_')
-    if(toType != fromType) return false
-    if(toId != fromId) return false
-    const publicSessionInfo = await getPublicInfo(client.sessionId)
-    if(publicSessionInfo.id != fromSession) return false
-    return toType.split('.')[0] == 'priv'
-        ? checkPrivAccess(toId, context)
-        : checkIfRole(toType.split('.')[0], toId, ['speaker', 'vip', 'moderator', 'owner'], context)
+    if(toType !== fromType || toId !== fromId) return false // different channel
+    if(client.session !== fromSession) return false
+    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
+    return hasRole
   },
   async execute(props, { client, service }, emit) {
     const result = await postMessage(props, { client, service }, emit)

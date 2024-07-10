@@ -1,6 +1,15 @@
 import definition from './definition.js'
+const config = definition.config
+const {
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'].
+  writerRoles = ['speaker', 'vip', 'moderator', 'owner']
+} = config
 
-const { Peer } = require('./peer.js')
+import accessControl from '@live-change/access-control-service/access.js'
+const { clientHasAccessRoles } = accessControl(definition)
+
+import { Peer } from './peer.js'
+
 
 const peerStateFields = {
   audioState: {
@@ -42,9 +51,9 @@ definition.view({
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
     const [toType, toId, toSession] = peer.split('_')
-    return toType.split('.')[0] == 'priv'
+    return toType.split('.')[0] === 'priv'
         ? checkPrivAccess(toId, context)
-        : checkIfRole(toType.split('.')[0], toId, ['speaker', 'vip', 'moderator', 'owner'], context)
+        : checkIfRole(toType.split('.')[0], toId, writerRoles, context)
   },
   async daoPath({ peer }, { client, service }, method) {
     return PeerState.path(peer)
@@ -64,11 +73,9 @@ definition.action({
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
     const [toType, toId, toSession] = peer.split('_')
-    const publicSessionInfo = await getPublicInfo(client.sessionId)
-    if(publicSessionInfo.id != toSession) return false
-    return toType.split('.')[0] == 'priv'
-        ? checkPrivAccess(toId, context)
-        : checkIfRole(toType.split('.')[0], toId, ['speaker', 'vip', 'moderator', 'owner'], context)
+    if(client.session !== toSession) return false
+    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
+    return hasRole
   },
   async execute(props, { client, service }, emit) {
     let data = { }

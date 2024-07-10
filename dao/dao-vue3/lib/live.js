@@ -266,7 +266,7 @@ async function live(api, path, onUnmountedCb) {
   await new Promise((resolve, reject) => {
     let error = null
     const onError = (msg) => {
-      console.error("LIVE ERROR", msg)
+      console.error("LIVE ERROR", msg, 'WHILE FETCHING', path)
       if(error) return
       error = msg
       reject(error)

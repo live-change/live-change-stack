@@ -2,9 +2,9 @@
   "name": "@live-change/peer-connection-frontend",
   "version": "0.8.34",
   "scripts": {
-    "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js",
-    "localDevInit": "rm tmp.db; lcli localDev --enableSessions --initScript ./init.js",
-    "localDev": "node server/start.js localDev --enableSessions --dbAccess",
+    "memDev": "dotenvx run -- node server/start.js memDev --enableSessions --initScript ./init.js",
+    "localDevInit": "rm tmp.db; dotenvx run -- node server/start.js localDev --enableSessions --initScript ./init.js",
+    "localDev": "dotenvx run -- node server/start.js localDev --enableSessions --dbAccess",
     "dev": "node server/start.js dev --enableSessions",
     "ssrDev": "node server/start.js ssrDev --enableSessions",
     "serveAllMem": "cross-env NODE_ENV=production lcli ssrServer --withApi --withServices --updateServices --enableSessions --withDb --dbBackend mem --createDb",
@@ -17,7 +17,8 @@
     "build:client": "cd front; vite build --ssrManifest --outDir dist/client",
     "build:server": "cd front; vite build --ssr src/entry-server.js --outDir dist/server",
     "generate": "vite build --ssrManifest --outDir dist/static && yarn build:server && node prerender",
-    "debug": "node --inspect-brk server"
+    "debug": "node --inspect-brk server",
+    "describe": "node server/start.js describe"
   },
   "type": "module",
   "dependencies": {

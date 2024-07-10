@@ -17,7 +17,7 @@ export default (definition) => {
   } = config
 
   function testRoles(requiredRoles, clientRoles) {
-    if(!requiredRoles || requiredRoles.length == 0) return true
+    if(!requiredRoles || requiredRoles.length === 0) return true
     for(const requiredRolesOption of requiredRoles) {
       if(
         (Array.isArray(requiredRolesOption) ? requiredRolesOption : [requiredRolesOption])
@@ -104,6 +104,7 @@ export default (definition) => {
   async function checkRoles(client, { objectType, object, objects }, callback, ignorePublic) {
     const allObjects = ((objectType && object) ? [{ objectType, object }] : []).concat(objects || [])
     const roles = await getClientObjectsRoles(client, allObjects, ignorePublic)
+    console.log('checkRoles', allObjects, roles)
     return await callback(roles, client, { objectType, object })
   }
 
@@ -298,8 +299,8 @@ export default (definition) => {
   }
 
   function accessLimitedObservable(client, objects, path) {
-    if(path[0] != 'database') throw new Error("non database path "+ JSON.stringify(path))
-    const isObject = path[1] == 'queryObject' || path[1] == ''
+    if(path[0] !== 'database') throw new Error("non database path "+ JSON.stringify(path))
+    const isObject = path[1] === 'queryObject' || path[1] === ''
   }
 
   return {

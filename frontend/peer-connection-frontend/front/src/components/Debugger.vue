@@ -9,10 +9,10 @@
     <div v-if="peer">
       <h2>Peer connection</h2>
       <pre>{{ JSON.stringify(peer.summary, null, "  ") }}</pre>
-      <div class="buttons">
-        <button type="button" role="button" class="button" @click="() => peer.setOnline(true)">Set Online</button>
-        <button type="button" role="button" class="button" @click="() => peer.setOnline(false)">Set Offline</button>
-        <button type="button" role="button" class="button" @click="sendTestMessage">Test Message</button>
+      <div class="flex justify-content-between">
+        <Button @click="() => peer.setOnline(true)">Set Online</Button>
+        <Button @click="() => peer.setOnline(false)">Set Offline</Button>
+        <Button @click="sendTestMessage">Test Message</Button>
       </div>
     </div>
     <div v-for="remoteStream in remoteStreams">
@@ -21,56 +21,26 @@
       </video>
     </div>
 
-    <!--<div>
-      <h2>Devices</h2>
-      <pre>{{ JSON.stringify(devices, null, "  ") }}</pre>
-    </div>-->
-
     <div>
       <h2>User media</h2>
-
-      <Dropdown v-if="videoInputDevices && videoInputDevices.length>0"
-                v-model="selectedVideoInput"
-                :options="videoInputDevices"
-                :optionLabel="option => option ? (option.label || 'unknown') : 'Browser default'"
-                :placeholder="'Select video device...'">
-      </Dropdown>
-      <Dropdown v-if="audioInputDevices && audioInputDevices.length>0"
-                v-model="selectedAudioInput"
-                :options="audioInputDevices"
-                :optionLabel="option => option ? (option.label || 'unknown') : 'Browser default'"
-                :placeholder="'Select audio device...'">
-      </Dropdown>
-
-      <div class="buttons" v-if="!userMedia">
-        <button class="button" @click="getUserMedia">getUserMedia</button>
+      <DevicesSelect v-model="selectedDevices" />
+<!--      <hr>
+      <pre>{{ selectedDevices }}</pre> -->
+      <div class="mt-1 mb-3 flex align-items-center">
+        <InputSwitch v-model="userMediaEnabled" />
+        <div class="ml-3">User media stream enabled</div>
       </div>
-      <div class="buttons" v-if="userMedia">
-        <button class="button" @click="dropUserMedia">drop UserMedia</button>
-        <button v-if="userMediaMuted" type="button" class="button" @click="() => userMediaMuted = false">
-          Unmute user media
-        </button>
-        <button v-if="!userMediaMuted" type="button" class="button" @click="() => userMediaMuted = true">
-          Mute user media
-        </button>
-      </div>
-      <video v-if="userMedia" autoplay playsinline :muted="userMediaMuted"
-             :src-object.prop.camel="userMedia">
-      </video>
+
     </div>
-
-
 
     <div>
       <h2>Display media</h2>
 
-      <div class="buttons" v-if="!displayMedia">
-        <button class="button" @click="getDisplayMedia">getDisplayMedia</button>
+      <div class="justify-content-between" v-if="!displayMedia">
+        <Button v-if="!displayMedia" @click="getDisplayMedia">getDisplayMedia</Button>
+        <Button v-if="displayMedia" @click="dropDisplayMedia">drop DisplayMedia</Button>
       </div>
-      <div class="buttons" v-if="displayMedia">
-        <button class="button" @click="dropDisplayMedia">drop DisplayMedia</button>
-      </div>
-      <video v-if="displayMedia" autoplay playsinline muted
+      <video class="mt-2 w-full" v-if="displayMedia" autoplay playsinline muted
              :src-object.prop.camel="displayMedia">
       </video>
     </div>
@@ -90,26 +60,7 @@
       </div>
     </div>
 
-    <Dialog header="Permissions" v-model:visible="permissionsDialog" modal>
 
-    </Dialog>
-
-    <Dialog header="Connect camera" v-model:visible="connectDeviceDialog" modal>
-      <template #header>
-        <h3>Connect camera and microphone</h3>
-      </template>
-
-      <template #footer>
-        <Button @click="connectDeviceCallbacks.connected()"
-                label="Ok, connected" icon="pi pi-check" class="p-button-success" autofocus />
-        <Button @click="connectDeviceCallbacks.camera()"
-                label="Use only camera" icon="pi pi-video" class="p-button-warning" />
-        <Button @click="connectDeviceCallbacks.microphone()"
-                label="Use only microphone" icon="pi pi-volume-up" class="p-button-warning" />
-        <Button @click="connectDeviceCallbacks.cancel()"
-                label="Cancel" icon="pi pi-times" class="p-button-danger" />
-      </template>
-    </Dialog>
   </div>
 </template>
 
@@ -117,14 +68,19 @@
   import Button from "primevue/button"
   import Dropdown from "primevue/dropdown"
   import Dialog from "primevue/dialog"
+  import PermissionsDialog from './PermissionsDialog.vue'
+  import DevicesSelect from './DevicesSelect.vue'
 
-  import { ref, computed, watch, onMounted } from 'vue'
+  import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue'
   import { path, live, actions, api as useApi } from '@live-change/vue3-ssr'
   const api = useApi()
+
+  const appContext = (typeof window != 'undefined') && getCurrentInstance()?.appContext
 
   import { createPeer } from "./Peer.js"
   import { getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative, isUserMediaPermitted }
     from "./userMedia.js"
+  import { mediaStreamsTracks } from './mediaStreamsTracks.js'
 
   const { channelType, channel } = defineProps({
     channelType: {
@@ -140,38 +96,14 @@
   const isMounted = ref(false)
   onMounted( () => isMounted.value = true )
 
-  const devices = ref([])
-  const videoInputDevices = computed(() => devices.value.filter(d => d.kind == 'videoinput'))
-  const audioInputDevices = computed(() => devices.value.filter(d => d.kind == 'audioinput'))
-
-  const selectedVideoInput = ref(null)
-  const selectedAudioInput = ref(null)
-  const userMediaConstraints = computed(() => ({
-      video: selectedVideoInput.value?.deviceId ? { deviceId: selectedVideoInput.value.deviceId } : true,
-      audio: selectedAudioInput.value?.deviceId ? { deviceId: selectedAudioInput.value.deviceId } : true,
-    }))
-
-  const userMedia = ref()
+  const selectedDevices = ref({ })
+  const userMediaEnabled = ref(false)
+  const userMedia = computed(() => userMediaEnabled.value ? selectedDevices.value.userMedia : null)
   const displayMedia = ref()
   const localMediaStreams = computed(() =>
       (userMedia.value ? [userMedia.value] : []).concat(displayMedia.value ? [displayMedia.value] : [])
   )
-
-  watch(() => userMediaConstraints.value, async value => {
-    if(userMedia.value) {
-      await dropUserMedia()
-      await getUserMedia()
-    }
-  })
-
-  watch(() => userMedia.value, (mediaStream, oldMediaStream) => {
-    console.log("USER MEDIA STREAM CHANGE:", mediaStream, oldMediaStream)
-    readDevices()
-    if(oldMediaStream) {
-      console.log("OLD MEDIA STREAM", oldMediaStream)
-      oldMediaStream.getTracks().forEach(track => { if (track.readyState == 'live') track.stop() })
-    }
-  })
+  const localTracks = mediaStreamsTracks(localMediaStreams)
 
   const displayMediaEndedHandler = () => displayMedia.value = null
   watch(() => displayMedia.value, (mediaStream, oldMediaStream) => {
@@ -181,7 +113,7 @@
       if(track) track.removeEventListener('ended', displayMediaEndedHandler)
 
       console.log("OLD MEDIA STREAM", oldMediaStream)
-      oldMediaStream.getTracks().forEach(track => { if (track.readyState == 'live') track.stop() })
+      oldMediaStream.getTracks().forEach(track => { if (track.readyState === 'live') track.stop() })
     }
     if(mediaStream) {
       const track = mediaStream.getVideoTracks()[0]
@@ -195,7 +127,7 @@
     let remoteStreams = []
     for(const connection of peer.value.connections) {
       for(const remoteTrack of connection.remoteTracks) {
-        if(remoteStreams.find(remoteStream => remoteStream.stream == remoteTrack.stream)) continue
+        if(remoteStreams.find(remoteStream => remoteStream.stream === remoteTrack.stream)) continue
         remoteStreams.push({
           from: connection.to,
           stream: remoteTrack.stream
@@ -205,85 +137,27 @@
     return remoteStreams
   })
 
-  const userMediaMuted = ref(true)
-
-  const deviceChangeHandler = () => readDevices()
   onMounted(async () => {
     console.log("MOUNTED!")
     await initPeer()
-    console.log(" PEER INITIALIZED!", peer.value)
-    readDevices()
-
-    if(navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      navigator.mediaDevices.addEventListener('devicechange', deviceChangeHandler)
-    }
   })
-
-
-  async function readDevices() {
-    if(navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-      const nativeDevices = await navigator.mediaDevices.enumerateDevices()
-      devices.value = nativeDevices.map(({ deviceId, groupId, kind, label }) => ({ deviceId, groupId, kind, label }))
-    }
-  }
 
   let createPeerPromise = null
   async function initPeer() {
     if(createPeerPromise) return createPeerPromise
     createPeerPromise = createPeer({
       channelType, channel,
-      localMediaStreams
+      onUnmountedCb: onUnmounted, appContext,
+      localTracks,
     })
     peer.value = await createPeerPromise
     createPeerPromise = null
   }
 
-  async function getUserMedia() { // media stream retrival logic
-    let constraints = { ...userMediaConstraints.value } // make a copy
-    while(true) {
-      try {
-        console.log("TRY GET USER MEDIA", constraints)
-        const mediaStream = await getUserMediaNative(constraints)
-        const videoTracks = mediaStream.getVideoTracks()
-        const audioTracks = mediaStream.getAudioTracks()
-        console.log('Got stream with constraints:', constraints)
-        if(constraints.video) console.log(`Using video device: ${videoTracks[0] && videoTracks[0].label}`)
-        if(constraints.audio) console.log(`Using audio device: ${audioTracks[0] && audioTracks[0].label}`)
-        this.userMedia = mediaStream
-        return;
-      } catch(error) {
-        console.log("GET USER MEDIA ERROR", error)
-        const permitted = await isUserMediaPermitted(constraints)
-        if(permitted || error.code == error.NOT_FOUND_ERR) {
-          constraints = await askToConnectCamera({ ...userMediaConstraints.value })
-          if(!constraints) return
-        } else { // if not permitted display dialog
-          const permitted = await showPermissionsModal()
-          console.log("CAMERA PERMITTED", permitted)
-          if(!permitted) constraints.video = false
-          if(!(constraints.video || constraints.audio)) {
-            constraints = await askToConnectCamera({ ...userMediaConstraints.value })
-            if(!constraints) return
-          }
-          continue // retry get user media with new constraints
-        }
-      }
-    }
-  }
-
-  async function dropUserMedia() {
-    this.userMedia = null
-  }
-
-
-  import { usePermission } from "@vueuse/core"
-  const microphonePermission = usePermission('microphone')
-  const cameraPermission = usePermission('camera')
-
   const permissionsDialog = ref(false)
   const permissionsCallbacks = ref(null)
 
-  async function showPermissionsModal() {
+  async function showPermissionsDialog() {
     return new Promise((resolve, reject) => {
       permissionsCallbacks.value = {
         disabled: () => {
@@ -296,7 +170,9 @@
           reject('canceled by user')
         }
       }
-      permissionsDialog.value = true
+      permissionsDialog.value = {
+        visible: true
+      }
     })
   }
 
@@ -337,12 +213,12 @@
   }
 
   async function dropDisplayMedia() {
-    this.displayMedia = null
+    displayMedia.value = null
   }
 
 
   function sendTestMessage() {
-    for(const connection of this.peer.value.connections) {
+    for(const connection of peer.value.connections) {
       peer.value.sendMessage({
         to: connection.to,
         type: "ping",

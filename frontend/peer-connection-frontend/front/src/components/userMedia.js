@@ -39,8 +39,8 @@ async function isUserMediaPermitted(constraints = { audio: true, video: true }) 
   ]))
   console.log("MICROPHONE PERMISSION", microphonePermission && microphonePermission.state)
   console.log("CAMERA PERMISSION", cameraPermission && cameraPermission.state)
-  if(microphonePermission && microphonePermission.state == 'denied') return false
-  if(cameraPermission && cameraPermission.state == 'denied') return false
+  if(microphonePermission && microphonePermission.state === 'denied') return false
+  if(cameraPermission && cameraPermission.state === 'denied') return false
   return true
 }
 
