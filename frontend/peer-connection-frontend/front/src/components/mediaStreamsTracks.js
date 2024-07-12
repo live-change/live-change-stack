@@ -5,7 +5,7 @@ export function mediaStreamsTracks(mediaStreamsRef) {
   const tracks = ref([])
 
   function removeLocalTrack(track, stream) {
-    const trackIndex = tracks.findIndex(t => t.track === track.track)
+    const trackIndex = tracks.value.findIndex(t => t.track === track.track)
     if(trackIndex === -1) return console.error(`removal of non existing track ${track.id}`)
     const trackInfo = tracks[trackIndex]
     trackInfo.track.removeEventListener('mute', track.muteHandler)

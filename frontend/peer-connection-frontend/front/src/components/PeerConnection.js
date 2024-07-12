@@ -275,8 +275,9 @@ const createPeerConnection = (peer, to) => {
   }
 
   const summary = computed(() => ({
-    to: to.value,
+    to: to,
     state: state.value,
+    isPolite: isPolite.value,
     waitingMessages: waitingMessages.value.length,
     rtpSenders: rtpSenders.value.map(({ sender, stream }) => {
       const { id, kind, label } = sender.track
@@ -292,12 +293,17 @@ const createPeerConnection = (peer, to) => {
   }))
 
   return {
+    to,
     state,
     isPolite,
     isEnabled,
     summary,
+    remoteTracks,
+    connect,
+    close,
+    restartConnection,
     handleMessage,
-    dispose
+    dispose,
   }
 
 }

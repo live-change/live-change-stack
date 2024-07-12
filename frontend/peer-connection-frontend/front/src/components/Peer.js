@@ -92,7 +92,6 @@ const createPeer = async ({
   }
   watch(computedLocalPeerState, (newState) => updatePeerState(newState), { immediate: true })
 
-
   const messagesReader = inboxReader(
     (rawPosition, bucketSize) => {
       const path = ['peerConnection', 'messages', {
@@ -124,6 +123,7 @@ const createPeer = async ({
   )
 
   function sendMessage(message) {
+    console.log("SENDING PEER MESSAGE", message)
     message.from = peerId
     message.sent = message.sent || new Date().toISOString()
     message._commandId = message._commandId || api.uid()
@@ -146,7 +146,7 @@ const createPeer = async ({
       const connectionPeer = peers.find(peer => peer.id === connection.to)
       if(!connectionPeer) {
         connection.close()
-        connection.$destroy()
+        connection.dispose()
         this.connections.splice(connectionId, 1)
         connectionId --
       }
@@ -187,8 +187,9 @@ const createPeer = async ({
     peers: peers.value?.length,
     otherPeers: otherPeers.value?.map(p => p.id),
     connections: connections.value?.map(connection => connection.summary),
-    localTracks: localTracks.value?.map(({ track, stream }) => {
-      const { id, kind, label, muted, enabled } = track
+    waitingConnections: waitingConnections.value?.map(connection => connection.summary),
+    localTracks: localTracks.value?.map(({ track, stream, enabled }) => {
+      const { id, kind, label, muted } = track
       return { id, kind, label, muted, enabled, stream: stream.id }
     }),
     turnConfiguration: turnConfiguration.value && {

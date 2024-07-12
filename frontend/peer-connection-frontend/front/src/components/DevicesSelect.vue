@@ -283,7 +283,7 @@
     console.log("MEDIA STREAM CHANGE", stream)
     model.value = {
       ...model.value,
-      userMedia: stream
+      media: stream
     }
   })
 

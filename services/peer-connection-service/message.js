@@ -1,9 +1,10 @@
 import definition from './definition.js'
 const config = definition.config
 const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'].
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'],
   writerRoles = ['speaker', 'vip', 'moderator', 'owner']
 } = config
+
 
 import accessControl from '@live-change/access-control-service/access.js'
 const { clientHasAccessRoles } = accessControl(definition)
@@ -148,8 +149,9 @@ definition.action({
   access: async ({ from, to }, context) => {
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
-    const [fromType, fromId, fromSession] = from.split('_')
-    const [toType, toId, toSession] = to.split('_')
+    const [fromType, fromId, fromSession] = from.split(':')
+    const [toType, toId, toSession] = to.split(':')
+    console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
     if(toType !== fromType || toId !== fromId) return false // different channel
     if(client.session !== fromSession) return false
     const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
