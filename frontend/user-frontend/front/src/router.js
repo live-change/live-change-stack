@@ -87,7 +87,7 @@ export function createRouter(app, config) {
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes: [
       { name: 'index', path: '/', component: () => import('./Index.vue') },
-      ...userRoutes(config),
+      ...userRoutes({ ...config, prefix: '/user/' }),
       ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) })
     ]
   })

@@ -50,13 +50,13 @@
       type: String,
       default: 'offline', //'online'
     },
-    scope: {
+    scopes: {
       type: Array,
       default: () => ['profile', 'email']
     }
   })
 
-  const { action, accessType, scope } = toRefs(props)
+  const { action, accessType, scopes } = toRefs(props)
   const state = ref('waiting')
   const error = ref(null)
 
@@ -73,7 +73,7 @@
     }))
 
     googleAuthRedirect({
-      scope: scope.value.join(' '),
+      scope: scopes.value.join(' '),
       redirectUri: document.location.protocol + '//' + document.location.host
         + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href,
       accessType: accessType.value

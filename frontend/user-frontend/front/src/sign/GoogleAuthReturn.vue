@@ -72,7 +72,7 @@
       )
       console.log("GAUTH RESULT", result)
       const { action: actionDone, user } = result
-      while(api.client.value.user !== result.user) {
+      while(user && api.client.value.user !== user) {
         await new Promise(resolve => setTimeout(resolve, 100))
       }
       if(actionDone === 'signIn') {
