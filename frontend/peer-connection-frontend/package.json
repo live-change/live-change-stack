@@ -2,7 +2,7 @@
   "name": "@live-change/peer-connection-frontend",
   "version": "0.8.34",
   "scripts": {
-    "memDev": "dotenvx run -- node server/start.js memDev --enableSessions --initScript ./init.js",
+    "memDev": "dotenvx run -- node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; dotenvx run -- node server/start.js localDev --enableSessions --initScript ./init.js",
     "localDev": "dotenvx run -- node server/start.js localDev --enableSessions --dbAccess",
     "dev": "node server/start.js dev --enableSessions",

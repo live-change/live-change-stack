@@ -22,6 +22,7 @@ const createPeerConnection = (peer, to) => {
   const isEnabled = computed(() => state.value !== 'closed' && state.value !== 'created')
 
   function synchronizeLocalTracks() {
+    console.log("SYNCHRONIZE LOCAL TRACKS")
     const tracks = isEnabled.value ? localTracks.value : []
     let removedSenders = []
     for(const senderInfo of rtpSenders.value) {
@@ -44,7 +45,7 @@ const createPeerConnection = (peer, to) => {
     }
   }
   
-  watch(() => isEnabled.value && localTracks.value, () => synchronizeLocalTracks(), { immediate: true })
+  watch(() => isEnabled.value && localTracks.value, () => synchronizeLocalTracks(), { immediate: true, deep: true })
   
   watch(rtcConfiguration, configuration => {
     if(rtc.value) {
@@ -60,7 +61,7 @@ const createPeerConnection = (peer, to) => {
     console.log("RESTARTING CONNECTION")
     /*if(false && rtc.value.restartIce) {
       console.log("RESTART ICE!")
-      this.rtc.restartIce()
+      rtc.value.restartIce()
     } else {*/
     console.log("RESTART OFFER!")
     const offer = 
@@ -87,7 +88,7 @@ const createPeerConnection = (peer, to) => {
     state.value = 'negotiating'
     // if it's disabled there is no need for offer
     console.log("UPDATING OFFER")
-    const offer = await rtc.value.createOffer(this.offerOptions || undefined)
+    const offer = await rtc.value.createOffer(offerOptions.value || undefined)
     if(rtc.value.signalingState !== "stable") {
       console.log("RTC GOT OUT OF STABLE WHILE CREATING OFFER. IGNORE GENERATED OFFER!")
       return;
@@ -264,6 +265,7 @@ const createPeerConnection = (peer, to) => {
       rtc.value.removeEventListener('icegatheringstatechanged', handleIceGatheringStateChange)
       rtc.value.removeEventListener('iceconnectionstatechanged', handleIceConnectionStateChange)
       rtc.value.close()
+      rtpSenders.value = []
       rtc.value = null
     }
   }

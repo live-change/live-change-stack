@@ -9,6 +9,7 @@ import signRoutes from "./sign/routes.js"
 import connectedRoutes from "./connected/routes.js"
 import identificationRoutes from "./identification/routes.js"
 import deleteRoutes from "./delete/routes.js"
+import googleAccessRoutes from "./google-access/routes.js"
 import { passwordResetRoutes, passwordChangeRoutes } from "./password/routes.js"
 import { notificationsSettingsRoutes, notificationsRoutes } from "./notifications/routes.js"
 import localeSettingsRoutes from "./locale/routes.js"
@@ -23,6 +24,7 @@ export function userRoutes(config = {}) {
     ...signRoutes(config),
     ...passwordResetRoutes(config),
     ...notificationsRoutes(config),
+    ...googleAccessRoutes(config),
 
     route({
       path: prefix + 'settings', meta: { pageType: 'wide' },

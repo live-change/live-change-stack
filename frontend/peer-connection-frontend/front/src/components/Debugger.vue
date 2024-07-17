@@ -9,15 +9,17 @@
     <div v-if="peer">
       <h2>Peer connection</h2>
       <pre>{{ JSON.stringify(peer.summary, null, "  ") }}</pre>
-      <div class="flex justify-content-between">
-        <Button @click="() => peer.setOnline(true)">Set Online</Button>
-        <Button @click="() => peer.setOnline(false)">Set Offline</Button>
+      <div class="flex justify-content-between align-items-center">
+        <div class="flex align-items-center">
+          <InputSwitch v-model="peer.online" />
+          <div class="ml-3">Peer online</div>
+        </div>
         <Button @click="sendTestMessage">Test Message</Button>
       </div>
     </div>
     <div v-for="remoteStream in remoteStreams">
       <h2>Remote stream {{ remoteStream.stream.id }} from {{ remoteStream.from }}</h2>
-      <video autoplay playsinline :src-object.prop.camel="remoteStream.stream">
+      <video autoplay playsinline :src-object.prop.camel="remoteStream.stream" class="w-full">
       </video>
     </div>
 
@@ -61,10 +63,6 @@
              :src-object.prop.camel="displayMedia">
       </video>
     </div>
-
-
-
-
 
 
   </div>

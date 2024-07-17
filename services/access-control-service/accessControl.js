@@ -14,6 +14,7 @@ definition.processor({
       const action = service.actions[actionName]
       if(!action.accessControl) continue
       const config = action.accessControl
+      if(config.public) continue
 
       console.log("ACCESS CONTROL", service.name, "ACTION", action.name)
 

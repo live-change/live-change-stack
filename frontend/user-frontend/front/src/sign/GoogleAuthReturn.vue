@@ -81,6 +81,8 @@
         router.push({ name: 'user:signUpFinished' })
       } else if(actionDone === 'connectGoogle') {
         router.push({ name: 'user:connected' })
+      } else if(actionDone === 'addOfflineAccessToken') {
+        router.push({ name: 'user:google-access-gained' })
       } else {
         console.error("Unknown action", actionDone)
       }

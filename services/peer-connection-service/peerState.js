@@ -1,7 +1,7 @@
 import definition from './definition.js'
 const config = definition.config
 const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'].
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'],
   writerRoles = ['speaker', 'vip', 'moderator', 'owner']
 } = config
 
@@ -12,6 +12,9 @@ import { Peer } from './peer.js'
 
 
 const peerStateFields = {
+  online: {
+    type: Boolean
+  },
   audioState: {
     type: String
   },
@@ -50,10 +53,9 @@ definition.view({
   access: async ({ peer }, context) => {
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
-    const [toType, toId, toSession] = peer.split('_')
-    return toType.split('.')[0] === 'priv'
-        ? checkPrivAccess(toId, context)
-        : checkIfRole(toType.split('.')[0], toId, writerRoles, context)
+    const [toType, toId, toSession] = peer.split(':')
+    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
+    return hasRole
   },
   async daoPath({ peer }, { client, service }, method) {
     return PeerState.path(peer)
@@ -72,7 +74,7 @@ definition.action({
   access: async ({ peer }, context) => {
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
-    const [toType, toId, toSession] = peer.split('_')
+    const [toType, toId, toSession] = peer.split(':')
     if(client.session !== toSession) return false
     const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
     return hasRole

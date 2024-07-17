@@ -4,10 +4,14 @@ import {
   createWebHistory
 } from 'vue-router'
 
+import { dbAdminRoutes } from "@live-change/db-admin"
 
 export function routes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
+
+    ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
+
     route({
       name: 'debugger', path: prefix + '/debugger/:channelType/:channel', meta: { },
       component: () => import("./components/Debugger.vue"),

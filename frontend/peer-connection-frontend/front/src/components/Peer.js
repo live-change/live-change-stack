@@ -1,5 +1,5 @@
 import { ref, isRef, onUnmounted, getCurrentInstance, unref, reactive, computed, watch } from 'vue'
-import { path, live, actions, api as useApi, inboxReader } from '@live-change/vue3-ssr'
+import { usePath, live, actions, api as useApi, inboxReader } from '@live-change/vue3-ssr'
 import { createPeerConnection } from "./PeerConnection.js"
 
 let lastInstanceId = 0
@@ -33,10 +33,17 @@ const createPeer = async ({
 
   console.log("CREATE PEER!")
 
-  const [ peers, peerOnline, turnConfiguration ] = await Promise.all([
-    live(path().peerConnection.peers({ channelType, channel })),
-    live(path().online.session({ group: 'peer', peer: peerId })),
-    live(path().peerConnection.turnConfiguration({ peer: peerId }))
+  const path = usePath()
+  const [
+    peers,
+    peerOnline,
+    turnConfiguration
+  ] = await Promise.all([
+    live(path.peerConnection.peers({ channelType, channel }, appContext)
+      .with(peer => path.peerConnection.peerState({ peer: peer.id }).bind('peerState'))
+    ),
+    live(path.online.session({ group: 'peer', peer: peerId }), appContext),
+    live(path.peerConnection.turnConfiguration({ peer: peerId }), appContext)
   ])
 
   const localPeerState = ref(null)
@@ -46,6 +53,7 @@ const createPeer = async ({
   const waitingConnections = ref([]) // connections that are not initialized, but messages are received
 
   const otherPeers = computed(() => peers.value?.filter(peer => peer.id !== peerId))
+  const otherPeersOnline = computed(() => otherPeers.value?.filter(peer => peer.peerState?.online))
   const isConnectionPossible = computed(() => online.value && (!!turnConfiguration.value))
 
   const rtcConfiguration = computed(() => ({
@@ -64,6 +72,7 @@ const createPeer = async ({
   const anyLocalVideoAvailable = computed(() => localTracks.value
       .some(trackInfo => trackInfo.track.kind === 'video'))
   const computedLocalPeerState = computed(() => ({
+    online: online.value,
     audioState: anyLocalAudioAvailable.value ? (anyLocalAudioEnabled.value ? "enabled" : "muted") : "none",
     videoState: anyLocalVideoAvailable.value ? (anyLocalVideoEnabled.value ? "enabled" : "muted") : "none"
   }))
@@ -73,8 +82,8 @@ const createPeer = async ({
     api.requestWithSettings({ requestTimeout },
       ['peerConnection', 'setPeerState'], update)
       .catch(error => {
-        console.log("SET PEER STATE ERROR", error)
-        if(error === 'timeout' && !this.finished.value
+        console.error("SET PEER STATE ERROR", error)
+        if(error === 'timeout' && !finished.value
           && JSON.stringify({ ...localPeerState.value, ...update }) === JSON.stringify(localPeerState)
         ) {
           console.log("RETRYING")
@@ -132,7 +141,7 @@ const createPeer = async ({
     api.requestWithSettings({ requestTimeout }, ['peerConnection', 'postMessage'], message)
       .catch(error => {
         console.log("PEER MESSAGE ERROR", error)
-        if(error === 'timeout' && !this.finished.value) {
+        if(error === 'timeout' && !finished.value) {
           console.log("RETRYING")
           sendMessage(message)
         }
@@ -140,14 +149,14 @@ const createPeer = async ({
   }
 
   function updateConnections() {
-    const peers = isConnectionPossible.value ? otherPeers.value : []
+    const peers = isConnectionPossible.value ? otherPeersOnline.value : []
     for(let connectionId = 0; connectionId < connections.value.length; connectionId++) {
       const connection = connections.value[connectionId]
       const connectionPeer = peers.find(peer => peer.id === connection.to)
       if(!connectionPeer) {
         connection.close()
         connection.dispose()
-        this.connections.splice(connectionId, 1)
+        connections.value.splice(connectionId, 1)
         connectionId --
       }
     }
@@ -166,7 +175,7 @@ const createPeer = async ({
     }
   }
 
-  watch(() => isConnectionPossible.value && otherPeers.value, () => {
+  watch(() => isConnectionPossible.value && otherPeersOnline.value, () => {
     updateConnections()
   }, { immediate: true })
 
@@ -185,7 +194,7 @@ const createPeer = async ({
     peerId, online: online.value, finished: finished.value,
     computedLocalPeerState: computedLocalPeerState.value,
     peers: peers.value?.length,
-    otherPeers: otherPeers.value?.map(p => p.id),
+    otherPeers: otherPeers.value?.map(p => p.peerState ?? p.id),
     connections: connections.value?.map(connection => connection.summary),
     waitingConnections: waitingConnections.value?.map(connection => connection.summary),
     localTracks: localTracks.value?.map(({ track, stream, enabled }) => {
@@ -200,9 +209,6 @@ const createPeer = async ({
     //rtcConfiguration: rtcConfiguration.value
   }))
 
-  function setOnline(onlineValue) {
-    online.value = onlineValue
-  }
   function setTrackEnabled(track, v) {
     track.enabled = v
     track.track.enabled = v
@@ -213,7 +219,6 @@ const createPeer = async ({
     connections, localTracks,
     otherPeers,
     summary,
-    setOnline,
     setTrackEnabled,
   }
 
