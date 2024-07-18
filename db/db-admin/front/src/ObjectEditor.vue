@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-row">
 
-    <div class="flex-grow-1 pt-1 pb-1">
+    <div class="flex-grow-1 pt-1 pb-1 w-10rem">
       <CodeEditor :readOnly="readOnly" :initialData="initialData" @result="result => handleEditResult(result)"
         :ref="el => editorElementFound(el)" />
     </div>

@@ -14,4 +14,7 @@ export { UserIcon }
 import Password from "./front/src/password/Password.vue"
 export { Password }
 
+import GoogleAccess from './front/src/google-access/GoogleAccess.vue'
+export { GoogleAccess }
+
 export * from "./front/src/router.js"
