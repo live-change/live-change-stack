@@ -6,25 +6,15 @@ import {
 
 import { dbAdminRoutes } from "@live-change/db-admin"
 
-export function routes(config = {}) {
+export function peerConnectionRoutes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
 
-    ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
-
     route({
-      name: 'debugger', path: prefix + '/debugger/:channelType/:channel', meta: { },
+      name: 'peer-connection:debugger', path: prefix + '/debugger/:channelType/:channel', meta: { },
       component: () => import("./components/Debugger.vue"),
       props: true
     }),
-    route({
-      name: 'testDebugger', path: prefix + '', meta: { },
-      component: () => import("./components/Debugger.vue"),
-      props: {
-        channelType: 'example_Example',
-        channel: 'one'
-      }
-    })
 
   ]
 }
@@ -42,7 +32,18 @@ export function createRouter(app, config) {
     // use appropriate history implementation for server/client
     // import.meta.env.SSR is injected by Vite.
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
-    routes: routes(config)
+    routes: [
+      ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
+      ...peerConnectionRoutes(config),
+      {
+        name: 'peer-connection:test-debugger', path: '/', meta: { },
+        component: () => import("./components/Debugger.vue"),
+        props: {
+          channelType: 'example_Example',
+          channel: 'one'
+        }
+      }
+    ]
   })
   router.beforeEach(async (to, from) => {
     if(to?.matched.find(m => m?.meta.signedIn)) {
