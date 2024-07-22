@@ -96,6 +96,7 @@
   const emit = defineEmits(['ok'])
 
   watch(() => JSON.stringify(requiredPermissions.value), async value => {
+    if(typeof window === 'undefined') return
     console.log("requiredPermissions", value)
 
     for(const requiredPermission of JSON.parse(value)) {

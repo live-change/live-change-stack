@@ -37,6 +37,11 @@
                   icon="pi pi-camera" severity="success" rounded v-ripple />
         </div>
       </div>
+      <div class="absolute top-0 right-0">
+        <div class="m-3">
+          <VolumeIndicator :stream="userMedia" />
+        </div>
+      </div>
     </div>
     <div class="flex flex-row gap-2 pt-2 justify-content-around">
       <div v-if="audioInputRequest !== 'none' && audioInputs.length > 1"
@@ -132,6 +137,7 @@
   import { getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative, isUserMediaPermitted }
     from "./userMedia.js"
   import PermissionsDialog from './PermissionsDialog.vue'
+  import VolumeIndicator from './VolumeIndicator.vue'
 
   const props = defineProps({
     audioInputRequest: {
@@ -184,8 +190,10 @@
     devices.value = await navigator.mediaDevices.enumerateDevices()
     console.log("DEVICES", JSON.stringify(devices.value))
   }
-  useEventListener(navigator.mediaDevices, 'devicechange', updateDevices)
-  onMounted(updateDevices)
+  if(typeof window !== 'undefined') {
+    useEventListener(navigator.mediaDevices, 'devicechange', updateDevices)
+    onMounted(updateDevices)
+  }
 
   const audioInputs = computed(() => devices.value.filter(device => device.kind === 'audioinput'))
   const audioOutputs = computed(() => devices.value.filter(device => device.kind === 'audiooutput'))
@@ -208,13 +216,22 @@
   })
 
   watch(audioInputs, (value) => {
-    model.value.audioInput = value[0]
+    model.value = {
+      ...model.value,
+      audioInput: value[0]
+    }
   }, { immediate: true })
   watch(audioOutputs, (value) => {
-    model.value.audioOutput = value[0]
+    model.value = {
+      ...model.value,
+      audioOutput: value[0]
+    }
   }, { immediate: true })
   watch(videoInputs, (value) => {
-    model.value.videoInput = value[0]
+    model.value = {
+      ...model.value,
+      videoInput: value[0]
+    }
   }, { immediate: true })
 
 /*  onMounted(() => {
@@ -234,9 +251,9 @@
   const selectedConstraints = ref({ video: false, audio: false })
   watch(() => ({
     video: limitedMedia.value === 'audio' ? false :
-      { deviceId: model.value.videoInput?.deviceId, ...constraints.value.video },
+      { deviceId: model.value?.videoInput?.deviceId, ...constraints.value.video },
     audio: limitedMedia.value === 'video' ? false :
-      { deviceId: model.value.audioInput?.deviceId, ...constraints.value.audio }
+      { deviceId: model.value?.audioInput?.deviceId, ...constraints.value.audio }
   }), ({ video, audio }) => {
     console.log("SELECTED CONSTRAINTS", {
       video: selectedConstraints.value.video?.deviceId,
@@ -382,9 +399,6 @@
     updateDevices()
     //updateUserMedia()
   })
-
-  window.um = userMedia
-  window.model = model
 
 </script>
 

@@ -43,7 +43,7 @@
 
     <div>
       <h2>User media</h2>
-      <DevicesSelect v-model="selectedDevices" />
+      <DeviceSelect v-model="selectedDevices" />
       <hr>
       <pre>{{ selectedDevices }}</pre>
       <div class="mt-1 mb-3 flex align-items-center">
@@ -73,7 +73,7 @@
   import Dropdown from "primevue/dropdown"
   import Dialog from "primevue/dialog"
   import PermissionsDialog from './PermissionsDialog.vue'
-  import DevicesSelect from './DevicesSelect.vue'
+  import DeviceSelect from './DeviceSelect.vue'
 
   import { ref, unref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue'
   import { path, live, actions, api as useApi } from '@live-change/vue3-ssr'

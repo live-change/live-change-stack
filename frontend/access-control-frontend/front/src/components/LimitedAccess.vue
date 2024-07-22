@@ -74,7 +74,7 @@
 
   const authorized = computed(() => {
     const clientRoles = accessRoles.value
-    if(requiredRoles.value.length == 0) return true
+    if(requiredRoles.value.length === 0) return true
     for(const requiredRolesOption of requiredRoles.value) {
       if((Array.isArray(requiredRolesOption) ? requiredRolesOption : [requiredRolesOption])
         .every(role => clientRoles.includes(role))

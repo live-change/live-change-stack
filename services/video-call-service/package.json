@@ -1,0 +1,15 @@
+{
+  "name": "@live-change/video-call-service",
+  "version": "0.8.36",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "setup": "INSTALL=true node index.js",
+    "test": "NODE_ENV=test blue-tape tests/*"
+  },
+  "author": "Michał Łaszczewski <michal@emikse.com>",
+  "license": "BSD-3-Clause",
+  "gitHead": "90fbb746dc7270895daf17b437ca48c0b0a01c01"
+}

@@ -34,7 +34,7 @@ export function createRouter(app, config) {
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes: [
       ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
-      ...peerConnectionRoutes(config),
+      ...peerConnectionRoutes({ ...config, prefix: '/peer-connection' }),
       {
         name: 'peer-connection:test-debugger', path: '/', meta: { },
         component: () => import("./components/Debugger.vue"),

@@ -65,6 +65,7 @@
     "services/geoip-service",
     "services/task-service",
     "services/comment-service",
+    "services/video-call-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
@@ -81,6 +82,7 @@
     "frontend/blog-frontend",
     "frontend/frontend-template",
     "frontend/flow-frontend",
-    "frontend/task-frontend"
+    "frontend/task-frontend",
+    "frontend/video-call-frontend"
   ]
 }
