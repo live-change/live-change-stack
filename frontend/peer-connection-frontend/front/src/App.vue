@@ -8,6 +8,7 @@
 
 <script setup>
   import 'primevue/resources/themes/lara-light-blue/theme.css'
+  import 'boxicons/css/boxicons.min.css'
 
   import { useLocale } from '@live-change/vue3-components'
   const locale = useLocale()

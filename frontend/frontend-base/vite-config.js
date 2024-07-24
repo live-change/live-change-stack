@@ -67,6 +67,7 @@ export default async ({ command, mode }, options = {
           path.dirname(fileURLToPath(import.meta.resolve('primeicons/package.json'))),
           path.dirname(fileURLToPath(import.meta.resolve('primevue/package.json'))),
           path.dirname(fileURLToPath(import.meta.resolve('@fortawesome/fontawesome-free/package.json'))),
+          path.dirname(fileURLToPath(import.meta.resolve('boxicons/package.json'))),
         ]
       }
     },

@@ -19,22 +19,24 @@
         </video>
       </div>
       <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-end align-items-center">
-        <div class="flex flex-row justify-content-between align-items-center h-5rem w-6rem">
+        <div class="flex flex-row justify-content-between align-items-center h-5rem w-7rem media-buttons">
+
           <Button v-if="!selectedConstraints?.audio?.deviceId"
-                  @click="handleDisabledAudioClick"  raised
-                  icon="pi pi-microphone" severity="secondary" rounded v-ripple />
+                  @click="handleDisabledAudioClick" raised
+                  icon="bx bx-microphone-off" severity="secondary" rounded v-ripple />
           <Button v-else-if="audioInputMuted" @click="audioInputMuted = false" raised
-                  icon="pi pi-microphone" severity="danger" rounded v-ripple />
+                  icon="bx bx-microphone-off" severity="danger" rounded v-ripple />
           <Button v-else @click="audioInputMuted = true" raised
-                  icon="pi pi-microphone" severity="success" rounded v-ripple />
+                  icon="bx bx-microphone" severity="success" rounded v-ripple />
 
           <Button v-if="!selectedConstraints?.video?.deviceId"
-                  @click="handleDisabledVideoClick"  raised
-                  icon="pi pi-camera" severity="secondary" rounded v-ripple />
+                  @click="handleDisabledVideoClick" raised
+                  icon="bx bx-camera-off" severity="secondary" rounded v-ripple />
           <Button v-else-if="videoInputMuted" @click="videoInputMuted = false" raised
-                  icon="pi pi-camera" severity="danger" rounded v-ripple />
+                  icon="bx bx-camera-off" severity="danger" rounded v-ripple />
           <Button v-else @click="videoInputMuted = true" raised
-                  icon="pi pi-camera" severity="success" rounded v-ripple />
+                  icon="bx bx-camera" severity="success" rounded v-ripple />
+
         </div>
       </div>
       <div class="absolute top-0 right-0">
@@ -129,6 +131,14 @@
 
   </div>
 </template>
+
+<style lang="scss">
+  .media-buttons {
+    .bx::before {
+      font-size: 1.69em;
+    }
+  }
+</style>
 
 <script setup>
 

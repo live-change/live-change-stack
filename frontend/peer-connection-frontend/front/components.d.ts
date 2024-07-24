@@ -9,6 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     Button: typeof import('primevue/button')['default']
     Debugger: typeof import('./src/components/Debugger.vue')['default']
+    DeviceSelect: typeof import('./src/components/DeviceSelect.vue')['default']
     DevicesSelect: typeof import('./src/components/DevicesSelect.vue')['default']
     Dialog: typeof import('primevue/dialog')['default']
     Dropdown: typeof import('primevue/dropdown')['default']
@@ -16,5 +17,6 @@ declare module 'vue' {
     PermissionsDialog: typeof import('./src/components/PermissionsDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    VolumeIndicator: typeof import('./src/components/VolumeIndicator.vue')['default']
   }
 }

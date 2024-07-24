@@ -34,7 +34,6 @@
   const { stream } = toRefs(props)
 
   const speed = 0.46
-  const maxVolume = 0.123
   const maxLogVolume = -2
   const minLogVolume = -7
   const lowFrequency = 230
