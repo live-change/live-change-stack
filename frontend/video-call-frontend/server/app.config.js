@@ -1,8 +1,8 @@
-import App from "@live-change/framework"
-const app = App.app()
-
 import dotenv from 'dotenv'
 dotenv.config()
+
+import App from "@live-change/framework"
+const app = App.app()
 
 const contactTypes = ['email', 'phone']
 const remoteAccountTypes = ['google']

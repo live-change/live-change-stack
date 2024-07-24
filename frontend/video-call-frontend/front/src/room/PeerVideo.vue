@@ -26,8 +26,8 @@
 
 <script setup>
 
-  import { VolumeIndicator } from "@live-change/peer-connection"
-  import { UserIdentification } from "@live-change/identification-frontend"
+  import { VolumeIndicator } from "@live-change/peer-connection-frontend"
+  import { UserIdentification } from "@live-change/user-frontend"
 
   import { defineProps, defineEmits, toRefs, ref, computed } from 'vue'
 

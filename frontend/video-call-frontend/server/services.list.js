@@ -38,7 +38,8 @@ export {
   googleAuthentication,
   localeSettings,
   online,
-  accessControl
+  accessControl,
+  peerConnection,
 }
 
 import videoCall from "@live-change/video-call-service"
