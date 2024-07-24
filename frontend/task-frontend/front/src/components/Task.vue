@@ -8,7 +8,7 @@
       <div v-if="task?.progress && task?.state !== 'done'" class="w-8rem mr-3 flex-grow-1" style="max-width: 50vw">
         <ProgressBar :value="(100 * task.progress.current / task.progress.total).toFixed()" />
       </div>
-      <div v-if="task?.retries?.length" class="mr-3">
+      <div v-if="task?.retries?.length && task.retries.length < task.maxRetries" class="mr-3">
         <i class="pi pi-replay" />
         {{ task.retries.length }} / {{ task.maxRetries }}
       </div>

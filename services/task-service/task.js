@@ -155,60 +155,61 @@ export default function task(definition, serviceDefinition) {
         startedAt: new Date()
       })
       await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
-      try {
-        const result = await definition.execute(props, {
-          ...context,
-          task: {
-            id: taskObject.id,
-            async run(taskFunction, props, progressFactor = 1) {
-              if(typeof taskFunction !== 'function') {
-                console.log("TASK FUNCTION", taskFunction)
-                throw new Error('Task function is not a function')
-              }
-              //console.log("SUBTASK RUN", taskFunction.definition.name, props)
-              const subtaskProgress = { current: 0, total: 1, factor: progressFactor }
-              subtasksProgress.push(subtaskProgress)
-              const result = await taskFunction(
-                props,
-                {
-                  ...context,
-                  taskObject: undefined,
-                  task: taskObject.id,
-                  causeType: 'task_Task',
-                  cause: taskObject.id
-                },
-                (events) => app.emitEvents(definition.name,
-                Array.isArray(events) ? events : [events], {}),
-                (current, total, action) => {
-                  subtaskProgress.current = current
-                  subtaskProgress.total = total
-                  updateProgress()
-                }
-              )
-              //console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
-              subtaskProgress.current = subtaskProgress.total
-              updateProgress()
-              return result
-            },
-            async progress(current, total, action, opts) {
-              selfProgress = {
-                ...opts,
-                current, total, action
-              }
-              updateProgress()
+      const runContext = {
+        ...context,
+        task: {
+          id: taskObject.id,
+          async run(taskFunction, props, progressFactor = 1) {
+            if(typeof taskFunction !== 'function') {
+              console.log("TASK FUNCTION", taskFunction)
+              throw new Error('Task function is not a function')
             }
+            //console.log("SUBTASK RUN", taskFunction.definition.name, props)
+            const subtaskProgress = { current: 0, total: 1, factor: progressFactor }
+            subtasksProgress.push(subtaskProgress)
+            const result = await taskFunction(
+              props,
+              {
+                ...context,
+                taskObject: undefined,
+                task: taskObject.id,
+                causeType: 'task_Task',
+                cause: taskObject.id
+              },
+              (events) => app.emitEvents(definition.name,
+                Array.isArray(events) ? events : [events], {}),
+              (current, total, action) => {
+                subtaskProgress.current = current
+                subtaskProgress.total = total
+                updateProgress()
+              }
+            )
+            //console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
+            subtaskProgress.current = subtaskProgress.total
+            updateProgress()
+            return result
           },
-          async trigger(trigger, props) {
-            return await app.trigger({
-              causeType: 'task_Task',
-              cause: taskObject.id,
-              ...trigger,
-            }, props)
-          },
-          async triggerService(trigger, props, returnArray = false) {
-            return await app.triggerService(trigger, props, returnArray)
+          async progress(current, total, action, opts) {
+            selfProgress = {
+              ...opts,
+              current, total, action
+            }
+            updateProgress()
           }
-        })
+        },
+        async trigger(trigger, props) {
+          return await app.trigger({
+            causeType: 'task_Task',
+            cause: taskObject.id,
+            ...trigger,
+          }, props)
+        },
+        async triggerService(trigger, props, returnArray = false) {
+          return await app.triggerService(trigger, props, returnArray)
+        }
+      }
+      try {
+        const result = await definition.execute(props, runContext)
         await updateTask({
           state: 'done',
           doneAt: new Date(),
@@ -218,7 +219,7 @@ export default function task(definition, serviceDefinition) {
       } catch(error) {
         console.log("TASK ERROR", error.message, error.stack)
         /*console.log("RETRIES", taskObject.retries?.length, maxRetries)*/
-        if((taskObject.retries?.length || 0) >= taskObject.maxRetries) {
+        if((taskObject.retries?.length || 0) >= taskObject.maxRetries - 1) {
           await updateTask({
             state: 'failed',
             doneAt: new Date(),
@@ -229,6 +230,14 @@ export default function task(definition, serviceDefinition) {
               error: error.stack ?? error.message ?? error
             }]
           })
+          console.error("TASK", taskObject.id, "OF TYPE", definition.name,
+            "WITH PARAMETERS", props, "FAILED WITH ERROR", error.stack ?? error.message ?? error)
+          if(definition.fallback) {
+            if(typeof definition.fallback !== 'function') return definition.fallback
+            return await definition.fallback(props, runContext, error.message ?? error)
+          } else {
+            throw error
+          }
         } else {
           const retriesCount = (taskObject.retries || []).length
           await updateTask({
