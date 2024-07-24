@@ -28,6 +28,8 @@ function randomHexString(size) {
 }
 
 async function createTurnConfiguration({ client }) {
+  if(!urls) throw new Error('TURN urls not configured')
+  if(!secret) throw new Error('TURN secret not configured')
   const expire = Date.now() / 1000 + turnExpireTime | 0
   const username = await randomHexString(10)
   const rusername = expire + ':' + username

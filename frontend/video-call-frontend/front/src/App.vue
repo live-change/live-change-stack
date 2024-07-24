@@ -9,7 +9,7 @@
 
 <script setup>
   import 'primevue/resources/themes/saga-green/theme.css'
-  import "@fortawesome/fontawesome-free/css/all.min.css"
+  import 'boxicons/css/boxicons.min.css'
 
   import { useLocale } from '@live-change/vue3-components'
   const locale = useLocale()

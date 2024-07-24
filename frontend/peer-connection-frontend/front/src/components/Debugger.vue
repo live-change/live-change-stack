@@ -64,15 +64,11 @@
       </video>
     </div>
 
-
   </div>
 </template>
 
 <script setup>
   import Button from "primevue/button"
-  import Dropdown from "primevue/dropdown"
-  import Dialog from "primevue/dialog"
-  import PermissionsDialog from './PermissionsDialog.vue'
   import DeviceSelect from './DeviceSelect.vue'
 
   import { ref, unref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue'
@@ -82,7 +78,7 @@
   const appContext = (typeof window != 'undefined') && getCurrentInstance()?.appContext
 
   import { createPeer } from "./Peer.js"
-  import { getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative, isUserMediaPermitted }
+  import { getDisplayMedia as getDisplayMediaNative }
     from "./userMedia.js"
   import { mediaStreamsTracks } from './mediaStreamsTracks.js'
 
@@ -169,43 +165,6 @@
     createPeerPromise = null
   }
 
-  const permissionsDialog = ref(false)
-  const permissionsCallbacks = ref(null)
-
-  async function showPermissionsDialog() {
-    return new Promise((resolve, reject) => {
-      permissionsCallbacks.value = {
-        disabled: () => {
-          resolve(false)
-        },
-        ok: () => {
-          resolve(true)
-        },
-        cancel: () => {
-          reject('canceled by user')
-        }
-      }
-      permissionsDialog.value = {
-        visible: true
-      }
-    })
-  }
-
-  const connectDeviceDialog = ref(false)
-  const connectDeviceCallbacks = ref(null)
-
-  async function askToConnectCamera(constraints) {
-    return new Promise((resolve, reject) => {
-      connectDeviceCallbacks.value = {
-        connected: () => resolve({ ...constraints }),
-        camera: () => resolve({ ...constraints, audio: false }),
-        microphone: () => resolve({ ...constraints, video: false }),
-        cancel: () => resolve(null)
-      }
-      connectDeviceDialog.value = true
-    })
-  }
-
   async function getDisplayMedia() { // media stream retrival logic
     let initialConstraints = { video: true } // make a copy
     let constraints = { ...initialConstraints }
@@ -231,7 +190,6 @@
     displayMedia.value = null
   }
 
-
   function sendTestMessage() {
     for(const connection of peer.value.connections) {
       peer.value.sendMessage({
@@ -241,7 +199,6 @@
       })
     }
   }
-
 
 </script>
 

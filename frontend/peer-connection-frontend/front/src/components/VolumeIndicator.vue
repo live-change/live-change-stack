@@ -54,7 +54,6 @@
   let lowProcessor, midProcessor, highProcessor
   let lowSlow = 0, midSlow = 0, highSlow = 0
 
-
   function measureAmplitudeProcess(cb) {
     return function(event) {
       const numberOfChannels = event.inputBuffer.numberOfChannels
@@ -72,6 +71,7 @@
   }
 
   function handleLow(instant) {
+    if(!low.value) return console.log("no low element")
     instant = Math.log(instant)
     let value = lowSlow
     if(!Number.isFinite(value)) value = -1000
@@ -84,6 +84,7 @@
     low.value.style.height = height + 'px'
   }
   function handleMid(instant) {
+    if(!mid.value) return console.log("no mid element")
     instant = Math.log(instant)
     let value = midSlow
     if(!Number.isFinite(value)) value = -1000
@@ -96,6 +97,7 @@
     mid.value.style.height = height + 'px'
   }
   function handleHigh(instant) {
+    if(!high.value) return console.log("no high element")
     instant = Math.log(instant)
     let value = highSlow
     if(!Number.isFinite(value)) value = -1000

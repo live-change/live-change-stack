@@ -1,6 +1,9 @@
 import App from "@live-change/framework"
 const app = App.app()
 
+import dotenv from 'dotenv'
+dotenv.config()
+
 const contactTypes = ['email', 'phone']
 const remoteAccountTypes = ['google']
 
@@ -108,6 +111,10 @@ app.config = {
       turn: {
         urls: 'turn:turn.chaosu.pl:4433'
       }
+    },
+    {
+      name: 'videoCall',
+      path: "@live-change/video-call-service",
     }
   ]
 }
