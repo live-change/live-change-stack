@@ -100,6 +100,7 @@
   }
   .selected-component-editor-content-settings {
     & > [data-slot] {
+      border: 1px dashed orangered;
       &::before {
         content: 'slot: ' attr(data-slot) ;
         color: orangered;
@@ -107,8 +108,7 @@
         font-size: 0.8em;
         padding: 2px;
         margin: 0;
-      };
-      border: 1px dashed orangered;
+      }
     }
   }
 

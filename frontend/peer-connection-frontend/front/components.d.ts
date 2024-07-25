@@ -10,7 +10,6 @@ declare module 'vue' {
     Button: typeof import('primevue/button')['default']
     Debugger: typeof import('./src/components/Debugger.vue')['default']
     DeviceSelect: typeof import('./src/components/DeviceSelect.vue')['default']
-    DevicesSelect: typeof import('./src/components/DevicesSelect.vue')['default']
     Dialog: typeof import('primevue/dialog')['default']
     Dropdown: typeof import('primevue/dropdown')['default']
     InputSwitch: typeof import('primevue/inputswitch')['default']
