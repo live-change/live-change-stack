@@ -13,6 +13,7 @@ window.process = { env: {} }
 export async function clientEntry(App, createRouter, config = {}) {
   setTime(window.__NOW__)
 
+  window.__CLIENT_VERSION__ = ENV_VERSION
   const windowId = window.__WINDOW_ID__
   //console.error("CLIENT WINDOW ID", windowId)
 
