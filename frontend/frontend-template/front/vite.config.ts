@@ -11,7 +11,7 @@ const packageJsonPath = dirname(fileURLToPath(import.meta.url))
   ).find(p => { try { accessSync(p); return true } catch(e) { return false }})
 const packageJson = packageJsonPath ? JSON.parse(readFileSync(packageJsonPath, 'utf-8')) : {}
 const name = packageJson.name ?? "Example"
-const version = packageJson.version ?? process.env.VERSION ?? 'unknown'
+const version = process.env.VERSION ?? packageJson.version ?? 'unknown'
 const homepage = process.env.BASE_HREF ?? packageJson.homepage
 const domain = (homepage && homepage.match(/https\:\/\/([^\/]+)/)?.[1]) || 'example.com'
 

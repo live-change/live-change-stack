@@ -1,30 +1,41 @@
 <template>
-  <LimitedAccess v-slot="{ authorized }" objectType="videoCall_Room" :object="room" :requiredRoles="requiredRoles">
-    <div v-if="state === 'welcome'"
-         class="surface-card shadow-1 border-round p-3 flex flex-row flex-wrap align-items-center">
-      <div class="w-30rem m-1" style="max-width: 80vw">
-        <DeviceSelect v-model="selectedDevices" />
+  <LimitedAccess objectType="videoCall_Room" :object="room"
+                 :requiredRoles="requiredRoles"
+                 hidden
+                 class="absolute w-full h-full">
+    <template #default>
+      <div v-if="state === 'welcome'"
+           class="surface-card shadow-1 border-round p-3 flex flex-row flex-wrap align-items-center">
+        <div class="w-30rem m-1" style="max-width: 80vw">
+          <DeviceSelect v-model="selectedDevices" />
+        </div>
+        <div class="m-3 text-center">
+          <h3>Select your media devices, and join.</h3>
+          <Button @click="join" icon="pi pi-check" label="Join" />
+        </div>
       </div>
-      <div class="m-3 text-center">
-        <h3>Select your media devices, and join.</h3>
-        <Button @click="join" icon="pi pi-check" label="Join" />
-      </div>
-    </div>
-    <template v-else>
-      <p>JOINED</p>
+      <template v-else>
+        <VideoWall
+          :main-videos="mainVideos ?? []"
+          :my-videos="myVideos ?? []"
+          class="w-full h-full top-0 absolute surface-900"
+        />
+      </template>
+      <!--    <p>selected devices: {{ selectedDevices }}</p>
+          <p>local media streams:  {{ localMediaStreams }}</p>
+          <p>local tracks:  {{ localTracks }}</p>-->
+<!--      <div class="bg-black-alpha-50 shadow-1 border-round mt-3 p-3 absolute text-white-alpha-90">
+        <pre>{{ JSON.stringify(peer?.summary, null, "  ") }}</pre>
+      </div>-->
     </template>
-<!--    <p>selected devices: {{ selectedDevices }}</p>
-    <p>local media streams:  {{ localMediaStreams }}</p>
-    <p>local tracks:  {{ localTracks }}</p>-->
-    <div class="surface-card shadow-1 border-round mt-3 p-3">
-      <pre>{{ JSON.stringify(peer?.summary, null, "  ") }}</pre>
-    </div>
+
   </LimitedAccess>
 </template>
 
 <script setup>
   import { LimitedAccess } from "@live-change/access-control-frontend"
   import { DeviceSelect } from '@live-change/peer-connection-frontend'
+  import VideoWall from './VideoWall.vue'
 
   import {
     ref, unref, computed, watch, watchEffect, toRefs,
@@ -98,6 +109,36 @@
 
   onMounted(async () => {
     await initPeer()
+  })
+
+  const myVideos = computed(() => {
+    //return []
+    if(!localMediaStreams.value?.length) return []
+    return localMediaStreams.value.map(stream => ({
+      id: stream.id,
+      stream,
+      mirror: true,
+      audioMuted: true
+    }))
+  })
+
+  const mainVideos = computed(() => {
+    if(!peer.value) return []
+    let output = []
+    for(const connection of unref(peer.value.connections)) {
+      const peerId = connection.to
+      const otherPeer = peer.value.otherPeers.find(peer => peer.id === peerId)
+      for(const remoteTrack of unref(connection.remoteTracks)) {
+        if(output.find(remoteStream => remoteStream.stream === remoteTrack.stream)) continue
+        output.push({
+          id: remoteTrack.stream.id,
+          from: connection.to,
+          stream: remoteTrack.stream,
+          peerState: otherPeer,
+        })
+      }
+    }
+    return output
   })
 
 

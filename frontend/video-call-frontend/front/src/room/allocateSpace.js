@@ -1,11 +1,12 @@
-function allocateSpace(left, top, width, height, tiles, styles) {
+function allocateSpace(left, top, width, height, tiles, sizes, styles) {
   console.log("ALLOCATE SPACE FOR TILES", tiles)
   if(!width || !height) return
   let visibleTiles = []
   let allRatioSum = 0
   for(let tile of tiles) {
-    const size = tile.size
+    const size = (sizes.find(s => s.id === tile.id) ?? tile).size
     if(!size || !size.width || !size.height) {
+      console.error("INVALID TILE SIZE", tile.size, "FOR TILE", tile)
       styles[tile.id] = { display: 'none' }
       continue
     }

@@ -1,13 +1,28 @@
 <template>
-  <div :ref="wall">
-    <pre style="display: none">{{ JSON.stringify(videoSizes, null, "  ") }}</pre>
+  <div ref="wall">
+<!--    <pre style="display: none">{{ JSON.stringify(videoSizes, null, "  ") }}</pre>-->
     <!--<pre style="display: none">{{ JSON.stringify(allVisibleVideos, null, "  ") }}</pre>
     <pre style="display: none">{{ JSON.stringify(allVideos, null, "  ") }}</pre>-->
-    <VideoDisplayVideo v-for="tile in videoTiles" :style="videoStyles[tile.id]"
-                       :key="tile.id" :video="tile.video" :volume="volume"
-                       @videoResize="ev => handleVideoResize(tile, ev)"
-                       @click="ev => handleVideoClick(tile, ev)">
-    </VideoDisplayVideo>
+<!--    <div class="surface-card p-3">
+      <pre>videoStyles = {{ videoStyles }}</pre>
+      <pre>wall = {{ wall }} {{ wallSize }}</pre>
+      <pre>mainVideos = {{ mainVideos }}</pre>
+      <pre>topVideos = {{ topVideos }}</pre>
+      <pre>bottomVideos = {{ bottomVideos }}</pre>
+      <pre>myVideos = {{ myVideos }}</pre>
+    </div>-->
+    <PeerVideo v-for="tile in videoTiles"
+               :key="tile.id" :stream="tile.video?.stream"
+               :volume="volume" :audio-muted="tile.video?.audioMuted"
+               :id="tile.id" :image="tile.video?.image"
+               :mirror="tile.video?.mirror"
+               :peer-state="tile.video?.peerState"
+               :ownerType="tile.ownerType ?? 'unknown'"
+               :owner="tile.owner ?? 'unknown'"
+               @resize="ev => handleVideoResize(tile, ev)"
+               @click="ev => handleVideoClick(tile, ev)"
+               :style="videoStyles[tile.id]">
+    </PeerVideo>
   </div>
 </template>
 
@@ -27,7 +42,7 @@
       type: Array,
       default: () => [] // testData.otherVideos
     },
-    otherVideos: {
+    bottomVideos: {
       type: Array,
       default: () => [] // testData.otherVideos
     },
@@ -37,22 +52,22 @@
     },
     topBarHeight: {
       type: Number,
-      default: 80
+      default: 100
     },
     bottomBarHeight: {
       type: Number,
-      default: 80
+      default: 120
     },
     volume: {
       type: Number,
       defaultValue: 1
     }
   })
-  const { mainVideos, topVideos, otherVideos, myVideos, topBarHeight, bottomBarHeight, volume } = toRefs(props)
+  const { mainVideos, topVideos, bottomVideos, myVideos, topBarHeight, bottomBarHeight, volume } = toRefs(props)
 
   const emit = defineEmits(['videoClick'])
 
-  const allVideos = computed(() => [].concat(mainVideos.value, topVideos.value, otherVideos.value, myVideos.value))
+  const allVideos = computed(() => [].concat(mainVideos.value, topVideos.value, bottomVideos.value, myVideos.value))
 
   const wall = ref(null)
   const wallSize = useElementSize(wall)
@@ -64,45 +79,55 @@
   watch(allVideos, videos => {
     for(const video of videos) {
       const index = videoTiles.value.findIndex(v => v.id === video.id)
+      const tile = {
+        id: video.id,
+        video,
+        size: { ...(video.size ?? defaultVideoSize) }
+      }
       if(index === -1) {
-        videoTiles.value.push({ id: video.id, video, size: { ...defaultVideoSize } })
+        videoTiles.value.push(tile)
       } else {
-        videoTiles.value.splice(index, 1, { id: video.id, video, size: { ...defaultVideoSize } })
+        videoTiles.value.splice(index, 1, tile)
       }
     }
   }, { immediate: true })
 
   function handleVideoResize(tile, { width, height }) {
+    console.log("handel video resize", arguments)
     tile.size = { width, height }
   }
 
-  function handleClick(tile, event) {
+  function handleVideoClick(tile, event) {
     emit('videoClick', { event, ...tile })
   }
 
   import allocateSpace from './allocateSpace.js'
 
   const videoStyles = computed(() => {
+    console.log('recomputeVideoStyles', JSON.stringify(mainVideos.value))
     if(typeof window == 'undefined') return {}
-    if(!wallSize?.width || !wallSize?.height) return {}
-    const areaSize = wallSize.value
+    const areaSize = {
+      width: wallSize.width.value,
+      height: wallSize.height.value
+    }
+    if(!areaSize?.width || !areaSize?.height) return {}
 
     let styles = {}
-    const bottomBarVisible = otherVideos.value.length > 0  || myVideos.value.length > 0
+    const bottomBarVisible = bottomVideos.value.length > 0  || myVideos.value.length > 0
     const bottomHeight = bottomBarVisible ? bottomBarHeight.value : 0
 
     let right = 0
     for(const video of myVideos.value) {
-      const size = videoTiles.value.find(v => v.id === video.id)?.size
+      const size = videoTiles.value.find(v => v.id === video.id)?.size ?? video.size
       if(!size || !size.width || !size.height) {
-        styles[myVideo.id] = { display: 'none' }
+        styles[video.id] = { display: 'none' }
         continue
       }
       const { width, height } = size
       const ratio = width/height
-      const newWidth = bottomBarHeight * ratio
-      console.log('NW', newWidth, ratio)
-      styles[myVideo.id] = {
+      const newWidth = bottomHeight * ratio
+      console.log('NW', newWidth, ratio, bottomHeight)
+      styles[video.id] = {
         width: newWidth + 'px',
         height: bottomHeight + 'px',
         bottom: '0',
@@ -112,22 +137,22 @@
     }
 
     const topBarVisible = topVideos.value.length > 0
-    const topHeight = topBarVisible ? topBarHeight : 0
+    const topHeight = topBarVisible ? topBarHeight.value : 0
 
     /// Allocate space for bottom videos
     allocateSpace(0, areaSize.height - bottomHeight,
       areaSize.width - right, bottomHeight,
-      otherVideos, styles)
+      bottomVideos.value, videoTiles.value, styles)
 
     /// Allocate space for top videos
     allocateSpace(0, 0,
       areaSize.width, topHeight,
-      topVideos, styles)
+      topVideos.value, videoTiles.value, styles)
 
     /// Allocate space for main videos
     allocateSpace(0, topHeight,
       areaSize.width, areaSize.height - bottomHeight - topHeight,
-      mainVideos, styles)
+      mainVideos.value, videoTiles.value, styles)
 
     return styles
 

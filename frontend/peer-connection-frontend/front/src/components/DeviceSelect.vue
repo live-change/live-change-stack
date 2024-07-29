@@ -23,7 +23,7 @@
 
           <Button v-if="!selectedConstraints?.audio?.deviceId"
                   @click="handleDisabledAudioClick" raised
-                  icon="bx bx-microphone-off" severity="secondary" rounded v-ripple />
+                  icon="bx bx-microphone-off"  severity="secondary" rounded v-ripple />
           <Button v-else-if="audioInputMuted" @click="audioInputMuted = false" raised
                   icon="bx bx-microphone-off" severity="danger" rounded v-ripple />
           <Button v-else @click="audioInputMuted = true" raised

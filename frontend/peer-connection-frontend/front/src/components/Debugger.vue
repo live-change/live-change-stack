@@ -204,7 +204,6 @@
 
 <style scoped lang="scss">
   .peer-connection-debugger {
-
     position: absolute;
     left: 0;
     bottom: 0;
