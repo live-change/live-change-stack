@@ -29,8 +29,6 @@ export async function sitemap(route, api) {
 
 import { client as useClient } from '@live-change/vue3-ssr'
 
-import pagesRoutes from '~pages'
-console.log("PAGES ROUTES", pagesRoutes)
 
 export function createRouter(app, config) {
   const client = useClient(app._context)
@@ -44,7 +42,6 @@ export function createRouter(app, config) {
       ...peerConnectionRoutes({ ...config, prefix: '/peer-connection/' }),
       ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
       ...videoCallRoutes(config),
-      ...pagesRoutes,
       {
         name: 'video-call:test-room', path: '/', meta: { raw: true },
         component: () => import("./room/Room.vue"),
