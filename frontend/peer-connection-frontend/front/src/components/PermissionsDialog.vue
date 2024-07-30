@@ -9,7 +9,8 @@
     <template #default>
       <slot name="introduction" />
       <div class="mt-2">
-        <div v-for="permission in Object.entries(model.permissions)" class="flex flex-row align-items-center mb-2">
+        <div v-for="permission in Object.entries(model.permissions ?? {})"
+             class="flex flex-row align-items-center mb-2">
           <i :class="permissionIcons[permission[0]]" />
           <div class="ml-2">{{ permission[0] }}: </div>
           <div v-if="permission[1] === 'granted'" class="ml-1 font-semibold text-green-400">
