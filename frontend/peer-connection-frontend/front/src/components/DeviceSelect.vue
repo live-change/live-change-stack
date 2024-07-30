@@ -142,12 +142,16 @@
 
 <script setup>
 
+  import Button from 'primevue/button'
+  import Dropdown from 'primevue/dropdown'
+  import PermissionsDialog from './PermissionsDialog.vue'
+  import VolumeIndicator from './VolumeIndicator.vue'
+
   import { defineProps, defineModel, computed, ref, toRefs, onMounted, watch } from 'vue'
   import { useInterval, useEventListener } from  "@vueuse/core"
   import { getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative, isUserMediaPermitted }
     from "./userMedia.js"
-  import PermissionsDialog from './PermissionsDialog.vue'
-  import VolumeIndicator from './VolumeIndicator.vue'
+
 
   const props = defineProps({
     audioInputRequest: {

@@ -54,13 +54,16 @@
 </template>
 
 <script setup>
+
+  import Dialog from 'primevue/dialog'
+
+  import { defineProps, defineModel, defineEmits, toRefs, ref, computed, watch } from 'vue'
+  import { useInterval } from '@vueuse/core'
+
   const permissionIcons = {
     camera: 'pi pi-camera',
     microphone: 'pi pi-microphone'
   }
-
-  import { defineProps, defineModel, defineEmits, toRefs, ref, computed, watch } from 'vue'
-  import { useInterval } from '@vueuse/core'
 
   const props = defineProps({
     title: {

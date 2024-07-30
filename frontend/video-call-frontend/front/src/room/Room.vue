@@ -39,6 +39,7 @@
   import { LimitedAccess } from "@live-change/access-control-frontend"
   import { DeviceSelect } from '@live-change/peer-connection-frontend'
   import VideoWall from './VideoWall.vue'
+  import Button from 'primevue/button'
 
   import {
     ref, unref, computed, watch, watchEffect, toRefs,
