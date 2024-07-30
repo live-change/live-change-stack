@@ -2,6 +2,9 @@ import * as utils from "../utils.js"
 import Debug from 'debug'
 const debug = Debug('framework:updaters:db')
 
+const cartesian =
+  (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+
 async function update(changes, service, app, force) {
 
   const dao = app.dao
@@ -61,7 +64,7 @@ async function update(changes, service, app, force) {
     } else {
       if(!table) throw new Error("only function indexes are possible without table")
       if(index.multi) {
-        if(Array.isArray(index.property)) throw new Error("multi indexes on multiple properties are not supported!")
+       // if(Array.isArray(index.property)) throw new Error("multi indexes on multiple properties are not supported!")
         const properties = (Array.isArray(index.property) ? index.property : [index.property]).map(p => p.split('.'))
         const func = async function(input, output, { table, properties }) {
           const value = (obj, property) => {
@@ -69,9 +72,9 @@ async function update(changes, service, app, force) {
             for(const p of property) at = at && at[p]
             if(at === undefined) return []
             if(Array.isArray(at)) return at.map(v => JSON.stringify(v))
-            return [at]
+            return [JSON.stringify(at)]
           }
-          const keys = (obj, id) => {
+          const keys = (obj, id = 0) => {
             const values = value(obj, properties[id])
             if(id === properties.length - 1) return values
             return values.flatMap(v => keys(obj, id + 1).map(k => v + ':' + k))

@@ -38,13 +38,14 @@ export const OfflineAccess = definition.model({
   },
   indexes: {
     byUserAndScope: {
-      property: ['user', 'scope']
+      multi: true,
+      property: ['user', 'scopes']
     }
   }
 })
 
 definition.view({
-  name: 'myOfflineAccessByScope',
+  name: 'myUserOfflineAccessByScope',
   properties: {
     scope: {
       type: String
@@ -58,6 +59,25 @@ definition.view({
   },
   async daoPath({ scope }, { client }) {
     return OfflineAccess.indexObjectPath('byUserAndScope', [client.user, scope])
+  }
+})
+
+definition.view({
+  name: 'userOfflineAccessByScope',
+  properties: {
+    user: {
+      type: String
+    },
+    scope: {
+      type: String
+    }
+  },
+  returns: {
+    type: OfflineAccess
+  },
+  internal: true,
+  async daoPath({ user, scope }, { client }) {
+    return OfflineAccess.indexObjectPath('byUserAndScope', [user, scope])
   }
 })
 
@@ -119,13 +139,27 @@ definition.action({
     console.log("TOKENS", tokens)
     const scopes = tokens.scope.split(' ')
     if(tokens.token_type !== 'Bearer') throw new Error("Invalid token type "+tokens.token_type)
+    await OfflineAccess.update(user, {
+      id: user,
+      user,
+      scopes,
+      refreshToken: tokens.refresh_token,
+      accessToken: tokens.access_token,
+      accessTokenExpire: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
+      lastRefresh: new Date()
+    })
     await service.triggerService({ type: 'googleAuthentication_setUserOwnedOfflineAccess', service: definition.name }, {
       user, scopes,
       accessToken: tokens.access_token,
       accessTokenExpire: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
       refreshToken: tokens.refresh_token,
     })
-
+    await service.trigger({ type: 'googleOfflineAccessGained' }, {
+      user, scopes,
+      accessToken: tokens.access_token,
+      accessTokenExpire: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
+      refreshToken: tokens.refresh_token,
+    })
     return {
       action: 'addOfflineAccessToken'
     }
