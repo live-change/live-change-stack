@@ -16,7 +16,7 @@ export function videoCallRoutes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
     route({
-      name: 'video-call:room', path: prefix+ '/room/:room', meta: { },
+      name: 'video-call:room', path: prefix+ '/room/:room', meta: { }, props:true,
       component: () => import("./room/Room.vue"),
     }),
 
