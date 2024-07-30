@@ -4,17 +4,19 @@
                  hidden
                  class="absolute w-full h-full">
     <template #default>
-      <div v-if="state === 'welcome'"
-           class="surface-card shadow-1 border-round p-3 flex flex-row flex-wrap align-items-center">
-        <div class="w-30rem m-1" style="max-width: 80vw">
-          <DeviceSelect v-model="selectedDevices" />
-        </div>
-        <div class="m-3 text-center">
-          <h3>Select your media devices, and join.</h3>
-          <Button @click="join" icon="pi pi-check" label="Join" />
+      <div class="absolute w-full h-full flex flex-row align-items-center justify-content-center">
+        <div class="surface-card shadow-1 border-round p-3 flex flex-row flex-wrap align-items-center"
+             :class="{ hidden: state !== 'welcome' }">
+          <div class="w-30rem m-1" style="max-width: 80vw">
+            <DeviceSelect v-model="selectedDevices" />
+          </div>
+          <div class="m-3 text-center">
+            <h3>Select your media devices, and join.</h3>
+            <Button @click="join" icon="pi pi-check" label="Join" />
+          </div>
         </div>
       </div>
-      <template v-else>
+      <template v-if="state === 'joined'">
         <VideoWall
           :main-videos="mainVideos ?? []"
           :my-videos="myVideos ?? []"

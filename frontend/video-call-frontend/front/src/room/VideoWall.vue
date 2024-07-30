@@ -90,6 +90,14 @@
         videoTiles.value.splice(index, 1, tile)
       }
     }
+    for(let i = videoTiles.value.length - 1; i >= 0; i--) {
+      const tile = videoTiles.value[i]
+      const index = videos.findIndex(v => v.id === tile.id)
+      if(index === -1) {
+        videoTiles.value.splice(i, 1)
+        i--;
+      }
+    }
   }, { immediate: true })
 
   function handleVideoResize(tile, { width, height }) {
