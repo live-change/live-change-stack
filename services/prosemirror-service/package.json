@@ -1,6 +1,6 @@
 {
   "name": "@live-change/prosemirror-service",
-  "version": "0.8.46",
+  "version": "0.8.47",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.46",
-    "@live-change/relations-plugin": "^0.8.46",
+    "@live-change/framework": "^0.8.47",
+    "@live-change/relations-plugin": "^0.8.47",
     "lru-cache": "^7.12.0",
     "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0",
