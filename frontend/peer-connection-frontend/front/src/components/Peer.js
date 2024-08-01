@@ -41,6 +41,7 @@ const createPeer = async ({
   ] = await Promise.all([
     live(path.peerConnection.peers({ channelType, channel }, appContext)
       .with(peer => path.peerConnection.peerState({ peer: peer.id }).bind('peerState'))
+      .with(peer => path.user.sessionUser({ session: peer.session }).bind('user'))
     ),
     live(path.online.session({ group: 'peer', peer: peerId }), appContext),
     live(path.peerConnection.turnConfiguration({ peer: peerId }), appContext)

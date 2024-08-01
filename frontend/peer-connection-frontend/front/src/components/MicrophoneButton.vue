@@ -9,6 +9,8 @@
 </template>
 
 <script setup>
+  import Button from 'primevue/button'
+
   import { defineModel, defineEmits, computed } from 'vue'
 
   const model = defineModel({

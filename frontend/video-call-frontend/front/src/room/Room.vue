@@ -151,16 +151,22 @@
       const otherPeer = peer.value.otherPeers.find(peer => peer.id === peerId)
       for(const remoteTrack of unref(connection.remoteTracks)) {
         if(output.find(remoteStream => remoteStream.stream === remoteTrack.stream)) continue
+        const [ownerType, owner] = otherPeer.user
+          ? ['user_User', otherPeer.user?.user]
+          : ['session_Session', otherPeer.session]
         output.push({
           id: remoteTrack.stream.id,
           from: connection.to,
           stream: remoteTrack.stream,
           peerState: otherPeer?.peerState,
+          ownerType, owner
         })
       }
     }
     return output
   })
+
+  globalThis.peer = peer
 
 
 </script>

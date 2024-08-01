@@ -17,8 +17,8 @@
                :id="tile.id" :image="tile.video?.image"
                :mirror="tile.video?.mirror"
                :peer-state="tile.video?.peerState"
-               :ownerType="tile.ownerType ?? 'unknown'"
-               :owner="tile.owner ?? 'unknown'"
+               :ownerType="tile.video?.ownerType ?? 'unknown'"
+               :owner="tile.video?.owner ?? 'unknown'"
                @resize="ev => handleVideoResize(tile, ev)"
                @click="ev => handleVideoClick(tile, ev)"
                :style="videoStyles[tile.id]">

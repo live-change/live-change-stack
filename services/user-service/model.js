@@ -85,4 +85,19 @@ definition.event({
   }
 })
 
+definition.view({
+  name: 'sessionUser',
+  properties: {
+    session: {
+      type: Session
+    }
+  },
+  returns: {
+    type: User
+  },
+  daoPath({ session }) {
+    return AuthenticatedUser.path(session)
+  }
+})
+
 export { User, Session, AuthenticatedUser }

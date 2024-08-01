@@ -9,9 +9,11 @@
          }">
     </div>
 
-    <div v-if="(peerState?.videoMuted || !stream) && !image"
+    <div v-if="(peerState?.videoState !== 'enabled' || !stream) && !image"
          class="absolute w-full h-full flex flex-column align-items-center justify-content-center identification">
       <UserIdentification :ownerType="ownerType" :owner="owner" />
+<!--      <pre>{{ peerState }}</pre>
+      <pre>[{{ ownerType }}]</pre>-->
     </div>
 
     <div v-if="stream">
@@ -26,8 +28,8 @@
       </video>
     </div>
 
-    <div class="absolute top-0 right-0 h-3rem pr-1
-                flex align-items-center">
+    <div v-if="peerState"
+         class="absolute top-0 right-0 h-3rem pr-1 flex align-items-center">
       <div v-if="peerState.audioState === 'muted'"
            class="border-circle bg-black-alpha-40 mx-1
                   flex align-items-center justify-content-center w-2rem h-2rem">
@@ -65,6 +67,9 @@
   .peer-video {
     .identification {
       & > span > span, a {
+        &:hover {
+          background: none !important;
+        }
         display: flex !important;
         flex-direction: column !important;
         position: absolute;
@@ -77,11 +82,10 @@
         height: 100%;
         width: 100%;
         img, i {
-          max-height: 70px !important;
+          max-height: 120px !important;
           width: auto !important;
           height: 50% !important;
           aspect-ratio: 1/1;
-          border: 1px solid red;
         }
         span {
           color: rgba(255,255,255,0.8);
