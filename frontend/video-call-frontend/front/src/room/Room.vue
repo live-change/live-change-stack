@@ -24,10 +24,12 @@
           class="w-full h-full top-0 absolute surface-900"
         />
         <div class="absolute bottom-0 h-4rem left-50 right-50 flex flex-row justify-content-center">
-          <div class="absolute w-8rem h-full bg-black-alpha-70 flex flex-row align-items-center
+          <div class="absolute w-11rem h-full bg-black-alpha-70 flex flex-row align-items-center
            justify-content-between px-3">
             <MicrophoneButton v-model="selectedDevices" />
             <CameraButton v-model="selectedDevices" />
+            <Button @click="leave" raised
+                    icon="bx bx-exit" severity="warning" rounded v-ripple />
           </div>
         </div>
       </template>
@@ -83,6 +85,10 @@
     console.log('Joining room', room.value, selectedDevices.value)
     state.value = 'joining'
     state.value = 'joined'
+  }
+
+  function leave() {
+    state.value = 'welcome'
   }
 
   const localMediaStreams = computed(() =>
