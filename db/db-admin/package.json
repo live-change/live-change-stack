@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-admin",
-  "version": "0.8.45",
+  "version": "0.8.46",
   "scripts": {
     "memDev": "node server/start.js memDev --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --initScript ./init.js --dbAccess",
@@ -19,14 +19,14 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.5.2",
-    "@live-change/dao": "0.8.45",
-    "@live-change/dao-message": "0.8.45",
-    "@live-change/dao-sockjs": "0.8.45",
-    "@live-change/dao-vue3": "0.8.45",
-    "@live-change/dao-websocket": "0.8.45",
-    "@live-change/framework": "0.8.45",
-    "@live-change/vue3-components": "0.8.45",
-    "@live-change/vue3-ssr": "0.8.45",
+    "@live-change/dao": "^0.8.46",
+    "@live-change/dao-message": "^0.8.46",
+    "@live-change/dao-sockjs": "^0.8.46",
+    "@live-change/dao-vue3": "^0.8.46",
+    "@live-change/dao-websocket": "^0.8.46",
+    "@live-change/framework": "^0.8.46",
+    "@live-change/vue3-components": "^0.8.46",
+    "@live-change/vue3-ssr": "^0.8.46",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vueuse/core": "^10.11.0",
     "@vueuse/head": "^2.0.0",
@@ -53,7 +53,7 @@
     "vue3-scroll-border": "0.1.6"
   },
   "devDependencies": {
-    "@live-change/codeceptjs-helper": "0.8.45",
+    "@live-change/codeceptjs-helper": "^0.8.46",
     "@wdio/selenium-standalone-service": "^8.15.0",
     "codeceptjs": "^3.5.12",
     "generate-password": "1.7.1",

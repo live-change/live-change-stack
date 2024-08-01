@@ -1,6 +1,6 @@
 {
   "name": "@live-change/access-control-service",
-  "version": "0.8.45",
+  "version": "0.8.46",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.8.45"
+    "@live-change/framework": "^0.8.46"
   },
   "gitHead": "8b97a83258a3eccd08534d0376015781c4eefdec",
   "type": "module"
