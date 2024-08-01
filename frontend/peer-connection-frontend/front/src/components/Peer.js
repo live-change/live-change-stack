@@ -220,6 +220,7 @@ const createPeer = async ({
     otherPeers,
     summary,
     setTrackEnabled,
+    localPeerState: computedLocalPeerState
   }
 
   const peerInternal = {

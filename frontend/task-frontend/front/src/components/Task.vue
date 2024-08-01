@@ -6,7 +6,7 @@
         <div :class="['ml-2']">{{ label }}</div>
       </div>
       <div v-if="task?.progress && task?.state !== 'done'" class="w-8rem mr-3 flex-grow-1" style="max-width: 50vw">
-        <ProgressBar :value="(100 * task.progress.current / task.progress.total).toFixed()" />
+        <ProgressBar :value="Math.floor((100 * task.progress.current / task.progress.total))" />
       </div>
       <div v-if="task?.retries?.length && task.retries.length < task.maxRetries" class="mr-3">
         <i class="pi pi-replay" />

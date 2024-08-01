@@ -23,6 +23,13 @@
           :my-videos="myVideos ?? []"
           class="w-full h-full top-0 absolute surface-900"
         />
+        <div class="absolute bottom-0 h-4rem left-50 right-50 flex flex-row justify-content-center">
+          <div class="absolute w-8rem h-full bg-black-alpha-70 flex flex-row align-items-center
+           justify-content-between px-3">
+            <MicrophoneButton v-model="selectedDevices" />
+            <CameraButton v-model="selectedDevices" />
+          </div>
+        </div>
       </template>
       <!--    <p>selected devices: {{ selectedDevices }}</p>
           <p>local media streams:  {{ localMediaStreams }}</p>
@@ -37,7 +44,7 @@
 
 <script setup>
   import { LimitedAccess } from "@live-change/access-control-frontend"
-  import { DeviceSelect } from '@live-change/peer-connection-frontend'
+  import { DeviceSelect, CameraButton, MicrophoneButton } from '@live-change/peer-connection-frontend'
   import VideoWall from './VideoWall.vue'
   import Button from 'primevue/button'
 
@@ -125,7 +132,8 @@
       id: stream.id,
       stream,
       mirror: true,
-      audioMuted: true
+      audioMuted: true,
+      peerState: peer.value.localPeerState
     }))
   })
 
@@ -141,7 +149,7 @@
           id: remoteTrack.stream.id,
           from: connection.to,
           stream: remoteTrack.stream,
-          peerState: otherPeer,
+          peerState: otherPeer?.peerState,
         })
       }
     }

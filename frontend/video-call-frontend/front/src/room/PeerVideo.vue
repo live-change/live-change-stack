@@ -26,15 +26,36 @@
       </video>
     </div>
 
-    <VolumeIndicator v-if="stream" :stream="stream"
-                     class="absolute" :style="{ right: 'calc(1% + 0.3rem)', top: 'calc(1% + 0.3rem) ' }" />
+    <div class="absolute top-0 right-0 h-3rem pr-1
+                flex align-items-center">
+      <div v-if="peerState.audioState === 'muted'"
+           class="border-circle bg-black-alpha-40 mx-1
+                  flex align-items-center justify-content-center w-2rem h-2rem">
+        <i class='bx bx-microphone-off text-xl text-red-600' />
+      </div>
+      <div v-if="peerState.audioState === 'none'"
+           class="border-circle bg-black-alpha-40 mx-1
+                  flex align-items-center justify-content-center w-2rem h-2rem">
+        <i class='bx bx-microphone-off text-xl text-gray-500' />
+      </div>
 
-    <div v-if="peerState">
-      <i v-if="peerState.videoMuted"  class='bx bx-camera-off' />
-      <i v-if="peerState.audioState" class='bx bx-microphone-off' />
+      <div v-if="peerState.videoState === 'muted'"
+           class="border-circle bg-black-alpha-40 mx-1
+                  flex align-items-center justify-content-center w-2rem h-2rem">
+        <i class='bx bx-camera-off text-xl text-red-600' />
+      </div>
+      <div v-if="peerState.videoState === 'none'"
+           class="border-circle bg-black-alpha-40 mx-1
+                  flex align-items-center justify-content-center w-2rem h-2rem">
+        <i class='bx bx-camera-off text-xl text-gray-500' />
+      </div>
+
+      <VolumeIndicator v-if="stream && peerState?.audioState === 'enabled'" :stream="stream"
+                       class="mx-1" />
     </div>
 
-    <pre>{{ image }}</pre>
+<!--    <pre>{{ peerState }}</pre>-->
+<!--    <pre>{{ image }}</pre>-->
 <!--    <h3>{{ id  }}</h3>-->
 
   </div>

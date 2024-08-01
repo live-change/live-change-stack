@@ -20,23 +20,8 @@
       </div>
       <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-end align-items-center">
         <div class="flex flex-row justify-content-between align-items-center h-5rem w-7rem media-buttons">
-
-          <Button v-if="!selectedConstraints?.audio?.deviceId"
-                  @click="handleDisabledAudioClick" raised
-                  icon="bx bx-microphone-off"  severity="secondary" rounded v-ripple />
-          <Button v-else-if="audioInputMuted" @click="audioInputMuted = false" raised
-                  icon="bx bx-microphone-off" severity="danger" rounded v-ripple />
-          <Button v-else @click="audioInputMuted = true" raised
-                  icon="bx bx-microphone" severity="success" rounded v-ripple />
-
-          <Button v-if="!selectedConstraints?.video?.deviceId"
-                  @click="handleDisabledVideoClick" raised
-                  icon="bx bx-camera-off" severity="secondary" rounded v-ripple />
-          <Button v-else-if="videoInputMuted" @click="videoInputMuted = false" raised
-                  icon="bx bx-camera-off" severity="danger" rounded v-ripple />
-          <Button v-else @click="videoInputMuted = true" raised
-                  icon="bx bx-camera" severity="success" rounded v-ripple />
-
+          <MicrophoneButton v-model="model" @disabled-audio-click="handleDisabledAudioClick" />
+          <CameraButton v-model="model" @disabled-video-click="handleDisabledVideoClick" />
         </div>
       </div>
       <div class="absolute top-0 right-0">
@@ -147,10 +132,12 @@
   import PermissionsDialog from './PermissionsDialog.vue'
   import VolumeIndicator from './VolumeIndicator.vue'
 
-  import { defineProps, defineModel, computed, ref, toRefs, onMounted, watch } from 'vue'
+  import { defineProps, defineModel, computed, ref, toRefs, onMounted, watch, watchEffect } from 'vue'
   import { useInterval, useEventListener } from  "@vueuse/core"
   import { getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative, isUserMediaPermitted }
     from "./userMedia.js"
+  import MicrophoneButton from './MicrophoneButton.vue'
+  import CameraButton from './CameraButton.vue'
 
 
   const props = defineProps({
@@ -198,6 +185,8 @@
     }
   })
 
+  globalThis.deviceSelectModel = model
+
   const devices = ref([])
   async function updateDevices() {
     console.log("UPDATE DEVICES")
@@ -212,22 +201,6 @@
   const audioInputs = computed(() => devices.value.filter(device => device.kind === 'audioinput'))
   const audioOutputs = computed(() => devices.value.filter(device => device.kind === 'audiooutput'))
   const videoInputs = computed(() => devices.value.filter(device => device.kind === 'videoinput'))
-
-  const audioInputMuted = computed({
-    get: () => model.value?.audioMuted,
-    set: (value) => model.value = {
-      ...model.value,
-      audioMuted: value
-    }
-  })
-
-  const videoInputMuted = computed({
-    get: () => model.value?.videoMuted,
-    set: (value) => model.value = {
-      ...model.value,
-      videoMuted: value
-    }
-  })
 
   watch(audioInputs, (value) => {
     model.value = {
@@ -318,13 +291,13 @@
     }
   })
 
-  watch(() => [userMedia.value, audioInputMuted.value, videoInputMuted.value],
-    ([stream, audioMuted, videoMuted]) => {
-      if(stream) {
-        console.log("STREAM", stream, audioMuted, videoMuted)
-        stream.getAudioTracks().forEach(track => track.enabled = !audioMuted)
-        stream.getVideoTracks().forEach(track => track.enabled = !videoMuted)
-      }}, { immediate: true })
+  watchEffect(() => {
+    if(userMedia.value) {
+      console.log("STREAM", userMedia.value, model.value.audioMuted, model.value.videoMuted)
+      userMedia.value.getAudioTracks().forEach(track => track.enabled = !model.value.audioMuted)
+      userMedia.value.getVideoTracks().forEach(track => track.enabled = !model.value.videoMuted)
+    }
+  }, { immediate: true })
 
 
   const permissionsDialog = ref({ })

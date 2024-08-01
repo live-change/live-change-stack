@@ -2,8 +2,10 @@ import Debugger from './front/src/components/Debugger.vue'
 import DeviceSelect from './front/src/components/DeviceSelect.vue'
 import PermissionsDialog from './front/src/components/PermissionsDialog.vue'
 import VolumeIndicator from './front/src/components/VolumeIndicator.vue'
+import CameraButton from './front/src/components/CameraButton.vue'
+import MicrophoneButton from './front/src/components/MicrophoneButton.vue'
 
-export { Debugger, DeviceSelect, PermissionsDialog, VolumeIndicator }
+export { Debugger, DeviceSelect, PermissionsDialog, VolumeIndicator, CameraButton, MicrophoneButton }
 
 import { createPeer } from './front/src/components/Peer.js'
 import { createPeerConnection } from './front/src/components/PeerConnection.js'
