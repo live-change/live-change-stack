@@ -67,7 +67,7 @@
     try {
       const $ = env || {}
       const db = dbSugar || {}
-      console.log("COMPILE CODE", code.value)
+      //console.log("COMPILE CODE", code.value)
       const result = eval(`(${code.value})`)
       if(result === false) return { data: false, code: code.value }
       if(result) return { data: result, code: code.value }

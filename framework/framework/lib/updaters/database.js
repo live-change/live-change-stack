@@ -83,11 +83,11 @@ async function update(changes, service, app, force) {
             if(obj && oldObj) {
               let pointers = obj && new Set(keys(obj))
               let oldPointers = oldObj && new Set(keys(oldObj))
-              for(let pointer of pointers) {
-                if(!!oldPointers.has(pointer)) output.change({ id: pointer+'_'+obj.id, to: obj.id }, null)
+              for(let pointer of pointers) if(!oldPointers.has(pointer)) {
+                output.change({ id: pointer+'_'+obj.id, to: obj.id }, null)
               }
-              for(let pointer of oldPointers) {
-                if(!!pointers.has(pointer)) output.change(null, { id: pointer+'_'+obj.id, to: obj.id })
+              for(let pointer of oldPointers) if(!pointers.has(pointer)) {
+                output.change(null, { id: pointer+'_'+obj.id, to: obj.id })
               }
             } else if(obj) {
               keys(obj).forEach(k => output.change({ id: k+'_'+obj.id, to: obj.id }, null))

@@ -36,7 +36,10 @@ async function fetch(api, path) {
     const res = preFetchMap.get(JSON.stringify(what))
     debug("PREFETCH", what, "RES", res, "MORE", more, "ERR", res?.error)
     if(res.error) {
-      throw new Error(JSON.stringify(res.error) + ' when fetching '+JSON.stringify(what) + ' with more=('+JSON.stringify(more)+')')
+      throw new Error(''
+        + (res.error.stack ?? res.error.message ?? (typeof res.error === 'object' ? JSON.stringify(res.error) : res.error))
+        + '\n when fetching '+JSON.stringify(what) + ' with more=('+JSON.stringify(more)+')'
+      )
     }
     const data = res.data
     if(data && more) {

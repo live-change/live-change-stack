@@ -54,7 +54,8 @@ export default (definition) => {
   }
 
   async function getUnitClientRoles(client, { objectType, object }, ignorePublic) {
-    const [ sessionOrUserType, sessionOrUser ] = client.user ? ['user_User', client.user] : ['session_Session']
+    const [ sessionOrUserType, sessionOrUser ] =
+      client.user ? ['user_User', client.user] : ['session_Session', client.session]
     const [
       publicAccessData,
       sessionAccess,
@@ -291,6 +292,7 @@ export default (definition) => {
     }]
   }
 
+/*
   function accessLimitedGet(client, objects, requiredRoles, path) {
     const roles = getClientObjectsRoles(client, objects)
     for(const requiredRole of requiredRoles) {
@@ -302,6 +304,7 @@ export default (definition) => {
     if(path[0] !== 'database') throw new Error("non database path "+ JSON.stringify(path))
     const isObject = path[1] === 'queryObject' || path[1] === ''
   }
+*/
 
   return {
     testRoles,

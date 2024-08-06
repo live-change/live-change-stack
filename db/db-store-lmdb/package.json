@@ -26,8 +26,8 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.8.49",
-    "@live-change/flatten-interval-tree": "^0.8.49",
+    "@live-change/dao": "0.8.49",
+    "@live-change/flatten-interval-tree": "0.8.49",
     "napi-macros": "^2.0.0",
     "node-lmdb": "^0.9.6",
     "p-queue": "^8.0.1"

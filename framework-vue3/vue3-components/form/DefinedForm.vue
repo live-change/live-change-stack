@@ -683,8 +683,11 @@
     unmounted() {
     },
     watch: {
-      rootValue(newValue) {
-        this.$emit('update', newValue)
+      data: {
+        deep: true,
+        handler(newValue) {
+          this.$emit('update', newValue)
+        }
       }
     }
   }

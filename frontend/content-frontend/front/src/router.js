@@ -13,13 +13,6 @@ export function contentRoutes(config = {}) {
   return [
     ...userRoutes({ ...config, prefix: prefix + 'user/' }),
 
-    route({
-      name: 'page:test', path: prefix, meta: { },
-      redirect: to => {
-        return { name: 'content:page', params: { path: 'test' } }
-      }
-    }),
-
     ...contentEditRoutes({ ...config }),
 
     ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
@@ -35,7 +28,15 @@ export async function sitemap(route, api) {
 export function createRouter(app, config) {
   const router = _createRouter({
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
-    routes: contentRoutes(config)
+    routes: [
+      {
+        name: 'page:test', path: prefix, meta: { },
+        redirect: to => {
+          return { name: 'content:page', params: { path: 'test' } }
+        }
+      },
+      ...contentRoutes(config)
+    ]
   })
   return router
 }

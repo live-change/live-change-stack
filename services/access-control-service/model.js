@@ -26,6 +26,12 @@ const Access = definition.model({
     resetAccess: (params, { client, context, visibilityTest }) =>
         visibilityTest || access.clientHasAdminAccess(client, params)
   },
+  indexes: {
+    byOwnerRoleAndObject: {
+      property: ['sessionOrUserType', 'sessionOrUser', 'roles', 'objectType', 'object'],
+      multi: true
+    }
+  },
   properties: {
     roles: rolesArrayType,
     lastUpdate: {

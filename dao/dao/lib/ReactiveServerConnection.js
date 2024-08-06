@@ -3,6 +3,7 @@ import ObservableList from "./ObservableList.js"
 import * as utils from './utils.js'
 import collectPointers from './collectPointers.js'
 import Debug from 'debug'
+import { errorToJSON } from './utils.js'
 const debug = Debug("reactive-dao")
 const debugPot = Debug("reactive-dao:pot")
 
@@ -567,25 +568,19 @@ class ReactiveServerConnection extends EventEmitter {
   }
 
 
-  handleGet(message) {
+  async handleGet(message) {
     const path = message.what
     if(typeof path == 'object' && !Array.isArray(path) && path.paths) {
       let paths = path.paths
       return this.handleGetMore(message.requestId, paths)
     }
     try {
-      Promise.resolve(this.dao.get(path)).then(
-          result => this.send({
-            type: "response",
-            responseId: message.requestId,
-            response: result
-          }),
-          error => this.send({
-            type: "error",
-            responseId: message.requestId,
-            error: utils.errorToJSON(error)
-          })
-      )
+      const result = await Promise.resolve(this.dao.get(path))
+      this.send({
+        type: "response",
+        responseId: message.requestId,
+        response: result
+      })
     } catch (error) {
       this.handleServerError(message, error)
       this.send({
@@ -657,7 +652,7 @@ class ReactiveServerConnection extends EventEmitter {
           if(!resultsMap.has(key)) {
             const resultInfo = {
               what,
-              error: error
+              error: errorToJSON(error)
             }
             results.push(resultInfo)
             resultsMap.set(key, resultInfo)

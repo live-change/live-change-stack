@@ -60,7 +60,7 @@ function compilePath(path, params, possibleExternal = []) {
       `})`
   ]
   const code = lines.join('\n')
-  console.log("CODE", code)
+  //console.log("CODE", code)
   const result = eval(code)
   return { result, external: externalDependencies }
 }
