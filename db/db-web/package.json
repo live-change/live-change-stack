@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-web",
-  "version": "0.8.49",
+  "version": "0.8.50",
   "author": {
     "email": "michal@laszczewski.com",
     "name": "Michał Łaszczewski",
@@ -29,11 +29,11 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/dao": "0.8.49",
-    "@live-change/db": "0.8.49",
-    "@live-change/db-store-indexeddb": "0.8.49",
-    "@live-change/db-store-localstorage": "0.8.49",
-    "@live-change/db-store-rbtree": "0.8.49",
+    "@live-change/dao": "^0.8.50",
+    "@live-change/db": "^0.8.50",
+    "@live-change/db-store-indexeddb": "^0.8.50",
+    "@live-change/db-store-localstorage": "^0.8.50",
+    "@live-change/db-store-rbtree": "^0.8.50",
     "debug": "^4.3.4"
   },
   "gitHead": "8b97a83258a3eccd08534d0376015781c4eefdec"
