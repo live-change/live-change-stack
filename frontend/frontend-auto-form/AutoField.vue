@@ -13,7 +13,17 @@
                   :id="uid"
                   :i18n="i18n" />
     </slot>
-    <small v-if="validationResult" class="p-error">{{ t( 'errors.' + validationResult ) }}</small>
+    <div>
+      <small v-if="validationResult" class="p-error mt-1">
+        {{ (typeof validationResult === 'object')
+             ? t( 'errors.' + validationResult.error, validationResult.validator )
+             : t( 'errors.' + validationResult ) }}
+      </small>
+      <small v-if="maxLengthValidation" style="float: right" class="mt-1"
+             :class="{ 'p-error': props.modelValue?.length > maxLengthValidation.length }">
+        {{ t( 'info.maxLength', { maxLength: maxLengthValidation.length, length: props.modelValue?.length ?? 0 }) }}
+      </small>
+    </div>
   </div>
 </template>
 
@@ -97,10 +107,23 @@
   import { validateData } from "@live-change/vue3-components"
   const appContext = getCurrentInstance().appContext
   const validationResult = computed(() => {
-    const validationResult = validateData(definition.value, modelValue.value, 'validation', appContext)
-    const softValidationResult = validateData(definition.value, modelValue.value, 'softValidation', appContext)
+    const validationResult = validateData(definition.value, modelValue.value, 'validation', appContext,
+      props.propName, props.rootValue, true)
+    const softValidationResult = validateData(definition.value, modelValue.value, 'softValidation', appContext,
+      props.propName, props.rootValue, true)
     return validationResult || softValidationResult || error.value
   })
+
+  function findValidation(name) {
+    if(definition.value.softValidation)
+      for(const validator of definition.value.softValidation)
+        if(validator.name === name) return validator
+    if(definition.value.validation)
+      for(const validator of definition.value.validation)
+        if(validator.name === name) return validator
+  }
+
+  const maxLengthValidation = computed(() => findValidation('maxLength')?.params)
 
   const config = inject('auto-form', {
     inputs: {},

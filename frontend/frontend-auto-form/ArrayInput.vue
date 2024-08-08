@@ -1,13 +1,49 @@
 <template>
   <div>
-    <div class="mb-3" v-for="(value, index) in modelValue">
-      <div class="p-buttonset">
-        <Button class="" icon="pi pi-plus" @click="insertItem(index)"
-                label="Insert" />
-        <Button class="p-button-secondary" icon="pi pi-sync" @click="swapItem(index)"
-                label="Swap" />
-        <Button class="p-button-danger" icon="pi pi-trash" @click="removeItem(index)"
-                :label="`Remove  #${ index+1 }`" />
+    <div class="mb-4 border-bottom-1" v-for="(value, index) in modelValue">
+      <div class="flex flex-row align-items-center justify-content-between">
+
+        <div class="text-2xl">
+          {{ te(i18n.slice(0,-1)+':itemTitle')
+          ? t(i18n.slice(0,-1)+':itemTitle', { ...value, index: index+1 })
+          : `#${index + 1}` }}
+        </div>
+
+        <div class="flex flex-row">
+          <Button class="mx-1" icon="pi pi-plus" @click="insertItem(index)"
+                  style="transform: scale(0.9)"
+                  rounded
+                  severity="success"
+                  size="small"
+                  v-ripple
+                  aria-label="Insert before" />
+          <Button v-if="index > 0"
+                  style="transform: scale(0.9)"
+                  class="mx-1"
+                  icon="pi pi-arrow-up" @click="swapItem(index)"
+                  severity="secondary"
+                  rounded
+                  size="small"
+                  aria-label="Move up" />
+          <Button v-if="index < modelValue.length - 1"
+                  style="transform: scale(0.9)"
+                  class="mx-1"
+                  icon="pi pi-arrow-down" @click="swapItem(index + 1)"
+                  severity="secondary"
+                  rounded
+                  v-ripple
+                  size="small"
+                  aria-label="Move down" />
+          <Button class="mx-1"
+                  style="transform: scale(0.9)"
+                  icon="pi pi-trash" @click="removeItem(index)"
+                  severity="danger"
+                  rounded
+                  size="small"
+                  v-ripple
+                  :aria-label="`Remove  #${ index+1 }`" />
+        </div>
+
       </div>
       <auto-input :modelValue="value" :definition="definition.of"
                    @update:modelValue="value => updateItem(index, value)"
@@ -15,14 +51,17 @@
                   :i18n="i18n" />
     </div>
     <div>
-      <Button class="w-10rem" :label="t('autoform.addItem')" icon="pi pi-plus" @click="ev => insertItem()" />
+      <Button severity="success"
+              :label="te(i18n.slice(0,-1)+':addItem') ? t(i18n.slice(0,-1)+':addItem') : t('autoform.addItem')"
+              icon="pi pi-plus"
+              @click="ev => insertItem()" />
     </div>
   </div>
 </template>
 
 <script setup>
   import { useI18n } from 'vue-i18n'
-  const { t, n, d } = useI18n()
+  const { t, te,  n, d } = useI18n()
 
   import Button from "primevue/button";
   import AutoInput from "./AutoInput.vue"

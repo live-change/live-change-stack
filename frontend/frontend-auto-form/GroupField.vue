@@ -1,5 +1,5 @@
 <template>
-  <div v-if="visible" class="pl-3 border-left-3 border-400 mb-3" :class="fieldClass" :style="fieldStyle">
+  <div v-if="visible" class="pl-5 mb-3" :class="fieldClass" :style="fieldStyle">
     <h3>{{ t( i18n + label + ':title' ) }}</h3>
     <auto-input :modelValue="modelValue" :definition="definition" :name="props.name"
                  :class="props.inputClass" :style="props.inputStyle"

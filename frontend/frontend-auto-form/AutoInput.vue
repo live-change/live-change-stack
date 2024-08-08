@@ -11,6 +11,7 @@
 <script setup>
   import { inputs, types } from './config.js'
   import { computed, inject, toRefs } from 'vue'
+  import deepmerge from 'deepmerge';
 
   const props = defineProps({
     modelValue: {
@@ -47,12 +48,13 @@
     types: {}
   })
   const inputConfig = computed(() => {
-    if(definition.value.input) return config.inputs?.[definition.value.input] ?? inputs[definition.value.input]
-    if(definition.value.type) return config.types?.[definition.value.type] ?? types[definition.value.type]
-    return {
-      ...(config.inputs?.default ?? inputs.default),
-      ...definition?.autoForm?.config, // possible to modify config per input
-    }
+    let baseConfig
+    if(definition.value.input && !baseConfig) baseConfig =
+      config.inputs?.[definition.value.input] ?? inputs[definition.value.input]
+    if(definition.value.type && !baseConfig) baseConfig =
+      config.types?.[definition.value.type] ?? types[definition.value.type]
+    if(!baseConfig) baseConfig = config.inputs?.default ?? inputs.default
+    return deepmerge(baseConfig, definition.value?.inputConfig ?? {}) // possible to modify config per input
   })
 
   const definitionIf = computed(() => {

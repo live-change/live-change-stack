@@ -36,16 +36,20 @@ function synchronized(options) {
 
     let lastSavedUpdate = lastLocalUpdate.value
 
-    const changed = computed(() => (JSON.stringify(source.value) != synchronizedJSON.value)
+    const changed = computed(() => (JSON.stringify(source.value) !== synchronizedJSON.value)
                                 && (lastLocalUpdate.value > ((source.value && source.value[timeField]) ?? '')))
+
+    const saving = ref(false)
+
     async function save() {
-      if((JSON.stringify(source.value) == JSON.stringify(synchronizedValue.value))
+      if((JSON.stringify(source.value) === JSON.stringify(synchronizedValue.value))
          || (lastLocalUpdate.value <= ((source.value && source.value[timeField]) ?? ''))) {
         return false // identical, no need to save
       }
-      if(lastSavedUpdate == lastLocalUpdate.value) {
+      if(lastSavedUpdate === lastLocalUpdate.value) {
         return false // duplicated save action
       }
+      saving.value = true
       lastSavedUpdate = lastLocalUpdate.value
       const data = JSON.parse(synchronizedJSON.value)
       // console.log("LAST LOCAL UPDATE", lastLocalUpdate.value)
@@ -60,10 +64,11 @@ function synchronized(options) {
         console.error("SAVE ERROR", e)
         onSaveError(e)
       }
+      saving.value = false
       return true
     }
     const throttledSave = debounce ? () => {} : (throttle ? useThrottleFn(save, throttle) : save)
-    const debouncedSave = debounce ? useDebounceFn(save, throttle)
+    const debouncedSave = debounce ? useDebounceFn(save, debounce)
         : (throttle ? useDebounceFn(save, throttle) : () => {}) // debounce after throttle
     watch(() => synchronizedJSON.value, json => {
       lastLocalUpdate.value = timeSource()
@@ -89,11 +94,11 @@ function synchronized(options) {
     return { value: synchronizedValue, save, changed }
   } else {
     const local = ref(source.value)
-    const changed = computed(() => (JSON.stringify(source.value) != JSON.stringify(local.value))
+    const changed = computed(() => (JSON.stringify(source.value) !== JSON.stringify(local.value))
                                 && ( ((local.value && local.value[timeField]) ?? '')
                                    > ((source.value && source.value[timeField]) ?? '')))
     async function save() {
-      if((JSON.stringify(source.value) == JSON.stringify(local.value))
+      if((JSON.stringify(source.value) === JSON.stringify(local.value))
          || ( ((local.value && local.value[timeField]) ?? '')
            <= ((source.value && source.value[timeField]) ?? ''))) return false // identical, no need to save
       const data = JSON.parse(JSON.stringify(local.value))
@@ -125,7 +130,7 @@ function synchronized(options) {
         }
       }
     })
-    return { value: synchronizedComputed, save, changed }
+    return { value: synchronizedComputed, save, changed, saving }
   }
 }
 

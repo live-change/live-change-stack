@@ -1,18 +1,19 @@
 <template>
   <div>
-    <div v-if="modelValue">
+    <div v-if="modelValue" class="flex flex-column align-items-center">
       <Image :image="modelValue" :key="modelValue"
              :width="definition?.width ?? 400" :height="definition?.height ?? 400"
              style="max-width: 100%" />
-      <div class="p-buttonset">
+      <div class="w-full mt-2 flex flex-row flex-wrap justify-content-around align-items-center">
         <Button @click="cropImage" type="button" label="Crop Image"
-                icon="pi pi-pencil" class="p-button-secondary" />
+                icon="pi pi-pencil" class="p-button-secondary w-12rem" />
         <Button @click="deleteImage" type="button" label="Remove Image"
-                icon="pi pi-trash" class="p-button-danger" />
+                icon="pi pi-trash" class="p-button-danger w-12rem" />
       </div>
     </div>
     <div v-else>
-      <DropZone class="w-full md:w-4 lg:w-1 relative p-2" :accept="acceptList" @input="handleFile">
+      <DropZone class="w-full relative p-2 flex justify-content-center align-items-center"
+                :accept="acceptList" @input="handleFile">
         <div class="w-auto border-dashed border-primary-500 flex align-items-center justify-content-center p-2"
              :style="dropZoneStyle">
           <p class="text-primary text-xl">Drop image here!</p>

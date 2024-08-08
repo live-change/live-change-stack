@@ -13,8 +13,7 @@
 
   import "@live-change/image-frontend"
 
-  import { computed, watch, ref, onMounted, onUnmounted, inject } from 'vue'
-  import { toRefs } from "@vueuse/core"
+  import { computed, watch, ref, onMounted, onUnmounted, inject, toRefs } from 'vue'
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)

@@ -1,5 +1,14 @@
 {
   "errors": {
-    "empty": "This field is required."
+    "empty": "This field is required.",
+    "tooShort": "Too short, minimum {length} characters.",
+    "tooLong": "Too long, maximum {length} characters."
+  },
+  "info": {
+    "minLength": "Minimum length - {minLength} characters.",
+    "maxLength": "{length} / {maxLength}"
+  },
+  "autoform": {
+    "addItem": "Add next item"
   }
 }

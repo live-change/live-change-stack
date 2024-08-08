@@ -33,7 +33,7 @@ types.Array = inputs.list = input(() => import('./ArrayInput.vue'), {
   fieldComponent: defineAsyncComponent(() => import('./GroupField.vue'))
 })
 
-types.Date = inputs.datetime = input(() => import('primevue/calendar'), { attributes: { showTime: true } })
+types.Date = inputs.datetime = input(() => import('./Calendar.vue'), { attributes: { showTime: true } })
 
 inputs.select = input(() => import('primevue/dropdown'), {
   attributes: (config) => {
@@ -68,3 +68,7 @@ inputs.multiselect = input(() => import('primevue/multiselect'), {
 inputs.duration = input(() => import('primevue/inputmask'), {
   attributes: { mask: '99:99:99' }
 })
+
+types.Image = inputs.image = input(
+  async () => (await import('@live-change/image-frontend')).ImageInput
+)

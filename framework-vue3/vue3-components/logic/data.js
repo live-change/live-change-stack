@@ -18,7 +18,8 @@ export function defaultData(definition, otherSrc) {
 }
 
 export function validateData(definition, data, validationType = 'validation',
-                             context = undefined, propName = '', props = data) {
+                             context = undefined, propName = '', props = data,
+                             outputValidatorParams = false) {
   context = context || getCurrentInstance().appContext
   //console.log("VALIDATIE DATA", definition, data, validationType, context, propName, props)
   if(!context) throw new Error("No context")
@@ -34,7 +35,11 @@ export function validateData(definition, data, validationType = 'validation',
         : validators[validation.name](validation.params, validationContext)
       if(!validator) throw new Error(`Validator ${validation.name || validation} not found`)
       const error = validator(data, context)
-      if(error) return error
+      if(error) {
+        if(outputValidatorParams) {
+          return { error, validator: validation.params }
+        } else return error
+      }
     }
   }
   if(!data) return undefined // No data, no errors, nonEmpty validator was already checked
@@ -42,7 +47,7 @@ export function validateData(definition, data, validationType = 'validation',
     const propertyErrors = {}
     for(let name in definition.properties) {
       const error = validateData(definition.properties[name], data?.[name], validationType, context,
-        propName ? propName + '.' + name: name, props)
+        propName ? propName + '.' + name: name, props, outputValidatorParams)
       if(error) {
         if(error.propertyErrors) {
           for(let internalName in error.propertyErrors) {
@@ -54,11 +59,11 @@ export function validateData(definition, data, validationType = 'validation',
       }
     }
     if(Object.keys(propertyErrors).length > 0) return { propertyErrors }
-  } else if(definition.type == 'Array') {
+  } else if(definition.type === 'Array') {
     const propertyErrors = {}
     for(let i = 0; i < data.length; i++) {
       const error = validateData(definition.of, data[i], validationType, context,
-        propName ? propName + '.' + i : i, props)
+        propName ? propName + '.' + i : i, props, outputValidatorParams)
       const name = '' + i
       if(error) {
         if(error.propertyErrors) {
