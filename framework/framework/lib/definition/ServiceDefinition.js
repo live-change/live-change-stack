@@ -85,6 +85,7 @@ class ServiceDefinition {
     this.processors = []
     this.authenticators = []
     this.beforeStartCallbacks = []
+    this.afterStartCallbacks = []
     this.endpoints = []
     this.validators = { ...defaultValidators }
     this.clientSideFilters = []
@@ -156,6 +157,10 @@ class ServiceDefinition {
 
   beforeStart(callback) {
     this.beforeStartCallbacks.push(callback)
+  }
+
+  afterStart(callback) {
+    this.afterStartCallbacks.push(callback)
   }
 
   endpoint(endpoint) {

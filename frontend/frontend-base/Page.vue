@@ -5,7 +5,7 @@
     <ConfirmPopup v-if="isMounted" />
     <DynamicDialog v-if="isMounted" />
 
-    <div class="relative h-0 w-full">
+    <div class="relative h-0 w-full" v-if="isMounted">
       <ProgressBar v-if="loading || working" mode="indeterminate" class="absolute w-full" style="height: .2em" />
     </div>
     <div v-if="pageType === 'simple'"
@@ -15,7 +15,7 @@
     <div v-if="pageType === 'wide'" class="relative flex-grow-1">
       <slot></slot>
     </div>
-    <slot name="footer"></slot>
+    <slot name="footer"><div></div></slot>
   </div>
 </template>
 

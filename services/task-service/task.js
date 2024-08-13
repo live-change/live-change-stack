@@ -217,17 +217,17 @@ export default function task(definition, serviceDefinition) {
         })
         await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
       } catch(error) {
-        console.log("TASK ERROR", error.message, error.stack)
+        console.error("TASK ERROR", error.message, error.stack)
         /*console.log("RETRIES", taskObject.retries?.length, maxRetries)*/
         if((taskObject.retries?.length || 0) >= taskObject.maxRetries - 1) {
           await updateTask({
             state: 'failed',
             doneAt: new Date(),
-            error: error.stack ?? error.message ?? error,
+            error: /*error.stack ??*/ error.message ?? error,
             retries: [...(taskObject.retries || []), {
               startedAt: taskObject.startedAt,
               failedAt: new Date(),
-              error: error.stack ?? error.message ?? error
+              error: /*error.stack ??*/ error.message ?? error
             }]
           })
           console.error("TASK", taskObject.id, "OF TYPE", definition.name,
@@ -245,7 +245,7 @@ export default function task(definition, serviceDefinition) {
             retries: [...(taskObject.retries || []), {
               startedAt: taskObject.startedAt,
               failedAt: new Date(),
-              error: error.stack ?? error.message ?? error
+              error:/* error.stack ?? */error.message ?? error
             }]
           })
           await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retriesCount)))

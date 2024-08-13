@@ -89,7 +89,8 @@ definition.view({
     }
   },
   async daoPath(properties, { client, service }, method) {
-    const [ sessionOrUserType, sessionOrUser ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+    const [ sessionOrUserType, sessionOrUser ] =
+      client.user ? ['user_User', client.user] : ['session_Session', client.session]
     const { objectType } = properties
     return Access.rangePath([sessionOrUserType, sessionOrUser, objectType], App.extractRange(properties))
   }
@@ -116,9 +117,7 @@ definition.view({
     const [ sessionOrUserType, sessionOrUser ] =
       client.user ? ['user_User', client.user] : ['session_Session', client.session]
     const { objectType, role } = properties
-    const path = Access.indexRangePath('byOwnerRoleAndObject',
+    return Access.indexRangePath('byOwnerRoleAndObject',
       [sessionOrUserType, sessionOrUser, role, objectType], App.extractRange(properties))
-    console.log("PATH", path)
-    return path
   }
 })

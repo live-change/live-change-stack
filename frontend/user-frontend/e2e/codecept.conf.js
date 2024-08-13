@@ -1,4 +1,4 @@
-const { devices } = require('playwright')
+import { devices } from 'playwright'
 
 const testServerPort = process.env.TEST_URL ? 0 : require('get-port-sync')() 
 const testServerUrl = process.env.TEST_URL || `http://localhost:${testServerPort}`

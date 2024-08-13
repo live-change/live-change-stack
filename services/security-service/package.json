@@ -22,9 +22,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.51",
-    "@live-change/pattern": "^0.8.51",
-    "@live-change/pattern-db": "^0.8.51",
+    "@live-change/framework": "0.8.51",
+    "@live-change/pattern": "0.8.51",
+    "@live-change/pattern-db": "0.8.51",
     "nodemailer": "^6.7.2"
   },
   "gitHead": "8b97a83258a3eccd08534d0376015781c4eefdec"
