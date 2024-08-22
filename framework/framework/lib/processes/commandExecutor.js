@@ -26,7 +26,7 @@ async function startCommandExecutor(service, config) {
           commandId: command.id, client: command.client
         })
         const reportFinished = action.definition.waitForEvents ? 'command_' + command.id : undefined
-        const flags = {commandId: command.id, reportFinished}
+        const flags = { commandId: command.id, reportFinished }
         const emit = (!service.app.splitEvents || this.shortEvents)
           ? new SingleEmitQueue(service, flags)
           : new SplitEmitQueue(service, flags)

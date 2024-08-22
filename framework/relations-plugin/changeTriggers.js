@@ -6,25 +6,22 @@ import {
 async function fireChangeTriggers(context, objectType, identifiers, object, oldData, data) {
   const { service, modelName, app } = context
   const changeType = data ? (oldData ? 'update' : 'create') : 'delete'
+  //console.log("FIRE CHANGE TRIGGERS", { context, objectType, identifiers, object, oldData, data })
+  //console.trace()
+  const triggerParameters = { objectType, object, identifiers, data, oldData, changeType }
   await Promise.all([
     app.trigger({
       type: changeType + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
-    }, {
-      objectType,
-      object,
-      identifiers,
-      data,
-      oldData
-    }),
+    }, triggerParameters),
     app.trigger({
       type: changeType + 'Object',
-    }, {
-      objectType,
-      object,
-      identifiers,
-      data,
-      oldData
-    })
+    }, triggerParameters),
+    app.trigger({
+      type: 'change' + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
+    }, triggerParameters),
+    app.trigger({
+      type: 'changeObject',
+    }, triggerParameters)
   ])
 }
 
@@ -201,7 +198,7 @@ async function triggerCopyOnParentCopyTriggers(
       data
     })
     //console.log("COPY TRIGGER RESULTS", copyTriggerResults)
-    if(copyTriggerResults.length == 0) { // normal copy, without special logic
+    if(copyTriggerResults.length === 0) { // normal copy, without special logic
       await copyObject(context, myType, fromId, objectType, object, identifiers, data, emit)
     }
   })

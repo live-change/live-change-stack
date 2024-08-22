@@ -323,7 +323,7 @@ class App {
       const command = data
       const service = this.startedServices[data.service]
       const action = service.actions[data.type]
-      const reportFinished = action.definition.waitForEvents ? 'command_' + command.id : undefined
+      const reportFinished = action.definition.waitForEvents ? command.id : undefined
       const flags = {commandId: command.id, reportFinished}
       const emit = (!this.splitEvents || this.shortEvents)
         ? new SingleEmitQueue(service, flags)
@@ -458,10 +458,9 @@ class App {
       return
     }
     const [action, id] = reportId.split('_')
-    const triggerId = action === 'trigger' ? id : undefined
-    const commandId = action === 'command' ? id : undefined
+    const commandId = id
     const profileOp = await this.profileLog.begin({
-      operation: "waitForEvents", action: action, commandId, triggerId, reportId, events, timeout
+      operation: "waitForEvents", action: action, commandId, reportId, events, timeout
     })
     const promise = new Promise((resolve, reject) => {
       let done = false
@@ -522,6 +521,12 @@ class App {
     })
     await this.profileLog.endPromise(profileOp, promise)
     return promise
+  }
+
+  async emitEventsAndWait(service, events, flags = {}) {
+    const reportId = 'trigger_' + this.generateUid()
+    await this.emitEvents(service, events, { reportFinished: reportId, ...flags })
+    return await this.waitForEvents(reportId, events)
   }
 
   async assertTime(taskName, duration, task, ...data) {

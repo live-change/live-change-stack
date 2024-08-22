@@ -216,7 +216,7 @@ function defineSetOrUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
-  const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'setOrUpdate' + joinedOthersClassName + 'Owned' + modelName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -242,7 +242,7 @@ function defineSetOrUpdateTrigger(config, context) {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'setOrUpdate' + joinedOthersClassName + 'Owned' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,

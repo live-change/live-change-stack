@@ -26,7 +26,7 @@ class SingleEmitQueue {
       events.push(event)
     }
     if(this.commited) {
-      if(events.length == 0) return
+      if(events.length === 0) return
       this.service.dao.request(['database', 'putLog'], this.service.databaseName,
           'events', { type: 'bucket', events, ...this.flags })
     }
@@ -34,7 +34,7 @@ class SingleEmitQueue {
 
   async commit() {
     this.commited = true
-    if(this.emittedEvents.length == 0) return []
+    if(this.emittedEvents.length === 0) return []
     await this.service.dao.request(['database', 'putLog'], this.service.databaseName,
           'events', { type: 'bucket', events: this.emittedEvents, ...this.flags })
     return this.emittedEvents

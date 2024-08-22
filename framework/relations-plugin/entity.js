@@ -192,7 +192,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     )
     await App.validation.validate({ ...data }, validators,
       validationContext)
-    await fireChangeTriggers(context, null, id,
+    await fireChangeTriggers(context, objectType, null, id,
       entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
     emit({
       type: eventName,
