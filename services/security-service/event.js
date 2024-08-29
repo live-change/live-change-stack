@@ -138,13 +138,13 @@ async function processSecurityCounters(event, timestamp, service) {
   const now = Date.now()
   const actions = []
   const counters = securityCounters.filter(counter => counter.match.includes(event.type))
-  if(counters.length == 0) return
+  if(counters.length === 0) return
   const counterEventsRequests = []
   for(const counter of counters) {
     const duration = lcp.parseDuration(counter.duration)
     for(const eventType of counter.match) {
       for(const key of counter.keys) {
-        const request = counterEventsRequests.find(req => req.type == eventType && req.key == key)
+        const request = counterEventsRequests.find(req => req.type === eventType && req.key === key)
         if(request) {
           request.max = Math.max(request.max, counter.max)
           request.duration = Math.max(request.duration, duration)
@@ -249,8 +249,8 @@ definition.trigger({
       eventType: event.type,
       keys: event.keys,
       actions,
-      newRelations: newRelations.filter(rel => rel.type == 'eq'),
-      canceledRelations: canceledRelations.filter(rel => rel.type == 'eq')
+      newRelations: newRelations.filter(rel => rel.type === 'eq'),
+      canceledRelations: canceledRelations.filter(rel => rel.type === 'eq')
     })
 
   }
@@ -339,7 +339,7 @@ definition.view({
             }
             const newValue = await this.indexRange.get()
             this.loading = false
-            if(JSON.stringify(this.value) != JSON.stringify(newValue)) {
+            if(JSON.stringify(this.value) !== JSON.stringify(newValue)) {
               this.value = newValue
               if(this.value) {
                 this.count = this.value.length
@@ -397,7 +397,7 @@ definition.view({
           }
         }
         
-        if(eventRequests.length == 0) return
+        if(eventRequests.length === 0) return
         for(const i in eventRequests) {
           const eventRequest = eventRequests[i]
           const request = new Request(eventRequest)

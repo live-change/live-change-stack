@@ -61,6 +61,7 @@
     "services/task-service",
     "services/comment-service",
     "services/video-call-service",
+    "services/balance-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
@@ -78,7 +79,8 @@
     "frontend/frontend-template",
     "frontend/flow-frontend",
     "frontend/task-frontend",
-    "frontend/video-call-frontend"
+    "frontend/video-call-frontend",
+    "frontend/balance-frontend"
   ],
   "publishConfig": {
     "access": "public"

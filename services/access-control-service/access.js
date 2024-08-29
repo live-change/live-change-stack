@@ -74,6 +74,7 @@ export default (definition) => {
     }
     if(sessionAccess) roles.push(...sessionAccess.roles)
     if(userAccess) roles.push(...userAccess.roles)
+    //console.log("GOT UNIT CLIENT:", client, "ROLES:", roles, "IGNORE PUBLIC:", ignorePublic)
     return Array.from(new Set(roles))
   }
 
@@ -105,7 +106,8 @@ export default (definition) => {
   async function checkRoles(client, { objectType, object, objects }, callback, ignorePublic) {
     const allObjects = ((objectType && object) ? [{ objectType, object }] : []).concat(objects || [])
     const roles = await getClientObjectsRoles(client, allObjects, ignorePublic)
-    console.log('checkRoles', allObjects, roles)
+    //console.log('checkRoles', allObjects, roles)
+    //console.trace("CHECK ROLES!")
     return await callback(roles, client, { objectType, object })
   }
 

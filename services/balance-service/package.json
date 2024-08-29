@@ -1,5 +1,5 @@
 {
-  "name": "@live-change/slug-service",
+  "name": "@live-change/balance-service",
   "version": "0.8.52",
   "description": "",
   "main": "index.js",
@@ -20,10 +20,14 @@
     "name": "Michał Łaszczewski",
     "url": "https://www.viamage.com/"
   },
-  "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.52",
-    "@live-change/relations-plugin": "^0.8.52"
+    "@live-change/framework": "0.8.52",
+    "@live-change/relations-plugin": "0.8.52",
+    "lru-cache": "^7.12.0",
+    "pluralize": "^8.0.0",
+    "progress-stream": "^2.0.0",
+    "prosemirror-model": "^1.18.1"
   },
-  "gitHead": "8b97a83258a3eccd08534d0376015781c4eefdec"
+  "gitHead": "8b97a83258a3eccd08534d0376015781c4eefdec",
+  "type": "module"
 }

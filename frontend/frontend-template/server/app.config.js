@@ -12,6 +12,9 @@ import documentTypePage from './page.documentType.js'
 app.config = {
   services: [
     {
+      name: 'timer',
+    },
+    {
       name: 'session',
       createSessionOnUpdate: true
     },

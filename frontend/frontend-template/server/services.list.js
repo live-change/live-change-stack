@@ -1,3 +1,4 @@
+import timer from '@live-change/timer-service'
 import session from '@live-change/session-service'
 import user from '@live-change/user-service'
 import email from '@live-change/email-service'
@@ -23,6 +24,7 @@ import task from '@live-change/task-service'
 import init from './init.js'
 
 export {
+  timer,
   session,
   user,
   email,

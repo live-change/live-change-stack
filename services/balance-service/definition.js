@@ -5,7 +5,7 @@ import relationsPlugin from '@live-change/relations-plugin'
 import accessControlService from '@live-change/access-control-service'
 
 const definition = app.createServiceDefinition({
-  name: "slug",
+  name: "balance",
   use: [ relationsPlugin, accessControlService ]
 })
 
