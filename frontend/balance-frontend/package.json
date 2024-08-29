@@ -1,5 +1,5 @@
 {
-  "name": "@live-change/video-call-frontend",
+  "name": "@live-change/balance-frontend",
   "version": "0.8.53",
   "scripts": {
     "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
@@ -55,7 +55,6 @@
     "@live-change/image-frontend": "^0.8.53",
     "@live-change/locale-settings-service": "^0.8.53",
     "@live-change/password-authentication-service": "^0.8.53",
-    "@live-change/peer-connection-service": "^0.8.53",
     "@live-change/prosemirror-service": "^0.8.53",
     "@live-change/secret-code-service": "^0.8.53",
     "@live-change/secret-link-service": "^0.8.53",
@@ -70,12 +69,11 @@
     "@live-change/vote-service": "^0.8.53",
     "@live-change/vue3-components": "^0.8.53",
     "@live-change/vue3-ssr": "^0.8.53",
+    "@live-change/wysiwyg-frontend": "^0.8.53",
     "@vueuse/core": "^10.11.0",
-    "boxicons": "^2.1.4",
     "codeceptjs-assert": "^0.0.5",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
-    "feather-icons": "^4.29.2",
     "get-port-sync": "1.0.1",
     "pica": "^9.0.1",
     "pretty-bytes": "^6.1.1",
