@@ -45,10 +45,10 @@ export class Locale {
   async getOtherOwnerLocale(owner) {
     if(this.localeObservable) this.localeObservable.unbindProperty(this.localeRef, 'value')
     if(typeof window === 'undefined') {
-      const value = await this.api.get(this.api.views.localeSettings.localeSettings(owner))
+      const value = await this.api.get(this.api.views.localeSettings.sessionOrUserOwnedLocaleSettings(owner))
       this.localeObservable = new ObservableValue(value)
     } else {
-      this.localeObservable = this.api.observable(this.api.views.localeSettings.localeSettings(owner))
+      this.localeObservable = this.api.observable(this.api.views.localeSettings.sessionOrUserOwnedLocaleSettings(owner))
     }
     this.localeObservable.bindProperty(this.localeRef, 'value')
     this.localeObservable.wait()

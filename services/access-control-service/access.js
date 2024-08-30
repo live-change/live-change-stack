@@ -54,8 +54,6 @@ export default (definition) => {
   }
 
   async function getUnitClientRoles(client, { objectType, object }, ignorePublic) {
-    const [ sessionOrUserType, sessionOrUser ] =
-      client.user ? ['user_User', client.user] : ['session_Session', client.session]
     const [
       publicAccessData,
       sessionAccess,
@@ -74,6 +72,8 @@ export default (definition) => {
     }
     if(sessionAccess) roles.push(...sessionAccess.roles)
     if(userAccess) roles.push(...userAccess.roles)
+    if(objectType === 'user_User' && object === client.user) roles.push('owner')
+    if(objectType === 'session_Session' && object === client.session) roles.push('owner')
     //console.log("GOT UNIT CLIENT:", client, "ROLES:", roles, "IGNORE PUBLIC:", ignorePublic)
     return Array.from(new Set(roles))
   }
@@ -125,7 +125,8 @@ export default (definition) => {
         publicSessionRoles: [],
         publicUserRoles: [],
         sessionRoles: [],
-        userRoles: []
+        userRoles: [],
+        ownerRoles: [],
       }
       let objectObserver, publicAccessObserver, sessionAccessObserver, userAccessObserver
 
@@ -151,6 +152,9 @@ export default (definition) => {
         node.userRoles = accessData?.roles ?? []
         if(isLoaded()) updateRoles()
       })
+
+      if(objectType === 'user_User' && object === client.user) node.ownerRoles.push('owner')
+      if(objectType === 'session_Session' && object === client.session) node.ownerRoles.push('owner')
 
       async function disposeParents() {
         const oldParents = node.parents
@@ -188,7 +192,8 @@ export default (definition) => {
         ...node.publicUserRoles,
         ...node.publicSessionRoles,
         ...node.userRoles,
-        ...node.sessionRoles
+        ...node.sessionRoles,
+        ...node.ownerRoles,
       ]))
     }
     return { treeNode, computeNodeRoles }
