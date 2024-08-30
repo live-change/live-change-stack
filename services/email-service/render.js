@@ -84,17 +84,18 @@ async function renderEmail(data) {
   console.log("BASE URL", baseUrl)
 
   let dom = new JSDOM(body)
-  console.log("RENDER EMAIL HEADERS HTML:", dom.window.document.querySelector('[data-headers]').innerHTML)
+  //console.log("RENDER EMAIL HEADERS HTML:", dom.window.document.querySelector('[data-headers]').innerHTML)
   const headersJson = dom.window.document.querySelector('[data-headers]').textContent
-  console.log("RENDER EMAIL HEADERS JSON:", headersJson)
+  //console.log("RENDER EMAIL HEADERS JSON:", headersJson)
   const headers = JSON.parse(headersJson)
-  console.log("PARSED HEADERS", headers)
+  //console.log("PARSED HEADERS", headers)
 
   const juiceOptions = {
     webResources: {
       scripts: false,
       links: true,
       images: false,
+      resolveCSSVariables: true,
       relativeTo: url
     }
   }

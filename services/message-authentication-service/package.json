@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.8.57",
+    "@live-change/framework": "0.8.57",
     "nodemailer": "^6.7.2"
   },
   "gitHead": "39422adadd1863fa396fc4e875936e09428d6cf1",
