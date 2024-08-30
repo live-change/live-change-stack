@@ -97,8 +97,9 @@ async function renderEmail(data) {
       else resolve(html)
     })
   })
-  //console.log("HTML", body)
+  //console.log("RENDER EMAIL HTML", body)
   const dom = new JSDOM(body)
+  console.log("RENDER EMAIL HEADERS HTML:", dom.window.document.querySelector('[data-headers]').innerHTML)
   const headersJson = dom.window.document.querySelector('[data-headers]').textContent
   console.log("RENDER EMAIL HEADERS JSON:", headersJson)
   const headers = JSON.parse(headersJson)
