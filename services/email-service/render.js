@@ -99,7 +99,10 @@ async function renderEmail(data) {
   })
   //console.log("HTML", body)
   const dom = new JSDOM(body)
-  const headers = JSON.parse(dom.window.document.querySelector('[data-headers]').textContent)
+  const headersJson = dom.window.document.querySelector('[data-headers]').textContent
+  console.log("RENDER EMAIL HEADERS JSON:", headersJson)
+  const headers = JSON.parse(headersJson)
+  console.log("PARSED HEADERS", headers)
   const messageElements = dom.window.document.querySelectorAll("[data-html],[data-text]")
   const email = { ...headers }
   const images = new Map()
