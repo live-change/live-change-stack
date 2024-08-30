@@ -82,6 +82,14 @@ async function renderEmail(data) {
   const response = await got(url)
   let body = response.body
   console.log("BASE URL", baseUrl)
+
+  let dom = new JSDOM(body)
+  console.log("RENDER EMAIL HEADERS HTML:", dom.window.document.querySelector('[data-headers]').innerHTML)
+  const headersJson = dom.window.document.querySelector('[data-headers]').textContent
+  console.log("RENDER EMAIL HEADERS JSON:", headersJson)
+  const headers = JSON.parse(headersJson)
+  console.log("PARSED HEADERS", headers)
+
   const juiceOptions = {
     webResources: {
       scripts: false,
@@ -98,12 +106,8 @@ async function renderEmail(data) {
     })
   })
   //console.log("RENDER EMAIL HTML", body)
-  const dom = new JSDOM(body)
-  console.log("RENDER EMAIL HEADERS HTML:", dom.window.document.querySelector('[data-headers]').innerHTML)
-  const headersJson = dom.window.document.querySelector('[data-headers]').textContent
-  console.log("RENDER EMAIL HEADERS JSON:", headersJson)
-  const headers = JSON.parse(headersJson)
-  console.log("PARSED HEADERS", headers)
+  dom = new JSDOM(body)
+
   const messageElements = dom.window.document.querySelectorAll("[data-html],[data-text]")
   const email = { ...headers }
   const images = new Map()
