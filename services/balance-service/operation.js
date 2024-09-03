@@ -45,10 +45,122 @@ const Operation = definition.model({
       default: () => new Date(),
     },
   },
+  indexes: {
+/*    byCauseAndTime: {
+      function: async (input, output, { tableName }) => {
+        const table = await input.table(tableName)
+        const mapper = obj => obj ? {
+          id: [
+            obj.causeType,
+            obj.cause,
+            obj.updatedAt ?? obj.createdAt
+          ].map(v => JSON.stringify(v)).join(':')+'_'+obj.id,
+          to: obj.id
+        } : null
+        await table.onChange(async (object, oldObject) => {
+          await output.change(mapper(object), mapper(oldObject))
+        })
+      },
+      parameters: {
+        tableName: definition.name + '_Operation'
+      }
+    },*/
+    byCauseStateAndTime: {
+      function: async (input, output, { tableName }) => {
+        const table = await input.table(tableName)
+        const mapper = obj => obj ? {
+          id: [
+            obj.causeType,
+            obj.cause,
+            obj.state,
+            obj.updatedAt ?? obj.createdAt
+          ].map(v => JSON.stringify(v)).join(':')+'_'+obj.id,
+          to: obj.id
+        } : null
+        await table.onChange(async (object, oldObject) => {
+          await output.change(mapper(object), mapper(oldObject))
+        })
+      },
+      parameters: {
+        tableName: definition.name + '_Operation'
+      }
+    },
+    byBalanceAndTime: {
+      function: async (input, output, { tableName }) => {
+        const table = await input.table(tableName)
+        const mapper = obj => obj ? {
+          id: [
+            obj.balance,
+            obj.updatedAt ?? obj.createdAt
+          ].map(v => JSON.stringify(v)).join(':')+'_'+obj.id,
+          to: obj.id
+        } : null
+        await table.onChange(async (object, oldObject) => {
+          await output.change(mapper(object), mapper(oldObject))
+        })
+      },
+      parameters: {
+        tableName: definition.name + '_Operation'
+      }
+    },
+    byBalanceStateAndTime: {
+      function: async (input, output, { tableName }) => {
+        const table = await input.table(tableName)
+        const mapper = obj => obj ? {
+          id: [
+            obj.balance,
+            obj.state,
+            obj.updatedAt ?? obj.createdAt
+          ].map(v => JSON.stringify(v)).join(':')+'_'+obj.id,
+          to: obj.id
+        } : null
+        await table.onChange(async (object, oldObject) => {
+          await output.change(mapper(object), mapper(oldObject))
+        })
+      },
+      parameters: {
+        tableName: definition.name + '_Operation'
+      }
+    },
+  }
 })
 
 export { Operation }
 
+definition.view({
+  name: 'operationsByBalance',
+  properties: {
+    balance: {
+      type: Balance,
+      validation: ['nonEmpty']
+    },
+    state: {
+      type: String
+    },
+    ...App.rangeProperties
+  },
+  returns: {
+    type: Array,
+    of: {
+      type: Operation
+    }
+  },
+  accessControl: {
+    roles: config.readerRoles,
+    objects: async (params) => {
+      return [{ objectType: definition.name + '_Balance', object: params.balance }]
+    }
+  },
+  async daoPath(params, { client, service }, method) {
+    const range = App.extractRange(params)
+    const { balance, state } = params
+    if(state) {
+      return Operation.indexRangePath('byBalanceStateAndTime', [balance, state], range)
+    } else {
+      return Operation.indexRangePath('byBalanceAndTime', balance, range)
+    }
+  }
+})
 
 definition.trigger({
   name: "startOperation",

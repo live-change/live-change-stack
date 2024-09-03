@@ -13,12 +13,14 @@ const {
     return value + change >= 0
   },
   nextRecalculateTime = (value) => null, // no recalculation by default, will be used with vector balances
-  recalculate = (value, time) => value // no recalculation by default, will be used with vector balances
+  recalculate = (value, time) => value, // no recalculation by default, will be used with vector balances
+
+  readerRoles = ['owner', 'admin'],
 } = definition.config
 
 const config = {
   currencyType, currencyAdd, changePossible, currencyNegate,
-  nextRecalculateTime, recalculate
+  nextRecalculateTime, recalculate, readerRoles
 }
 
 export default config
