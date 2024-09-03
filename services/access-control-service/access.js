@@ -164,13 +164,16 @@ export default (definition) => {
       if(parentsSources) {
         const objectTable = input.table(objectType)
         const objectTableObject = objectTable.object(object)
+        let obsv = false
         objectObserver = objectTableObject.onChange(async (objectData, oldObjectData) => {
           await disposeParents()
           node.parents = objectData ? await Promise.all(parentsSources.map(parentSource => {
             const parentType = parentSource.type || objectData[parentSource.property + 'Type']
-            const parent = objectData[parentSource.property]
-            return treeNode(parentType, parent)
-          })) : []
+            const property = objectData[parentSource.property]
+            const parents = Array.isArray(property) ? property : [ property ]
+            return parents.map(parent => treeNode(parentType, parent))
+          }).flat()) : []
+          obsv = true
         })
       }
       node.dispose = async function() {
@@ -222,6 +225,7 @@ export default (definition) => {
                                  .join(':')
         let oldOutputObject = null
         async function updateRoles() {
+          if(!loaded) return
           const roots = await Promise.all(rolesTreesRoots)
           const accessesRoles = roots.map(root => computeNodeRoles(root))
           output.debug(outputObjectId, "Accesses roles:", accessesRoles)
@@ -267,6 +271,7 @@ export default (definition) => {
         let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object, client))
         const accesses = []
         async function updateRoles() {
+          if(!loaded) return
           const roots = await Promise.all(rolesTreesRoots)
           for(let root of roots) {
             const outputObjectId = `${JSON.stringify(client.session)}:${JSON.stringify(client.user)}` +

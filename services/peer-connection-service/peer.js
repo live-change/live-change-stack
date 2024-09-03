@@ -4,7 +4,7 @@ const app = App.app()
 import definition from './definition.js'
 const config = definition.config
 const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'].
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner', 'member'].
   writerRoles = ['speaker', 'vip', 'moderator', 'owner']
 } = config
 

@@ -18,10 +18,14 @@ class ObjectObserver {
       this.#valuePromiseReject = reject
     })
   }
-  set(value) {
-    if(this._queryReader.state == READER_DISPOSED) return
+  async set(value) {
+    if(this._queryReader.state === READER_DISPOSED) return
     const now = (''+Date.now()).padStart(16, '0')
-    this.#callback(value, this.#oldValue, value ? value.id : this.#oldValue && this.#oldValue.id, now)
+    if(this._queryReader.state === READER_READING) {
+      await this.#callback(value, this.#oldValue, value ? value.id : this.#oldValue && this.#oldValue.id, now)
+    } else {
+      this.#callback(value, this.#oldValue, value ? value.id : this.#oldValue && this.#oldValue.id, now)
+    }
     this.#oldValue = value
     if(!this.#resolved) this.#valuePromiseResolve(value)
   }
@@ -46,9 +50,9 @@ class RangeObserver {
     })
   }
   async set(value) {
-    if(this._queryReader.state == READER_DISPOSED) return
+    if(this._queryReader.state === READER_DISPOSED) return
     const now = (''+Date.now()).padStart(16, '0')
-    if(this._queryReader.state == READER_READING) {
+    if(this._queryReader.state === READER_READING) {
       await Promise.all(value.map(obj => this.#callback(obj, null, obj.id, now)))
     } else {
       for(let obj of value) this.#callback(obj, null, obj.id, now)
@@ -56,13 +60,13 @@ class RangeObserver {
     if(!this.#resolved) this.#valuePromiseResolve(value)
   }
   putByField(field, id, object, reverse, oldObject) {
-    if(this._queryReader.state == READER_DISPOSED) return
-    if(field != 'id') throw new Error("incompatible range protocol")
+    if(this._queryReader.state === READER_DISPOSED) return
+    if(field !== 'id') throw new Error("incompatible range protocol")
     const now = (''+Date.now()).padStart(16, '0')
     this.#callback(object, oldObject, id, now)
   }
   removeByField(field, id, object) {
-    if(this._queryReader.state == READER_DISPOSED) return
+    if(this._queryReader.state === READER_DISPOSED) return
     this.#callback(null, object)
   }
   readPromise() {
@@ -87,9 +91,9 @@ class Reader extends ChangeStream {
     this.#observers.push(observer)
     ;(await this.#observable).observe(observer)
     await observer.readPromise()
-    observer.dispose = async function() {
+    observer.dispose = async () => {
       const observerIndex = this.#observers.indexOf(observer)
-      if(observerIndex == -1) throw new Error('Observer double dispose')
+      if(observerIndex === -1) throw new Error('Observer double dispose')
       this.#observers.splice(observerIndex, 1)
       ;(await this.#observable).unobserve(observer)
     }
@@ -97,7 +101,7 @@ class Reader extends ChangeStream {
   }
   async unobserve(observer) {
     const index = this.#observers.indexOf(observer)
-    if(index == -1) {
+    if(index === -1) {
       console.error("OBSERVER NOT FOUND", observer)
       throw new Error("observer not found")
     }
@@ -276,7 +280,7 @@ class QueryWriter {
     //if(!obj && !oldObj) throw new Error("empty change in observable query")
     if(this.#observationMode) {
       if(obj) {
-        if(oldObj && oldObj.id != obj.id) {
+        if(oldObj && oldObj.id !== obj.id) {
           this.#observable.deleteObject(oldObj)
           this.#observable.putObject(obj, null, this.#reverse)
         } else {

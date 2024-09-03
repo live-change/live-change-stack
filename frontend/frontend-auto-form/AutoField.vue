@@ -32,7 +32,10 @@
   import AutoInput from "./AutoInput.vue"
 
   import { inputs, types } from './config.js'
-  import { computed, getCurrentInstance, inject, toRefs } from 'vue'
+  import { computed, getCurrentInstance, inject, toRefs, onMounted, ref } from 'vue'
+
+  const isMounted = ref(false)
+  onMounted(() => isMounted.value = true)
 
   import { useI18n } from 'vue-i18n'
   const { t, rt } = useI18n()
@@ -77,7 +80,8 @@
     }
   })
 
-  const uid = 'field_'+getCurrentInstance().uid.toFixed().padStart(6, '0')
+  const instanceUid = getCurrentInstance().uid
+  const uid = computed(() => isMounted.value ? 'field_'+instanceUid.toFixed().padStart(6, '0') : undefined)
 
   const emit = defineEmits(['update:modelValue'])
 
@@ -142,7 +146,7 @@
 
   const fieldClass = computed(() => [inputConfig.value?.fieldClass, definition.value?.fieldClass, props.class, {
     'p-invalid': !!error.value
-  }])
+  }, 'flex flex-column'])
   const fieldStyle = computed(() => [inputConfig.value?.fieldStyle, definition.value?.fieldStyle, props.style])
 
   const configAttributes = computed(() => {

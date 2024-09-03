@@ -53,7 +53,6 @@ inputs.select = input(() => import('primevue/dropdown'), {
 inputs.multiselect = input(() => import('primevue/multiselect'), {
   attributes: (config) => {
     const { definition, i18n, t, te } = config
-    console.log("MULTISELECT", config)
     return {
       options: definition.of.options ?? definition.options,
       optionLabel: option => {
@@ -72,3 +71,12 @@ inputs.duration = input(() => import('primevue/inputmask'), {
 types.Image = inputs.image = input(
   async () => (await import('@live-change/image-frontend')).ImageInput
 )
+
+types.Boolean = inputs.switch = input(
+  async () => (await import('primevue/inputswitch'))
+)
+
+/*
+types.Boolean = inputs.switch = {
+  fieldComponent: defineAsyncComponent(() => import('./SwitchField.vue')),
+}*/

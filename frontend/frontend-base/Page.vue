@@ -15,7 +15,9 @@
     <div v-if="pageType === 'wide'" class="relative flex-grow-1">
       <slot></slot>
     </div>
-    <slot name="footer"><div></div></slot>
+    <div>
+      <slot name="footer"><div></div></slot>
+    </div>
   </div>
 </template>
 
