@@ -22,6 +22,7 @@ export async function clientEntry(App, createRouter, config = {}) {
   const api = clientApi({
     use: [],
     windowId,
+    timeSynchronization: config.timeSynchronization,
     ...clientConfig.api
   })
   window.api = api

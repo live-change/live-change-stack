@@ -1,9 +1,9 @@
 <template>
-  <slot v-if="state == 'ready'" :value="what"></slot>
-  <slot v-if="state == 'error'" name="error">
+  <slot v-if="state === 'ready'" :value="what"></slot>
+  <slot v-if="state === 'error'" name="error">
     <div class="alert alert-danger" role="alert">error</div>
   </slot>
-  <slot v-if="state == 'loading'" name="loading">
+  <slot v-if="state === 'loading'" name="loading">
   </slot>
 </template>
 
@@ -33,7 +33,7 @@
     },
     watch: {
       loaded(def) {
-        if(def && this.state == 'loading') {
+        if(def && this.state === 'loading') {
           this.state = 'ready'
           if(this.loadingTask) {
             this.loadingZone.finished(this.loadingTask)
@@ -42,7 +42,7 @@
         }
       },
       error(error) {
-        if(error && this.state == 'loading') {
+        if(error && this.state === 'loading') {
           this.state = 'error'
           if(this.loadingTask) {
             this.loadingZone.failed(this.loadingTask, error)

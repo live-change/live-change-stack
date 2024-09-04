@@ -1,3 +1,5 @@
+import ObservableValue from './ObservableValue.js'
+
 class TimeSynchronization {
   constructor(settings) {
     this.connection = null
@@ -24,8 +26,10 @@ class TimeSynchronization {
      */
     this.maximalDiff = +Infinity // Difference calculated with zero send time assumption.
 
-
     this.timeDiff = 0 // Calculated diff
+
+    this.timeDiffObservable = new ObservableValue(0)
+    this.synchronizedObservable = new ObservableValue(false)
 
     this.pongCount = 0
 
@@ -79,10 +83,16 @@ class TimeSynchronization {
       if(this.timeDiff > this.maximalDiff) this.timeDiff = this.maximalDiff
     }
 
+    this.timeDiffObservable.set(this.timeDiff)
+
     //console.error("PING",ping,'PING DIFF', pingDiff,"ZERO REPLY",zeroReply,"ZERO SEND",zeroSend,"REAL DIFF",this.timeDiff)
 
     this.pongCount++
-    if(this.pongCount == this.minPongCount) this.promiseCallback(this.timeDiff)
+    if(this.pongCount === this.minPongCount) {
+      this.synchronized = true
+      this.synchronizedObservable.set(true)
+      this.promiseCallback(this.timeDiff)
+    }
 
     if(this.phases.length > this.nextPhaseId) {
       let phase = this.phases[this.nextPhaseId]
@@ -104,13 +114,16 @@ class TimeSynchronization {
     setTimeout(() => this.run(), interval)
   }
 
-  serverToLocal(ts) {
+  getTimeDiff() {
     if(this.pongCount < this.minPongCount) throw new Error("Time not synchronized")
-    return ts - this.timeDiff
+    return this.timeDiff
+  }
+
+  serverToLocal(ts) {
+    return ts - this.getTimeDiff()
   }
   localToServer(ts) {
-    if(this.pongCount < this.minPongCount) throw new Error("Time not synchronized")
-    return ts + this.timeDiff
+    return ts + this.getTimeDiff()
   }
 
   synchronizedPromise() {

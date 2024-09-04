@@ -1,4 +1,4 @@
-import { getCurrentInstance, onUnmounted } from 'vue'
+import { getCurrentInstance, onUnmounted, ref, computed, unref } from 'vue'
 import { live as d3live, fetch as d3fetch, RangeBuckets } from '@live-change/dao-vue3'
 import { InboxReader } from '@live-change/dao'
 
@@ -87,6 +87,48 @@ function useUid(context) {
   return useApi(context).uid
 }
 
+function useTimeSynchronization(context, onUnmountedCb) {
+  const api = useApi(context)
+  const timeSynchronization = api.settings.timeSynchronization
+  if(!timeSynchronization) throw new Error("Time synchronization not configured")
+  if(!onUnmountedCb && typeof window != 'undefined') {
+    if(getCurrentInstance()) {
+      onUnmountedCb = onUnmounted
+    } else {
+      onUnmountedCb = () => {
+        console.error("live fetch outside component instance - possible memory leak")
+      }
+    }
+  }
+  const diffRef = ref(timeSynchronization.timeDiffObservable.getValue())
+  const observer = {
+    set(value) {
+      diffRef.value = value
+    }
+  }
+  timeSynchronization.timeDiffObservable.observe(observer)
+  const synchronizedRef = ref(timeSynchronization.synchronizedObservable.getValue())
+  const synchronizedObserver = {
+    set(value) {
+      synchronizedRef.value = value
+    }
+  }
+  timeSynchronization.synchronizedObservable.observe(synchronizedObserver)
+  onUnmountedCb(() => {
+    timeSynchronization.timeDiffObservable.unobserve(observer)
+    timeSynchronization.synchronizedObservable.unobserve(synchronizedObserver)
+  })
+  return {
+    waitForSynchronized: () => timeSynchronization.readyPromise,
+    diff: computed(() => diffRef.value),
+    synchronized: computed(() => synchronizedRef.value),
+    serverToLocal: (ts) => unref(ts) - diffRef.value,
+    localToServer: (ts) => unref(ts) + diffRef.value,
+    serverToLocalComputed: (ts) => computed(() => unref(ts) - diffRef.value),
+    localToServerComputed: (ts) => computed(() => unref(ts) + diffRef.value),
+  }
+}
+
 function serviceDefinition(service, context = getCurrentInstance().appContext) {
   const api = useApi(context)
   return [...api.metadata.api.value.services].find(x => x.name === service)
@@ -103,7 +145,7 @@ const client = useClient
 const uid = useUid
 
 export {
-  usePath, useLive, useFetch, useApi, useView, useActions, useUid, useClient,
+  usePath, useLive, useFetch, useApi, useView, useActions, useUid, useClient, useTimeSynchronization,
   path, live, fetch, api, view, actions, uid, client,
   rangeBuckets, reverseRange,
   inboxReader,

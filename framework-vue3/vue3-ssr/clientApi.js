@@ -37,6 +37,11 @@ function clientApi(settings = {}) {
     }
   }
 
+  let timeSynchronization
+  if(settings.timeSynchronization) {
+    timeSynchronization = new ReactiveDao.TimeSynchronization(settings.timeSynchronization)
+  }
+
   const dao = new ReactiveDao(credentials, {
     remoteUrl: settings.remoteUrl || document.location.protocol + '//' + document.location.host + "/api/sockjs",
     protocols: {
@@ -64,7 +69,9 @@ function clientApi(settings = {}) {
             pongInterval: 200
           })*/
 
-      ...(settings && settings.connectionSettings)
+      timeSynchronization,
+
+      ...(settings && settings.connectionSettings),
     },
 
     defaultRoute: {
@@ -79,6 +86,7 @@ function clientApi(settings = {}) {
     ssr: (typeof window == "undefined") || !!window.__DAO_CACHE__,
     cache: true,
     ...settings,
+    timeSynchronization: timeSynchronization,
     createReactiveObject(definition) {
       //console.log("CREATE REACTIVE OBJECT", definition)
       return createReactiveObject(definition, reactiveMixin(api), reactivePrefetchMixin(api) )
