@@ -32,7 +32,6 @@
   import { useRouter } from 'vue-router'
   const router = useRouter()
 
-
   import pluralize from 'pluralize'
 
   const afterSignIn = computed( () => isMounted.value && localStorage.redirectAfterSignIn )

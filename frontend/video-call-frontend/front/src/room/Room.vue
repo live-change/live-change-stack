@@ -21,7 +21,8 @@
         <VideoWall
           :main-videos="mainVideos ?? []"
           :my-videos="myVideos ?? []"
-          class="w-full h-full top-0 absolute surface-900"
+          class="w-full h-full top-0 absolute"
+          style="background: black"
         />
         <div class="absolute bottom-0 h-4rem left-50 right-50 flex flex-row justify-content-center">
           <div class="absolute w-11rem h-full bg-black-alpha-70 flex flex-row align-items-center
@@ -149,11 +150,12 @@
     for(const connection of unref(peer.value.connections)) {
       const peerId = connection.to
       const otherPeer = peer.value.otherPeers.find(peer => peer.id === peerId)
+      if(!otherPeer) continue
       for(const remoteTrack of unref(connection.remoteTracks)) {
         if(output.find(remoteStream => remoteStream.stream === remoteTrack.stream)) continue
         const [ownerType, owner] = otherPeer.user
-          ? ['user_User', otherPeer.user?.user]
-          : ['session_Session', otherPeer.session]
+          ? ['user_User', otherPeer?.user?.user]
+          : ['session_Session', otherPeer?.session]
         output.push({
           id: remoteTrack.stream.id,
           from: connection.to,

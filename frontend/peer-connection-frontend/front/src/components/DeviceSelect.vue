@@ -24,7 +24,7 @@
           <CameraButton v-model="model" @disabled-video-click="handleDisabledVideoClick" />
         </div>
       </div>
-      <div class="absolute top-0 right-0">
+      <div class="absolute top-0 right-0" v-if="userMedia">
         <div class="m-3">
           <VolumeIndicator :stream="userMedia" />
         </div>
@@ -297,7 +297,7 @@
       userMedia.value.getAudioTracks().forEach(track => track.enabled = !model.value.audioMuted)
       userMedia.value.getVideoTracks().forEach(track => track.enabled = !model.value.videoMuted)
     }
-  }, { immediate: true })
+  })
 
 
   const permissionsDialog = ref({ })

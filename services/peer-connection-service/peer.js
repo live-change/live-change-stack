@@ -45,7 +45,7 @@ definition.view({
     return clientHasAccessRoles(client, { objectType: channelType, object: channel }, readerRoles)
   },
   async daoPath({ channelType, channel }, { client, service }, method) {
-    return Peer.indexRangePath('byChannel', [ channelType, channel.split('.')[0] ])
+    return Peer.indexRangePath('byChannel', [ channelType, channel.split(':')[0] ])
   }
 })
 

@@ -27,7 +27,8 @@ const createPeer = async ({
 
   if(!instance) instance = window.__WINDOW_ID__ + '.' + (++lastInstanceId)
 
-  const api = useApi()
+  console.error("APP CONTEXT", appContext)
+  const api = useApi(appContext)
 
   const peerId = [channelType, channel, api.client.value.session, instance].join(':')
 

@@ -1,5 +1,5 @@
 <template>
-  <div ref="wall">
+  <div ref="wall" class="overflow-hidden">
 <!--    <pre style="display: none">{{ JSON.stringify(videoSizes, null, "  ") }}</pre>-->
     <!--<pre style="display: none">{{ JSON.stringify(allVisibleVideos, null, "  ") }}</pre>
     <pre style="display: none">{{ JSON.stringify(allVideos, null, "  ") }}</pre>-->

@@ -94,7 +94,9 @@ export default (definition) => {
   }
 
   async function getClientObjectsRoles(client, objects, ignorePublic) {
-    const objectsRoles = await Promise.all(objects.map(obj => getClientObjectRoles(client, obj, ignorePublic)))
+    const objectsRoles = await Promise.all(
+      objects.map(obj => getClientObjectRoles(client, obj, ignorePublic))
+    )
     const firstObjectRoles = objectsRoles.shift()
     let roles = firstObjectRoles
     for(const objectRoles of objectsRoles) {

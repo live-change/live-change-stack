@@ -93,14 +93,6 @@
 
   const masked = ref(true)
 
-  onMounted(() => {
-    form.value.addValidator('passwordHash', () => {
-      const value = form.value.getFieldValue('passwordHash')
-      console.log("PASSWORDS MATCH?", secondPassword.value, value)
-      if(value !== secondPassword.value) return "passwordsNotMatch"
-    })
-  })
-
   const [passwordExists, emails, phones] = await Promise.all([
     live(path().passwordAuthentication.myUserPasswordAuthenticationExists()),
     live(path().email?.myUserEmails()),

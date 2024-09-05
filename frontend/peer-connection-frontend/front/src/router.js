@@ -11,7 +11,7 @@ export function peerConnectionRoutes(config = {}) {
   return [
 
     route({
-      name: 'peer-connection:debugger', path: prefix + '/debugger/:channelType/:channel', meta: { },
+      name: 'peer-connection:debugger', path: prefix + '/debugger/:channelType/:channel/', meta: { },
       component: () => import("./components/Debugger.vue"),
       props: true
     }),
