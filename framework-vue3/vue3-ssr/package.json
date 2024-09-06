@@ -1,6 +1,6 @@
 {
   "name": "@live-change/vue3-ssr",
-  "version": "0.8.61",
+  "version": "0.8.62",
   "description": "Live Change Framework - vue components",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao-vue3": "0.8.61",
-    "@live-change/uid": "0.8.61",
+    "@live-change/dao-vue3": "^0.8.62",
+    "@live-change/uid": "^0.8.62",
     "@vueuse/core": "^10.11.0",
     "debug": "^4.3.4"
   },
