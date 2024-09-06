@@ -97,6 +97,9 @@ app.config = {
       name: 'balance',
     },
     {
+      name: 'balanceTest'
+    },
+    {
       name: 'backup',
       port: 8007
     },

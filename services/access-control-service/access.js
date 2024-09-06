@@ -83,6 +83,9 @@ export default (definition) => {
     const accessParentsPromise = parents[objectType]
       ? parents[objectType]({ objectType, object })
       : Promise.resolve([])
+    /*accessParentsPromise.then((foundParents) => {
+      console.log('ACCESS CONTROL PARENTS', foundParents, "FOR", objectType, '/' ,object, 'IN MAP', parents)
+    })*/
     const parentRolesPromise = accessParentsPromise.then(accessParents => Promise.all(
         accessParents.map(
           ({ objectType, object }) =>

@@ -102,7 +102,8 @@ class App {
     processors = processors.slice()
     function processUse(service) {
       if(service && service.use) {
-        for(const plugin of service.use) {
+        for(let i = service.use.length - 1; i >= 0; i --) { // apply in reverse order
+          const plugin = service.use[i]
           processUse(plugin)
         }
       }

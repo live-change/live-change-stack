@@ -1,0 +1,168 @@
+<template>
+  <div class="w-full">
+    <div class="surface-card shadow-1 border-round p-3 mb-1">
+      <div class="text-xl">Balance: {{ balance.owner }}</div>
+      <div>Amount: {{ balance.amount }}</div>
+      <div>Available: {{ balance.available }}</div>
+    </div>
+    <div class="surface-card shadow-1 border-round p-3 text-xl mb-1 mt-2 text-xl">
+      Operations:
+    </div>
+    <div v-if="startedOperations.length === 0" class="surface-card shadow-1 border-round p-3 mb-1">
+      No operations started
+    </div>
+    <div v-for="operation of startedOperations"
+         class="surface-card shadow-1 border-round mb-1 flex flex-row align-items-center">
+      <div class="flex-1 flex-grow pl-3">
+        {{ operation.cause }}
+      </div>
+      <div class="w-15rem text-right pl-3 font-semibold mr-3">
+        {{ operation.createdAt }}
+      </div>
+      <div class="w-10rem text-right pl-3 font-semibold mr-3"
+           :class="operation.change > 0 ? 'text-green-500' : 'text-red-500'">
+        {{ operation.change > 0 ? '+' : '-' }} {{ Math.abs(operation.change) }}
+      </div>
+      <Button label="Finish" icon="pi pi-check" severity="success"
+              @click="actions.balanceTest.finishOperation({ balance: balance.id, operation: operation.id })" />
+      <Button label="Cancel" icon="pi pi-cross" severity="warning"
+              @click="actions.balanceTest.cancelOperation({ balance: balance.id, operation: operation.id })" />
+
+    </div>
+
+    <div class="flex flex-row">
+      <div class="surface-card shadow-1 border-round p-3 text-xl mt-3 flex-1">
+        <div class="text-xl mb-2">Start operation</div>
+        <command-form service="balanceTest" action="startOperation"
+                      :parameters="{ balance: balance.id }"
+                      v-slot="{ data }" reset-on-done>
+          <div class="col-12 md:col-6 py-1">
+            <div class="p-field mb-3">
+              <label for="email" class="block text-900 font-medium mb-2">
+                Name
+              </label>
+              <InputText id="name" type="text" class="w-full"
+                         aria-describedby="email-help" :class="{ 'p-invalid': data.nameError }"
+                         v-model="data.name" />
+              <small id="email-help" class="p-error">{{ data.nameError }}</small>
+            </div>
+          </div>
+          <div class="col-12 md:col-6 py-1">
+            <div class="p-field mb-3">
+              <label for="email" class="block text-900 font-medium mb-2">
+                Change
+              </label>
+              <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
+                         aria-describedby="email-help" :class="{ 'p-invalid': data.changeError }"
+                         v-model="data.change" />
+              <small id="email-help" class="p-error">{{ data.changeError }}</small>
+            </div>
+          </div>
+          <Button label="Start operation" icon="pi pi-plus" type="submit" />
+        </command-form>
+      </div>
+      <div class="surface-card shadow-1 border-round p-3 text-xl mt-3 flex-1 ml-2">
+        <div class="text-xl mb-2">Do instant operation</div>
+        <command-form service="balanceTest" action="doOperation"
+                      :parameters="{ balance: balance.id }"
+                      v-slot="{ data }" reset-on-done>
+          <div class="col-12 md:col-6 py-1">
+            <div class="p-field mb-3">
+              <label for="email" class="block text-900 font-medium mb-2">
+                Name
+              </label>
+              <InputText id="name" type="text" class="w-full"
+                         aria-describedby="email-help" :class="{ 'p-invalid': data.nameError }"
+                         v-model="data.name" />
+              <small id="email-help" class="p-error">{{ data.nameError }}</small>
+            </div>
+          </div>
+          <div class="col-12 md:col-6 py-1">
+            <div class="p-field mb-3">
+              <label for="email" class="block text-900 font-medium mb-2">
+                Change
+              </label>
+              <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
+                           aria-describedby="email-help" :class="{ 'p-invalid': data.changeError }"
+                           v-model="data.change" />
+              <small id="email-help" class="p-error">{{ data.changeError }}</small>
+            </div>
+          </div>
+          <Button label="Do operation" icon="pi pi-plus" type="submit" />
+        </command-form>
+      </div>
+    </div>
+
+    <div class="surface-card shadow-1 border-round p-3 text-xl mb-1 mt-2 text-xl">
+      Finished operations:
+    </div>
+    <div v-if="finishedOperations.length === 0" class="surface-card shadow-1 border-round p-3 mb-1">
+      No operations finished
+    </div>
+    <div v-for="operation of finishedOperations"
+         class="surface-card shadow-1 border-round mb-1 flex flex-row align-items-center">
+      <div class="flex-1 flex-grow pl-3 py-1">
+        {{ operation.cause }}
+      </div>
+      <div class="w-15rem text-right pl-3 font-semibold mr-3">
+        {{ operation.updatedAt ?? operation.createdAt }}
+      </div>
+      <div class="w-10rem text-right pl-3 font-semibold mr-3"
+           :class="operation.change > 0 ? 'text-green-500' : 'text-red-500'">
+        {{ operation.change > 0 ? '+' : '-' }} {{ Math.abs(operation.change) }}
+      </div>
+      <div class="w-10rem text-right pl-3 font-semibold mr-3">
+        {{ operation.amountAfter }}
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script setup>
+
+  import InputText from "primevue/inputtext"
+
+  import {
+    defineProps, defineEmits, defineModel, toRefs, computed, watch, ref, watchEffect, onUnmounted,
+    getCurrentInstance, unref,
+  } from 'vue'
+
+  const props = defineProps({
+    name: {
+      type: String,
+      required: true
+    }
+  })
+  const { name } = toRefs(props)
+
+  import { usePath, live, useClient, useActions, reverseRange, useTimeSynchronization } from '@live-change/vue3-ssr'
+  const path = usePath()
+  const actions = useActions()
+
+  const balancePath = computed(() => path.balance.ownerOwnedBalance({
+    ownerType: 'balanceTest_balance',
+    owner: name.value
+  }))
+  const startedOperationsPath = computed(() => path.balance.operationsByBalance({
+    balance: `"balanceTest_balance":${JSON.stringify(name.value)}`,
+    state: 'started',
+    reverse: true,
+  }))
+  const finishedOperationsPath = computed(() => path.balance.operationsByBalance({
+    balance: `"balanceTest_balance":${JSON.stringify(name.value)}`,
+    state: 'finished',
+    reverse: true,
+  }))
+
+  const [balance, startedOperations, finishedOperations] = await Promise.all([
+    live(balancePath),
+    live(startedOperationsPath),
+    live(finishedOperationsPath)
+  ])
+
+</script>
+
+<style scoped>
+
+</style>

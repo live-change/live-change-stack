@@ -134,7 +134,9 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
 
 function addAccessControlAnyParents(context) {
   const { modelRuntime } = context
-  context.model.accessControlParents = async (id) => {
+  context.model.accessControlParents = async (what) => {
+    const id = what.object
+    console.log("PROPERTY OF ANY ACCESS CONTROL PARENTS", context.model.name, '/', id)
     const data = await modelRuntime().get(id)
     return context.otherPropertyNames.map(otherPropertyName => {
       const objectType = data[otherPropertyName + 'Type']

@@ -19,7 +19,8 @@ const Operation = definition.model({
       type: String,
       options: [
         'started', // funds are locked, but amount is not changed yet
-        'finished' // amount is changed, and funds are unlocked
+        'finished', // amount is changed, and funds are unlocked,
+        'canceled' // funds are unlocked, but amount is not changed
       ],
     },
 
@@ -147,9 +148,9 @@ definition.view({
   },
   accessControl: {
     roles: config.readerRoles,
-    objects: async (params) => {
-      return [{ objectType: definition.name + '_Balance', object: params.balance }]
-    }
+    objects: ({ balance }) => {
+      return [{ objectType: definition.name + '_Balance', object: balance }]
+    },
   },
   async daoPath(params, { client, service }, method) {
     const range = App.extractRange(params)
@@ -162,8 +163,28 @@ definition.view({
   }
 })
 
+async function getBalance(balance, triggerService) {
+  const balanceData = await Balance.get(balance)
+  if(balanceData) return balanceData
+  if(config.createBalanceIfNotExists) {
+    const [ownerType, owner] = balance.split(':').map(v => JSON.parse(v))
+    await triggerService({
+      service: definition.name,
+      type: 'balance_setOwnerOwnedBalance',
+    }, {
+      ownerType: ownerType, owner: owner
+    })
+    return {
+      ownerType, owner,
+      available: config.currencyZero,
+      amount: config.currencyZero
+    }
+  }
+  throw "balanceNotFound"
+}
+
 definition.trigger({
-  name: "startOperation",
+  name: "balance_startOperation",
   properties: {
     balance: {
       type: Balance,
@@ -183,12 +204,11 @@ definition.trigger({
     }
   },
 
-  queuedBy: ['balance'],
-  async execute({ balance, causeType, cause, change }, { client, service, triggerService }) {
+  queuedBy: 'balance',
+  async execute({ balance, causeType, cause, change }, { client, service, triggerService }, emit) {
     const operation = app.generateUid()
-    const balanceData = await Balance.get(balance)
+    const balanceData = await getBalance(balance, triggerService)
     if(!config.changePossible(balanceData.available, change)) throw "insufficientFunds"
-    const newAvailable = config.currencyAdd(balanceData.available, change)
     await triggerService({
       service: definition.name,
       type: 'balance_createBalanceOwnedOperation',
@@ -198,19 +218,29 @@ definition.trigger({
       amountBefore: balanceData.amount,
       amountAfter: null
     })
-    await triggerService({
-      service: definition.name,
-      type: 'balance_updateOwnerOwnedBalance',
-    }, {
-      ownerType: balanceData.ownerType, owner: balanceData.owner,
-      available: newAvailable
-    })
+    if(config.currencyIsPositive(change)) {
+      await triggerService({
+        service: definition.name,
+        type: 'balance_updateOwnerOwnedBalance',
+      }, {
+        ownerType: balanceData.ownerType, owner: balanceData.owner
+      })
+    } else {
+      const newAvailable = config.currencyAdd(balanceData.available, change)
+      await triggerService({
+        service: definition.name,
+        type: 'balance_updateOwnerOwnedBalance',
+      }, {
+        ownerType: balanceData.ownerType, owner: balanceData.owner,
+        available: newAvailable
+      })
+    }
     return operation
   }
 })
 
 definition.trigger({
-  name: 'finishOperation',
+  name: 'balance_finishOperation',
   properties: {
     balance: {
       type: Balance,
@@ -221,37 +251,92 @@ definition.trigger({
       validation: ['nonEmpty']
     }
   },
-  queuedBy: ['balance'],
+  queuedBy: 'balance',
   async execute({ balance, operation }, { client, service, triggerService }) {
     const operationData = await Operation.get(operation)
     if(!operationData) throw "operationNotFound"
     if(operationData.state !== 'started') throw "operationNotStarted"
+    console.log("operationData", operationData, "balance", balance)
     if(operationData.balance !== balance) throw "balanceMismatch"
-    const balanceData = await Balance.get(balance)
+    const balanceData = await getBalance(balance, triggerService)
     const newAmount = config.currencyAdd(balanceData.amount, operationData.change)
-    const newAvailable = config.currencyAdd(balanceData.available, config.currencyNegate(operationData.change))
     await triggerService({
       service: definition.name,
       type: 'balance_updateBalanceOwnedOperation',
     }, {
+      balance,
       operation,
       state: 'finished',
       amountAfter: newAmount
     })
-    await triggerService({
-      service: definition.name,
-      type: 'balance_updateOwnerOwnedBalance',
-    }, {
-      ownerType: balanceData.ownerType, owner: balanceData.owner,
-      available: newAvailable,
-      amount: newAmount
-    })
+    if(config.currencyIsPositive(operationData.change)) {
+      const newAvailable = config.currencyAdd(balanceData.available, operationData.change)
+      await triggerService({
+        service: definition.name,
+        type: 'balance_updateOwnerOwnedBalance',
+      }, {
+        ownerType: balanceData.ownerType, owner: balanceData.owner,
+        available: newAvailable,
+        amount: newAmount
+      })
+    } else {
+      await triggerService({
+        service: definition.name,
+        type: 'balance_updateOwnerOwnedBalance',
+      }, {
+        ownerType: balanceData.ownerType, owner: balanceData.owner,
+        amount: newAmount
+      })
+    }
     return operation
   }
 })
 
 definition.trigger({
-  name: 'doOperation',
+  name: 'balance_cancelOperation',
+  properties: {
+    balance: {
+      type: Balance,
+      validation: ['nonEmpty']
+    },
+    operation: {
+      type: Operation,
+      validation: ['nonEmpty']
+    }
+  },
+  queuedBy: 'balance',
+  async execute({ balance, operation }, { client, service, triggerService }) {
+    const operationData = await Operation.get(operation)
+    if(!operationData) throw "operationNotFound"
+    if(operationData.state !== 'started') throw "operationNotStarted"
+    if(operationData.balance !== balance) throw "balanceMismatch"
+    const balanceData = await getBalance(balance, triggerService)
+    const newAmount = balanceData.amount
+    await triggerService({
+      service: definition.name,
+      type: 'balance_updateBalanceOwnedOperation',
+    }, {
+      balance,
+      operation,
+      state: 'canceled',
+      amountAfter: newAmount
+    })
+    if(!config.currencyIsPositive(operationData.change)) {
+      const newAvailable = config.currencyAdd(balanceData.available, config.currencyNegate(operationData.change))
+      await triggerService({
+        service: definition.name,
+        type: 'balance_updateOwnerOwnedBalance',
+      }, {
+        ownerType: balanceData.ownerType, owner: balanceData.owner,
+        available: newAvailable
+      })
+    }
+    return operation
+  }
+})
+
+definition.trigger({
+  name: 'balance_doOperation',
   properties: {
     balance: {
       type: Balance,
@@ -270,12 +355,13 @@ definition.trigger({
       validation: ['nonEmpty']
     }
   },
-  queuedBy: ['balance'],
+  queuedBy: 'balance',
   async execute({ balance, causeType, cause, change }, { client, service, triggerService }) {
     const operation = app.generateUid()
-    const balanceData = await Balance.get(balance)
+    const balanceData = await getBalance(balance, triggerService)
     if(!config.changePossible(balanceData.available, change)) throw "insufficientFunds"
     const newAmount = config.currencyAdd(balanceData.amount, change)
+    const newAvailable = config.currencyAdd(balanceData.available, change)
     await triggerService({
       service: definition.name,
       type: 'balance_createBalanceOwnedOperation',
@@ -290,7 +376,8 @@ definition.trigger({
       type: 'balance_updateOwnerOwnedBalance',
     }, {
       ownerType: balanceData.ownerType, owner: balanceData.owner,
-      amount: newAmount
+      amount: newAmount,
+      available: newAvailable
     })
     return operation
   }

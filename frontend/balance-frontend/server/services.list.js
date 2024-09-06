@@ -51,3 +51,9 @@ export {
   balance,
   init
 }
+
+import balanceTest from './balanceTest/index.js'
+
+export {
+  balanceTest
+}

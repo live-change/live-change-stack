@@ -13,10 +13,7 @@ const Balance = definition.model({
   },
   properties: {
     available: config.currencyType,
-    amount: {
-      type: Number,
-      defaultValue: 0
-    },
+    amount: config.currencyType,
     lastUpdate: {
       type: Date
     }

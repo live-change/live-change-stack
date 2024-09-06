@@ -12,24 +12,15 @@ import { dbAdminRoutes } from "@live-change/db-admin"
 import { userRoutes } from "@live-change/user-frontend"
 import { catchAllPagesRoute, contentEditRoutes, pagesSitemap } from "@live-change/content-frontend"
 
-import pagesRoutes from '~pages'
 
-export function routes(config = {}) {
+export function balanceRoutes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
     ...userRoutes({ ...config, prefix: prefix + 'user/' }),
 
-    route({
-      name: 'index', path: prefix, meta: { },
-      component: () => import("./Index.vue")
-    }),
 
-    ...pagesRoutes,
 
-    ...contentEditRoutes({ ...config }),
 
-    ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
-    ...catchAllPagesRoute({ ...config }),
   ]
 }
 
@@ -49,7 +40,21 @@ export function createRouter(app, config) {
     // use appropriate history implementation for server/client
     // import.meta.env.SSR is injected by Vite.
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
-    routes: routes(config)
+    routes: [
+      ...balanceRoutes(config),
+
+      {
+        name: 'index', path: '/', meta: { },
+        component: () => import("./Index.vue")
+      },
+      {
+        name: 'balance', path: '/balance/:name', meta: { }, props: true,
+        component: () => import("./Balance.vue")
+      },
+
+      ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
+      ...catchAllPagesRoute({ ...config }),
+    ]
   })
   installRouterAnalytics(router)
   router.beforeEach(async (to, from) => {
