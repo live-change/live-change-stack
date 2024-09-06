@@ -133,7 +133,7 @@
   })
 
   const myVideos = computed(() => {
-    //return []
+    if(!peer.value) return []
     if(!localMediaStreams.value?.length) return []
     return localMediaStreams.value.map(stream => ({
       id: stream.id,

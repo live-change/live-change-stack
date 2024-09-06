@@ -19,8 +19,8 @@ function useActions(context) {
   return useApi(context).actions
 }
 
-function useLive(path, context) {
-  return d3live(useApi(context), path)
+function useLive(path, context, onUnmountedCb) {
+  return d3live(useApi(context), path, onUnmountedCb)
 }
 
 function useFetch(path, context) {

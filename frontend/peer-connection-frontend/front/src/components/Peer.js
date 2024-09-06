@@ -27,25 +27,24 @@ const createPeer = async ({
 
   if(!instance) instance = window.__WINDOW_ID__ + '.' + (++lastInstanceId)
 
-  console.error("APP CONTEXT", appContext)
   const api = useApi(appContext)
 
   const peerId = [channelType, channel, api.client.value.session, instance].join(':')
 
   console.log("CREATE PEER!")
 
-  const path = usePath()
+  const path = usePath(appContext)
   const [
     peers,
     peerOnline,
     turnConfiguration
   ] = await Promise.all([
-    live(path.peerConnection.peers({ channelType, channel }, appContext)
+    live(path.peerConnection.peers({ channelType, channel })
       .with(peer => path.peerConnection.peerState({ peer: peer.id }).bind('peerState'))
       .with(peer => path.user.sessionUser({ session: peer.session }).bind('user'))
-    ),
-    live(path.online.session({ group: 'peer', peer: peerId }), appContext),
-    live(path.peerConnection.turnConfiguration({ peer: peerId }), appContext)
+    , appContext, onUnmountedCb),
+    live(path.online.session({ group: 'peer', peer: peerId }), appContext, onUnmountedCb),
+    live(path.peerConnection.turnConfiguration({ peer: peerId }), appContext, onUnmountedCb)
   ])
 
   const localPeerState = ref(null)
