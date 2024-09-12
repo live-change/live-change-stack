@@ -11,18 +11,24 @@
 
   <working-zone>
 
-    <CreateObject v-if="write" :dbApi="dbApi" :write="write.result" class="mt-2" />
+    <CreateObject v-if="write && !write.empty" :dbApi="dbApi" :write="write.result" class="mt-2" />
 
     <template v-if="read?.external?.includes('range')">
       <DataRangeView v-if="read && write && remove" :key="'rangeView' + version"
-                     :dbApi="dbApi" :read="read.result" :write="write.result" :remove="remove.result" />
+                     :dbApi="dbApi"
+                     :read="read.result"
+                     :write="!write.empty && write.result"
+                     :remove="!remove.empty && remove.result" />
     </template>
     <template v-else>
       <DataView v-if="read && write && remove" :key="'view' + version"
-                :dbApi="dbApi" :read="read.result" :write="write.result" :remove="remove.result" />
+                :dbApi="dbApi"
+                :read="read.result"
+                :write="!write.empty && write.result"
+                :remove="!remove.empty && remove.result" />
     </template>
 
-    <CreateObject v-if="write" :dbApi="props.dbApi" :write="write.result" class="mt-2" />
+    <CreateObject v-if="write && !write.empty" :dbApi="props.dbApi" :write="write.result" class="mt-2" />
 
   </working-zone>
 

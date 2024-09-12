@@ -7,7 +7,7 @@ import accessControlService from '@live-change/access-control-service'
 
 const definition = app.createServiceDefinition({
   name: "url",
-  use: [ relationsPlugin, userService, accessControlService ]
+  use: [ userService, relationsPlugin,accessControlService  ]
 })
 
 export default definition

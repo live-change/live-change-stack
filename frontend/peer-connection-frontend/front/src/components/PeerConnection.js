@@ -292,6 +292,7 @@ const createPeerConnection = (peer, to) => {
       const { id, kind, label, muted } = track
       return { id, kind, label, muted, stream: stream.id }
     }),
+    connected: iceConnectionState.value === 'connected',
   }))
 
   return {

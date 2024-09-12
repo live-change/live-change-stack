@@ -70,11 +70,6 @@
   import { useApi, live, usePath, useActions } from '@live-change/vue3-ssr'
   const api = useApi()
   const path = usePath()
-  const messageAuthenticationClientConfig = api.getServiceDefinition('messageAuthentication')?.clientConfig
-  const contactTypesAvailable = messageAuthenticationClientConfig?.contactTypes || []
-
-  const userClientConfig = api.getServiceDefinition('user')?.clientConfig
-  const accountTypesAvailable = userClientConfig?.remoteAccountTypes || []
 
   const messageAuthenticationApi = useActions().messageAuthentication
 
@@ -118,43 +113,10 @@
     })
   }
 
-  const contactsTypes = contactTypesAvailable.map(contactType => {
-    const contactTypeUpper = contactType[0].toUpperCase() + contactType.slice(1)
+  import { getContactTypes, getAccountTypes} from './connected.js'
 
-    let serviceName = contactType
-    let viewName = 'myUser'+contactTypeUpper+'s'
-    if(!path[serviceName]) { // find service by viewName
-      for(const s in path) {
-        if(path[s][viewName]) {
-          serviceName = s
-          break
-        }
-      }
-    }
-    //console.log('contactType', contactType, 'serviceName', serviceName, 'viewName', viewName)
-    console.log(`path[${serviceName}][${viewName}] =`, path[serviceName][viewName])
-    return {
-      contactType,
-      serviceName,
-      viewName,
-      path: path[serviceName][viewName]({}),
-      contacts: null
-    }
-  })
-
-  const accountTypes = accountTypesAvailable.map(accountType => {
-    let serviceName = accountType+'Authentication'
-    let viewName = 'myUserAccounts'
-    console.log('remoteAccountType', accountType, 'serviceName', serviceName, 'viewName', viewName)
-    console.log(`path[${serviceName}][${viewName}] =`, path[serviceName][viewName])
-    return {
-      accountType,
-      serviceName,
-      viewName,
-      path: path[serviceName][viewName]({}),
-      accounts: null
-    }
-  })
+  const contactsTypes = getContactTypes()
+  const accountTypes = getAccountTypes()
 
   const contactPromises = contactsTypes.map(async contactType => {
     contactType.contacts = await live(contactType.path)

@@ -29,7 +29,13 @@ const PeerState = definition.model({
     what: Peer
   },
   properties: {
-    ...peerStateFields
+    ...peerStateFields,
+    sessionOrUserType: {
+      type: String
+    },
+    sessionOrUser: {
+      type: String
+    },
   }
 })
 
@@ -80,6 +86,8 @@ definition.action({
     return hasRole
   },
   async execute(props, { client, service }, emit) {
+    const [sessionOrUserType, sessionOrUser] =
+      client.user ? ['user_User', client.user] : ['session_Session', client.session]
     let data = { }
     for(const key in peerStateFields) {
       data[key] = props[key]

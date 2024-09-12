@@ -14,7 +14,7 @@
 
   </a>
   <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto surface-overlay
-       right-0 top-100 z-1 shadow-2">
+       right-0 top-100 z-5 shadow-2">
     <loading-zone suspense>
       <template v-slot:loading>
         <div class="flex align-items-center justify-content-center top-0 left-0 notifications-loading">
