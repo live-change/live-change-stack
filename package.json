@@ -67,6 +67,7 @@
     "services/comment-service",
     "services/video-call-service",
     "services/balance-service",
+    "services/billing-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
@@ -85,6 +86,7 @@
     "frontend/flow-frontend",
     "frontend/task-frontend",
     "frontend/video-call-frontend",
-    "frontend/balance-frontend"
+    "frontend/balance-frontend",
+    "frontend/billing-frontend"
   ]
 }

@@ -16,7 +16,7 @@ import { catchAllPagesRoute, contentEditRoutes, pagesSitemap } from "@live-chang
 export function balanceRoutes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
-    ...userRoutes({ ...config, prefix: prefix + 'user/' }),
+
 
 
 
@@ -41,6 +41,8 @@ export function createRouter(app, config) {
     // import.meta.env.SSR is injected by Vite.
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes: [
+      ...userRoutes({ ...config, prefix: prefix + 'user/' }),
+
       ...balanceRoutes(config),
 
       {
