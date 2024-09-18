@@ -14,6 +14,8 @@ import image from '@live-change/image-service'
 import secretCode from '@live-change/secret-code-service'
 import secretLink from '@live-change/secret-link-service'
 import messageAuthentication from '@live-change/message-authentication-service'
+import googleAuthentication from '@live-change/google-authentication-service'
+import linkedinAuthentication from '@live-change/linkedin-authentication-service'
 import url from '@live-change/url-service'
 import prosemirror from '@live-change/prosemirror-service'
 import content from '@live-change/content-service'
@@ -40,6 +42,8 @@ export {
   secretCode,
   secretLink,
   messageAuthentication,
+  googleAuthentication,
+  linkedinAuthentication,
   url,
   prosemirror,
   content,

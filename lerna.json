@@ -53,6 +53,7 @@
     "services/blog-service",
     "services/backup-service",
     "services/google-authentication-service",
+    "services/linkedin-authentication-service",
     "services/phone-service",
     "services/slug-service",
     "services/vote-service",

@@ -59,6 +59,14 @@
         />
       </router-link>
 
+      <router-link :to="{ name: 'user:linkedinAuth', params: { action: 'signInOrSignUp' } }" class="no-underline">
+        <Button
+          label="Sign In with Linkedin"
+          icon="pi pi-linkedin"
+          class="w-full p-button-secondary mb-1"
+        />
+      </router-link>
+
     </div>
   </div>
 </template>

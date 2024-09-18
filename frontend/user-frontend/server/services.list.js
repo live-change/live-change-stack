@@ -15,6 +15,7 @@ import secretCode from '@live-change/secret-code-service'
 import secretLink from '@live-change/secret-link-service'
 import messageAuthentication from '@live-change/message-authentication-service'
 import googleAuthentication from '@live-change/google-authentication-service'
+import linkedinAuthentication from '@live-change/linkedin-authentication-service'
 
 //import backup from '@live-change/backup-service'
 import init from './init.js'
@@ -36,6 +37,7 @@ export {
   secretLink,
   messageAuthentication,
   googleAuthentication,
+  linkedinAuthentication,
   localeSettings,
 //  backup,
   init

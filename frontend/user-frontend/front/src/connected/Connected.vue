@@ -27,6 +27,11 @@
             <i  class="pi pi-google mr-2"></i>
             <span class="block text-900 font-medium text-lg">{{ account.email }}</span>
           </div>
+          <div v-if="account.accountType.accountType === 'linkedin'"
+               class="flex flex-row align-items-center">
+            <i  class="pi pi-linkedin mr-2"></i>
+            <span class="block text-900 font-medium text-lg">{{ account.name }}</span>
+          </div>
           <pre v-else>{{ account }}</pre>
           <Button class="p-button-text p-button-plain p-button-rounded mr-1" icon="pi pi-times"
                   v-if="canDelete"

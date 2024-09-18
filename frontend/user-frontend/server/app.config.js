@@ -5,7 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const contactTypes = ['email', 'phone']
-const remoteAccountTypes = ['google']
+const remoteAccountTypes = ['google', 'linkedin']
 
 import securityConfig from './security.config.js'
 
@@ -58,6 +58,9 @@ app.config = {
     {
       name: 'googleAuthentication',
       path: '@live-change/google-authentication-service',
+    },
+    {
+      name: 'linkedinAuthentication',
     },
     {
       name: 'security',

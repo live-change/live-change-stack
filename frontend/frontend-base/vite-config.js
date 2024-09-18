@@ -55,6 +55,7 @@ export default async ({ command, mode }, options = {
       ENV_BRAND_DOMAIN: JSON.stringify(process.env.BRAND_DOMAIN || "example.com"),
       ENV_BRAND_SMS_FROM: JSON.stringify(process.env.BRAND_PHONE_FROM || null),
       ENV_GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID || null),
+      ENV_LINKEDIN_CLIENT_ID: JSON.stringify(process.env.LINKEDIN_CLIENT_ID || null),
       ENV_MODE: JSON.stringify(mode),
       ENV_VERSION: JSON.stringify(version),
     },

@@ -72,6 +72,12 @@ app.config = {
       connect: true
     },
     {
+      name: 'googleAuthentication',
+    },
+    {
+      name: 'linkedinAuthentication',
+    },
+    {
       name: 'url',
     },
     {
