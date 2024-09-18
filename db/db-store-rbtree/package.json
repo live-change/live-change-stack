@@ -25,9 +25,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/dao": "^0.8.68",
-    "@live-change/flatten-interval-tree": "^0.8.68",
+    "@live-change/dao": "0.8.68",
+    "@live-change/flatten-interval-tree": "0.8.68",
     "functional-red-black-tree": "^1.0.1"
   },
-  "gitHead": "ff74842a56f547052f0a5af26788475ca8f064e4"
+  "gitHead": "9f34ce84625f32092de0d93dcd19e4e4982982bd"
 }
