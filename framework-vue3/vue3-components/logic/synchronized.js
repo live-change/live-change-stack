@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue"
+import { computed, ref, watch, unref } from "vue"
 import { useThrottleFn, useDebounceFn } from "@vueuse/core"
 
 function copy(value) {
@@ -57,7 +57,7 @@ function synchronized(options) {
       // console.log("SOURCE JSON", JSON.stringify(source.value))
       // console.log("SYNCHRONIZED JSON", JSON.stringify(synchronizedValue.value))
       try {
-        await update({ ...data, [timeField]: lastLocalUpdate.value, ...identifiers })
+        await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
         try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
       } catch(e) {
         if(resetOnError) synchronizedValue.value = copy(source.value)
@@ -103,7 +103,7 @@ function synchronized(options) {
            <= ((source.value && source.value[timeField]) ?? ''))) return false // identical, no need to save
       const data = JSON.parse(JSON.stringify(local.value))
       try {
-        await update({...data, ...identifiers})
+        await update({...data, ...unref(identifiers)})
         try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
       } catch(e) {
         if(resetOnError) synchronizedValue.value = source.value

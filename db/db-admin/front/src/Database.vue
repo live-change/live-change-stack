@@ -1,5 +1,7 @@
 <template>
   <div class="surface-card p-4 shadow-2 border-round w-full">
+    <ConfirmPopup v-if="isMounted"></ConfirmPopup>
+    <Toast v-if="isMounted"></Toast>
     <div class="text-center mb-3">
       <div class="text-900 text-3xl font-medium mb-3">Database "{{ dbName }}" @ {{ dbApi }}</div>
     </div>

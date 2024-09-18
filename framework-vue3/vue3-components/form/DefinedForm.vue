@@ -22,8 +22,18 @@
       this.validators = []
       this.barriers = []
 
-      if(definition.validation) {
-        let validations = Array.isArray(definition.validation) ? definition.validation : [definition.validation]
+      const validations = [
+        ...(definition.validation ? (
+          Array.isArray(definition.validation) ? definition.validation : [definition.validation])
+            : []
+        ),
+        ...(definition.softValidation ? (
+          Array.isArray(definition.softValidation) ? definition.softValidation : [definition.softValidation])
+            : []
+        )
+      ]
+
+      if(validations.length > 0) {
         const context = {
           service: this.serviceDefinition,
           action: this.actionDefinition,

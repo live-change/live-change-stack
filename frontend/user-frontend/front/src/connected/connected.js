@@ -1,5 +1,5 @@
 import { useApi, live } from '@live-change/vue3-ssr'
-import { computed } from 'vue'
+import { computed, onUnmounted, getCurrentInstance } from 'vue'
 
 export function getContactTypes(api = useApi()) {
   const path = api.fetch
@@ -62,10 +62,13 @@ export function getAccountTypes(api = useApi()) {
   return accountTypes
 }
 
-export async function getContacts(api = useApi()) {
+export async function getContacts(context, onUnmountedCb) {
+  if(!context) context = getCurrentInstance().appContext
+  if(!onUnmountedCb) onUnmountedCb = onUnmounted
+  const api = useApi(context)
   const contactsTypes = getContactTypes(api)
   for(const contactType of contactsTypes) {
-    await contactType.fetchContacts()
+    await contactType.fetchContacts(context, onUnmountedCb)
   }
   const contacts = computed(() => contactsTypes.map((c,i) => c.contacts.value.map(v => ({
     contactType: c.contactType,
@@ -75,10 +78,13 @@ export async function getContacts(api = useApi()) {
   return contacts
 }
 
-export async function getAccounts(api = useApi()) {
+export async function getAccounts(context, onUnmountedCb) {
+  if(!context) context = getCurrentInstance().appContext
+  if(!onUnmountedCb) onUnmountedCb = onUnmounted
+  const api = useApi(context)
   const accountTypes = getAccountTypes(api)
   for(const accountType of accountTypes) {
-    await accountType.fetchAccounts()
+    await accountType.fetchAccounts(context, onUnmountedCb)
   }
   const accounts = computed(() => accountTypes.map((c,i) => c.accounts.value.map(v => ({
     accountType: c.contactType,
