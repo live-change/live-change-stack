@@ -1,6 +1,6 @@
 {
   "name": "@live-change/comment-service",
-  "version": "0.8.66",
+  "version": "0.8.67",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.66",
-    "@live-change/relations-plugin": "^0.8.66"
+    "@live-change/framework": "^0.8.67",
+    "@live-change/relations-plugin": "^0.8.67"
   },
   "gitHead": "33fa71ec087690903b109e2c0a2cf1de886449f7"
 }
