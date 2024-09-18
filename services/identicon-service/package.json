@@ -1,6 +1,6 @@
 {
   "name": "@live-change/identicon-service",
-  "version": "0.8.67",
+  "version": "0.8.68",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.8.67",
-    "@live-change/relations-plugin": "^0.8.67",
+    "@live-change/framework": "^0.8.68",
+    "@live-change/relations-plugin": "^0.8.68",
     "identicon.js": "2.3.3",
     "jdenticon": "3.1.1"
   },
