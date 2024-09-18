@@ -31,7 +31,6 @@ definition.view({
   },
   remote: true,
   async fetch(props, { client, context }) {
-    client.ip = '137.74.93.199'
     const geoIpResult = await getGeoIp(client.ip)
     console.log('GEOIP', client.ip, '=>', geoIpResult)
     return geoIpResult

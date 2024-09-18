@@ -24,6 +24,6 @@
     "@live-change/framework": "^0.8.65",
     "maxmind": "^3.0.3"
   },
-  "gitHead": "39422adadd1863fa396fc4e875936e09428d6cf1",
+  "gitHead": "c239699e9aea10bb7ae0baca0ab980ff1d9f5f94",
   "type": "module"
 }
