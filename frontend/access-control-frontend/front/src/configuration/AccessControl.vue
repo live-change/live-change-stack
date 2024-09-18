@@ -53,7 +53,7 @@
     availableRoles, availablePublicSessionRoles, availablePublicUserRoles, availableRequestedRoles,
     defaultInviteRoles,
     multiRole,
-    sessionRolesVisible, userRolesVisible, requestedRolesVisible
+    sessionRolesVisible, userRolesVisible, requestedRolesVisible, adminRoles
   } = defineProps({
     object: {
       type: String,
@@ -106,6 +106,10 @@
     requestedRolesVisible: {
       type: Boolean,
       default: true
+    },
+    adminRoles: {
+      type: Array,
+      default: () => ['administrator']
     }
   })
 
@@ -129,7 +133,9 @@
 
   const myRoles = computed(() => access.value ? access.value.roles : [])
 
-  const isAdmin = computed(() => myRoles.value.includes('administrator'))
+  const isAdmin = computed(() => myRoles.value.find(
+    role => adminRoles.includes(role)
+  ))
   const canInvite = computed(() => myRoles.value.length > 0)
 
 </script>
