@@ -8,6 +8,12 @@ const Phone = definition.model({
   properties: {
     phone: {
       type: String,
+      preFilter: phone => {
+        // replace leading + with 0
+        phone = phone.replace(/^\+/, '0')
+        phone = phone.replace(/[^0-9]/g, '')
+        return phone
+      },
       validation: ['nonEmpty', 'phone']
     }
   },

@@ -25,7 +25,7 @@
         </Divider>
 
         <router-link :to="{ name: 'user:connect-phone' }">
-          <Button label="Add Phone" icon="pi pi-github" class="w-full p-button-secondary mb-2" />
+          <Button label="Add Phone" icon="pi pi-mobile" class="w-full p-button-secondary mb-2" />
         </router-link>
 
 <!--        <Button label="Connect GitHub account" icon="pi pi-github" class="w-full p-button-secondary mb-2"></Button>

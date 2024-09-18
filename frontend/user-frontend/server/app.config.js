@@ -89,6 +89,11 @@ app.config = {
       path: '@live-change/upload-service'
     },
     {
+      name: 'geoIp',
+      geoIpCountryPath: 'geoip/GeoLite2-Country.mmdb',
+      geoIpDefaultCountry: 'PL'
+    },
+    {
       name: 'image',
       path: '@live-change/image-service'
     },

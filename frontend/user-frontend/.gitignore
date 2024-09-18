@@ -12,3 +12,4 @@ kubeconfig
 package-deps.json
 front/components.d.ts
 build-stats
+geoip

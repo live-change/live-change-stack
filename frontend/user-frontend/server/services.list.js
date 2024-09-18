@@ -7,6 +7,7 @@ import passwordAuthentication from '@live-change/password-authentication-service
 import userIdentification from '@live-change/user-identification-service'
 import identicon from '@live-change/identicon-service'
 import localeSettings from '@live-change/locale-settings-service'
+import geoIp from '@live-change/geoip-service'
 import security from '@live-change/security-service'
 import notification from '@live-change/notification-service'
 import upload from '@live-change/upload-service'
@@ -39,6 +40,7 @@ export {
   googleAuthentication,
   linkedinAuthentication,
   localeSettings,
+  geoIp,
 //  backup,
   init
 }

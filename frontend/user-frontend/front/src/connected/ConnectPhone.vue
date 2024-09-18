@@ -12,10 +12,10 @@
           <label for="email" class="block text-900 font-medium mb-2">
             Phone number
           </label>
-          <InputText id="email" type="text" class="w-full"
-                     aria-describedby="email-help" :class="{ 'p-invalid': data.phoneError}"
+          <PhoneInput id="phone" class="w-full"
+                     aria-describedby="phone-help" :class="{ 'p-invalid': data.phoneError }"
                      v-model="data.phone" />
-          <small v-if="data.phoneError" id="email-help" class="p-error">{{ data.phoneError }}</small>
+          <small v-if="data.phoneError" id="phone-help" class="p-error">{{ data.phoneError }}</small>
         </div>
 
         <Button label="Add Phone" icon="pi pi-mobile" class="w-full" type="submit" />
@@ -25,7 +25,7 @@
         </Divider>
 
         <router-link :to="{ name: 'user:connect-email' }">
-          <Button label="Add Email" icon="pi pi-github" class="w-full p-button-secondary mb-2" />
+          <Button label="Add Email" icon="pi pi-envelope" class="w-full p-button-secondary mb-2" />
         </router-link>
 
 <!--        <Button label="Connect GitHub account" icon="pi pi-github" class="w-full p-button-secondary mb-2"></Button>-->
@@ -41,6 +41,7 @@
   import Checkbox from "primevue/checkbox"
   import Button from "primevue/button"
   import Divider from "primevue/divider"
+  import PhoneInput from "../phone/PhoneInput.vue"
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
