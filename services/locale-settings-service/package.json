@@ -1,6 +1,6 @@
 {
   "name": "@live-change/locale-settings-service",
-  "version": "0.8.65",
+  "version": "0.8.66",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.65",
-    "@live-change/relations-plugin": "^0.8.65"
+    "@live-change/framework": "^0.8.66",
+    "@live-change/relations-plugin": "^0.8.66"
   },
   "gitHead": "c239699e9aea10bb7ae0baca0ab980ff1d9f5f94"
 }
