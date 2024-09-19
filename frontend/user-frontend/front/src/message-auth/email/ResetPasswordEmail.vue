@@ -71,13 +71,12 @@
   const data = JSON.parse(json)
   const secrets = data.secrets
 
-  const secretLink = secrets.find(secret => secret.type == 'link')
-
-  const secretCode = secrets.find(secret => secret.type == 'code')
+  const secretLink = secrets.find(secret => secret.type === 'link')
+  const secretCode = secrets.find(secret => secret.type === 'code')
 
   const brandName = ENV_BRAND_NAME
   const metadata = {
-    from: 'admin@' + ENV_BRAND_DOMAIN,
+    from: `${ENV_BRAND_NAME} <admin@${ENV_BRAND_DOMAIN}>`,
     subject: 'Confirm your email address.',
     to: contact
   }

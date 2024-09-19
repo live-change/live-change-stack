@@ -13,7 +13,7 @@ const packageJson = packageJsonPath ? JSON.parse(readFileSync(packageJsonPath, '
 const name = packageJson.name ?? "Example"
 const version = process.env.VERSION ?? packageJson.version ?? 'unknown'
 const homepage = process.env.BASE_HREF ?? packageJson.homepage
-const domain = (homepage && homepage.match(/https\:\/\/([^\/]+)/)?.[1]) || 'example.com'
+const domain = process.env.BRAND_DOMAIN || (homepage && homepage.match(/https\:\/\/([^\/]+)/)?.[1]) || 'example.com'
 
 // @ts-ignore
 import baseViteConfig from '@live-change/frontend-base/vite-config.js'

@@ -7,7 +7,7 @@ pushd "$DIR/.."
 
   source ./docker/parse-args-and-config.sh
 
-  echo "Building ${NAME}:${VERSION}-${DEPLOYMENT}"
+  echo "Building \"${BRAND_NAME}\" (${BRAND_DOMAIN}) ${NAME}:${VERSION}-${DEPLOYMENT}"
 
   set -ex
 
