@@ -182,13 +182,14 @@ definition.processor(function(service, app) {
         const extendedCombinations = [[]].concat(allCombinations(extendedWith).slice(0, -1))
         for(const combination of extendedCombinations) {
           const propsUpperCase = combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
-          const indexName = 'by' + (combination).map(prop => prop[0].toUpperCase() + prop.slice(1))
+          const indexName = 'by' + (['SessionOrUser', ...combination])
+            .map(prop => prop[0].toUpperCase() + prop.slice(1))
           const viewName = 'my' + propsUpperCase.join('And') + pluralize(modelName)
           const identifiers = createIdentifiersProperties(combination)
           service.views[viewName] = new ViewDefinition({
             name: viewName,
             properties: {
-              ...extendedIdentifiersProperties,
+              ...identifiers,
               ...App.rangeProperties,
             },
             access(params, context) {
@@ -199,6 +200,7 @@ definition.processor(function(service, app) {
               for (const key of combination) {
                 owner.push(params[key + 'Type'], params[key])
               }
+              console.log("PATH", modelRuntime().indexRangePath(indexName, owner, App.extractRange(params) ))
               return modelRuntime().indexRangePath(indexName, owner, App.extractRange(params) )
             }
           })

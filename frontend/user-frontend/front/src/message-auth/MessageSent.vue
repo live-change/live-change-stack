@@ -1,12 +1,12 @@
 <template>
   <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card border-round shadow-2 p-4" v-if="authenticationData?.state == 'used' && !submitted">
+    <div class="surface-card border-round shadow-2 p-4" v-if="authenticationData?.state === 'used' && !submitted">
       <div class="text-900 font-medium mb-3 text-xl">Authentication done</div>
       <p class="mt-0 mb-1 p-0 line-height-3">You authenticated in a different tab.</p>
     </div>
     <div class="surface-card border-round shadow-2 p-4" v-else>
       <div class="text-900 font-medium mb-3 text-xl">Message sent</div>
-      <p class="mt-0 mb-1 p-0 line-height-3">We sent special secret message to your email.</p>
+      <p class="mt-0 mb-1 p-0 line-height-3">We sent special secret message to the contact you already provided.</p>
       <p class="mt-0 mb-4 p-0 line-height-3">Click on the link or enter the code you found in that message.</p>
       <Secured :events="['wrong-secret-code']" :actions="['checkSecretCode']">
         <command-form service="messageAuthentication" action="finishMessageAuthentication"
@@ -25,7 +25,7 @@
               <Button label="OK" type="submit" class="p-button-lg flex-grow-0"></Button>
             </div>
           </div>
-          <div v-if="data.secretError == 'codeExpired'">
+          <div v-if="data.secretError === 'codeExpired'">
             <p class="mt-0 mb-4 p-0 line-height-3">To send another code click button below.</p>
             <Button label="Resend" class="p-button-lg" @click="resend"></Button>
           </div>
@@ -93,7 +93,7 @@
       path().messageAuthentication.authentication({ authentication })
     )
   ])
-  if(authenticationData?.value?.state == 'used') {
+  if(authenticationData?.value?.state === 'used') {
     router.push(authenticationData.value.targetPage)
   }
 </script>

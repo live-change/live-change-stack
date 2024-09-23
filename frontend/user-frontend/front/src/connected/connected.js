@@ -18,16 +18,17 @@ export function getContactTypes(api = useApi()) {
         }
       }
     }
-    //console.log('contactType', contactType, 'serviceName', serviceName, 'viewName', viewName)
+    console.log('contactType', contactType, 'serviceName', serviceName, 'viewName', viewName)
     console.log(`path[${serviceName}][${viewName}] =`, path[serviceName][viewName])
+    const contactsPath = computed(() => path[serviceName][viewName] && path[serviceName][viewName]({}))
     return {
       contactType,
       serviceName,
       viewName,
-      path: path[serviceName][viewName]({}),
+      path: contactsPath,
       contacts: null,
       async fetchContacts(context, onUnmountedCb){
-        const contacts = await live(path[serviceName][viewName]({}), context, onUnmountedCb)
+        const contacts = await live(contactsPath, context, onUnmountedCb)
         this.contacts = contacts
         return contacts
       }
@@ -70,7 +71,7 @@ export async function getContacts(context, onUnmountedCb) {
   for(const contactType of contactsTypes) {
     await contactType.fetchContacts(context, onUnmountedCb)
   }
-  const contacts = computed(() => contactsTypes.map((c,i) => c.contacts.value.map(v => ({
+  const contacts = computed(() => contactsTypes.map((c,i) => (c.contacts.value ?? []).map(v => ({
     contactType: c.contactType,
     serviceName: c.serviceName,
     ...(v)
