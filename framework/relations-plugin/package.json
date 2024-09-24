@@ -1,6 +1,6 @@
 {
   "name": "@live-change/relations-plugin",
-  "version": "0.8.72",
+  "version": "0.8.73",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.72",
+    "@live-change/framework": "^0.8.73",
     "pluralize": "^8.0.0"
   },
   "gitHead": "9f34ce84625f32092de0d93dcd19e4e4982982bd"
