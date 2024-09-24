@@ -25,17 +25,18 @@
 
         <div class="p-field mb-3">
           <label for="password" class="block text-900 font-medium mb-2">Password (optional)</label>
-          <Password id="password" class="w-full" inputClass="w-full" toggleMask
+          <Password id="password" class="w-full" inputClass="w-full" toggleMask :feedback="false"
                     aria-describedby="password-help" :class="{ 'p-invalid': data.passwordHashError }"
                     v-model="data.passwordHash" />
           <small id="password-help" class="p-error">{{ data.passwordHashError }}</small>
         </div>
 
         <div class="flex align-items-center justify-content-between mb-6">
-          <div class="flex align-items-center">
+          <div></div>
+<!--          <div class="flex align-items-center">
             <Checkbox id="rememberme" :binary="true" class="mr-2" />
             <label for="rememberme">Remember me</label>
-          </div>
+          </div>-->
           <router-link :to="{ name: 'user:resetPassword' }"
                        class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer">
             Forgot password?

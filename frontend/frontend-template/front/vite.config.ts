@@ -26,7 +26,7 @@ export default defineConfig(async ({ command, mode }) => {
     define: {
       ...baseConfig.define,
       ENV_VERSION: JSON.stringify(version),
-      ENV_BRAND_NAME: JSON.stringify(name[0].toUpperCase() + name.slice(1)),
+      ENV_BRAND_NAME: JSON.stringify(process.env.BRAND_NAME || (name[0].toUpperCase() + name.slice(1))),
       ENV_BRAND_DOMAIN: JSON.stringify(domain),
     },
 

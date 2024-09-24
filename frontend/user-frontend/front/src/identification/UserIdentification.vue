@@ -100,9 +100,9 @@
   }
 
   const name = computed(() => userData.value?.name
-    || (userData.value.firstName && userData.value.lastName
-      ? userData.value.firstName + ' ' + userData.value.lastName
-      : userData.value.firstName)
+    || ((userData.value?.firstName && userData.value?.lastName)
+      ? userData.value?.firstName + ' ' + userData.value?.lastName
+      : userData.value?.firstName)
     || props.anonymous
     || uniqueNamesGenerator(nameGeneratorConfig))
 

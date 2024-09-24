@@ -31,7 +31,7 @@
       </div>
     </div>
     <div class="flex flex-row gap-2 pt-2 justify-content-around">
-      <div v-if="audioInputRequest !== 'none' && audioInputs.length > 1"
+      <div v-if="audioInputRequest !== 'none' && audioInputs.length > 0"
            class="flex flex-column align-items-stretch flex-grow-1">
         <div class="text-sm mb-1 pl-1">Microphone</div>
         <Dropdown v-model="model.audioInput" :options="audioInputs"
@@ -48,7 +48,7 @@
           </template>
         </Dropdown>
       </div>
-      <div v-if="audioOutputRequest !== 'none' && audioOutputs.length > 1"
+      <div v-if="audioOutputRequest !== 'none' && audioOutputs.length > 0"
            class="flex flex-column align-items-stretch flex-grow-1">
         <div class="text-sm mb-1 pl-1">Audio output</div>
         <Dropdown v-model="model.audioOutput" :options="audioOutputs" optionLabel="label"
@@ -65,7 +65,7 @@
         </Dropdown>
       </div>
 
-      <div v-if="videoInputRequest !== 'none' && videoInputs.length > 1"
+      <div v-if="videoInputRequest !== 'none' && videoInputs.length > 0"
            class="flex flex-column align-items-stretch flex-grow-1">
         <div class="text-sm mb-1 pl-1">Camera</div>
         <Dropdown v-model="model.videoInput" :options="videoInputs" optionLabel="label"

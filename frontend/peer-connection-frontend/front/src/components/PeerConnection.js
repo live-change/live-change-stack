@@ -212,6 +212,10 @@ const createPeerConnection = (peer, to) => {
       } break;
       case "ice": {
         console.log("RECEIVED ICE! IN STATE", rtc.value.signalingState)
+        if(rtc.value.signalingState === "have-local-offer") {
+          console.log("IGNORE ICE IN THIS STATE")
+          return;
+        }
         let ice = message.data
         //if(ice && ice.candidate === "") break;
         if(ice && ice.candidate !== "") {
