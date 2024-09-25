@@ -104,7 +104,7 @@ definition.processor(function(service, app) {
         }
       })
 
-      service.trigger({
+/*      service.trigger({
         name: 'userDeleted',
         properties: {
           user: {
@@ -115,7 +115,7 @@ definition.processor(function(service, app) {
         async execute({ user, session }, { service }, emit) {
           /// TODO: delete on userDeleted trigger
         }
-      })
+      })*/
 
       if(config.ownerReadAccess) {
         const viewName = 'my' + modelName

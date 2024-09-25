@@ -142,6 +142,7 @@ definition.processor(function(service, app) {
         }
       })
 
+/*    not needed
       service.trigger({
         name: 'userDeleted',
         properties: {
@@ -154,6 +155,7 @@ definition.processor(function(service, app) {
           /// TODO: delete on userDeleted trigger
         }
       })
+*/
 
       const extendedIdentifiersProperties = createIdentifiersProperties(extendedWith)
 

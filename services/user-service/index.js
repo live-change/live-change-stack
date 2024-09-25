@@ -159,6 +159,13 @@ definition.action({
     await service.trigger({ type: 'userDeleted'  }, {
       user
     })
+    await service.trigger({ type: 'deleteUser_User'  }, {
+      object: user
+    })
+    await service.trigger({ type: 'deleteObject'  }, {
+      objectType: 'user_User',
+      object: user
+    })
     emit([{
       type: "deleted",
       user

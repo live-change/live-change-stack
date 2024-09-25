@@ -21,6 +21,7 @@
                :owner="tile.video?.owner ?? 'unknown'"
                @resize="ev => handleVideoResize(tile, ev)"
                @click="ev => handleVideoClick(tile, ev)"
+               :audioOutputId="audioOutputId"
                :style="videoStyles[tile.id]">
     </PeerVideo>
   </div>
@@ -61,9 +62,16 @@
     volume: {
       type: Number,
       defaultValue: 1
+    },
+    audioOutputId: {
+      type: String,
+      default: 'default'
     }
   })
-  const { mainVideos, topVideos, bottomVideos, myVideos, topBarHeight, bottomBarHeight, volume } = toRefs(props)
+  const {
+    mainVideos, topVideos, bottomVideos, myVideos, topBarHeight, bottomBarHeight,
+    volume, audioOutputId
+  } = toRefs(props)
 
   const emit = defineEmits(['videoClick'])
 

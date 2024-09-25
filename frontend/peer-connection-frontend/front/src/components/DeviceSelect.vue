@@ -7,13 +7,13 @@
         <i class="pi pi-eye-slash text-9xl text-gray-500" style="font-size: 2.5rem" />
         <div class="text-xl">Video input not found!</div>
         <div class>Please connect camera.</div>
-        <audio v-if="model?.audioInput?.deviceId"
+        <audio v-if="model?.audioInput?.deviceId" ref="outputElement"
                autoplay playsinline :muted="userMediaMuted"
                :src-object.prop.camel="userMedia">
         </audio>
       </div>
       <div v-else class="bg-black-alpha-90 flex align-items-center justify-content-center">
-        <video v-if="userMedia" autoplay playsinline :muted="userMediaMuted"
+        <video v-if="userMedia" autoplay playsinline :muted="userMediaMuted" ref="outputElement"
                :src-object.prop.camel="userMedia"
                class="max-w-full max-h-full" style="object-fit: contain; transform: scaleX(-1)">
         </video>
@@ -34,7 +34,9 @@
       <div v-if="audioInputRequest !== 'none' && audioInputs.length > 0"
            class="flex flex-column align-items-stretch flex-grow-1">
         <div class="text-sm mb-1 pl-1">Microphone</div>
-        <Dropdown v-model="model.audioInput" :options="audioInputs"
+        <Dropdown :modelValue="model.audioInput"
+                  @update:modelValue="value => updateAudioInput(value)"
+                  :options="audioInputs"
                   optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
@@ -51,7 +53,9 @@
       <div v-if="audioOutputRequest !== 'none' && audioOutputs.length > 0"
            class="flex flex-column align-items-stretch flex-grow-1">
         <div class="text-sm mb-1 pl-1">Audio output</div>
-        <Dropdown v-model="model.audioOutput" :options="audioOutputs" optionLabel="label"
+        <Dropdown :modelValue="model.audioOutput"
+                  @update:modelValue="value => updateAudioOutput(value)"
+                  :options="audioOutputs" optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
             <div class="flex flex-row align-items-center">
@@ -68,7 +72,9 @@
       <div v-if="videoInputRequest !== 'none' && videoInputs.length > 0"
            class="flex flex-column align-items-stretch flex-grow-1">
         <div class="text-sm mb-1 pl-1">Camera</div>
-        <Dropdown v-model="model.videoInput" :options="videoInputs" optionLabel="label"
+        <Dropdown :modelValue="model.videoInput"
+                  @update:modelValue="value => updateVideoInput(value)"
+                  :options="videoInputs" optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
             <div class="flex flex-row align-items-center">
@@ -106,6 +112,7 @@
                 label="Cancel" icon="pi pi-times" class="p-button-warning" autofocus />
       </template>
     </PermissionsDialog>
+
 <!--
 
     <pre>PD: {{ permissionsDialog }}</pre>
@@ -299,6 +306,20 @@
     }
   })
 
+  const outputElement = ref(null)
+  watchEffect(() => {
+    const output = outputElement.value
+    const outputDeviceId = model.value?.audioOutput?.deviceId
+    if(!output) return
+    (async () => {
+      console.log("SET OUTPUT DEVICE", outputDeviceId)
+      if(outputDeviceId) {
+        await output.setSinkId(outputDeviceId)
+      } else {
+        //await output.setSinkId(null)
+      }
+    })()
+  })
 
   const permissionsDialog = ref({ })
   const permissionsCallbacks = ref({})
@@ -386,6 +407,25 @@
     updateDevices()
     //updateUserMedia()
   })
+
+  function updateAudioInput(value) {
+    model.value = {
+      ...model.value,
+      audioInput: value
+    }
+  }
+  function updateAudioOutput(value) {
+    model.value = {
+      ...model.value,
+      audioOutput: value
+    }
+  }
+  function updateVideoInput(value) {
+    model.value = {
+      ...model.value,
+      videoInput: value
+    }
+  }
 
 </script>
 

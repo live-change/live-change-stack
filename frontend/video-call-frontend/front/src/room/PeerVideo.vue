@@ -21,7 +21,7 @@
              :src-object.prop.camel="stream"
              :volume.prop.camel="volume"
              :muted="audioMuted"
-             :ref="videoElement"
+             ref="videoElement"
              @resize="handleVideoResize"
              class="w-full h-full"
              :style="mirror ? 'transform: scaleX(-1)' : ''">
@@ -102,7 +102,7 @@
   import { VolumeIndicator } from "@live-change/peer-connection-frontend"
   import { UserIdentification } from "@live-change/user-frontend"
 
-  import { defineProps, defineEmits, toRefs, ref, computed } from 'vue'
+  import { defineProps, defineEmits, toRefs, ref, computed, watchEffect } from 'vue'
 
   const props = defineProps({
     id: {
@@ -141,8 +141,14 @@
       type: Boolean,
       default: false
     },
+    audioOutputId: {
+      type: String,
+      default: null
+    }
   })
-  const { id, stream, image, ownerType, owner, peerState, audioMuted, mirror } = toRefs(props)
+  const {
+    id, stream, image, ownerType, owner, peerState, audioMuted, mirror, audioOutputId
+  } = toRefs(props)
 
   const emit = defineEmits(['resize'])
 
@@ -156,6 +162,20 @@
     }
     emit('resize', { width: event.target.videoWidth, height: event.target.videoHeight })
   }
+
+  watchEffect(() => {
+    const output = videoElement.value
+    const outputDeviceId = audioOutputId.value
+    if(!output) return
+    (async () => {
+      console.log("SET OUTPUT DEVICE", outputDeviceId)
+      if(outputDeviceId) {
+        await output.setSinkId(outputDeviceId)
+      } else {
+        //await output.setSinkId(null)
+      }
+    })()
+  })
 
 </script>
 
