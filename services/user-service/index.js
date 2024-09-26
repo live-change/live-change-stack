@@ -117,8 +117,8 @@ definition.action({
   access: (params, { client }) => {
     return client.roles && client.roles.includes('admin')
   },
-  async execute({ user }, { client, service }, emit) {
-    const userData = await User.get(user)
+  async execute({ to }, { client, service }, emit) {
+    const userData = await User.get(to)
     if(!userData) throw 'userNotFound'
     await service.trigger({ type: 'signedOut' }, {
       session: client.session,

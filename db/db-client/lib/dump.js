@@ -78,7 +78,7 @@ async function dump(
           let wait = false
           //console.error("INDEX", indexName, "SOURCES", conf.sources)
           for(const source of conf.sources || []) {
-            if(source.type == 'index') {
+            if(source.type === 'index') {
               //console.error("INDEX", indexName, "HAS INDEX SOURCE", source.name)
               if(!indexesCreatedBefore.includes(source.name)) {
                 //console.error("WE WILL WAIT FOR THAT INDEX")
@@ -113,7 +113,7 @@ async function dump(
       await Promise.all(results.map(output))
       found = results.length
       if(results.length) position = results[results.length - 1].id
-    } while(found == bucket)
+    } while(found === bucket)
   }
 
   if(!metadata) {
