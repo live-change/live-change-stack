@@ -72,7 +72,7 @@
     },
     availableRoles: {
       type: Array,
-      default: () => ['administrator', 'moderator', 'writer', 'reader']
+      default: () => ['admin', 'moderator', 'writer', 'reader']
     },
     availablePublicRoles: {
       type: Array,
@@ -109,7 +109,7 @@
     },
     adminRoles: {
       type: Array,
-      default: () => ['administrator']
+      default: () => ['admin']
     }
   })
 

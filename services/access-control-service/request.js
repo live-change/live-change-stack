@@ -45,7 +45,7 @@ definition.action({
       visibilityTest || access.clientCanInvite(client, params),
   async execute({ objectType, object, sessionOrUserType, sessionOrUser, roles }, { client, service }, emit) {
     const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
-    if(!myRoles.includes('administrator')) {
+    if(!myRoles.includes('admin')) {
       for(const requestedRole of roles) {
         if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
       }

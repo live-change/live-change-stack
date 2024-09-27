@@ -23,7 +23,7 @@ export default async function(service, definition, app, client) {
   for(let viewName in definition.views) {
     const view = service.definition.views[viewName]
     if(view.internal &&
-      !(client.roles.includes('admin') || client.roles.includes('administrator'))) {
+      !(client.roles.includes('admin'))) {
       delete definition.views[viewName]
     }
     if(!view.access) continue;

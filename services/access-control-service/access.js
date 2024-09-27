@@ -11,7 +11,7 @@ export default (definition) => {
 
   const { /// TODO: per type access config
     hasAny = (roles, client, { objectType, object }) => roles.length > 0,
-    isAdmin = (roles, client, { objectType, object }) => roles.includes('administrator'),
+    isAdmin = (roles, client, { objectType, object }) => roles.includes('admin'),
     canInvite = (roles, client, { objectType, object }) => roles.length > 0,
     canRequest = (roles, client, { objectType, object }) => false
   } = config

@@ -64,7 +64,7 @@ module.exports = async function(services) {
   }
 
   const user1 = await createUser(services,
-    'Test User 1', 'test1@test.com', 'Testy123', 'u1', ['writer', 'administrator'])
+    'Test User 1', 'test1@test.com', 'Testy123', 'u1', ['writer', 'admin'])
 
   await createPost('one')
 

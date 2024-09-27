@@ -7,7 +7,7 @@ const steps = {
 
   ...userSteps,
 
-  async haveUserWithAccess(user, objectType, object, roles = ['administrator']) {
+  async haveUserWithAccess(user, objectType, object, roles = ['admin']) {
     const I = this
     const Access = await I.haveModel('accessControl', 'Access')
     await Access.create({

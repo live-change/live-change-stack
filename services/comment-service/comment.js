@@ -9,8 +9,8 @@ import { encodeDate } from '@live-change/uid'
 const {
   contentObject = false,
   commentProperties = {},
-  adminRoles = ['administrator', 'admin'],
-  moderatorRoles = ['administrator', 'admin', 'moderator'],
+  adminRoles = ['admin'],
+  moderatorRoles = ['admin', 'moderator'],
   editExpire = 1000 * 60 * 60 * 15 // 15 minutes
 } = config
 const {

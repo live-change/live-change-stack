@@ -225,7 +225,7 @@ for(const contactType of config.contactTypes) {
       const { roles } = params
 
       const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
-      if(!myRoles.includes('administrator')) {
+      if(!myRoles.includes('admin')) {
         for(const requestedRole of roles) {
           if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
         }
