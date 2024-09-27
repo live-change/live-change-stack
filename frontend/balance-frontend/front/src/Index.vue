@@ -32,9 +32,9 @@
               Name
             </label>
             <InputText id="name" type="text" class="w-full"
-                       aria-describedby="email-help" :class="{ 'p-invalid': data.nameError }"
+                       aria-describedby="name-help" :class="{ 'p-invalid': data.nameError }"
                        v-model="data.name" />
-            <small id="email-help" class="p-error">{{ data.nameError }}</small>
+            <small v-if="data.nameError" id="name-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
           </div>
         </div>
         <Button label="Add balance" icon="pi pi-plus" type="submit" />
@@ -55,6 +55,9 @@
   import { usePath, live, useClient, useActions, reverseRange, useTimeSynchronization } from '@live-change/vue3-ssr'
   const path = usePath()
   const actions = useActions()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const allBalancesPath = computed(() => path.balanceTest.allBalances({}))
 

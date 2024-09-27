@@ -15,7 +15,7 @@
           <PhoneInput id="phone" class="w-full"
                      aria-describedby="phone-help" :class="{ 'p-invalid': data.phoneError }"
                      v-model="data.phone" />
-          <small v-if="data.phoneError" id="phone-help" class="p-error">{{ data.phoneError }}</small>
+          <small v-if="data.phoneError" id="phone-help" class="p-error">{{ t(`errors.${data.phoneError}`) }}</small>
         </div>
 
         <Button label="Add Phone" icon="pi pi-mobile" class="w-full" type="submit" />
@@ -42,6 +42,9 @@
   import Button from "primevue/button"
   import Divider from "primevue/divider"
   import PhoneInput from "../phone/PhoneInput.vue"
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   import { useRouter } from 'vue-router'
   const router = useRouter()

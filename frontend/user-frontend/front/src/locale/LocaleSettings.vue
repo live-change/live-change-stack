@@ -24,7 +24,7 @@
                     :filter="availableLocales.length > 10"
                     placeholder="Auto-detect"
                     class="w-full" />
-          <small v-if="data.languageError" id="language-help" class="p-error">{{ data.languageError }}</small>
+          <small v-if="data.languageError" id="language-help" class="p-error">{{ t(`errors.${data.languageError}`) }}</small>
         </div>
 
         <Button type="submit" label="Apply" class="mt-1" icon="pi pi-save" />

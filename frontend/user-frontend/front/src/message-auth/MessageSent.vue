@@ -19,7 +19,7 @@
               <InputMask id="code" class="p-inputtext-lg" mask="999999" slotChar="######" placeholder="Enter code"
                          v-model="data.secret"
                          aria-describedby="code-help" :class="{ 'p-invalid': data.secretError }" />
-              <span v-if="data.secretError" id="code-help" class="p-error">{{ data.secretError }}</span>
+              <span v-if="data.secretError" id="code-help" class="p-error">{{ t(`errors.${data.secretError}`) }}</span>
             </div>
             <div class="flex flex-column">
               <Button label="OK" type="submit" class="p-button-lg flex-grow-0"></Button>
@@ -45,6 +45,9 @@
   import { ref } from 'vue'
 
   const router = useRouter()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const { authentication } = defineProps({
     authentication: {

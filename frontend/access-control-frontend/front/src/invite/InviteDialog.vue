@@ -21,7 +21,7 @@
             <InputText id="email" type="text" class="w-full"
                        aria-describedby="email-help" :class="{ 'p-invalid': data.emailError }"
                        v-model="data.email" />
-            <small id="email-help" class="p-error">{{ data.emailError }}</small>
+            <small v-if="data.emailError" id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
           </div>
         </div>
         <div class="col-12 md:col-6">
@@ -40,7 +40,7 @@
                          :optionLabel="optionLabel"
                          v-model="data.roles"
                          :feedback="false" toggleMask />
-            <small id="email-help" class="p-error">{{ data.rolesError }}</small>
+            <small v-if="data.rolesError" id="roles-help" class="p-error">{{ t(`errors.${data.rolesError}`) }}</small>
           </div>
 
         </div>
@@ -71,6 +71,9 @@
 
   import { useToast } from 'primevue/usetoast'
   const toast = useToast()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   import { ref } from 'vue'
   import { toRefs } from "@vueuse/core"

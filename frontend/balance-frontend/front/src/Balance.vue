@@ -44,7 +44,7 @@
               <InputText id="name" type="text" class="w-full"
                          aria-describedby="email-help" :class="{ 'p-invalid': data.nameError }"
                          v-model="data.name" />
-              <small id="email-help" class="p-error">{{ data.nameError }}</small>
+              <small id="email-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
             </div>
           </div>
           <div class="col-12 md:col-6 py-1">
@@ -55,7 +55,7 @@
               <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
                          aria-describedby="email-help" :class="{ 'p-invalid': data.changeError }"
                          v-model="data.change" />
-              <small id="email-help" class="p-error">{{ data.changeError }}</small>
+              <small id="email-help" class="p-error">{{ t(`errors.${data.changeError}`) }}</small>
             </div>
           </div>
           <Button label="Start operation" icon="pi pi-plus" type="submit" />
@@ -72,9 +72,9 @@
                 Name
               </label>
               <InputText id="name" type="text" class="w-full"
-                         aria-describedby="email-help" :class="{ 'p-invalid': data.nameError }"
+                         aria-describedby="name-help" :class="{ 'p-invalid': data.nameError }"
                          v-model="data.name" />
-              <small id="email-help" class="p-error">{{ data.nameError }}</small>
+              <small v-if="data.nameError" id="name-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
             </div>
           </div>
           <div class="col-12 md:col-6 py-1">
@@ -83,9 +83,9 @@
                 Change
               </label>
               <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
-                           aria-describedby="email-help" :class="{ 'p-invalid': data.changeError }"
+                           aria-describedby="change-help" :class="{ 'p-invalid': data.changeError }"
                            v-model="data.change" />
-              <small id="email-help" class="p-error">{{ data.changeError }}</small>
+              <small v-if="data.changeError" id="change-help" class="p-error">{{ t(`errors.${data.changeError}`) }}</small>
             </div>
           </div>
           <Button label="Do operation" icon="pi pi-plus" type="submit" />
@@ -139,6 +139,9 @@
   import { usePath, live, useClient, useActions, reverseRange, useTimeSynchronization } from '@live-change/vue3-ssr'
   const path = usePath()
   const actions = useActions()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const balancePath = computed(() => path.balance.ownerOwnedBalance({
     ownerType: 'balanceTest_balance',

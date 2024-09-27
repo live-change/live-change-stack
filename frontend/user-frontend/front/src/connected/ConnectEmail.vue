@@ -15,7 +15,7 @@
           <InputText id="email" type="text" class="w-full"
                      aria-describedby="email-help" :class="{ 'p-invalid': data.emailError}"
                      v-model="data.email" />
-          <small v-if="data.emailError" id="email-help" class="p-error">{{ data.emailError }}</small>
+          <small v-if="data.emailError" id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
         </div>
 
         <Button label="Add Email" icon="pi pi-envelope" class="w-full" type="submit" />
@@ -44,6 +44,9 @@
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   function handleSent({ parameters, result }) {
     const { authentication } = result

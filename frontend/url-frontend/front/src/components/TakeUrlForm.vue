@@ -11,7 +11,7 @@
                    aria-describedby="path-help" :class="{ 'p-invalid': data.pathError }"
                    placeholder="enter/absolute/path"
                    v-model="data.path" />
-        <small id="path-help" class="p-error">{{ data.pathError }}</small>
+        <small v-if="data.pathError" id="path-help" class="p-error">{{ t(`errors.${data.pathError}`) }}</small>
       </div>
       <div class="p-field mb-3">
         <label for="domain" class="block text-900 font-medium mb-2">
@@ -21,7 +21,7 @@
                    aria-describedby="domain-help" :class="{ 'p-invalid': data.domainError }"
                    placeholder="any"
                    v-model="data.domain" />
-        <small id="domain-help" class="p-error">{{ data.domainError }}</small>
+        <small v-if="data.domainError" id="domain-help" class="p-error">{{ t(`errors.${data.domainError}`) }}</small>
       </div>
 
       <div class="flex flex-row flex-wrap">
@@ -82,6 +82,9 @@
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
 </script>
 
