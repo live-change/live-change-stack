@@ -582,22 +582,22 @@ class App {
     const service = this.startedServices[serviceName]
     const view = service.views[viewName]
     if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
-    const result = view.observable(params)
-    return result.then ? new LcDao.ObservablePromiseProxy(result) : result
+    const result = view.observable(params, { internal: true, roles: ['admin'] })
+    return result.then ? new ReactiveDao.ObservablePromiseProxy(result) : result
   }
 
   async serviceViewGet(serviceName, viewName, params) {
     const service = this.startedServices[serviceName]
     const view = service.views[viewName]
     if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
-    return await view.get(params)
+    return await view.get(params, { internal: true, roles: ['admin'] })
   }
 
   viewObservable(viewName, params) {
     const view = this.globalViews[viewName]
     if(!view) throw new Error(`Global view ${viewName} not found`)
-    const result = view.observable(params)
-    return result.then ? new LcDao.ObservablePromiseProxy(result) : result
+    const result = view.observable(params, { internal: true, roles: ['admin'] })
+    return result.then ? new ReactiveDao.ObservablePromiseProxy(result) : result
   }
 
   async viewGet(viewName, params) {

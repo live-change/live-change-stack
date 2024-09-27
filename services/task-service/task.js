@@ -205,7 +205,11 @@ export default function task(definition, serviceDefinition) {
           }, props)
         },
         async triggerService(trigger, props, returnArray = false) {
-          return await app.triggerService(trigger, props, returnArray)
+          return await app.triggerService({
+            causeType: 'task_Task',
+            cause: taskObject.id,
+            ...trigger
+          }, props, returnArray)
         }
       }
       try {

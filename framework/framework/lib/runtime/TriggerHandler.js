@@ -22,7 +22,7 @@ class TriggerHandler {
     const preparedParams = await prepareParameters(parameters, this.definition.properties, this.service)
     //console.log("PREP PARAMS", preparedParams)
 
-    let resultPromise = this.definition.execute({
+    let resultPromise = Promise.resolve(this.definition.execute({
       ...preparedParams
     }, {
       ...trig,
@@ -38,8 +38,8 @@ class TriggerHandler {
         cause: trig.id,
         ...trigger
       }, data, returnArray)
-    }, emit)
-
+    }, emit))
+    console.log("RESULT PROMISE", resultPromise, resultPromise.then)
     resultPromise = resultPromise.then(async result => {
       const processedResult = await processReturn(result, this.definition.returns, this.service)
       return processedResult
