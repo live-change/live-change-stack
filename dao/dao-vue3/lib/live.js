@@ -139,6 +139,7 @@ async function live(api, path, onUnmountedCb) {
   if(Array.isArray(path)) path = { what: path }
   const paths = [ path ]
   const preFetchPaths = api.observable({ paths })
+  const fetchPromises = []
   function bindResult(what, more, actions, object, property, onError) {
     if(!what) throw new Error("what parameter required!")
     const observable = api.observable(what)
@@ -252,6 +253,7 @@ async function live(api, path, onUnmountedCb) {
         extendedObservable.unbindProperty(object, property)
         observable.unobserve(errorObserver)
       }
+      fetchPromises.push(extendedObservable.wait())
     } else {
       observable.bindProperty(object, property)
       observable.observe(errorObserver)
@@ -260,6 +262,7 @@ async function live(api, path, onUnmountedCb) {
         observable.unbindProperty(object, property)
         observable.unobserve(errorObserver)
       }
+      fetchPromises.push(observable.wait())
     }
     return {
       what, property, dispose
@@ -283,6 +286,9 @@ async function live(api, path, onUnmountedCb) {
     })
     preFetchPaths.wait().then(resolve).catch(onError)
   })
+  while(fetchPromises.length > 0) { // wait for all fetch promises, including ones added by bindResult
+    await fetchPromises.shift()
+  }
   while(unref(resultRef) === undefined) { // wait for next tick
     await new Promise((resolve) => setTimeout(resolve, 0))
   }
