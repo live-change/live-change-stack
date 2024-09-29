@@ -4,4 +4,6 @@ node_modules
 front/dist
 e2e/output
 stats.html
+build-stats
+package-deps.json
 *.db
