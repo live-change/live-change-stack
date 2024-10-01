@@ -1,8 +1,8 @@
 <template>
   <component v-if="tag" :is="tag" v-on:submit="ev => handleSubmitEvent(ev)" :class="class" :style="style">
-    <slot v-bind="{ data }"></slot>
+    <slot v-bind="{ data, definition }"></slot>
   </component>
-  <slot v-else v-bind="{ data }"></slot>
+  <slot v-else v-bind="{ data, definition }"></slot>
 </template>
 
 <script>
@@ -111,7 +111,7 @@
       return Promise.all(promises).then(results => {
         for(let error of results) {
           if(error) {
-            if(this.data[this.property+errorSufix] === error) return error
+            if(this.data[this.property + errorSufix] === error) return error
             this.setError(error)
             return error
           }
@@ -190,13 +190,9 @@
         }
       }
       if(this.object) {
-        console.log("PROPS RESET START", this.property)
         for(let propName in this.properties) {
-          console.log("PROP RESET", propName, this.object[propName])
           this.properties[propName].reset(initialValue && initialValue[propName])
-          console.log("PROP RESET", propName, this.object[propName])
         }
-        console.log("PROPS RESET", this.object)
       }
     }
     afterError(initialValue) {

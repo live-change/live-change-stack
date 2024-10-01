@@ -19,9 +19,18 @@
              ? t( 'errors.' + validationResult.error, validationResult.validator )
              : t( 'errors.' + validationResult ) }}
       </small>
-      <small v-if="maxLengthValidation" style="float: right" class="mt-1"
-             :class="{ 'p-error': props.modelValue?.length > maxLengthValidation.length }">
-        {{ t( 'info.maxLength', { maxLength: maxLengthValidation.length, length: props.modelValue?.length ?? 0 }) }}
+      <small v-if="maxLengthValidation || minLengthValidation" style="float: right" class="mt-1"
+             :class="{
+               'p-error': (maxLengthValidation && props.modelValue?.length
+                            && props.modelValue?.length > maxLengthValidation.length)
+                       || (minLengthValidation && props.modelValue?.length
+                            && props.modelValue?.length < minLengthValidation.length)
+             }">
+        {{
+          (minLengthValidation && props.modelValue?.length && props.modelValue?.length < minLengthValidation.length)
+            ? t( 'info.minLength', { minLength: minLengthValidation.length, length: props.modelValue?.length ?? 0 })
+            : t( 'info.maxLength', { maxLength: maxLengthValidation.length, length: props.modelValue?.length ?? 0 })
+        }}
       </small>
     </div>
   </div>
@@ -127,7 +136,8 @@
         if(validator.name === name) return validator
   }
 
-  const maxLengthValidation = computed(() => findValidation('maxLength')?.params)
+  const maxLengthValidation = computed(() => findValidation('maxLength'))
+  const minLengthValidation = computed(() => findValidation('minLength'))
 
   const config = inject('auto-form', {
     inputs: {},

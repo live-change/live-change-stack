@@ -8,7 +8,7 @@ export function defaultData(definition, otherSrc) {
     for(let name in definition.properties) {
       result[name] = defaultData(definition.properties[name], result?.[name])
     }
-  } else if(definition.type == 'Array') {
+  } else if(definition.type === 'Array') {
     result = result || []
     for(let i = 0; i < result.length; i++) {
       result[i] = defaultData(definition.of, result[i])
@@ -32,7 +32,7 @@ export function validateData(definition, data, validationType = 'validation',
     for(const validation of validations) {
       const validator = typeof validation == 'string'
         ? validators[validation]({}, validationContext)
-        : validators[validation.name](validation.params, validationContext)
+        : validators[validation.name](validation, validationContext)
       if(!validator) throw new Error(`Validator ${validation.name || validation} not found`)
       const error = validator(data, context)
       if(error) {

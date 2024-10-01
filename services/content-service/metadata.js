@@ -65,24 +65,24 @@ const Metadata = definition.model({
   properties: {
     title: {
       type: String,
-      validation: ['nonEmpty', { name: 'maxLength', params: { length: 64 } }]
+      validation: ['nonEmpty', { name: 'maxLength', length: 64 }]
     },
     description: {
       type: String,
       input: 'textarea',
-      softValidation: ['nonEmpty', { name: 'maxLength', params: { length: 155 } }]
+      softValidation: ['nonEmpty', { name: 'maxLength', length: 155 }]
     },
     og: {
       type: Object,
       properties: {
         title: {
           type: String,
-          softValidation: ['nonEmpty', { name: 'maxLength', params: { length: 60 } }]
+          softValidation: ['nonEmpty', { name: 'maxLength', length: 60 }]
         },
         description: {
           type: String,
           input: 'textarea',
-          softValidation: ['nonEmpty', { name: 'maxLength', params: { length: 65 } }]
+          softValidation: ['nonEmpty', { name: 'maxLength', length: 65 }]
         },
         image: {
           type: 'Image',
