@@ -1,6 +1,6 @@
 {
   "name": "@live-change/security-service",
-  "version": "0.8.79",
+  "version": "0.8.80",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,9 +22,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.8.79",
-    "@live-change/pattern": "0.8.79",
-    "@live-change/pattern-db": "0.8.79",
+    "@live-change/framework": "^0.8.80",
+    "@live-change/pattern": "^0.8.80",
+    "@live-change/pattern-db": "^0.8.80",
     "nodemailer": "^6.7.2"
   },
   "gitHead": "9f34ce84625f32092de0d93dcd19e4e4982982bd"
