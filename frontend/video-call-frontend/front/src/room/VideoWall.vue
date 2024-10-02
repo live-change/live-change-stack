@@ -23,6 +23,9 @@
                @click="ev => handleVideoClick(tile, ev)"
                :audioOutputId="audioOutputId"
                :style="videoStyles[tile.id]">
+      <template #videoOverlay="props">
+        <slot name="videoOverlay" v-bind="{ ...props, tile }"></slot>
+      </template>
     </PeerVideo>
   </div>
 </template>

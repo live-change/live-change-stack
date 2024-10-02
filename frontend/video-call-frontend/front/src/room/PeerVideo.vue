@@ -1,8 +1,8 @@
 <template>
   <div @click="ev => $emit('click', ev)"
-       class="absolute  text-gray-200 border-1 border-white-alpha-30 peer-video">
+       class="absolute text-gray-200 border-1 border-white-alpha-30 peer-video">
 
-    <div v-if="image && (!stream || peerState.videoMuted)"
+    <div v-if="image && (!stream || peerState.videoState !== 'enabled')"
          class="absolute w-full h-full bg-no-repeat bg-center" :style="{
            'background-image': 'url(' + image + ')',
            'background-size': '90%'
@@ -27,6 +27,8 @@
              :style="mirror ? 'transform: scaleX(-1)' : ''">
       </video>
     </div>
+
+    <slot name="videoOverlay" v-bind="props" />
 
     <div v-if="peerState"
          class="absolute top-0 right-0 h-3rem pr-1 flex align-items-center">
@@ -89,7 +91,7 @@
         }
         span {
           color: rgba(255,255,255,0.8);
-          margin-top: 0.4em;
+          margin-top: 0.8em;
           font-size: 1.1em
         }
       }
@@ -100,7 +102,11 @@
 <script setup>
 
   import { VolumeIndicator } from "@live-change/peer-connection-frontend"
-  import { UserIdentification } from "@live-change/user-frontend"
+  import { UserIdentification as DefaultUserIdentification } from "@live-change/user-frontend"
+
+  import { injectComponent } from "@live-change/vue3-components"
+  const UserIdentification = injectComponent('UserIdentification', DefaultUserIdentification)
+
 
   import { defineProps, defineEmits, toRefs, ref, computed, watchEffect } from 'vue'
 

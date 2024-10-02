@@ -381,7 +381,6 @@
   watch(() => selectedConstraints.value, () => updateUserMedia(), { immediate: true })
 
   useIntervalFn(() => {
-    console.log("RETRY MEDIA ON ERROR", model.value.cameraAccessError, retryMediaOnError.value)
     if(!retryMediaOnError.value) return
     if(!model.value.cameraAccessError) return
     console.log("RETRY CAMERA ACCESS!")

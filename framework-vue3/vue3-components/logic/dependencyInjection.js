@@ -22,21 +22,26 @@ export function injectComponent(request, defaultComponent, factory) {
   if(!request) throw new Error("injectComponent: request is required")
   if(typeof request === 'string') request = { name: request }
 
+  console.log("INJECT COMPONENT", request)
+
   const filter = request.filter || (() => true)
   delete request.filter
 
   for(let key in request) {
     const provideKey = `component:${request.name}:${key}=${request[key]}`
+    console.log("INJECT COMPONENT PROVIDE KEY", provideKey)
     const component = inject(provideKey, null)
+    console.log("RESOLVED COMPONENT", component)
     if(!component) continue
     let isValid = true
-    for(let key in component) {
+    for(let key in component.description) {
       const value = request[key]
       if(Array.isArray(value)) {
-        if(!value.includes(component[key])) isValid = false
-      } else if(value !== component[key]) isValid = false
+        if(!value.includes(component.description[key])) isValid = false
+      } else if(value !== component.description[key]) isValid = false
     }
-    if(isValid && filter(component)) return component
+    console.log("RESLVED COMPONENT VALID", isValid)
+    if(isValid && filter(component)) return component.component
   }
   return factory ? defaultComponent() : defaultComponent
 }
