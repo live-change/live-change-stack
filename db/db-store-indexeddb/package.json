@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-indexeddb",
-  "version": "0.8.81",
+  "version": "0.8.82",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -26,8 +26,8 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "0.8.81",
-    "@live-change/flatten-interval-tree": "0.8.81",
+    "@live-change/dao": "^0.8.82",
+    "@live-change/flatten-interval-tree": "^0.8.82",
     "broadcast-channel": "^4.2.0"
   },
   "gitHead": "9f34ce84625f32092de0d93dcd19e4e4982982bd"
