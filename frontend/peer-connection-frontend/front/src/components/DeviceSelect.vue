@@ -18,6 +18,7 @@
                class="max-w-full max-h-full" style="object-fit: contain; transform: scaleX(-1)">
         </video>
       </div>
+
       <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-end align-items-center">
         <div class="flex flex-row justify-content-between align-items-center h-5rem w-7rem media-buttons">
           <MicrophoneButton v-model="model" @disabled-audio-click="handleDisabledAudioClick" />
@@ -27,6 +28,29 @@
       <div class="absolute top-0 right-0" v-if="userMedia">
         <div class="m-3">
           <VolumeIndicator :stream="userMedia" />
+        </div>
+      </div>
+      <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-center align-items-center">
+        <div v-if="model.cameraAccessError"
+             class="flex flex-column justify-content-center align-items-center m-3 p-2 bg-black-alpha-40">
+          <i class="bx bx-camera-off text-4xl text-red-600" />
+          <div class="text-red-500 text-xl mb-1">
+            Cannot access the camera.
+          </div>
+          <div class="text-red-500 text-sm text-center">
+            It might be in use by another application or there might be a hardware issue.
+            Please ensure no other applications are using the camera and try again.
+          </div>
+        </div>
+        <div v-else-if="model.mediaError"
+             class="flex flex-column justify-content-center align-items-center m-3 p-2 bg-black-alpha-40">
+          <i class="bx bx-camera-off text-4xl text-red-600" />
+          <div class="text-red-500 text-xl mb-1">
+            Cannot access media devices.
+          </div>
+          <div class="text-red-500 text-sm text-center">
+            {{ model.mediaError }}
+          </div>
         </div>
       </div>
     </div>
@@ -140,7 +164,7 @@
   import VolumeIndicator from './VolumeIndicator.vue'
 
   import { defineProps, defineModel, computed, ref, toRefs, onMounted, watch, watchEffect } from 'vue'
-  import { useInterval, useEventListener } from  "@vueuse/core"
+  import { useIntervalFn, useEventListener } from  "@vueuse/core"
   import { getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative, isUserMediaPermitted }
     from "./userMedia.js"
   import MicrophoneButton from './MicrophoneButton.vue'
@@ -163,9 +187,13 @@
     constraints: {
       type: Object,
       default: () => ({})
+    },
+    retryMediaOnError: {
+      type: Boolean,
+      default: false
     }
   })
-  const { audioInputRequest, audioOutputRequest, videoInputRequest, constraints } = toRefs(props)
+  const { audioInputRequest, audioOutputRequest, videoInputRequest, constraints, retryMediaOnError } = toRefs(props)
 
   const model = defineModel({
     required: true,
@@ -186,7 +214,13 @@
       videoMuted: {
         type: Boolean
       },
-      userMedia: {
+      media: {
+        type: Object
+      },
+      mediaError: {
+        type: Object
+      },
+      cameraAccessError: {
         type: Object
       }
     }
@@ -261,32 +295,98 @@
   }, { immediate: true })
 
   const userMedia = ref(null)
-  async function updateUserMedia() {
-    if(userMedia.value) {
-      console.log("CLOSE USER MEDIA")
-      userMedia.value.getTracks().forEach(track => track.stop())
-      userMedia.value = null
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-    const constraints = selectedConstraints.value
-    const videoAllowed = videoInputRequest.value !== 'none' && constraints.video
-    const audioAllowed = audioInputRequest.value !== 'none' && constraints.audio
-    if(!videoAllowed && !audioAllowed) {
-      console.log("USER MEDIA NOT ALLOWED")
-      return
-    }
-    console.log("TRY GET USER MEDIA", JSON.stringify(constraints, null, 2))
+  let gettingUserMedia = false
+  async function updateUserMedia(retry = false) {
+    if(gettingUserMedia) return
+    gettingUserMedia = true
     try {
-      console.log("GET USER MEDIA")
-      const mediaStream = await getUserMediaNative(constraints)
-      console.log("Got User Media", mediaStream)
-      userMedia.value = mediaStream
-    } catch(e) {
-      console.error("Failed to get user media", e)
+      if(userMedia.value && !retry) {
+        console.log("CLOSE USER MEDIA")
+        userMedia.value.getTracks().forEach(track => track.stop())
+        userMedia.value = null
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+      const constraints = selectedConstraints.value
+      const videoAllowed = videoInputRequest.value !== 'none' && constraints.video
+      const audioAllowed = audioInputRequest.value !== 'none' && constraints.audio
+      if(!videoAllowed && !audioAllowed) {
+        console.log("USER MEDIA NOT ALLOWED")
+        return
+      }
+      console.log("TRY GET USER MEDIA", JSON.stringify(constraints, null, 2))
+      try {
+        console.log("GET USER MEDIA")
+        const mediaStream = await getUserMediaNative(constraints)
+        /*      if(userMedia.value && retry) {
+          console.log("CLOSE USER MEDIA")
+          userMedia.value.getTracks().forEach(track => track.stop())
+          userMedia.value = null
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }*/
+        console.log("Got User Media", mediaStream)
+        userMedia.value = mediaStream
+        if(model.value.cameraAccessError || model.value.mediaError) {
+          model.value = {
+            ...model.value,
+            cameraAccessError: null,
+            mediaError: null
+          }
+        }
+      } catch(error) {
+        console.error("Failed to get user media", error)
+        if(error.name === 'NotReadableError') {
+          const isCameraRelated = error.message.includes('video') || error.message.includes('camera')
+          if(isCameraRelated) {
+            model.value = {
+              ...model.value,
+              cameraAccessError: error
+            }
+            console.log("RE", retry)
+            if(retry) return
+            try {
+              console.log("GET USER MEDIA 2")
+              const mediaStream = await getUserMediaNative({
+                ...constraints,
+                video: false
+              })
+              console.log("Got User Media 2", mediaStream)
+              userMedia.value = mediaStream
+            } catch(error) {
+              model.value = {
+                ...model.value,
+                mediaError: error,
+                cameraAccessError: null
+              }
+            }
+          } else {
+            model.value = {
+              ...model.value,
+              mediaError: error
+            }
+          }
+        } else if(error.name === 'PermissionDeniedError') {
+          showPermissionsDialog()
+        } else {
+          model.value = {
+            ...model.value,
+            mediaError: error
+          }
+        }
+      }
+    } finally {
+      gettingUserMedia = false
     }
   }
 
-  watch(() => selectedConstraints.value, updateUserMedia, { immediate: true })
+  watch(() => selectedConstraints.value, () => updateUserMedia(), { immediate: true })
+
+  useIntervalFn(() => {
+    console.log("RETRY MEDIA ON ERROR", model.value.cameraAccessError, retryMediaOnError.value)
+    if(!retryMediaOnError.value) return
+    if(!model.value.cameraAccessError) return
+    console.log("RETRY CAMERA ACCESS!")
+    updateUserMedia(true)
+  }, 1000)
 
   const userMediaMuted = true
 

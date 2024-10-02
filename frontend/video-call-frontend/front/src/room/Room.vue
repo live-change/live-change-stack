@@ -9,7 +9,7 @@
              class="surface-card shadow-1 border-round p-3 flex flex-row flex-wrap align-items-center"
              :class="{ hidden: state !== 'welcome' }">
           <div class="w-30rem m-1" style="max-width: 80vw">
-            <DeviceSelect v-model="selectedDevices" />
+            <DeviceSelect v-model="selectedDevices" retry-media-on-error />
           </div>
           <div class="m-3 text-center">
             <h3>Select your media devices, and join.</h3>
