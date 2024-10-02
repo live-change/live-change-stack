@@ -171,9 +171,9 @@ async function processSecurityCounters(event, timestamp, service) {
       reverse: true,
       limit: request.max
     }
-    console.log("R", range)
+    console.log("SECURITY COUNTER RANGE", range)
     const events = await app.dao.get(['database', 'indexRange', service.databaseName, indexName, range])
-    console.log("RR", events)
+    console.log("SECURITY COUNTER EVENTS", events)
     return {
       type: request.type,
       events
