@@ -9,7 +9,7 @@
          }">
     </div>
 
-    <div v-if="(peerState?.videoState !== 'enabled' || !stream) && !image"
+    <div v-if="(peerState?.videoState !== 'enabled' || !stream) && !image && ownerType && owner"
          class="absolute w-full h-full flex flex-column align-items-center justify-content-center identification">
       <UserIdentification :ownerType="ownerType" :owner="owner" />
 <!--      <pre>{{ peerState }}</pre>
@@ -81,8 +81,6 @@
         height: 100%;
         align-items: center;
         justify-content: center;
-        height: 100%;
-        width: 100%;
         img, i {
           max-height: 120px !important;
           width: auto !important;
