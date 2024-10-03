@@ -8,7 +8,7 @@
       </div>
       <p class="mt-0 p-0 line-height-3">
         Congratulations! You have successfully created your account.
-        <span v-if="!needPassword">
+        <span v-if="needPassword">
           You can now set password to secure your account.
         </span>
         <p v-else>
@@ -105,9 +105,9 @@
 
   function handleDone({ parameters, result }) {
     console.log("FORM DONE", parameters, result)
-    router.push({
+ /*   router.push({
       name: 'user:changePasswordFinished',
-    })
+    })*/
   }
 
 </script>
