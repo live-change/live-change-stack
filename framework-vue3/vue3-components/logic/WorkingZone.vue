@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import analytics from '../logic/analytics.js'
+  import analytics from '../logic/analytics.js'
   import debugLib from 'debug'
 
   const info = debugLib('working:info')
@@ -43,14 +43,14 @@ import analytics from '../logic/analytics.js'
     },
     methods: {
       workingStarted(task) {
-        if(this.working.length == 0) {
+        if(this.working.length === 0) {
           analytics.emit('workingStarted', { task: task.name })
 
           info('WORKING STARTED!')
 
           const workingBlockId = this.workingBlockId
           this.loagindTimeout = setTimeout(() => {
-            if(workingBlockId == this.workingBlockId && this.working.length > 0) {
+            if(workingBlockId === this.workingBlockId && this.working.length > 0) {
               this.connectionProblem = true
               analytics.emit('workingError', {
                 task: "View working", reason: "connection problem",
@@ -67,12 +67,12 @@ import analytics from '../logic/analytics.js'
       workingFinished(task) {
         let id = this.working.indexOf(task)
         debug(`task finished ${task.name}`)
-        if(id == -1) throw new Error("Task not found")
+        if(id === -1) throw new Error("Task not found")
         this.working.splice(id, 1)
 
         if(this.$allWorkingTasks)
           this.$allWorkingTasks.splice(this.$allWorkingTasks.indexOf(task), 1)
-        if(this.working.length == 0) {
+        if(this.working.length === 0) {
           this.workingBlockId++
           clearTimeout(this.workingTimeout)
           analytics.emit('workingDone', { task: task.name })
@@ -88,7 +88,7 @@ import analytics from '../logic/analytics.js'
         analytics.emit('workingError', { task: task.name, reason })
 
         let id = this.working.indexOf(task)
-        if(id == -1) {
+        if(id === -1) {
           this.errors.push({ task, reason: "unknown task "+task.name })
           throw new Error("Task not found")
         }

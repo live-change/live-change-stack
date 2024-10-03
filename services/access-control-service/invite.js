@@ -136,7 +136,9 @@ definition.trigger({
     console.error("INVITE WITH MESSAGE AUTHENTICATED", { contactType, contact, session, objectType, object })
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     /// Load invitation
-    const invitation = App.encodeIdentifier([ contactType + '_' + contactTypeUpperCase, contact, objectType, object ])
+    const invitation = App.encodeIdentifier([
+      contactType + '_' + contactTypeUpperCase, contact, objectType, object
+    ])
     console.log("INVITATION", invitation)
     const invitationData = await AccessInvitation.get(invitation)
     if(!invitationData) throw 'not_found'

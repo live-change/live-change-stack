@@ -108,13 +108,7 @@ export default (definition) => {
     return roles
   }
 
-  async function checkRoles(client, { objectType, object, objects }, callback, ignorePublic) {
-    const allObjects = ((objectType && object) ? [{ objectType, object }] : []).concat(objects || [])
-    const roles = await getClientObjectsRoles(client, allObjects, ignorePublic)
-    //console.log('checkRoles', allObjects, roles)
-    //console.trace("CHECK ROLES!")
-    return await callback(roles, client, { objectType, object })
-  }
+
 
   /// QUERIES:
 
@@ -309,19 +303,15 @@ export default (definition) => {
     }]
   }
 
-/*
-  function accessLimitedGet(client, objects, requiredRoles, path) {
-    const roles = getClientObjectsRoles(client, objects)
-    for(const requiredRole of requiredRoles) {
-
-    }
+  async function checkRoles(client, { objectType, object, objects }, callback, ignorePublic) {
+    const allObjects = ((objectType && object) ? [{ objectType, object }] : []).concat(objects || [])
+    //const roles = await getClientObjectsRoles(client, allObjects, ignorePublic)
+    const access = await app.dao.get(accessPath(client, allObjects))
+    const roles = access.roles
+    //console.log('checkRoles', allObjects, roles)
+    //console.trace("CHECK ROLES!")
+    return await callback(roles, client, { objectType, object })
   }
-
-  function accessLimitedObservable(client, objects, path) {
-    if(path[0] !== 'database') throw new Error("non database path "+ JSON.stringify(path))
-    const isObject = path[1] === 'queryObject' || path[1] === ''
-  }
-*/
 
   return {
     testRoles,

@@ -104,9 +104,15 @@
 
   function deleteAccess(access) {
     console.log("DELETE ACCESS", access)
+    const name = access.identification && (
+      access.identification.name
+      || ((access.identification.firstName && access.identification.lastName)
+          ? access.identification.firstName + ' ' + access.identification.lastName
+          : access.identification.firstName)
+    ) || 'Anonymous'
     confirm.require({
       target: event.currentTarget,
-      message: `Do you want to revoke user "${access.identification.name}" access?`,
+      message: `Do you want to revoke user "${name}" access?`,
       icon: 'pi pi-info-circle',
       acceptClass: 'p-button-danger',
       accept: async () => {
