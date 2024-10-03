@@ -5,7 +5,7 @@ const app = App.app()
 import accessModule from './access.js'
 const access = accessModule(definition)
 
-import { Access } from './model.js'
+import { Access, AccessInvitation } from './model.js'
 
 definition.view({
   name: "myAccessTo",
@@ -118,6 +118,54 @@ definition.view({
       client.user ? ['user_User', client.user] : ['session_Session', client.session]
     const { objectType, role } = properties
     return Access.indexRangePath('byOwnerRoleAndObject',
+      [sessionOrUserType, sessionOrUser, role, objectType], App.extractRange(properties))
+  }
+})
+
+definition.view({
+  name: 'myAccessInvitationsByObjectType',
+  properties: {
+    objectType: {
+      type: String
+    },
+    ...App.rangeProperties
+  },
+  returns: {
+    type: Array,
+    of: {
+      type: Access
+    }
+  },
+  async daoPath(properties, { client, service }, method) {
+    const [ sessionOrUserType, sessionOrUser ] =
+      client.user ? ['user_User', client.user] : ['session_Session', client.session]
+    const { objectType } = properties
+    return AccessInvitation.rangePath([sessionOrUserType, sessionOrUser, objectType], App.extractRange(properties))
+  }
+})
+
+definition.view({
+  name: 'myAccessInvitationsByObjectTypeAndRole',
+  properties: {
+    objectType: {
+      type: String
+    },
+    role: {
+      type: String
+    },
+    ...App.rangeProperties
+  },
+  returns: {
+    type: Array,
+    of: {
+      type: Access
+    }
+  },
+  async daoPath(properties, { client, service }, method) {
+    const [ sessionOrUserType, sessionOrUser ] =
+      client.user ? ['user_User', client.user] : ['session_Session', client.session]
+    const { objectType, role } = properties
+    return AccessInvitation.indexRangePath('byOwnerRoleAndObject',
       [sessionOrUserType, sessionOrUser, role, objectType], App.extractRange(properties))
   }
 })

@@ -19,18 +19,8 @@
         </video>
       </div>
 
-      <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-end align-items-center">
-        <div class="flex flex-row justify-content-between align-items-center h-5rem w-7rem media-buttons">
-          <MicrophoneButton v-model="model" @disabled-audio-click="handleDisabledAudioClick" />
-          <CameraButton v-model="model" @disabled-video-click="handleDisabledVideoClick" />
-        </div>
-      </div>
-      <div class="absolute top-0 right-0" v-if="userMedia">
-        <div class="m-3">
-          <VolumeIndicator :stream="userMedia" />
-        </div>
-      </div>
-      <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-center align-items-center">
+      <div v-if="model.cameraAccessError || model.mediaError"
+           class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-center align-items-center">
         <div v-if="model.cameraAccessError"
              class="flex flex-column justify-content-center align-items-center m-3 p-2 bg-black-alpha-40">
           <i class="bx bx-camera-off text-4xl text-red-600" />
@@ -53,6 +43,19 @@
           </div>
         </div>
       </div>
+
+      <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-end align-items-center">
+        <div class="flex flex-row justify-content-between align-items-center h-5rem w-7rem media-buttons">
+          <MicrophoneButton v-model="model" @disabled-audio-click="handleDisabledAudioClick" />
+          <CameraButton v-model="model" @disabled-video-click="handleDisabledVideoClick" />
+        </div>
+      </div>
+      <div class="absolute top-0 right-0" v-if="userMedia">
+        <div class="m-3">
+          <VolumeIndicator :stream="userMedia" />
+        </div>
+      </div>
+
     </div>
     <div class="flex flex-row gap-2 pt-2 justify-content-around">
       <div v-if="audioInputRequest !== 'none' && audioInputs.length > 0"

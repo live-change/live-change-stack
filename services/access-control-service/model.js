@@ -116,7 +116,10 @@ const AccessInvitation = definition.model({
     }
   },
   indexes: {
-
+    byOwnerRoleAndObject: {
+      property: ['contactOrUserType', 'contactOrUser', 'roles', 'objectType', 'object'],
+      multi: true
+    }
   }
 })
 

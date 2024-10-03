@@ -1,6 +1,6 @@
 <template>
   <div @click="ev => $emit('click', ev)"
-       class="absolute text-gray-200 border-1 border-white-alpha-30 peer-video">
+       class="absolute text-gray-200 peer-video">
 
     <div v-if="image && (!stream || peerState.videoState !== 'enabled')"
          class="absolute w-full h-full bg-no-repeat bg-center" :style="{
