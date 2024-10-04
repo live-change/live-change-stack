@@ -41,7 +41,7 @@ export function createRouter(app, config) {
     // import.meta.env.SSR is injected by Vite.
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes: [
-      ...userRoutes({ ...config, prefix: prefix + 'user/' }),
+      ...userRoutes({ ...config, prefix: '/user/' }),
 
       ...balanceRoutes(config),
 

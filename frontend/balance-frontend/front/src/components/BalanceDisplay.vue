@@ -1,6 +1,6 @@
 <template>
   <CurrencyDisplay
-    value="value"
+    :value="value"
     :currency="currency"
     :denomination="denomination"
     :i18nConfig="i18nConfig"
@@ -11,7 +11,7 @@
   import { defineProps, toRefs, computed, inject } from 'vue'
   import DefaultCurrencyDisplay from './CurrencyDisplay.vue'
 
-  import { injectComponent } from '@live-change/vue3-ssr'
+  import { injectComponent } from '@live-change/vue3-components'
   const CurrencyDisplay = injectComponent({
     name: 'CurrencyDisplay',
     type: 'currency'
@@ -36,11 +36,11 @@
     },
     i18nConfig: {
       type: Object,
-      default: undefined
+      default: () => undefined
     },
     i18nDefaultConfig: {
       type: Object,
-      default: () => {}
+      default: () => undefined
     },
     available: {
       type: Boolean,

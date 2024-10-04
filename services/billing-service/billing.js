@@ -7,6 +7,7 @@ import config from './config.js'
 const Billing = definition.model({
   name: "Billing",
   userProperty: {
+    userReadAccess: () => true,
     readAccessControl: {
       roles: ['owner', 'admin']
     }

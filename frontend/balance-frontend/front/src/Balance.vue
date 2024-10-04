@@ -2,8 +2,14 @@
   <div class="w-full">
     <div class="surface-card shadow-1 border-round p-3 mb-1">
       <div class="text-xl">Balance: {{ balance.owner }}</div>
-      <div>Amount: {{ balance.amount }}</div>
-      <div>Available: {{ balance.available }}</div>
+      <div>
+        Amount:
+        <BalanceDisplay :available="false" ownerType="balanceTest_balance" :owner="name" />
+      </div>
+      <div>
+        Available:
+        <BalanceDisplay :available="true" ownerType="balanceTest_balance" :owner="name" />
+      </div>
     </div>
     <div class="surface-card shadow-1 border-round p-3 text-xl mb-1 mt-2 text-xl">
       Operations:
@@ -21,7 +27,7 @@
       </div>
       <div class="w-10rem text-right pl-3 font-semibold mr-3"
            :class="operation.change > 0 ? 'text-green-500' : 'text-red-500'">
-        {{ operation.change > 0 ? '+' : '-' }} {{ Math.abs(operation.change) }}
+        {{ operation.change > 0 ? '+' : '-' }} <CurrencyDisplay :value="Math.abs(+operation.change)" />
       </div>
       <Button label="Finish" icon="pi pi-check" severity="success"
               @click="actions.balanceTest.finishOperation({ balance: balance.id, operation: operation.id })" />
@@ -44,7 +50,9 @@
               <InputText id="name" type="text" class="w-full"
                          aria-describedby="email-help" :class="{ 'p-invalid': data.nameError }"
                          v-model="data.name" />
-              <small id="email-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
+              <small v-if="data.nameError" id="email-help" class="p-error">
+                {{ t(`errors.${data.nameError}`) }}
+              </small>
             </div>
           </div>
           <div class="col-12 md:col-6 py-1">
@@ -55,7 +63,9 @@
               <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
                          aria-describedby="email-help" :class="{ 'p-invalid': data.changeError }"
                          v-model="data.change" />
-              <small id="email-help" class="p-error">{{ t(`errors.${data.changeError}`) }}</small>
+              <small v-if="data.changeError" id="email-help" class="p-error">
+                {{ t(`errors.${data.changeError}`) }}
+              </small>
             </div>
           </div>
           <Button label="Start operation" icon="pi pi-plus" type="submit" />
@@ -96,7 +106,9 @@
     <div class="surface-card shadow-1 border-round p-3 text-xl mb-1 mt-2 text-xl">
       Finished operations:
     </div>
-    <div v-if="finishedOperations.length === 0" class="surface-card shadow-1 border-round p-3 mb-1">
+    <OperationsList ownerType="balanceTest_balance" :owner="name" state="finished" />
+
+<!--    <div v-if="finishedOperations.length === 0" class="surface-card shadow-1 border-round p-3 mb-1">
       No operations finished
     </div>
     <div v-for="operation of finishedOperations"
@@ -114,7 +126,7 @@
       <div class="w-10rem text-right pl-3 font-semibold mr-3">
         {{ operation.amountAfter }}
       </div>
-    </div>
+    </div>-->
 
   </div>
 </template>
@@ -122,6 +134,9 @@
 <script setup>
 
   import InputText from "primevue/inputtext"
+  import BalanceDisplay from './components/BalanceDisplay.vue'
+  import OperationsList from './components/OperationsList.vue'
+  import CurrencyDisplay from './components/CurrencyDisplay.vue'
 
   import {
     defineProps, defineEmits, defineModel, toRefs, computed, watch, ref, watchEffect, onUnmounted,

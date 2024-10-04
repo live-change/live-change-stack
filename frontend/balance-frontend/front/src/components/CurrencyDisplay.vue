@@ -8,7 +8,6 @@
 
   const props = defineProps({
     value: {
-      type: Number,
       required: true
     },
     currency: {
@@ -25,12 +24,13 @@
     },
     i18nDefaultConfig: {
       type: Object,
-      default: () => {}
+      default: () => ({ maximumFractionDigits: 2, notation: 'standard' })
     }
   })
   const { value, currency, denomination, i18nConfig, i18nDefaultConfig } = toRefs(props)
 
-  import { n } from 'vue-i18n'
+  import { useI18n } from 'vue-i18n'
+  const { n } = useI18n()
 
   const currencyConfig = inject('currencyI18nConfig:'+currency, null)
   const defaultConfig = inject('currencyI18nConfig', null)
@@ -38,9 +38,10 @@
   const config = computed(() => i18nConfig ?? currencyConfig ?? defaultConfig ?? i18nDefaultConfig)
 
   const formatted = computed(() => {
+    console.log('CurrencyDisplay', value.value, denomination.value, +value.value / +(denomination.value || config.value.denomination || 100))
     return n(
-      value.value / (denomination.value ?? config.value.denomination ?? 100),
-      currency.value ?? config.value.currency ?? 'USD',
+      +value.value / +(denomination.value || config.value.denomination || 100),
+      currency.value ?? config.value.currency ?? 'usd',
       config.value
     )
   })
