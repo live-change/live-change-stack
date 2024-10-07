@@ -10,7 +10,7 @@
         <strong>{{ from.name }}</strong>
       </span>
       <span v-else>One of our users</span>
-       invited you to use X by entering your email address.
+       invited you to use {{ brandName }}'s {{ data.objectType }} by entering your email address.
     </p>
     <div v-if="data.message.trim().length > 0">
       <p>He left message for you:</p>
@@ -39,7 +39,7 @@
     </p>
     <p>
       See you soon<br>
-      Live Change Team
+      {{ brandName }} Team
     </p>
     <img src="/images/logo128.png">
   </div>
@@ -55,7 +55,7 @@
     Let us know in case it's not for you.
 
     See you soon
-    Live Change Team
+    {{ brandName }} Team
   </pre>
 </template>
 
@@ -78,15 +78,17 @@
   const data = JSON.parse(json)
 
   const secrets = data.secrets
-  const secretLink = secrets.find(secret => secret.type == 'link')
+  const secretLink = secrets.find(secret => secret.type === 'link')
 
   const [ from ] = await Promise.all([
     live(path().userIdentification.sessionOrUserOwnedIdentification(
         { sessionOrUserType: data.fromType, sessionOrUser: data.from }))
   ])
 
+  const brandName = ENV_BRAND_NAME
+
   const metadata = {
-    from: '<noreply@flipchart.live>',
+    from: `${ENV_BRAND_NAME} <admin@${ENV_BRAND_DOMAIN}>`,
     subject: `${from?.name ?? 'Our user'} invited you to ${data.objectType}`,
     to: contact
   }

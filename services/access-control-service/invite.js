@@ -3,6 +3,8 @@ const app = App.app()
 import definition from './definition.js'
 const config = definition.config
 
+const inviteMessageActionByObjectType = config.inviteMessageActionByObjectType ?? {}
+
 import { AccessInvitation, invitationProperties, Access } from './model.js'
 import accessModule from './access.js'
 const access = accessModule(definition)
@@ -260,7 +262,8 @@ for(const contactType of config.contactTypes) {
         // Authenticate with message because we will create account later
         const messageData = {
           objectType, object,
-          ...invitationData, id: undefined
+          ...invitationData, id: undefined,
+          action: inviteMessageActionByObjectType[objectType] ?? 'inviteWithMessage',
         }
         await service.trigger({ type: 'authenticateWithMessage'  }, {
           contactType,

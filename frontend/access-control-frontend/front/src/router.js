@@ -11,11 +11,8 @@ import { userRoutes, installUserRedirects } from "@live-change/user-frontend"
 import { dbAdminRoutes } from "@live-change/db-admin"
 
 export function routes(config = {}) {
-  console.log("DB ROUTES", dbAdminRoutes({ prefix: '/_db' }))
   const { prefix = '/', route = (r) => r } = config
   return [
-    ...userRoutes({ ...config, prefix: prefix + 'user/' }),
-
     ...configurationRoutes(config),
     ...inviteRoutes(config),
 
@@ -28,21 +25,6 @@ export function routes(config = {}) {
       }
     }),
 
-    route({
-      name: 'accessControl:testPage', path: prefix + '', meta: { },
-      component: () => import("./TestPage.vue"),
-      props: {
-        objectType: 'example_Example',
-        object: 'one'
-      }
-    }),
-
-    route({
-      name: 'accessControl:invitationAccepted', path: prefix + '', meta: { },
-      redirect: { name: 'accessControl:testPage' }
-    }),
-
-    ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) })
   ]
 }
 
@@ -61,7 +43,27 @@ export function createRouter(app, config) {
     // use appropriate history implementation for server/client
     // import.meta.env.SSR is injected by Vite.
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
-    routes: routes(config)
+    routes: [
+      ...userRoutes({ ...config, prefix: prefix + 'user/' }),
+
+      ...routes(config),
+
+      {
+        name: 'accessControl:testPage', path: '/', meta: { },
+        component: () => import("./TestPage.vue"),
+        props: {
+          objectType: 'example_Example',
+          object: 'one'
+        }
+      },
+
+      {
+        name: 'accessControl:invitationAccepted', path: '/accepted', meta: { },
+        redirect: { name: 'accessControl:testPage' }
+      },
+
+      ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) })
+    ]
   })
   installUserRedirects(router, app, config)
   return router

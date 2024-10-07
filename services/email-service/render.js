@@ -133,6 +133,14 @@ async function renderEmail(data) {
     const imageUrl = new URL(imagePath, url)
     const file = path.resolve(publicDir, imageUrl.pathname.slice(1))
     const filename = path.basename(file)
+    if(imagePath.startsWith('http')) {
+      console.log("EXTERNAL IMAGE", imagePath)
+      return {
+        path: imagePath,
+        cid: contentId,
+        filename
+      }
+    }
     return {
       filename,
       path: file,

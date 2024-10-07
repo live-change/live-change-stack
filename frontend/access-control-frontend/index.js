@@ -10,6 +10,13 @@ import AccessRequests from "./front/src/configuration/AccessRequests.vue"
 import PublicAccess from "./front/src/configuration/PublicAccess.vue"
 export { AccessControl, AccessInvitations, AccessList, AccessRequests, PublicAccess }
 
+import { routes as accessControlRoutes } from "./front/src/router.js"
+export { accessControlRoutes }
+
+import inviteRoutes from "./front/src/invite/routes.js"
+import configurationRoutes from "./front/src/configuration/routes.js"
+export { inviteRoutes, configurationRoutes }
+
 import "./front/src/notifications/index.js"
 
 
