@@ -88,6 +88,15 @@ function useUid(context) {
 }
 
 function useTimeSynchronization(context, onUnmountedCb) {
+  if(typeof window === 'undefined') return { // on server we use current server time
+    waitForSynchronized: () => Promise.resolve(),
+    diff: ref(0),
+    synchronized: ref(true),
+    serverToLocal: (ts) => ts,
+    localToServer: (ts) => ts,
+    serverToLocalComputed: (ts) => ts,
+    localToServerComputed: (ts) => ts,
+  }
   const api = useApi(context)
   const timeSynchronization = api.settings.timeSynchronization
   if(!timeSynchronization) throw new Error("Time synchronization not configured")

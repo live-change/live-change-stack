@@ -93,7 +93,14 @@
     to: contact
   }
 
-  const linkAddress = ENV_BASE_HREF + '/link/' + secretLink.secret.secretCode
+  import { useRouter } from 'vue-router'
+  const router = useRouter()
+  const linkAddress = ENV_BASE_HREF + router.resolve({
+    name: 'user:link',
+    params: {
+      secretCode: secretLink.secret.secretCode
+    }
+  }).href
 
 </script>
 
