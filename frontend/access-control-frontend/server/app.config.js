@@ -1,6 +1,14 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
+import App from "@live-change/framework"
+const app = App.app()
+
 const contactTypes = ['email']
 
-module.exports = {
+import securityConfig from './security.config.js'
+
+app.config = {
   services: [
     {
       name: 'timer',
@@ -22,7 +30,7 @@ module.exports = {
     {
       name: 'security',
       path: '@live-change/security-service',
-      ...require('./security.config.js')
+      ...securityConfig
     },
     {
       name: 'secretLink',
@@ -82,3 +90,5 @@ module.exports = {
     },
   ]
 }
+
+export default app.config

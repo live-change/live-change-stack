@@ -1,4 +1,5 @@
 {
+  "languageName": "English",
   "errors": {
     "empty": "This field is required.",
     "tooShort": "Too short, minimum {length} characters.",

@@ -16,7 +16,9 @@
 
 <script setup>
 
-  import { SimpleNotification, UserIdentification, ObjectIdentification } from "@live-change/user-frontend"
+  import {
+    SimpleNotification, UserIdentification, ObjectIdentification as DefaultObjectIdentification
+  } from "@live-change/user-frontend"
   import Button from "primevue/button"
 
   import { useToast } from 'primevue/usetoast'
@@ -30,6 +32,13 @@
       required: true
     }
   })
+
+  import { injectComponent } from "@live-change/vue3-components"
+
+  const ObjectIdentification = injectComponent({
+    name: 'ObjectIdentification',
+    objectType: notification.objectType
+  }, DefaultObjectIdentification)
 
   import { inject } from "vue"
   const workingZone = inject('workingZone')

@@ -24,7 +24,9 @@
                     :filter="availableLocales.length > 10"
                     placeholder="Auto-detect"
                     class="w-full" />
-          <small v-if="data.languageError" id="language-help" class="p-error">{{ t(`errors.${data.languageError}`) }}</small>
+          <small v-if="data.languageError" id="language-help" class="p-error">
+            {{ t(`errors.${data.languageError}`) }}
+          </small>
         </div>
 
         <Button type="submit" label="Apply" class="mt-1" icon="pi pi-save" />
@@ -53,8 +55,9 @@
   const { t, availableLocales, locale, getLocaleMessage } = useI18n()
 
   function languageLabel(option) {
+    console.log("LANGUAGE LABEL", option)
     if(!option) return `Auto-detect (${navigator.language})`
-    return getLocaleMessage(option).languageName
+    return getLocaleMessage(option).languageName ?? option
   }
 
   console.log("availableLocales", availableLocales)
