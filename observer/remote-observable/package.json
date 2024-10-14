@@ -1,0 +1,11 @@
+{
+  "name": "@live-change/remote-observable",
+  "version": "0.0.1",
+  "description": "Network functions for new observable library that will replace @live-change/dao in future",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD-3-Clause"
+}
