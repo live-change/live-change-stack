@@ -257,6 +257,7 @@ definition.trigger({
     if(!operationData) throw "operationNotFound"
     if(operationData.state !== 'started') throw "operationNotStarted"
     console.log("operationData", operationData, "balance", balance)
+    balance = balance || operationData.balance
     if(operationData.balance !== balance) throw "balanceMismatch"
     const balanceData = await getBalance(balance, triggerService)
     const newAmount = config.currencyAdd(balanceData.amount, operationData.change)

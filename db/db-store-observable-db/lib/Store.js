@@ -85,9 +85,9 @@ class DatabaseConnection {
       if(typeof message != 'string') { // Buffer
         const opCode = message.readUInt8()
         if(opCode < 2) {
-          if(opCode == opCodes.Ping) { // Ping - reply
+          if(opCode === opCodes.Ping) { // Ping - reply
             message.writeUInt8(opCodes.Pong, 0)
-            if(this.websocket.readyState == 1) this.websocket.send(message)
+            if(this.websocket.readyState === 1) this.websocket.send(message)
           } else {
             // Pong - ignore
           }
@@ -135,7 +135,7 @@ class DatabaseConnection {
   addRequest(request) {
     this.waitingRequests.set(request.id, request)
     if(debug) console.log("ADD REQUEST", request.id,"AT STATE", this.websocket.readyState)
-    if(this.websocket.readyState == 1) { // 1 => open
+    if(this.websocket.readyState === 1) { // 1 => open
       this.websocket.send(request.requestPacket)
     }
   }
@@ -149,9 +149,9 @@ class DatabaseConnection {
         requestPacket,
         handlePacket: packet => {
           const opcode = packet.readInt8(0)
-          if(opcode == opCodes.Ok) {
+          if(opcode === opCodes.Ok) {
             resolve()
-          } else if(opcode == opCodes.Error) {
+          } else if(opcode === opCodes.Error) {
             const error = packet.toString('utf8', 5)
             reject(error)
           } else {
@@ -194,11 +194,11 @@ class DatabaseConnection {
     return this.request(requestPacket, (packet, resolve, reject) => {
       //console.log("HANDLE PACKET", packet)
       const opcode = packet.readInt8(0)
-      if(opcode == opCodes.Result) {
+      if(opcode === opCodes.Result) {
         resolve(packet.toString('utf8', 5))
-      } else if(opcode == opCodes.ResultNotFound) {
+      } else if(opcode === opCodes.ResultNotFound) {
         resolve(null)
-      } else if(opcode == opCodes.Error) {
+      } else if(opcode === opCodes.Error) {
         const error = packet.toString('utf8', 5)
         reject(error)
       } else {
@@ -257,8 +257,8 @@ class DatabaseConnection {
   async deleteStore(databaseName, storeName) {
     if(debug) console.log("DELETE STORE", databaseName, storeName)
     for(let i = 0; i < this.openStores.length; i++) {
-      if(this.openStores[i] && this.openStores[i].storeName == storeName
-          && this.openStores[i].databaseName == databaseName) this.openStore[i] = null
+      if(this.openStores[i] && this.openStores[i].storeName === storeName
+          && this.openStores[i].databaseName === databaseName) this.openStore[i] = null
     }
     const databaseNameBuffer = Buffer.from(databaseName)
     const storeNameBuffer = Buffer.from(storeName)
@@ -273,8 +273,8 @@ class DatabaseConnection {
 
   async openStore(databaseName, storeName) {
     for(let i = 0; i < this.openStores.length; i++) {
-      if(this.openStores[i] && this.openStores[i].storeName == storeName
-          && this.openStores[i].databaseName == databaseName) return i
+      if(this.openStores[i] && this.openStores[i].storeName === storeName
+          && this.openStores[i].databaseName === databaseName) return i
     }
     const storeKey = JSON.stringify([databaseName, storeName])
     console.log("OPEN STORE!", storeKey)
@@ -411,7 +411,7 @@ class DatabaseConnection {
     return this.request(packet, (packet, resolve, reject) => {
       //console.log("HANDLE PACKET", packet)
       const opcode = packet.readInt8(0)
-      if(opcode == opCodes.ResultPut) {
+      if(opcode === opCodes.ResultPut) {
         const flags = packet.readUInt8(5) // ignore flags
         const keySize = packet.readUInt16BE(6)
         const key = packet.toString('utf8', 8, 8 + keySize)
@@ -419,9 +419,9 @@ class DatabaseConnection {
         const value = packet.toString('utf8', 8 + keySize + 4, 8 + keySize + 4 + valueSize)
         results.push({ key, value })
         return true // need more data
-      } else if(opcode == opCodes.ResultsDone) {
+      } else if(opcode === opCodes.ResultsDone) {
         resolve(results)
-      } else if(opcode == opCodes.Error) {
+      } else if(opcode === opCodes.Error) {
         const error = packet.toString('utf8', 5)
         reject(error)
       } else {
@@ -438,9 +438,9 @@ class DatabaseConnection {
     return this.request(packet, (packet, resolve, reject) => {
       //console.log("HANDLE PACKET", packet)
       const opcode = packet.readInt8(0)
-      if(opcode == opCodes.ResultCount) {
+      if(opcode === opCodes.ResultCount) {
         resolve(packet.readUInt32BE(5))
-      } else if(opcode == opCodes.Error) {
+      } else if(opcode === opCodes.Error) {
         const error = packet.toString('utf8', 5)
         reject(error)
       } else {
@@ -457,9 +457,9 @@ class DatabaseConnection {
     return this.request(packet, (packet, resolve, reject) => {
       //console.log("HANDLE PACKET", packet)
       const opcode = packet.readInt8(0)
-      if(opcode == opCodes.ResultCount) {
+      if(opcode === opCodes.ResultCount) {
         resolve(packet.readUInt32BE(5))
-      } else if(opcode == opCodes.Error) {
+      } else if(opcode === opCodes.Error) {
         const error = packet.toString('utf8', 5)
         reject(error)
       } else {
@@ -482,11 +482,11 @@ class DatabaseConnection {
     const requestId = this.rawRequest(packet, (packet) => {
       if(debug) console.log("HANDLE OBSERVE PACKET", packet)
       const opcode = packet.readInt8(0)
-      if(opcode == opCodes.Result) {
+      if(opcode === opCodes.Result) {
         return onValue(packet.toString('utf8', 5))
-      } else if(opcode == opCodes.ResultNotFound) {
+      } else if(opcode === opCodes.ResultNotFound) {
         return onValue(null)
-      } else if(opcode == opCodes.Error) {
+      } else if(opcode === opCodes.Error) {
         const error = packet.toString('utf8', 5)
         onError(error)
         return true
@@ -508,7 +508,7 @@ class DatabaseConnection {
     return this.rawRequest(packet, (packet) => {
       if(debug) console.log("OBSERVE RANGE HANDLE PACKET", packet)
       const opcode = packet.readInt8(0)
-      if(opcode == opCodes.ResultPut) {
+      if(opcode === opCodes.ResultPut) {
         const flags = packet.readUInt8(5)
         const found = !!(flags & resultPutFlags.Found)
         const last = !!(flags & resultPutFlags.Last)
@@ -521,9 +521,9 @@ class DatabaseConnection {
         } else {
           return onResultPut(found, last, key, null)
         }
-      } else if(opcode == opCodes.ResultsChanges) {
+      } else if(opcode === opCodes.ResultsChanges) {
         return onChanges()
-      } else if(opcode == opCodes.Error) {
+      } else if(opcode === opCodes.Error) {
         const error = packet.toString('utf8', 5)
         onError(error)
       } else {
@@ -540,10 +540,10 @@ class DatabaseConnection {
     return this.rawRequest(packet, (packet) => {
       if(debug) console.log("OBSERVE RANGE HANDLE PACKET", packet)
       const opcode = packet.readInt8(0)
-      if(opcode == opCodes.ResultCount) {
+      if(opcode === opCodes.ResultCount) {
         const count = packet.readUInt32BE(5)
         return onCount(count)
-      } else if(opcode == opCodes.Error) {
+      } else if(opcode === opCodes.Error) {
         const error = packet.toString('utf8', 5)
         onError(error)
       } else {

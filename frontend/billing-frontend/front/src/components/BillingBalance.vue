@@ -25,7 +25,7 @@
 
   const billingSettings  = inject('billingSettings', (billing) => ({
     currency: 'usd',
-    denomination: 2
+    denomination: '100'
   }))
 
   import { usePath, live, useClient } from '@live-change/vue3-ssr'

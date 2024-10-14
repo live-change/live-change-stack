@@ -39,11 +39,13 @@
 
   const formatted = computed(() => {
     console.log('CurrencyDisplay', value.value, denomination.value, +value.value / +(denomination.value || config.value.denomination || 100))
-    return n(
+    const text = n(
       +value.value / +(denomination.value || config.value.denomination || 100),
       currency.value ?? config.value.currency ?? 'usd',
       config.value
     )
+    console.log("currency formatted", text)
+    return text
   })
 
 </script>
