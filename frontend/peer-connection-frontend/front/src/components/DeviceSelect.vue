@@ -9,12 +9,12 @@
         <div class>Please connect camera.</div>
         <audio v-if="model?.audioInput?.deviceId" ref="outputElement"
                autoplay playsinline :muted="userMediaMuted"
-               :src-object.prop.camel="userMedia">
+               :src-object.prop.camel="model.media">
         </audio>
       </div>
       <div v-else class="bg-black-alpha-90 flex align-items-center justify-content-center">
-        <video v-if="userMedia" autoplay playsinline :muted="userMediaMuted" ref="outputElement"
-               :src-object.prop.camel="userMedia"
+        <video v-if="model.media" autoplay playsinline :muted="userMediaMuted" ref="outputElement"
+               :src-object.prop.camel="model.media"
                class="max-w-full max-h-full" style="object-fit: contain; transform: scaleX(-1)">
         </video>
       </div>
@@ -50,9 +50,9 @@
           <CameraButton v-model="model" @disabled-video-click="handleDisabledVideoClick" />
         </div>
       </div>
-      <div class="absolute top-0 right-0" v-if="userMedia">
+      <div class="absolute top-0 right-0" v-if="model.media">
         <div class="m-3">
-          <VolumeIndicator :stream="userMedia" />
+          <VolumeIndicator :stream="model.media" />
         </div>
       </div>
 
@@ -146,7 +146,7 @@
 
     <pre>DEV: {{ devices }}</pre>
 
-    <pre>UM: {{ userMedia }}</pre>-->
+    <pre>UM: {{ model.media }}</pre>-->
 
   </div>
 </template>
@@ -168,11 +168,12 @@
 
   import { defineProps, defineModel, computed, ref, toRefs, onMounted, watch, watchEffect } from 'vue'
   import { useIntervalFn, useEventListener } from  "@vueuse/core"
-  import { getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative, isUserMediaPermitted }
-    from "./userMedia.js"
+  import {
+    getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative,
+    isUserMediaPermitted, stopMedia
+  } from "./userMedia.js"
   import MicrophoneButton from './MicrophoneButton.vue'
   import CameraButton from './CameraButton.vue'
-
 
   const props = defineProps({
     audioInputRequest: {
@@ -247,23 +248,57 @@
   const videoInputs = computed(() => devices.value.filter(device => device.kind === 'videoinput'))
 
   watch(audioInputs, (value) => {
+    if(value.length === 0) return
+    if(model.value?.audioInput) {
+      const exists = value.find(device => device.deviceId === model.value.audioInput.deviceId)
+      if(exists) return
+    }
     model.value = {
       ...model.value,
       audioInput: value[0]
     }
   }, { immediate: true })
   watch(audioOutputs, (value) => {
+    if(value.length === 0) return
+    if(model.value?.audioOutput) {
+      const exists = value.find(device => device.deviceId === model.value.audioOutput.deviceId)
+      if(exists) return
+    }
     model.value = {
       ...model.value,
       audioOutput: value[0]
     }
   }, { immediate: true })
   watch(videoInputs, (value) => {
+    if(value.length === 0) return
+    if(model.value?.videoInput) {
+      const exists = value.find(device => device.deviceId === model.value.videoInput.deviceId)
+      if(exists) return
+    }
     model.value = {
       ...model.value,
       videoInput: value[0]
     }
   }, { immediate: true })
+
+/*  watch(model.value, (v) => {
+    console.trace("MODEL CHANGED", v)
+    if(typeof v.audioInput === 'string') throw new Error("AUDIO INPUT IS STRING")
+    if(typeof v.audioOutput === 'string') throw new Error("AUDIO OUTPUT IS STRING")
+    if(typeof v.videoInput === 'string') throw new Error("VIDEO INPUT IS STRING")
+  }, { immediate: true, deep: true })*/
+
+  function setUserMedia(media) {
+    if(media === model.value.media) return
+    console.log("MEDIA STREAM CHANGE", media, 'FROM', model.value.media)
+    if(model.value.media) {
+      stopMedia(model.value.media)
+    }
+    model.value = {
+      ...model.value,
+      media
+    }
+  }
 
 /*  onMounted(() => {
     if(!model.value?.audioInput || !model.value?.audioOutput || !model.value?.videoInput) {
@@ -297,18 +332,12 @@
     }
   }, { immediate: true })
 
-  const userMedia = ref(null)
   let gettingUserMedia = false
   async function updateUserMedia(retry = false) {
+    console.log("USER MEDIA UPDATE WHEN MODEL IS", model.value)
     if(gettingUserMedia) return
     gettingUserMedia = true
     try {
-      if(userMedia.value && !retry) {
-        console.log("CLOSE USER MEDIA")
-        userMedia.value.getTracks().forEach(track => track.stop())
-        userMedia.value = null
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
       const constraints = selectedConstraints.value
       const videoAllowed = videoInputRequest.value !== 'none' && constraints.video
       const audioAllowed = audioInputRequest.value !== 'none' && constraints.audio
@@ -327,7 +356,7 @@
           await new Promise(resolve => setTimeout(resolve, 100))
         }*/
         console.log("Got User Media", mediaStream)
-        userMedia.value = mediaStream
+        setUserMedia(mediaStream)
         if(model.value.cameraAccessError || model.value.mediaError) {
           model.value = {
             ...model.value,
@@ -353,7 +382,7 @@
                 video: false
               })
               console.log("Got User Media 2", mediaStream)
-              userMedia.value = mediaStream
+              setUserMedia(mediaStream)
             } catch(error) {
               model.value = {
                 ...model.value,
@@ -381,7 +410,15 @@
     }
   }
 
-  watch(() => selectedConstraints.value, () => updateUserMedia(), { immediate: true })
+  watch(() => selectedConstraints.value, (constraints, oldConstraints) => {
+    console.log("CONSTRAINTS CHANGED FROM", oldConstraints, 'TO', constraints)
+    updateUserMedia()
+  })
+  onMounted(() => {
+    if(!model.value.media) {
+      updateUserMedia()
+    }
+  })
 
   useIntervalFn(() => {
     if(!retryMediaOnError.value) return
@@ -392,19 +429,12 @@
 
   const userMediaMuted = true
 
-  watch(() => userMedia.value, stream => {
-    console.log("MEDIA STREAM CHANGE", stream)
-    model.value = {
-      ...model.value,
-      media: stream
-    }
-  })
 
   watchEffect(() => {
-    if(userMedia.value) {
-      console.log("STREAM", userMedia.value, model.value.audioMuted, model.value.videoMuted)
-      userMedia.value.getAudioTracks().forEach(track => track.enabled = !model.value.audioMuted)
-      userMedia.value.getVideoTracks().forEach(track => track.enabled = !model.value.videoMuted)
+    if(model.value.media) {
+      console.log("STREAM", model.value.media, model.value.audioMuted, model.value.videoMuted)
+      model.value.media.getAudioTracks().forEach(track => track.enabled = !model.value.audioMuted)
+      model.value.media.getVideoTracks().forEach(track => track.enabled = !model.value.videoMuted)
     }
   })
 
@@ -465,7 +495,7 @@
   }
 
   function handleEmptyPreviewClick() {
-    if(userMedia.value) return
+    if(model.value.media) return
     const { camera, microphone } = permissionsDialog.value.permissions
     if(camera === 'denied' || microphone === 'denied') {
       // open permissions dialog
@@ -523,10 +553,12 @@
     }
   }
   function updateVideoInput(value) {
+    console.log("UPDATE VIDEO INPUT", value)
     model.value = {
       ...model.value,
       videoInput: value
     }
+    console.log("UPDATED VIDEO INPUT", model.value.videoInput)
   }
 
 </script>
