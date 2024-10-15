@@ -137,8 +137,11 @@
   }
 
   if(!imageData.value) updateUrl()
-
+  watch(() => props.image, () => updateUrl())
   watch(() => upload.value && upload.value.url, () => updateUrl())
-  watch(() => imageData.value, () => updateUrl())
+  watch(() => imageData.value, (v) => updateUrl())
+  watch(() => props.imageData, (v) => {
+    imageData.value = v
+  })
 
 </script>
