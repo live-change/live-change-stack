@@ -398,6 +398,8 @@
           }
         } else if(error.name === 'PermissionDeniedError') {
           showPermissionsDialog()
+        } else if(error.name === 'NotAllowedError') {
+          showPermissionsDialog()
         } else {
           model.value = {
             ...model.value,

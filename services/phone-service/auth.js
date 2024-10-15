@@ -2,18 +2,20 @@ import App from '@live-change/framework'
 const validation = App.validation
 import definition from './definition.js'
 
+const preFilter = phone => {
+  // replace leading + with 0
+  phone = phone.replace(/^\+/, '0')
+  phone = phone.replace(/[^0-9]/g, '')
+  return phone
+}
+
 const User = definition.foreignModel('user', 'User')
 const Phone = definition.model({
   name: 'Phone',
   properties: {
     phone: {
       type: String,
-      preFilter: phone => {
-        // replace leading + with 0
-        phone = phone.replace(/^\+/, '0')
-        phone = phone.replace(/[^0-9]/g, '')
-        return phone
-      },
+      preFilter,
       validation: ['nonEmpty', 'phone']
     }
   },
@@ -72,6 +74,7 @@ definition.event({
     }
   },
   async execute({ user, phone }) {
+    phone = preFilter(phone)
     await Phone.delete(phone)
   }
 })
@@ -99,8 +102,9 @@ definition.trigger({
     }
   },
   async execute({ phone }, context, emit) {
+    phone = preFilter(phone)
     const phoneData = await Phone.get(phone)
-    if(phoneData) throw { properties: { phone: 'taken' } }
+    if(phoneData) throw { properties: { phone: 'phoneTaken' } }
     return true
   }
 })
@@ -114,6 +118,7 @@ definition.trigger({
     }
   },
   async execute({ phone }, context, emit) {
+    phone = preFilter(phone)
     const phoneData = await Phone.get(phone)
     if(!phoneData) throw { properties: { phone: 'notFound' } }
     return phoneData
@@ -129,6 +134,7 @@ definition.trigger({
     }
   },
   async execute({ phone }, context, emit) {
+    phone = preFilter(phone)
     const phoneData = await Phone.get(phone)
     return phoneData
   }
@@ -148,8 +154,9 @@ definition.trigger({
   },
   async execute({ user, phone }, { service }, emit) {
     if(!phone) throw new Error("no phone")
+    phone = preFilter(phone)
     const phoneData = await Phone.get(phone)
-    if(phoneData) throw { properties: { phone: 'taken' } }
+    if(phoneData) throw { properties: { phone: 'phoneTaken' } }
     await service.trigger({ type: 'contactConnected' }, {
       contactType: 'phone_Phone',
       contact: phone,
@@ -176,6 +183,7 @@ definition.trigger({
     }
   },
   async execute({ user, phone }, { client, service }, emit) {
+    phone = preFilter(phone)
     const phoneData = await Phone.get(phone)
     if(!phoneData) throw { properties: { phone: 'notFound' } }
     if(phoneData.user !== user) throw { properties: { phone: 'notFound' } }
@@ -196,6 +204,7 @@ definition.trigger({
   },
   waitForEvents: true,
   async execute({ phone, session }, { client, service }, emit) {
+    phone = preFilter(phone)
     const phoneData = await Phone.get(phone)
     if(!phoneData) throw { properties: { phone: 'notFound' } }
     const { user } = phoneData
