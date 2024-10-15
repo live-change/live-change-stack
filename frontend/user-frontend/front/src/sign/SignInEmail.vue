@@ -20,7 +20,9 @@
           <InputText id="email" type="text" class="w-full"
                      aria-describedby="email-help" :class="{ 'p-invalid': data.emailError }"
                      v-model="data.email" />
-          <small id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
+          <small v-if="data.emailError" id="email-help" class="p-error">
+            {{ t(`errors.${data.emailError}`) }}
+          </small>
         </div>
 
         <div class="p-field mb-3">
@@ -28,7 +30,9 @@
           <Password id="password" class="w-full" inputClass="w-full" toggleMask :feedback="false"
                     aria-describedby="password-help" :class="{ 'p-invalid': data.passwordHashError }"
                     v-model="data.passwordHash" />
-          <small id="password-help" class="p-error">{{ t(`errors.${data.passwordHashError}`) }}</small>
+          <small v-if="data.passwordHashError" id="password-help" class="p-error">
+            {{ t(`errors.${data.passwordHashError}`) }}
+          </small>
         </div>
 
         <div class="flex align-items-center justify-content-between mb-6">
