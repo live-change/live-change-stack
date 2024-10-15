@@ -26,14 +26,17 @@
   })
   const { cost } = toRefs(props)
 
-  const billingSettings  = inject('billingSettings', (billing) => ({
-    currency: 'usd',
-    denomination: '100'
-  }))
-
-  import { usePath, live, useClient } from '@live-change/vue3-ssr'
+  import { usePath, live, useClient, useApi } from '@live-change/vue3-ssr'
   const path = usePath()
   const client = useClient()
+  const api = useApi()
+
+  const billingClientConfig = api.getServiceDefinition('billing')?.clientConfig
+
+  const billingSettings  = inject('billingSettings', (billing) => ({
+    currency: billingClientConfig?.currency ?? 'usd',
+    denomination: billingClientConfig?.denomination ?? 100
+  }))
 
   const billingPath = computed(() =>
     path.billing.myUserBilling({})

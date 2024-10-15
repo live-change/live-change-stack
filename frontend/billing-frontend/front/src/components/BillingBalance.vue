@@ -1,13 +1,13 @@
 <template>
-  <div>
-    <BalanceDisplay ownerType="billing_Billing" :owner="billing.id"
-                    :currency="billingSettings.currency" :denomination="billingSettings.denomination"
-                    :available="available" />
-  </div>
+  <span>
+    <CurrencyDisplay :value="value"
+                     :i18nConfig="i18nConfig" :i18nDefaultConfig="i18nDefaultConfig"
+                     :currency="settings.currency" :denomination="settings.denomination" />
+  </span>
 </template>
 
 <script setup>
-  import { BalanceDisplay } from '@live-change/balance-frontend'
+  import { CurrencyDisplay } from '@live-change/balance-frontend'
 
   import { defineProps, toRefs, computed, inject } from 'vue'
 
@@ -19,31 +19,48 @@
     user: {
       type: String,
       default: null
-    }
+    },
+    i18nConfig: {
+      type: Object,
+      default: () => undefined
+    },
+    i18nDefaultConfig: {
+      type: Object,
+      default: () => undefined
+    },
   })
-  const { available, user } = toRefs(props)
+  const { available, user, i18nConfig, i18nDefaultConfig } = toRefs(props)
 
-  const billingSettings  = inject('billingSettings', (billing) => ({
-    currency: 'usd',
-    denomination: '100'
-  }))
-
-  import { usePath, live, useClient } from '@live-change/vue3-ssr'
+  import { usePath, live, useClient, useApi } from '@live-change/vue3-ssr'
   const path = usePath()
   const client = useClient()
+  const api = useApi()
 
-  const billingPath = computed(() => (
-    user.value ? path.billing.userOwnedBilling({ user }) : path.billing.myUserBilling({}))
-  ).with(billing => path.balance.ownerOwnedBalance({
-      ownerType: 'billing_Billing',
-      owner: billing.id
-    }).bind('balance'))
+  const billingClientConfig = api.getServiceDefinition('billing')?.clientConfig
+
+  const billingSettings = inject('billingSettings', (billing) => ({
+    currency: billingClientConfig?.currency ?? 'usd',
+    denomination: billingClientConfig?.denomination ?? 100
+  }))
+
+  const billingPath = computed(() =>
+    (user.value ? path.billing.userOwnedBilling({ user }) : path.billing.myUserBilling({}))
+      .with(billing => path.balance.ownerOwnedBalance({
+        ownerType: 'billing_Billing',
+        owner: billing.id
+      }).bind('balance'))
+  )
 
   const [ billing ] = await Promise.all([
     live(billingPath)
   ])
 
   const settings = computed(() => billingSettings( billing ))
+
+  const value = computed(() => available.value
+    ? billing?.balance?.value?.available ?? 0
+    : billing?.balance?.value?.amount ?? 0
+  )
 
 </script>
 

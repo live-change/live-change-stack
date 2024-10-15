@@ -17,7 +17,7 @@
 
   import { ViewRoot, NavBar, UpdateBanner } from "@live-change/frontend-base"
 
-  import { computed } from 'vue'
+  import { computed, provide } from 'vue'
   import { useHead } from '@vueuse/head'
 
   import { useI18n } from 'vue-i18n'
@@ -55,6 +55,12 @@
   if(typeof window != 'undefined') {
     StyleModule.mount(window.document, defaultHighlightStyle.module)
   }
+
+  provide('currencyI18nConfig:credits', {
+    format(value) {
+      return i18n.n(value, 'credits') + ' ' + i18n.t('currency.credits', value)
+    }
+  })
 
   import "./analytics"
 

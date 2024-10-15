@@ -31,7 +31,7 @@
       default: null
     },
     denomination: {
-      type: String,
+      type: Number,
       default: null
     },
     i18nConfig: {

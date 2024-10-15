@@ -13,14 +13,13 @@ import { userRoutes } from "@live-change/user-frontend"
 import { catchAllPagesRoute, contentEditRoutes, pagesSitemap } from "@live-change/content-frontend"
 
 
-export function balanceRoutes(config = {}) {
+export function billingRoutes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
-
-
-
-
-
+    route({ name: 'billing:billing', path: prefix + 'billing', props: true,
+      component: () => import("./pages/Billing.vue") }),
+    route({ name: 'billing:topUp', path: prefix + 'billing/topUp/:value/:price/:currency', props: true,
+      component: () => import("./pages/TopUp.vue") }),
   ]
 }
 
@@ -36,14 +35,15 @@ import { client as useClient } from '@live-change/vue3-ssr'
 export function createRouter(app, config) {
   const client = useClient(app._context)
 
+  const prefix = config?.prefix || '/'
+
   const router = _createRouter({
     // use appropriate history implementation for server/client
     // import.meta.env.SSR is injected by Vite.
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes: [
       ...userRoutes({ ...config, prefix: prefix + 'user/' }),
-
-      ...balanceRoutes(config),
+      ...billingRoutes(config),
 
       {
         name: 'index', path: '/', meta: { },

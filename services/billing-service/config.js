@@ -1,18 +1,27 @@
 import definition from './definition.js'
 
 const {
-  currency = 'USD',
-  denomination = 100
+  currency = 'usd',
+  denomination = 100,
+  minimumTopUp = 1000,
+  anyTopUpPrices = [],
+  topUpOffers = []
 } = definition.config
 
 definition.clientConfig = {
   currency,
-  denomination
+  denomination,
+  minimumTopUp,
+  anyTopUpPrices,
+  topUpOffers
 }
 
 const config = {
   currency,
-  denomination
+  denomination,
+  minimumTopUp,
+  anyTopUpPrices,
+  topUpOffers
 }
 
 export default config

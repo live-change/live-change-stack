@@ -6,6 +6,12 @@ export const numberFormats ={
     "style": "currency",
       "currency": "USD",
       "notation": "standard"
+  },
+  "credits": {
+    "style": "decimal",
+    "maximumFractionDigits": 0,
+    "useGrouping": true,
+    "notation": "standard"
   }
 }
 

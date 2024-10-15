@@ -97,7 +97,34 @@ app.config = {
       name: 'balance',
     },
     {
-      name: 'billing'
+      name: 'billing',
+      currency: 'credits',
+      denomination: 1,
+      minimumTopUp: 1000,
+      anyTopUpPrices: [
+        {
+          value: 1000,
+          price: 1233,
+          currency: 'usd'
+        }
+      ],
+      topUpOffers: [
+        {
+          value: 1000,
+          price: 1200,
+          currency: 'usd'
+        },
+        {
+          value: 2300,
+          price: 2450,
+          currency: 'usd'
+        },
+        {
+          value: 10000,
+          price: 11000,
+          currency: 'usd'
+        },
+      ]
     },
     {
       name: 'backup',
