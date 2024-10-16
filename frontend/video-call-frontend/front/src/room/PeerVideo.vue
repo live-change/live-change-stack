@@ -1,6 +1,6 @@
 <template>
   <div @click="ev => $emit('click', ev)"
-       class="absolute text-gray-200 peer-video">
+       class="text-gray-200 peer-video">
 
     <div v-if="image && (!stream || peerState.videoState !== 'enabled')"
          class="absolute w-full h-full bg-no-repeat bg-center" :style="{
@@ -9,23 +9,22 @@
          }">
     </div>
 
-    <div v-if="(peerState?.videoState !== 'enabled' || !stream) && !image && ownerType && owner"
-         class="absolute w-full h-full flex flex-column align-items-center justify-content-center identification">
-      <UserIdentification :ownerType="ownerType" :owner="owner" />
-<!--      <pre>{{ peerState }}</pre>
-      <pre>[{{ ownerType }}]</pre>-->
-    </div>
+    <video v-if="stream"
+           autoplay playsinline
+           :src-object.prop.camel="stream"
+           :volume.prop.camel="volume"
+           :muted="audioMuted"
+           ref="videoElement"
+           @resize="handleVideoResize"
+           class="w-full h-full"
+           :style="mirror ? 'transform: scaleX(-1)' : ''">
+    </video>
 
-    <div v-if="stream">
-      <video autoplay playsinline
-             :src-object.prop.camel="stream"
-             :volume.prop.camel="volume"
-             :muted="audioMuted"
-             ref="videoElement"
-             @resize="handleVideoResize"
-             class="w-full h-full"
-             :style="mirror ? 'transform: scaleX(-1)' : ''">
-      </video>
+    <div v-if="(peerState?.videoState !== 'enabled' || !stream) && !image && ownerType && owner"
+         class="absolute w-full h-full left-0 top-0 flex flex-column align-items-center justify-content-center identification">
+      <UserIdentification :ownerType="ownerType" :owner="owner" />
+      <!--      <pre>{{ peerState }}</pre>
+            <pre>[{{ ownerType }}]</pre>-->
     </div>
 
     <slot name="videoOverlay" v-bind="props" />
