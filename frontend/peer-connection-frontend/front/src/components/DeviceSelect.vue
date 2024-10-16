@@ -12,7 +12,7 @@
                :src-object.prop.camel="model.media">
         </audio>
       </div>
-      <div v-else class="bg-black-alpha-90 flex align-items-center justify-content-center">
+      <div v-else class="bg-black-alpha-90 flex align-items-center justify-content-center absolute w-full h-full">
         <video v-if="model.media" autoplay playsinline :muted="userMediaMuted" ref="outputElement"
                :src-object.prop.camel="model.media"
                class="max-w-full max-h-full" style="object-fit: contain; transform: scaleX(-1)">
