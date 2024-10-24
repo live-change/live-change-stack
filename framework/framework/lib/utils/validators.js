@@ -169,10 +169,12 @@ const validators = {
 
   httpUrl: (settings) => (value) => {
     if(!value) return false // ignore empty
-    const match = value.match(
-        /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._%~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
-    )
-    if(!match) return 'wrongUrl'
+    try {
+      const url = new URL(value)
+      if(url.protocol !== 'http:' && url.protocol !== 'https:') return 'wrongUrl'
+    } catch(e) {
+      return 'wrongUrl'
+    }
   }
 }
 

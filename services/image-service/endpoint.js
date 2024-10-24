@@ -17,12 +17,12 @@ const debug = Debug("image-service:endpoint")
 
 function normalizeFormat(f1) {
   f1 = f1.toLowerCase().trim()
-  if(f1 == 'jpg') f1 = 'jpeg'
+  if(f1 === 'jpg') f1 = 'jpeg'
   return f1
 }
 
 function isFormatsIdentical(f1, f2) {
-  return normalizeFormat(f1) == normalizeFormat(f2)
+  return normalizeFormat(f1) === normalizeFormat(f2)
 }
 
 function fileExists(fn) {

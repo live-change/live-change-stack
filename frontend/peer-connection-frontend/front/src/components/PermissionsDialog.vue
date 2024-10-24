@@ -105,8 +105,13 @@
 
     for(const requiredPermission of JSON.parse(value)) {
       console.log("check permission", requiredPermission)
-      const permissionState = await navigator.permissions.query(requiredPermission)
-      const state = permissionState ? permissionState.state : "unknown"
+      let state, permissionState
+      try {
+        permissionState = await navigator.permissions.query(requiredPermission)
+        state = permissionState ? permissionState.state : "unknown"
+      } catch {
+        state = 'not_supported'
+      }
       model.value = {
         ...model.value,
         permissions: {

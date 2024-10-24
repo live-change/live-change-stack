@@ -127,6 +127,11 @@ app.config = {
       ]
     },
     {
+      name: 'stripe',
+      secretKey: process.env.STRIPE_SECRET_KEY,
+      publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
+    },
+    {
       name: 'backup',
       port: 8007
     },

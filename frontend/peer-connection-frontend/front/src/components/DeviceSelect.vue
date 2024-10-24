@@ -140,6 +140,8 @@
       </template>
     </PermissionsDialog>
 
+    <pre>{{ model }}</pre>
+<!--    <pre>{{ audioInputs }}</pre>-->
 <!--
 
     <pre>PD: {{ permissionsDialog }}</pre>
@@ -243,9 +245,22 @@
     onMounted(updateDevices)
   }
 
-  const audioInputs = computed(() => devices.value.filter(device => device.kind === 'audioinput'))
-  const audioOutputs = computed(() => devices.value.filter(device => device.kind === 'audiooutput'))
-  const videoInputs = computed(() => devices.value.filter(device => device.kind === 'videoinput'))
+  function fixLabel(device, index) {
+    const { deviceId, groupId, kind, label } = device
+    if(!label.trim()) return {
+      deviceId, groupId, kind,
+      label: ({
+        audioinput: "Audio Input",
+        audiooutput: "Audio Output",
+        videoinput: "Video Input"
+      }[kind]) + ` ${index + 1}`
+    }
+    return device
+  }
+
+  const audioInputs = computed(() => devices.value.filter(device => device.kind === 'audioinput').map(fixLabel))
+  const audioOutputs = computed(() => devices.value.filter(device => device.kind === 'audiooutput').map(fixLabel))
+  const videoInputs = computed(() => devices.value.filter(device => device.kind === 'videoinput').map(fixLabel))
 
   watch(audioInputs, (value) => {
     if(value.length === 0) return
@@ -296,8 +311,10 @@
     }
     model.value = {
       ...model.value,
+      dupa:123,
       media
     }
+    console.log("MEDIA STREAM CHANGED", model.value.media, media)
   }
 
 /*  onMounted(() => {
@@ -459,6 +476,15 @@
   const permissionsCallbacks = ref({})
 
   async function showPermissionsDialog() {
+    try {
+      await Promise.all([
+        navigator.permissions.query({ name: 'camera' }),
+        navigator.permissions.query({ name: 'microphone' })
+      ])
+    } catch(error) {
+      /// TODO: some other dialog for firefox...
+      return
+    }
     return new Promise((resolve, reject) => {
       permissionsCallbacks.value = {
         audioOnly: () => {
@@ -498,6 +524,7 @@
 
   function handleEmptyPreviewClick() {
     if(model.value.media) return
+    if(!permissionsDialog.value?.permissions) return
     const { camera, microphone } = permissionsDialog.value.permissions
     if(camera === 'denied' || microphone === 'denied') {
       // open permissions dialog
@@ -507,6 +534,7 @@
 
   function handleDisabledAudioClick() {
     limitedMedia.value = null
+    if(!permissionsDialog.value?.permissions) return
     const { camera, microphone } = permissionsDialog.value.permissions
     if(camera === 'denied' || microphone === 'denied') {
       // open permissions dialog
@@ -516,6 +544,7 @@
   function handleDisabledVideoClick() {
     console.log("DISABLED VIDEO CLICK")
     limitedMedia.value = null
+    if(!permissionsDialog.value?.permissions) return
     const { camera, microphone } = permissionsDialog.value.permissions
     if(camera === 'denied' || microphone === 'denied') {
       // open permissions dialog

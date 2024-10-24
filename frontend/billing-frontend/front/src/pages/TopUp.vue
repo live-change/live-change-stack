@@ -1,13 +1,22 @@
 <template>
-   <h1>{{ offer}}</h1>
-  <h2>{{ anyTopUpPrice }}</h2>
-  <pre>{{ billingClientConfig.topUpOffers }}</pre>
+  <div>
+    <div v-if="selectedTopUp">
+      <h1>{{ offer }}</h1>
+      <h2>{{ anyTopUpPrice }}</h2>
+      <pre>{{ billingClientConfig.topUpOffers }}</pre>
+    </div>
+    <NotFound v-else />
+  </div>
 </template>
 
 <script setup>
   import { CurrencyDisplay } from '@live-change/balance-frontend'
 
   import { defineProps, toRefs, computed, inject } from 'vue'
+
+  import { NotFound } from '@live-change/url-frontend'
+
+  import { startTopUp } from '../logic/topUp.js'
 
   const props = defineProps({
     value: {
@@ -40,6 +49,16 @@
   const anyTopUpPrice = computed(() => billingClientConfig?.anyTopUpPrices
     ?.find(price => price.currency === currency.value))
 
+  const selectedTopUp = computed(() => offer.value || anyTopUpPrice.value)
+
+  const workingZone = inject('workingZone')
+
+  onMounted(() => {
+    const topUp = selectedTopUp.value
+    workingZone.addPromise('topUp', async () => {
+      await startTopUp(topUp)
+    })
+  })
 
 </script>
 

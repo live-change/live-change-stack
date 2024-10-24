@@ -126,7 +126,7 @@
     async waitForBarriers(context) {
       let promises = []
       for(let barrier of this.barriers) {
-        promises.push(barrier(this.value, context))
+        promises.push(barrier(this.getValue(), context))
       }
       await Promise.all(promises)
     }

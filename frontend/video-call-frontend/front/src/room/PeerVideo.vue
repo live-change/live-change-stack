@@ -16,7 +16,7 @@
            :muted="audioMuted"
            ref="videoElement"
            @resize="handleVideoResize"
-           class="w-full h-full"
+           class="w-full h-full absolute"
            :style="mirror ? 'transform: scaleX(-1)' : ''">
     </video>
 
