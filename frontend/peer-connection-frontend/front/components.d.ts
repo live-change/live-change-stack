@@ -14,6 +14,7 @@ declare module 'vue' {
     Dialog: typeof import('primevue/dialog')['default']
     Dropdown: typeof import('primevue/dropdown')['default']
     InputSwitch: typeof import('primevue/inputswitch')['default']
+    MediaSettingsButton: typeof import('./src/components/MediaSettingsButton.vue')['default']
     MicrophoneButton: typeof import('./src/components/MicrophoneButton.vue')['default']
     PermissionsDialog: typeof import('./src/components/PermissionsDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

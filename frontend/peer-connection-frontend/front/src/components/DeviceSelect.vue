@@ -44,6 +44,11 @@
         </div>
       </div>
 
+      <div v-if="gettingUserMedia"
+           class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-center align-items-center">
+        <ProgressSpinner  />
+      </div>
+
       <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-end align-items-center">
         <div class="flex flex-row justify-content-between align-items-center h-5rem w-7rem media-buttons">
           <MicrophoneButton v-model="model" @disabled-audio-click="handleDisabledAudioClick" />
@@ -165,6 +170,7 @@
 
   import Button from 'primevue/button'
   import Dropdown from 'primevue/dropdown'
+  import ProgressSpinner from 'primevue/progressspinner'
   import PermissionsDialog from './PermissionsDialog.vue'
   import VolumeIndicator from './VolumeIndicator.vue'
 
@@ -311,10 +317,15 @@
     }
     model.value = {
       ...model.value,
-      dupa:123,
       media
     }
-    console.log("MEDIA STREAM CHANGED", model.value.media, media)
+    setTimeout(() => { /// firefox needs this timeout
+      model.value = {
+        ...model.value,
+        media
+      }
+      console.log("MEDIA STREAM CHANGED", model.value.media, media)
+    }, 1)
   }
 
 /*  onMounted(() => {
@@ -349,11 +360,18 @@
     }
   }, { immediate: true })
 
-  let gettingUserMedia = false
+  const gettingUserMedia = ref(false)
   async function updateUserMedia(retry = false) {
     console.log("USER MEDIA UPDATE WHEN MODEL IS", model.value)
-    if(gettingUserMedia) return
-    gettingUserMedia = true
+    if(gettingUserMedia.value) return
+    if(!retry && model.value.mediaError) {
+      console.log("CLEAR MEDIA ERROR")
+      model.value = {
+        ...model.value,
+        mediaError: null
+      }
+    }
+    gettingUserMedia.value = true
     try {
       const constraints = selectedConstraints.value
       const videoAllowed = videoInputRequest.value !== 'none' && constraints.video
@@ -366,6 +384,10 @@
       try {
         console.log("GET USER MEDIA")
         const mediaStream = await getUserMediaNative(constraints)
+        if(JSON.stringify(selectedConstraints.value) !== JSON.stringify(constraints)) {
+          console.log("SELECTED CONSTRAINTS CHANGED WHILE GETTING USER MEDIA")
+          return
+        }
         /*      if(userMedia.value && retry) {
           console.log("CLOSE USER MEDIA")
           userMedia.value.getTracks().forEach(track => track.stop())
@@ -425,7 +447,7 @@
         }
       }
     } finally {
-      gettingUserMedia = false
+      gettingUserMedia.value = false
     }
   }
 
@@ -574,7 +596,7 @@
   function updateAudioInput(value) {
     model.value = {
       ...model.value,
-      audioInput: value
+      audioInput: value,
     }
   }
   function updateAudioOutput(value) {
