@@ -1,6 +1,6 @@
 {
   "name": "@live-change/linkedin-authentication-service",
-  "version": "0.8.96",
+  "version": "0.8.97",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.8.96",
-    "@live-change/relations-plugin": "0.8.96"
+    "@live-change/framework": "^0.8.97",
+    "@live-change/relations-plugin": "^0.8.97"
   },
   "gitHead": "e6eb56356f9b75fc5656c795f0dfaf9a0ad143c2",
   "type": "module"
