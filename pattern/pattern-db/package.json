@@ -1,6 +1,6 @@
 {
   "name": "@live-change/pattern-db",
-  "version": "0.8.95",
+  "version": "0.8.96",
   "description": "Realtime usage pattern analysis - database storage backend",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/pattern": "0.8.95"
+    "@live-change/pattern": "^0.8.96"
   },
   "gitHead": "852e9817a89ffe5f2b6dc13c658d7a1bfd4f8fa6"
 }
