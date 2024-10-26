@@ -22,8 +22,8 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
-    "@live-change/db-store-level": "^0.8.95",
-    "@live-change/db-store-lmdb": "^0.8.95",
+    "@live-change/db-store-level": "0.8.95",
+    "@live-change/db-store-lmdb": "0.8.95",
     "minimist": ">=1.2.3",
     "next-tick": "^1.1.0",
     "rimraf": "^5.0.5",
@@ -32,9 +32,9 @@
     "websocket-extensions": ">=0.1.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.8.95",
+    "@live-change/dao": "0.8.95",
     "get-random-values": "^1.2.2",
     "node-interval-tree": "^1.3.3"
   },
-  "gitHead": "1c40a298d8d39dfcf4fc17bb754df365e7214d3e"
+  "gitHead": "852e9817a89ffe5f2b6dc13c658d7a1bfd4f8fa6"
 }
