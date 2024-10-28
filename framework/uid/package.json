@@ -1,6 +1,6 @@
 {
   "name": "@live-change/uid",
-  "version": "0.8.97",
+  "version": "0.8.98",
   "description": "Simple unique id generator with timestamp and source",
   "main": "index.js",
   "scripts": {
