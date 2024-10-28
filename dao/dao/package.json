@@ -35,6 +35,6 @@
   "scripts": {
     "test": "NODE_ENV=test tape tests/*"
   },
-  "version": "0.8.98",
+  "version": "0.8.99",
   "gitHead": "7e6e0621a709ac4fe94790d2df940488e544ccd3"
 }
