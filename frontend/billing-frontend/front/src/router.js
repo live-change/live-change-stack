@@ -20,6 +20,10 @@ export function billingRoutes(config = {}) {
       component: () => import("./pages/Billing.vue") }),
     route({ name: 'billing:topUp', path: prefix + 'billing/topUp/:value/:price/:currency', props: true,
       component: () => import("./pages/TopUp.vue") }),
+    route({ name: 'billing:topUpCancel', path: prefix + 'billing/topUpCancel/:encodedId', props: true,
+      component: () => import("./pages/TopUpCancel.vue") }),
+    route({ name: 'billing:topUpSuccess', path: prefix + 'billing/topUpSuccess/:encodedId', props: true,
+      component: () => import("./pages/TopUpSuccess.vue") }),
   ]
 }
 

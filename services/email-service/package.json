@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.8.97",
+    "@live-change/framework": "0.8.97",
     "got": "^11.8.3",
     "html-to-text": "8.1.0",
     "inline-css": "4.0.2",
@@ -29,6 +29,6 @@
     "juice": "11.0.0",
     "nodemailer": "^6.7.2"
   },
-  "gitHead": "e6eb56356f9b75fc5656c795f0dfaf9a0ad143c2",
+  "gitHead": "5e1beea2df2a168d9da8f9fa802f4340de9d75e6",
   "type": "module"
 }

@@ -5,7 +5,10 @@ const {
   denomination = 100,
   minimumTopUp = 1000,
   anyTopUpPrices = [],
-  topUpOffers = []
+  topUpOffers = [],
+  baseHref = process.env.BASE_HREF || 'http://localhost:8001',
+  topUpSuccessUrl,
+  topUpCancelUrl
 } = definition.config
 
 definition.clientConfig = {
@@ -21,7 +24,9 @@ const config = {
   denomination,
   minimumTopUp,
   anyTopUpPrices,
-  topUpOffers
+  topUpOffers,
+  topUpSuccessUrl: topUpSuccessUrl ?? `${baseHref}/billing/topUpSuccess`,
+  topUpCancelUrl: topUpCancelUrl ?? `${baseHref}/billing/topUpCancel`
 }
 
 export default config

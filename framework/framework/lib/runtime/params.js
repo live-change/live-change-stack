@@ -69,10 +69,10 @@ async function processReturns(data, definition, service) {
 
 async function processReturn(data, definition, service) {
   if(!definition) return data
-  if(definition.type == Object) {
+  if(definition.type === Object && definition.properties) {
     return processReturns(data, definition.properties)
   }
-  if(definition.type == Array) {
+  if(definition.type === Array) {
     return data.map(item => processReturn(item, definition.of))
   }
   let modelName = getModelName(definition.type)

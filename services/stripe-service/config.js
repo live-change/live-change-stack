@@ -1,19 +1,24 @@
 import definition from './definition.js'
 
 const {
-  stripeSecretKey,
-  stripePublishableKey,
-  stripeWebhookSecret
+  secretKey,
+  publishableKey,
+  webhookSecret,
+  baseHref = process.env.BASE_HREF || 'http://localhost:8001',
+  checkoutSuccessUrl,
+  checkoutCancelUrl
 } = definition.config
 
 definition.clientConfig = {
-  stripePublishableKey
+  publishableKey
 }
 
 const config = {
-  stripeSecretKey,
-  stripePublishableKey,
-  stripeWebhookSecret
+  secretKey,
+  publishableKey,
+  webhookSecret,
+  checkoutSuccessUrl: checkoutSuccessUrl ?? `${baseHref}/stripe/success`,
+  checkoutCancelUrl: checkoutCancelUrl ?? `${baseHref}/stripe/cancel`
 }
 
 export default config

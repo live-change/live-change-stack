@@ -12,7 +12,7 @@
 <script setup>
   import { CurrencyDisplay } from '@live-change/balance-frontend'
 
-  import { defineProps, toRefs, computed, inject } from 'vue'
+  import { defineProps, toRefs, computed, inject, onMounted } from 'vue'
 
   import { NotFound } from '@live-change/url-frontend'
 
@@ -54,10 +54,13 @@
   const workingZone = inject('workingZone')
 
   onMounted(() => {
+    if(!selectedTopUp.value) return
     const topUp = selectedTopUp.value
-    workingZone.addPromise('topUp', async () => {
-      await startTopUp(topUp)
-    })
+    workingZone.addPromise('topUp', (async () => {
+      const topUpResult = await startTopUp(topUp)
+      console.log("TopUp", topUpResult)
+      window.location.href = topUpResult.redirectUrl
+    })())
   })
 
 </script>

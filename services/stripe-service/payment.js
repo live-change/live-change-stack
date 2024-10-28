@@ -51,7 +51,7 @@ const paymentParameters = {
     type: String,
     validation: ['nonEmpty']
   },
-  returnUrl: {
+  cancelUrl: {
     type: String,
     validation: ['nonEmpty']
   }
@@ -80,9 +80,15 @@ definition.trigger({
   properties: {
     ...paymentParameters
   },
-  async execute({ items, causeType, cause, successUrl, returnUrl }, { client, service }, emit) {
-    const stripe = stripe(config.stripeSecretKey)
-    const session = await stripe.checkout.sessions.create({
+  async execute({ items, causeType, cause, successUrl, cancelUrl }, { client, service }, emit) {
+    console.log("STRIPE SECRET KEY", config.secretKey)
+    const payment = app.generateUid()
+    const stripeClient = stripe(config.secretKey)
+    console.log("URLS", {
+      success_url: successUrl ?? (config.checkoutSuccessUrl + '/' + payment),
+      cancel_url: cancelUrl ?? (config.checkoutCancelUrl + '/' + payment)
+    })
+    const session = await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: items.map(item => ({
         price_data: {
@@ -97,18 +103,23 @@ definition.trigger({
         quantity: item.quantity
       })),
       mode: 'payment',
-      success_url: successUrl,
-      return_url: returnUrl
+      success_url: successUrl ?? (config.checkoutSuccessUrl + '/' + payment),
+      cancel_url: cancelUrl ?? (config.checkoutCancelUrl + '/' + payment)
     })
     emit({
       type: 'PaymentCreated',
+      payment,
       data: {
-        items, causeType, cause, successUrl, returnUrl,
+        items, causeType, cause,
         stripeSession: session.id,
         state: 'created'
       }
     })
-    return session
+    return {
+      payment,
+      stripeSession: session.id,
+      redirectUrl: session.url
+    }
   }
 })
 
