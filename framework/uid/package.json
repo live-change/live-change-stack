@@ -1,6 +1,6 @@
 {
   "name": "@live-change/uid",
-  "version": "0.8.88",
+  "version": "0.8.98",
   "description": "Simple unique id generator with timestamp and source",
   "main": "index.js",
   "scripts": {
@@ -21,5 +21,5 @@
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "homepage": "https://github.com/live-change/live-change-stack",
-  "gitHead": "9f34ce84625f32092de0d93dcd19e4e4982982bd"
+  "gitHead": "5e1beea2df2a168d9da8f9fa802f4340de9d75e6"
 }

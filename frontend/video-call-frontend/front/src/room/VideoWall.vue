@@ -23,6 +23,7 @@
                @resize="ev => handleVideoResize(tile, ev)"
                @click="ev => handleVideoClick(tile, ev)"
                :audioOutputId="audioOutputId"
+               class="absolute"
                :style="videoStyles[tile.id]">
       <template #videoOverlay="props">
         <slot name="videoOverlay" v-bind="{ ...props, tile }"></slot>

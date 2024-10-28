@@ -99,7 +99,7 @@ definition.action({
       default: false
     }
   },
-  async execute({ accessToken, transferOwnership }, { client, service }, emit) {
+  async execute({ code, redirectUri, transferOwnership }, { client, service }, emit) {
     const user = client.user
     if(!user) throw 'notAuthorized'
     const tokens = await getTokensWithCode(code, redirectUri)

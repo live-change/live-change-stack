@@ -1,6 +1,6 @@
 {
   "name": "@live-change/cli",
-  "version": "0.8.88",
+  "version": "0.8.98",
   "description": "Live Change Framework - command line interface",
   "main": "index.js",
   "scripts": {
@@ -25,12 +25,12 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao": "0.8.88",
-    "@live-change/dao-sockjs": "0.8.88",
-    "@live-change/dao-websocket": "0.8.88",
-    "@live-change/db-server": "0.8.88",
-    "@live-change/framework": "0.8.88",
-    "@live-change/server": "0.8.88",
+    "@live-change/dao": "^0.8.98",
+    "@live-change/dao-sockjs": "^0.8.98",
+    "@live-change/dao-websocket": "^0.8.98",
+    "@live-change/db-server": "^0.8.98",
+    "@live-change/framework": "^0.8.98",
+    "@live-change/server": "^0.8.98",
     "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "http-proxy-middleware": "2.0.6",
@@ -40,5 +40,5 @@
     "websocket": "^1.0.34",
     "yargs": "^17.7.2"
   },
-  "gitHead": "9f34ce84625f32092de0d93dcd19e4e4982982bd"
+  "gitHead": "5e1beea2df2a168d9da8f9fa802f4340de9d75e6"
 }

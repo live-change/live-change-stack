@@ -20,3 +20,8 @@ export { GoogleAccess }
 export * from './front/src/connected/connected.js'
 
 export * from "./front/src/router.js"
+
+import en from "./front/locales/en.json"
+const locales = { en }
+export { locales }
+

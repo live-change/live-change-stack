@@ -2,7 +2,7 @@ import * as LcDao from '@live-change/dao'
 const { DaoProxy, DaoPrerenderCache, DaoCache, Path } = LcDao // hack for vite
 import validators from '@live-change/framework/lib/utils/validators.js'
 import { hashCode, encodeNumber, uidGenerator, randomString } from '@live-change/uid'
-import { ref, computed, watch } from "vue"
+import { ref, computed, watch, reactive } from "vue"
 
 class Api extends DaoProxy {
   constructor(source, settings = {}) {
@@ -176,6 +176,11 @@ class Api extends DaoProxy {
     api.services = globalServices
 
     api.globals.$lc = api
+
+    api.globals.$allLoadingTasks = reactive([])
+    api.globals.$allLoadingErrors = reactive([])
+    api.globals.$allWorkingTasks = reactive([])
+    api.globals.$allWorkingErrors = reactive([])
 
     /// Deprecated:
     api.globals.$api = this

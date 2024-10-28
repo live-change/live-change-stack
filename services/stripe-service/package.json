@@ -1,0 +1,34 @@
+{
+  "name": "@live-change/stripe-service",
+  "version": "0.8.98",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-stack/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-stack",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "dependencies": {
+    "@live-change/framework": "^0.8.98",
+    "@live-change/relations-plugin": "^0.8.98",
+    "lru-cache": "^7.12.0",
+    "pluralize": "^8.0.0",
+    "progress-stream": "^2.0.0",
+    "prosemirror-model": "^1.18.1",
+    "stripe": "^17.2.1"
+  },
+  "gitHead": "5e1beea2df2a168d9da8f9fa802f4340de9d75e6",
+  "type": "module"
+}

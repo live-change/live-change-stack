@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config()
+
 import { defineConfig } from 'vite'
 import Pages from 'vite-plugin-pages'
 
@@ -28,6 +31,7 @@ export default defineConfig(async ({ command, mode }) => {
       ENV_VERSION: JSON.stringify(version),
       ENV_BRAND_NAME: JSON.stringify(name[0].toUpperCase() + name.slice(1)),
       ENV_BRAND_DOMAIN: JSON.stringify(domain),
+      ENV_STRIPE_KEY: JSON.stringify(process.env.STRIPE_KEY),
     },
 
     plugins: [

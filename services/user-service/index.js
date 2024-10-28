@@ -131,11 +131,11 @@ definition.action({
     })
     const session = client.session
     await service.trigger({ type: 'signedIn' }, {
-      session, user
+      session, to
     })
     emit({
       type: "signedIn",
-      user, session
+      to, session
     })
   }
 })

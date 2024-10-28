@@ -2,11 +2,14 @@ import definition from './definition.js'
 
 const User = definition.foreignModel('user', 'User')
 
+const preFilter = email => email.toLowerCase()
+
 const Email = definition.model({
   name: 'Email',
   properties: {
     email: {
       type: String,
+      preFilter,
       validation: ['nonEmpty', 'email']
     }
   },
@@ -92,8 +95,8 @@ definition.trigger({
     }
   },
   async execute({ email }, context, _emit) {
-    const emailData = await Email.get(email)
-    if(emailData) throw { properties: { email: 'taken' } }
+    const emailData = await Email.get(preFilter(email))
+    if(emailData) throw { properties: { email: 'emailTaken' } }
     return true
   }
 })
@@ -107,7 +110,7 @@ definition.trigger({
     }
   },
   async execute({ email }, context, _emit) {
-    const emailData = await Email.get(email)
+    const emailData = await Email.get(preFilter(email))
     if(!emailData) throw { properties: { email: 'notFound' } }
     return emailData
   }
@@ -122,7 +125,7 @@ definition.trigger({
     }
   },
   async execute({ email }, context, _emit) {
-    return await Email.get(email)
+    return await Email.get(preFilter(email))
   }
 })
 
@@ -140,10 +143,11 @@ definition.trigger({
   },
   async execute({ user, email }, { service }, emit) {
     if(!email) throw new Error("no email")
+    email = preFilter(email)
     const emailData = await Email.get(email)
     if(emailData)  {
       if(emailData.user === user) return false
-      throw { properties: { email: 'taken' } }
+      throw { properties: { email: 'emailTaken' } }
     }
     await service.trigger({ type: 'contactConnected'  }, {
       contactType: 'email_Email',
@@ -171,6 +175,7 @@ definition.trigger({
     }
   },
   async execute({ user, email }, { client, service }, emit) {
+    email = preFilter(email)
     const emailData = await Email.get(email)
     if(!emailData) throw { properties: { email: 'notFound' } }
     if(emailData.user !== user) throw { properties: { email: 'notFound' } }
@@ -191,6 +196,7 @@ definition.trigger({
   },
   waitForEvents: true,
   async execute({ email, session }, { service }, _emit) {
+    email = preFilter(email)
     const emailData = await Email.get(email)
     if(!emailData) throw { properties: { email: 'notFound' } }
     const { user } = emailData

@@ -13,7 +13,9 @@ const config = definition.config
 
 const publicDir = config.publicDir || 'front/public/'
 
-const authenticationKey = new ObservableValue(crypto.randomBytes(24).toString('hex'))
+const authenticationKey = new ObservableValue(
+  config.rendererAuthenticationKey ?? crypto.randomBytes(24).toString('hex')
+)
 definition.view({
   internal: true,
   global: true,

@@ -1,5 +1,5 @@
 <template>
-  <suspense v-if="suspense">
+  <suspense v-if="suspense" @pending="handlePending" @resolve="handleResolve" @fallback="handleFallback">
     <template #default>
       <div>
         <slot v-bind="{ isLoading: !!loading.length, loading, errors }"></slot>
@@ -50,7 +50,8 @@
       return {
         loading: [],
         loadingBlockId: 0,
-        connectionProblem: false
+        connectionProblem: false,
+        suspenseTask: null
       }
     },
     setup() {
@@ -74,6 +75,17 @@
       }
     },
     methods: {
+      handlePending() {
+        this.suspenseTask = { name: 'View loading' }
+        this.loadingStarted(this.suspenseTask)
+      },
+      handleResolve() {
+        if(this.suspenseTask) this.loadingFinished(this.suspenseTask)
+        this.suspenseTask = null
+      },
+      handleFallback() {
+
+      },
       loadingStarted(task) {
         if(this.loading.length === 0) {
           analytics.emit('loadingStarted', { task: task.name })

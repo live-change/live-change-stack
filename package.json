@@ -69,6 +69,7 @@
     "services/video-call-service",
     "services/balance-service",
     "services/billing-service",
+    "services/stripe-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",

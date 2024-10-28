@@ -23,6 +23,7 @@ import backup from '@live-change/backup-service'
 import task from '@live-change/task-service'
 import balance from "@live-change/balance-service"
 import billing from "@live-change/billing-service"
+import stripe from "@live-change/stripe-service"
 import init from './init.js'
 
 export {
@@ -51,6 +52,7 @@ export {
   task,
   balance,
   billing,
+  stripe,
   init
 }
 
