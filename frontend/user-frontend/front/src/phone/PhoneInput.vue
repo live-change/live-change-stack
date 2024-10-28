@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-row align-items-center">
-    <AutoComplete v-model="selectedCountry" dropdown optionLabel="dial_code" placeholder="+XX" forceSelection
+    <AutoComplete v-model="selectedCountry" dropdown optionLabel="dial_code" placeholder="+XX"
                   :suggestions="filteredCountries" @complete="searchCountry"
                   class="mr-2 w-14rem">
       <template #option="slotProps">
@@ -11,7 +11,7 @@
                style="width: 18px; height: 12.27px" />
           <div>{{ slotProps.option.name }}</div>
         </div>
-      </template>}}
+      </template>
     </AutoComplete>
     <InputText v-model="rest" :disabled="!selectedCountry" class="w-full"
                pattern="[0-9 ]*" inputmode="numeric" ref="phoneInput"
@@ -45,6 +45,7 @@
   const selectedCountry = ref()
   watch(value, (newValue) => {
     if(!newValue) return
+    if(newValue.startsWith('+')) newValue = newValue.slice(1)
     const found = countries.find((country) => newValue.startsWith(country.dial_code))
     if(found) {
       selectedCountry.value = found
@@ -57,22 +58,44 @@
       }
     }
   })
-  watch(selectedCountry, (country) => {
-    if(!country) return
-    const currentCountry = value.value && countries.find((country) => value.value.startsWith(country.dial_code))
-    const code = typeof country === 'object' ? country.dial_code : country.replace(/[^\d]/g, '')
-    if(currentCountry) {
-      value.value = value.value.replace(currentCountry.dial_code, code)
-    } else {
-      value.value = code
+  watch(selectedCountry, (country, oldCountry) => {
+    let full = value.value
+    if(oldCountry && oldCountry !== country) {
+      const oldCode = typeof oldCountry === 'object' ? oldCountry.dial_code.slice(1) : oldCountry.replace(/[^\d]/g, '')
+      if(full.startsWith(oldCode)) {
+        full = full.slice(oldCode.length)
+      }
     }
+    if(!country) return value.value = full
+    const code = typeof country === 'object' ? country.dial_code.slice(1) : country.replace(/[^\d]/g, '')
+    full = code + full.replace(/[^\d ]/g, '')
+    value.value = full
   })
 
+
   const rest = computed({
-    get: () => value.value && (value.value
-      .replace(selectedCountry.value?.dial_code, '')
-      .replace(/[^\d ]/g, '')),
-    set: (rest) => value.value = selectedCountry.value?.dial_code + rest.replace(/[^\d ]/g, '')
+    get: () => {
+      const country = selectedCountry.value
+      if(country) {
+        const code = typeof country === 'object' ? country.dial_code.slice(1) : country.replace(/[^\d]/g, '')
+        if(value.value.startsWith(code)) {
+          return value.value.slice(code.length)
+        } else {
+          return value.value
+        }
+      } else {
+        return value.value
+      }
+    },
+    set: (rest) => {
+      const country = selectedCountry.value
+      if(country) {
+        const code = typeof country === 'object' ? country.dial_code.slice(1) : country.replace(/[^\d]/g, '')
+        value.value = code + rest.replace(/[^\d ]/g, '')
+      } else {
+        value.value = rest.replace(/[^\d ]/g, '')
+      }
+    }
   })
 
   const filteredCountries = ref(countries)
@@ -98,6 +121,8 @@
   if(selectedCountry.value == null) {
     selectedCountry.value = countries.find(c => c.code.toLowerCase() === myCountry.value.toLowerCase())
   }
+
+
 
 </script>
 

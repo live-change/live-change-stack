@@ -3,8 +3,6 @@ const validation = App.validation
 import definition from './definition.js'
 
 const preFilter = phone => {
-  // replace leading + with 0
-  phone = phone.replace(/^\+/, '0')
   phone = phone.replace(/[^0-9]/g, '')
   return phone
 }

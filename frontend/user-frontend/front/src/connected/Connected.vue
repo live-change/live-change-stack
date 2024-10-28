@@ -43,7 +43,11 @@
       <div class="flex flex-row flex-wrap">
         <router-link v-for="contactType in contactsTypes"
                      :to="{ name: 'user:connect-'+contactType.contactType }" class="mr-2 no-underline block mb-1">
-          <Button :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
+          <Button v-if="contactType.contactType === 'email'"
+                  :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
+          <Button v-else-if="contactType.contactType === 'phone'"
+                  :label="'Add '+contactType.contactType" icon="pi pi-phone" id="connect" />
+          <Button v-else :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
         </router-link>
         <router-link v-for="accountType in accountTypes"
                      :to="{ name: 'user:connect-'+accountType.accountType }" class="mr-2 no-underline block mb-1">
