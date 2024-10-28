@@ -9,6 +9,7 @@ export interface Change {
 }
 
 export interface ChangeReceiver {
+  lastChangeTs: string, // required for ifNotChangedSince optimization
   onChange(change: Change): Promise<void>
 }
 
