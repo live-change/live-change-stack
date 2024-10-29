@@ -73,7 +73,7 @@
     }))
 
     googleAuthRedirect({
-      scope: (scopes.value ?? []).join(' '),
+      scope: (scopes?.value ?? []).join(' '),
       redirectUri: document.location.protocol + '//' + document.location.host
         + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href,
       accessType: accessType.value
