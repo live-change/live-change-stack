@@ -22,10 +22,10 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.101",
-    "@live-change/relations-plugin": "^0.8.101",
+    "@live-change/framework": "0.8.101",
+    "@live-change/relations-plugin": "0.8.101",
     "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0"
   },
-  "gitHead": "268359f670938c49a94f57eac33a7fe7792f20d6"
+  "gitHead": "6cf152a7641450f163278a70d67ff721f13d4038"
 }

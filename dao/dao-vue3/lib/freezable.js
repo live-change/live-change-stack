@@ -19,6 +19,7 @@ export default function freezable(source) {
     if(frozen.value) return frozen.value
     return source.value
   })
+  console.log("FREEZABLE TEST", unref(source), unref(output))
   const changed = computed(() => JSON.stringify(unref(output)) !== JSON.stringify(unref(source)))
   return { output, freeze, unfreeze, changed }
 }

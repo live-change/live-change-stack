@@ -76,8 +76,10 @@
     },
     methods: {
       handlePending() {
+        let oldSuspenseTask = this.suspenseTask
         this.suspenseTask = { name: 'View loading' }
         this.loadingStarted(this.suspenseTask)
+        if(oldSuspenseTask) this.loadingFinished(oldSuspenseTask)
       },
       handleResolve() {
         if(this.suspenseTask) this.loadingFinished(this.suspenseTask)
