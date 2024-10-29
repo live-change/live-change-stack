@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.8.100",
+    "@live-change/dao": "0.8.100",
     "debug": "^4.3.4",
     "sockjs-client": "git+https://github.com/sockjs/sockjs-client.git",
     "supports-color": "^9.4.0"
@@ -42,5 +42,5 @@
   "scripts": {
     "compileTests": "webpack test/*.js tests-bundle.js"
   },
-  "gitHead": "7d9970c62f5d019473e04353c5b4890683fa5dd6"
+  "gitHead": "268359f670938c49a94f57eac33a7fe7792f20d6"
 }
