@@ -1,6 +1,6 @@
 {
   "name": "@live-change/geoip-service",
-  "version": "0.8.100",
+  "version": "0.8.101",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.8.100",
+    "@live-change/framework": "^0.8.101",
     "maxmind": "^3.0.3"
   },
   "gitHead": "268359f670938c49a94f57eac33a7fe7792f20d6",
