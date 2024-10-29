@@ -25,7 +25,6 @@ export default function freezable(source) {
     return source.value
   })
   const changed = computed(() => {
-    console.log("CHECK CHANGED", deepUnref(output.value),deepUnref(source.value))
     return JSON.stringify(deepUnref(output)) !== JSON.stringify(deepUnref(source))
   })
   return { output, freeze, unfreeze, changed }

@@ -51,7 +51,8 @@
         loading: [],
         loadingBlockId: 0,
         connectionProblem: false,
-        suspenseTask: null
+        suspenseTask: null,
+        r: Math.random()
       }
     },
     setup() {
@@ -76,23 +77,25 @@
     },
     methods: {
       handlePending() {
-        let oldSuspenseTask = this.suspenseTask
+        const oldSuspenseTask = this.suspenseTask
         this.suspenseTask = { name: 'View loading' }
         this.loadingStarted(this.suspenseTask)
         if(oldSuspenseTask) this.loadingFinished(oldSuspenseTask)
       },
       handleResolve() {
-        if(this.suspenseTask) this.loadingFinished(this.suspenseTask)
+        let oldSuspenseTask = this.suspenseTask
         this.suspenseTask = null
+        if(oldSuspenseTask) this.loadingFinished(oldSuspenseTask)
+        setTimeout(() => {
+          this.loading = this.loading.slice()
+        }, 10)
       },
       handleFallback() {
-
       },
       loadingStarted(task) {
         if(this.loading.length === 0) {
           analytics.emit('loadingStarted', { task: task.name })
           info('LOADING STARTED!')
-
           const loadingBlockId = this.loadingBlockId
           this.loadingTimeout = setTimeout(() => {
             if(loadingBlockId === this.loadingBlockId && this.loading.length > 0) {

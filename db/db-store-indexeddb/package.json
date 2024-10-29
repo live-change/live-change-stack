@@ -30,5 +30,5 @@
     "@live-change/flatten-interval-tree": "^0.8.103",
     "broadcast-channel": "^4.2.0"
   },
-  "gitHead": "48f0f33881894e7036fe3cec501fe9ac6c103918"
+  "gitHead": "8650a42d78fcb66a3394d7eb85e0074dd629a95c"
 }
