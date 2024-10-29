@@ -16,7 +16,7 @@
 
       </ul>
 
-      <ul class="list-none p-2 m-0 border-top-1 surface-border">
+      <ul v-if="client.user"  class="list-none p-2 m-0 border-top-1 surface-border">
         <li>
           <div class="p-3 text-500 font-medium">AUTHORIZATION</div>
         </li>
@@ -27,7 +27,7 @@
 
       </ul>
 
-      <ul class="list-none p-2 m-0 border-top-1 surface-border">
+      <ul v-if="client.user" class="list-none p-2 m-0 border-top-1 surface-border">
 
         <SettingsMenuItem v-if="client.user" name="user:delete" icon="trash" label="Delete Account" />
 

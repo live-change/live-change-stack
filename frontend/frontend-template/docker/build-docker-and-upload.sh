@@ -21,6 +21,12 @@ pushd "$DIR/.."
     --secret id=npmrc,src=$HOME/.npmrc\
     --build-arg VERSION=${VERSION}-${DEPLOYMENT}\
     --build-arg BASE_HREF=${BASE_HREF}\
+    --build-arg GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}"\
+    --build-arg LINKEDIN_CLIENT_ID="${LINKEDIN_CLIENT_ID}"\
+    --build-arg BRAND_NAME="${BRAND_NAME}"\
+    --build-arg BRAND_DOMAIN="${BRAND_DOMAIN}"\
+    --build-arg BRAND_SMS_FROM="${BRAND_SMS_FROM}"\
+    --build-arg PROJECT_NAME="${PROJECT_NAME}"\
     .
 
   docker push ${REPO}/${NAME}:${VERSION}-${DEPLOYMENT}
