@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.8.106",
+    "@live-change/framework": "0.8.106",
     "pluralize": "^8.0.0"
   },
-  "gitHead": "bf290febf91c05b8fb1b657b1c0f4861ca2727fc"
+  "gitHead": "cd0102a76312f65e91a6cd70fab3e0a4ff961345"
 }

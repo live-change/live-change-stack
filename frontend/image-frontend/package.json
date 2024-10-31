@@ -22,15 +22,15 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.5.2",
-    "@live-change/cli": "^0.8.106",
-    "@live-change/dao": "^0.8.106",
-    "@live-change/dao-vue3": "^0.8.106",
-    "@live-change/dao-websocket": "^0.8.106",
-    "@live-change/framework": "^0.8.106",
-    "@live-change/image-service": "^0.8.106",
-    "@live-change/session-service": "^0.8.106",
-    "@live-change/vue3-components": "^0.8.106",
-    "@live-change/vue3-ssr": "^0.8.106",
+    "@live-change/cli": "0.8.106",
+    "@live-change/dao": "0.8.106",
+    "@live-change/dao-vue3": "0.8.106",
+    "@live-change/dao-websocket": "0.8.106",
+    "@live-change/framework": "0.8.106",
+    "@live-change/image-service": "0.8.106",
+    "@live-change/session-service": "0.8.106",
+    "@live-change/vue3-components": "0.8.106",
+    "@live-change/vue3-ssr": "0.8.106",
     "@vueuse/core": "^10.11.0",
     "codeceptjs-assert": "^0.0.5",
     "compression": "^1.7.4",
@@ -50,7 +50,7 @@
     "vue3-scroll-border": "0.1.6"
   },
   "devDependencies": {
-    "@live-change/codeceptjs-helper": "^0.8.106",
+    "@live-change/codeceptjs-helper": "0.8.106",
     "codeceptjs": "^3.6.5",
     "generate-password": "1.7.1",
     "playwright": "^1.41.2",
@@ -61,5 +61,5 @@
   "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "BSD-3-Clause",
   "description": "",
-  "gitHead": "bf290febf91c05b8fb1b657b1c0f4861ca2727fc"
+  "gitHead": "cd0102a76312f65e91a6cd70fab3e0a4ff961345"
 }

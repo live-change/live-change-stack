@@ -47,10 +47,15 @@ async function isUserMediaPermitted(constraints = { audio: true, video: true }) 
 const getUserMediaNative = userMediaFactory()
 const getDisplayMediaNative = displayMediaFactory()
 
-const trackedStreams = []
+//const trackedStreams = []
+globalThis.trackedStreams = []
 
 async function getUserMedia(...args) {
   const stream = await getUserMediaNative(...args)
+  const index = trackedStreams.indexOf(stream)
+  if(index >= 0) {
+    console.error("STREAM ALREADY TRACKED", stream, "ALL STREAMS", trackedStreams)
+  }
   trackedStreams.push(stream)
   console.log("STREAM ADDED", stream, "ALL STREAMS", trackedStreams.length)
   return stream

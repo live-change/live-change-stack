@@ -238,6 +238,8 @@
     }
   })
 
+  if(!model.value.media) console.error("DEVICE SELECT MODEL MEDIA IS NULL")
+
   globalThis.deviceSelectModel = model
 
   const devices = ref([])
@@ -310,7 +312,9 @@
   }, { immediate: true, deep: true })*/
 
   function setUserMedia(media) {
+    console.error("SET USER MEDIA", media)
     if(media === model.value.media) return
+    if(media?.id === model.value.media?.id) return
     console.log("MEDIA STREAM CHANGE", media, 'FROM', model.value.media)
     if(model.value.media) {
       stopMedia(model.value.media)
@@ -343,12 +347,11 @@
   const limitedMedia = ref(null)
 
   const selectedConstraints = ref({ video: false, audio: false })
-  watch(() => ({
-    video: limitedMedia.value === 'audio' ? false :
-      { deviceId: model.value?.videoInput?.deviceId, ...constraints.value.video },
-    audio: limitedMedia.value === 'video' ? false :
+  watchEffect(() => {
+    const video = limitedMedia.value === 'audio' ? false :
+        { deviceId: model.value?.videoInput?.deviceId, ...constraints.value.video }
+    const audio = limitedMedia.value === 'video' ? false :
       { deviceId: model.value?.audioInput?.deviceId, ...constraints.value.audio }
-  }), ({ video, audio }) => {
     console.log("SELECTED CONSTRAINTS", {
       video: selectedConstraints.value.video?.deviceId,
       audio: selectedConstraints.value.audio?.deviceId
@@ -358,7 +361,7 @@
       console.log("SELECTED CONSTRAINTS CHANGE", { video: video.deviceId, audio: audio.deviceId })
       selectedConstraints.value = { video, audio }
     }
-  }, { immediate: true })
+  })
 
   const gettingUserMedia = ref(false)
   async function updateUserMedia(retry = false) {
@@ -386,6 +389,9 @@
         const mediaStream = await getUserMediaNative(constraints)
         if(JSON.stringify(selectedConstraints.value) !== JSON.stringify(constraints)) {
           console.log("SELECTED CONSTRAINTS CHANGED WHILE GETTING USER MEDIA")
+          stopMedia(mediaStream)
+          gettingUserMedia.value = false
+          setTimeout(() => updateUserMedia(), 10)
           return
         }
         /*      if(userMedia.value && retry) {
