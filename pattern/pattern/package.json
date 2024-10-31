@@ -1,6 +1,6 @@
 {
   "name": "@live-change/pattern",
-  "version": "0.8.106",
+  "version": "0.8.107",
   "description": "Realtime usage pattern analysis for security, analytics and gamification purposes",
   "main": "index.js",
   "scripts": {
