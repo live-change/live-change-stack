@@ -238,8 +238,6 @@
     }
   })
 
-  if(!model.value.media) console.error("DEVICE SELECT MODEL MEDIA IS NULL")
-
   globalThis.deviceSelectModel = model
 
   const devices = ref([])
@@ -312,7 +310,6 @@
   }, { immediate: true, deep: true })*/
 
   function setUserMedia(media) {
-    console.error("SET USER MEDIA", media)
     if(media === model.value.media) return
     if(media?.id === model.value.media?.id) return
     console.log("MEDIA STREAM CHANGE", media, 'FROM', model.value.media)
