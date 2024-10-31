@@ -24,9 +24,15 @@ class View {
       service: this.service, client: clientData
     }
     const preparedParameters = await prepareParameters(parameters, this.definition.properties, this.service)
-    const observable = this.definition.observable(preparedParameters, context)
-    if(observable === null) return new LcDao.ObservableValue(null)
-    return observable
+    try {
+      const observable = this.definition.observable(preparedParameters, context)
+      if(observable === null) return new LcDao.ObservableValue(null)
+      return observable
+    } catch(error) {
+      console.error("VIEW", this.service.name, ".", this.definition.name,
+        "OBSERVABLE", this.definition.observable, "ERROR", error)
+      throw error
+    }
   }
 
   async get(parameters, clientData) {

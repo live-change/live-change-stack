@@ -29,12 +29,12 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/dao": "^0.8.105",
-    "@live-change/db": "^0.8.105",
-    "@live-change/db-store-indexeddb": "^0.8.105",
-    "@live-change/db-store-localstorage": "^0.8.105",
-    "@live-change/db-store-rbtree": "^0.8.105",
+    "@live-change/dao": "0.8.105",
+    "@live-change/db": "0.8.105",
+    "@live-change/db-store-indexeddb": "0.8.105",
+    "@live-change/db-store-localstorage": "0.8.105",
+    "@live-change/db-store-rbtree": "0.8.105",
     "debug": "^4.3.4"
   },
-  "gitHead": "cb3692471fdd1ccd482eaa14a85b0cf1aa4a2efb"
+  "gitHead": "bf290febf91c05b8fb1b657b1c0f4861ca2727fc"
 }
