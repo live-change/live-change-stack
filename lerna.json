@@ -66,6 +66,7 @@
     "services/billing-service",
     "services/stripe-service",
     "services/draft-service",
+    "services/agreement-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",

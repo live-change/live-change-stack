@@ -25,7 +25,6 @@
         </div>
 
         <Button label="Sign Up with email" icon="pi pi-user" class="w-full" type="submit" />
-
       </command-form>
 
       <Divider align="center" class="my-4">
@@ -40,6 +39,12 @@
           class="w-full p-button-secondary mb-1"
         />
       </router-link>
+
+      <div class="mt-3">
+        By providing your email address or google account, you consent to its processing solely
+        for registration and account verification purposes, in accordance with our
+        <router-link to="/privacy-policy">Privacy Policy</router-link>.
+      </div>
 
     </div>
   </div>

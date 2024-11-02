@@ -164,7 +164,7 @@ class Api extends DaoProxy {
         models[modelName] = serviceDefinition.models[modelName]
       }
       globalServices[serviceDefinition.name] = {
-        actions, views, models, definitions
+        actions, views, models, definitions, config: serviceDefinition.clientConfig
       }
     }
 
