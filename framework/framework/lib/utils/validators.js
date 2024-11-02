@@ -175,6 +175,16 @@ const validators = {
     } catch(e) {
       return 'wrongUrl'
     }
+  },
+  httpUrlSoft: (settings) => (value) => {
+    if(!value) return false // ignore empty
+    try {
+      if(!value.match(/^https?:\/\//)) value = 'https://'+value
+      const url = new URL(value)
+      if(url.protocol !== 'http:' && url.protocol !== 'https:') return 'wrongUrl'
+    } catch(e) {
+      return 'wrongUrl'
+    }
   }
 }
 

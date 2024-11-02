@@ -13,7 +13,7 @@
 
 <script setup>
   import AutoInput from "./AutoInput.vue"
-  import { inputs, types } from "./config";
+  import { inputs, types } from "../config.js";
   import { computed, inject, toRefs, getCurrentInstance } from 'vue'
 
   import { useI18n } from 'vue-i18n'

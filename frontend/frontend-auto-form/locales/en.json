@@ -4,7 +4,7 @@
     "empty": "This field is required.",
     "tooShort": "Too short, minimum {length} characters.",
     "tooLong": "Too long, maximum {length} characters.",
-    "wrongUrl": "Invalid URL. Acceptable url formats: http://example.com or www.example.com"
+    "wrongUrl": "Invalid URL. Acceptable url formats: https://example.com or www.example.com"
   },
   "info": {
     "minLength": "Minimum length - {minLength} characters.",

@@ -25,7 +25,8 @@ function synchronized(options) {
     recursive = false,
     throttle = 0,
     debounce = 300,
-    autoSave = true
+    autoSave = true,
+    updateDataProperty = undefined
   } = options
   if(!source) throw new Error('source must be defined')
   if(!update) throw new Error('update function must be defined')
@@ -57,7 +58,11 @@ function synchronized(options) {
       // console.log("SOURCE JSON", JSON.stringify(source.value))
       // console.log("SYNCHRONIZED JSON", JSON.stringify(synchronizedValue.value))
       try {
-        await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+        if(updateDataProperty) {
+          await update({ [updateDataProperty]: data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+        } else {
+          await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+        }
         try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
       } catch(e) {
         if(resetOnError) synchronizedValue.value = copy(source.value)
@@ -103,7 +108,11 @@ function synchronized(options) {
            <= ((source.value && source.value[timeField]) ?? ''))) return false // identical, no need to save
       const data = JSON.parse(JSON.stringify(local.value))
       try {
-        await update({...data, ...unref(identifiers)})
+        if(updateDataProperty) {
+          await update({ [updateDataProperty]: data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+        } else {
+          await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+        }
         try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
       } catch(e) {
         if(resetOnError) synchronizedValue.value = source.value

@@ -1,6 +1,6 @@
-import AutoInput from './AutoInput.vue'
-import AutoField from './AutoField.vue'
-import AutoEditor from './AutoEditor.vue'
+import AutoInput from './components/AutoInput.vue'
+import AutoField from './components/AutoField.vue'
+import AutoEditor from './components/AutoEditor.vue'
 
 export { AutoInput, AutoField, AutoEditor }
 

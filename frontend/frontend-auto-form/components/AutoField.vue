@@ -2,8 +2,10 @@
   <component v-if="fieldComponent && visible" :is="fieldComponent" v-bind="attributes"
              @update:modelValue="value => emit('update:modelValue', value)" :i18n="i18n" />
   <div v-else-if="visible" class="field" :class="fieldClass" :style="fieldStyle">
-    <label :for="uid">{{ t( label ) }}</label>
-    <slot>
+    <slot name="label" v-bind="{ validationResult, uid }">
+      <label :for="uid">{{ t( label ) }}</label>
+    </slot>
+    <slot v-bind="{ validationResult, uid }">
       <auto-input :modelValue="modelValue" :definition="definition"
                   :class="props.inputClass" :style="props.inputStyle"
                   :attributes="props.inputAttributes"
@@ -14,11 +16,13 @@
                   :i18n="i18n" />
     </slot>
     <div>
-      <small v-if="validationResult" class="p-error mt-1">
-        {{ (typeof validationResult === 'object')
-             ? t( 'errors.' + validationResult.error, validationResult.validator )
-             : t( 'errors.' + validationResult ) }}
-      </small>
+      <slot name="error"  v-bind="{ validationResult, uid }" >
+        <small v-if="validationResult" class="p-error mt-1">
+          {{ (typeof validationResult === 'object')
+               ? t( 'errors.' + validationResult.error, validationResult.validator )
+               : t( 'errors.' + validationResult ) }}
+        </small>
+      </slot>
       <small v-if="maxLengthValidation || minLengthValidation" style="float: right" class="mt-1"
              :class="{
                'p-error': (maxLengthValidation && props.modelValue?.length
@@ -40,7 +44,7 @@
 
   import AutoInput from "./AutoInput.vue"
 
-  import { inputs, types } from './config.js'
+  import { inputs, types } from '../config.js'
   import { computed, getCurrentInstance, inject, toRefs, onMounted, ref } from 'vue'
 
   const isMounted = ref(false)
@@ -86,6 +90,10 @@
     i18n: {
       type: String,
       default: ''
+    },
+    ignoreFieldComponent: {
+      type: Boolean,
+      default: false
     }
   })
 
@@ -180,7 +188,7 @@
     propName: props.propName,
   }))
 
-  const fieldComponent = computed(() => inputConfig.value?.fieldComponent)
+  const fieldComponent = computed(() => props.ignoreFieldComponent ? null : inputConfig.value?.fieldComponent)
 
 
 </script>
