@@ -1,6 +1,6 @@
 {
   "name": "@live-change/billing-service",
-  "version": "0.8.107",
+  "version": "0.8.108",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.8.107",
-    "@live-change/relations-plugin": "0.8.107",
-    "@live-change/user-service": "0.8.107",
-    "@live-change/access-control-service": "0.8.107"
+    "@live-change/access-control-service": "^0.8.108",
+    "@live-change/framework": "^0.8.108",
+    "@live-change/relations-plugin": "^0.8.108",
+    "@live-change/user-service": "^0.8.108"
   },
   "gitHead": "da00b9062a0238e1497c76009b0bd9e74ff7a376",
   "type": "module"
