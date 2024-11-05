@@ -55,10 +55,10 @@ const createPeer = async ({
 
   const otherPeers = computed(() => peers.value?.filter(peer => peer.id !== peerId))
   const otherPeersOnline = computed(() => otherPeers.value?.filter(peer => peer.peerState?.online))
-  const isConnectionPossible = computed(() => online.value && (!!turnConfiguration.value))
+  const isConnectionPossible = computed(() => online.value /*&& (!!turnConfiguration.value)*/)
 
   const rtcConfiguration = computed(() => ({
-    iceServers: [ turnConfiguration.value ],
+    iceServers: turnConfiguration.value ? [ turnConfiguration.value ] : [],
     iceTransportPolicy: 'all', // 'all' or 'relay',
     bundlePolicy: 'balanced'
   }))
@@ -131,23 +131,6 @@ const createPeer = async ({
       context: appContext
     }
   )
-
-  function sendMessage(message) {
-    console.log("SENDING PEER MESSAGE", message)
-    message.from = peerId
-    message.sent = message.sent || new Date().toISOString()
-    message._commandId = message._commandId || api.uid()
-    const requestTimeout = 10000
-    //console.log("SENDING PEER MESSAGE", message)
-    api.requestWithSettings({ requestTimeout }, ['peerConnection', 'postMessage'], message)
-      .catch(error => {
-        console.log("PEER MESSAGE ERROR", error)
-        if(error === 'timeout' && !finished.value) {
-          console.log("RETRYING")
-          sendMessage(message)
-        }
-      })
-  }
 
   function updateConnections() {
     const peers = isConnectionPossible.value ? otherPeersOnline.value : []
@@ -228,7 +211,9 @@ const createPeer = async ({
     ...peerPublic,
     rtcConfiguration,
     clientIp,
-    sendMessage
+    api,
+    finished,
+    peerId
   }
 
   return {

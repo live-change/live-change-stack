@@ -71,7 +71,9 @@
     "services/billing-service",
     "services/stripe-service",
     "services/draft-service",
+    "services/print-service",
     "services/agreement-service",
+    "services/survey-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
@@ -91,6 +93,7 @@
     "frontend/task-frontend",
     "frontend/video-call-frontend",
     "frontend/balance-frontend",
-    "frontend/billing-frontend"
+    "frontend/billing-frontend",
+    "frontend/survey-frontend"
   ]
 }

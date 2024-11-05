@@ -255,6 +255,10 @@ export default function task(definition, serviceDefinition) {
           await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retriesCount)))
         }
         await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
+      } finally {
+        if(definition.cleanup) {
+          await definition.cleanup(props, runContext)
+        }
       }
     }
 

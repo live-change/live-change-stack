@@ -16,7 +16,7 @@ export function input(src, config) {
   }
 }
 
-types.String = inputs.decimal = input( () => import('primevue/inputtext'))
+types.String = inputs.text = input( () => import('primevue/inputtext'))
 inputs.textarea = input(() => import('primevue/textarea'), { attributes: { autoResize: true } })
 
 inputs.password = input(() => import('primevue/password'))

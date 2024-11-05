@@ -70,6 +70,8 @@ definition.action({
     }, {
       causeType: 'billing_TopUp',
       cause: topUp,
+      payerType: 'user_User',
+      payer: client.user,
       items: [{
         name: 'Top Up ',
         price: price,

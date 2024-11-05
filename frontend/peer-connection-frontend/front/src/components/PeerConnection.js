@@ -57,6 +57,43 @@ const createPeerConnection = (peer, to) => {
     }
   })
 
+  const sendQueue = []
+  let sendingPromise = null
+  async function sendMessagesQueue() {
+    if(!sendingPromise) sendingPromise = (async () => {
+      while(sendQueue.length && !peer.finished.value) {
+        const messages = sendQueue.slice(0, 23)
+        console.log("SENDING PEER MESSAGES", messages)
+        const requestTimeout = 10000
+        const request = {
+          from: peer.peerId,
+          to,
+          messages,
+          _commandId: messages[0]._commandId || api.uid()
+        }
+        while(true) {
+          try {
+            await api.requestWithSettings({ requestTimeout }, ['peerConnection', 'postMessages'], request)
+            sendQueue.splice(0, messages.length)
+            break
+          } catch(error) {
+            console.error("SENDING PEER MESSAGES ERROR", error)
+          }
+        }
+      }
+      sendingPromise = null
+    })()
+    return sendingPromise
+  }
+
+  function sendMessage(message) {
+    //console.log("SENDING PEER MESSAGE", message)
+    message.sent = message.sent || new Date().toISOString()
+    message._commandId = message._commandId || api.uid()
+    sendQueue.push(message)
+    sendMessagesQueue()
+  }
+
   async function restartConnection() {
     console.log("RESTARTING CONNECTION")
     /*if(false && rtc.value.restartIce) {
@@ -71,7 +108,7 @@ const createPeerConnection = (peer, to) => {
       return
     }
     await rtc.value.setLocalDescription(offer)
-    peer.sendMessage({ to, type: "sdp", data: offer })
+    sendMessage({ to, type: "sdp", data: offer })
   }
   
   watch(clientIp, ip => {
@@ -94,7 +131,7 @@ const createPeerConnection = (peer, to) => {
       return;
     }
     await rtc.value.setLocalDescription(offer)
-    peer.sendMessage({ to, type: "sdp", data: offer })
+    sendMessage({ type: "sdp", data: offer })
     console.log("SDP OFFER SET! RTC IN STATE", rtc.value.signalingState)
   }
 
@@ -106,7 +143,7 @@ const createPeerConnection = (peer, to) => {
   async function handleIceCandidate(event) {
     if(state.value === 'closed') return
     //console.log("GOT ICE CANDIDATE", event.candidate && event.candidate.candidate)
-    peer.sendMessage({ to, type: "ice", data: event.candidate })
+    sendMessage({ type: "ice", data: event.candidate })
   }
   function handleTrack(event) {
     if(state.value === 'closed') return
@@ -166,7 +203,14 @@ const createPeerConnection = (peer, to) => {
     }
   }
 
+  let lastReceivedMessageSent = ''
+
   async function handleMessage(message) {
+    if(lastReceivedMessageSent > message.sent) {
+      console.error("MESSAGE OUT OF ORDER", message)
+      throw new Error("Message sent before last received message - message order broken!")
+    }
+    lastReceivedMessageSent = message.sent
     //console.log("PC", to, "HANDLE MESSAGE", message)
     if(state.value === 'created') {
       console.log("ADD MESSAGE TO WAITING QUEUE")
@@ -191,7 +235,7 @@ const createPeerConnection = (peer, to) => {
               console.log("GOT RTC ANSWER IN STATE", rtc.value.signalingState)
               await rtc.value.setLocalDescription(answer)
               console.log("LOCAL ANSWER DESCRIPTION SET! SENDING ANSWER!")
-              peer.sendMessage({ to, type: "sdp", data: answer })
+              sendMessage({ type: "sdp", data: answer })
             } else {
               console.log("I AM NOT POLITE SO I WILL IGNORE OFFER")
             }
@@ -203,7 +247,7 @@ const createPeerConnection = (peer, to) => {
             console.log("GOT RTC ANSWER IN STATE", rtc.value.signalingState)
             await rtc.value.setLocalDescription(answer)
             console.log("LOCAL ANSWER DESCRIPTION SET! SENDING ANSWER!")
-            peer.sendMessage({ to, type: "sdp", data: answer })
+            sendMessage({ type: "sdp", data: answer })
           }
         } else {
           console.log("GOT ANSWER FROM REMOTE PEER")
@@ -212,22 +256,26 @@ const createPeerConnection = (peer, to) => {
       } break;
       case "ice": {
         console.log("RECEIVED ICE! IN STATE", rtc.value.signalingState)
+        console.log("ICE TIMESTAMP", message.timestamp, 'SENT', message.sent)
         if(rtc.value.signalingState === "have-local-offer") {
           console.log("IGNORE ICE IN THIS STATE")
           return;
         }
         let ice = message.data
         //if(ice && ice.candidate === "") break;
-        if(ice && ice.candidate !== "") {
+        if(ice && ice.candidate) {
           console.log("ADDING ICE CANDIDATE", ice.candidate)
           await rtc.value.addIceCandidate(new RTCIceCandidate(ice))
-        } else if(window.RTCPeerConnection.prototype.addIceCandidate.length === 0){
-          await rtc.value.addIceCandidate()
+        } else {
+          console.log("ICE CANDIDATE WITHOUT CANDIDATE - ICE CANDIDATES END", ice)
+          if(window.RTCPeerConnection.prototype.addIceCandidate.length === 0){
+            await rtc.value.addIceCandidate()
+          }
         }
         //console.log("REMOTE ICE CANDIDATE ADDED", ice && ice.candidate)
       } break;
       case "ping": {
-        peer.sendMessage({ to, type: "pong", data: message.data})
+        sendMessage({ type: "pong", data: message.data})
       } break;
       case "pong": break; // ignore pong
       default:
@@ -240,6 +288,7 @@ const createPeerConnection = (peer, to) => {
     if(rtc.value) throw new Error("can't connect twice!")
     state.value = 'connecting'
     rtc.value = new RTCPeerConnection(rtcConfiguration.value)
+    window.rtc = rtc.value
     rtcSignalingState.value = rtc.value.signalingState
     iceGatheringState.value = rtc.value.iceGatheringState
     iceConnectionState.value = rtc.value.iceConnectionState

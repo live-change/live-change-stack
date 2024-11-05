@@ -23,5 +23,5 @@
   "dependencies": {
     "@elastic/elasticsearch": "7.13.0"
   },
-  "gitHead": "b272a01967e326d10874fea13353ab8fa5c30fe8"
+  "gitHead": "075bf3759fae6c40fb8e44d77d9f12c5c175e098"
 }

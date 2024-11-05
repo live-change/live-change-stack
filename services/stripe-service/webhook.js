@@ -1,10 +1,14 @@
 import App from '@live-change/framework'
 const app = App.app()
 import definition from './definition.js'
+import config from './config.js'
 
 import crypto from "crypto"
 import express from "express"
 import stripe from "stripe"
+
+
+
 
 definition.endpoint({
   name: 'webhook',
@@ -18,11 +22,14 @@ definition.endpoint({
     })
     expressApp.post('/', express.raw({type: 'application/json'}), async (request, response) => {
       try {
-        const event = stripe.webhooks.constructEvent(request.body, sig, config.webhookSecret)
+        const signature = request.headers['stripe-signature']
+        const event = stripe.webhooks.constructEvent(request.body, signature, config.webhookSecret)
         console.log("STRIPE WEBHOOK", event)
-        await app.triggerService({
-          service: 'stripe',
-          type: `stripe.${event.type}`
+        await app.trigger({
+          // service: 'stripe',
+          type: `stripeEvent.${event.type}`
+        }, {
+          ...event
         })
         response.json({ received: true })
       } catch (err) {

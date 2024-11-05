@@ -23,6 +23,9 @@ const messageFields = {
   },
   data: {
     type: Object
+  },
+  sent: {
+    type: Date
   }
 }
 
@@ -110,7 +113,7 @@ definition.view({
 
 let lastMessageTime = new Map()
 
-async function postMessage(props, { client, service }, emit, conversation) {
+function postMessage(props, { client, service }, emit, conversation) {
   console.log("POST MESSAGE", props)
   const channelId = props.to
   let lastTime = lastMessageTime.get(channelId)
@@ -157,9 +160,75 @@ definition.action({
     const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
     return hasRole
   },
+  queuedBy: (props) => props.to, // without this, messages order can be changed, it will block ice connection state
   async execute(props, { client, service }, emit) {
-    const result = await postMessage(props, { client, service }, emit)
+    throw new Error('postMessage is deprecated, use postMessages instead')
+    const result = postMessage(props, { client, service }, emit)
     console.log("MESSAGE POSTED!")
     return result
+  }
+})
+
+
+definition.action({
+  name: "postMessages",
+  properties: {
+    from: {
+      type: Peer,
+      validation: ['nonEmpty']
+    },
+    to: {
+      type: Peer,
+      validation: ['nonEmpty']
+    },
+    messages: {
+      type: Array,
+      of: {
+        type: Object,
+        messageFields
+      }
+    }
+  },
+  //queuedBy: (command) => `${command.toType}_${command.toId})`,
+  access: async ({ from, to }, context) => {
+    const { client, service, visibilityTest } = context
+    if(visibilityTest) return true
+    const [fromType, fromId, fromSession] = from.split(':')
+    const [toType, toId, toSession] = to.split(':')
+    console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
+    if(toType !== fromType || toId !== fromId) return false // different channel
+    if(client.session !== fromSession) return false
+    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
+    return hasRole
+  },
+  queuedBy: (props) => props.to, // without this, messages order can be changed, it will block ice connection state
+  waitForEvents: true,
+  async execute(props, { client, service }, emit) {
+    const lastMessages = await Message.rangeGet({
+      gte: `${props.to}_`,
+      lte: `${props.to}_\xFF\xFF\xFF\xFF`,
+      limit: 10,
+      reverse: true
+    })
+    let lastSent = lastMessages?.[0]?.sent
+    const messages = props.messages
+    for(const message of messages) {
+      message.from = props.from
+      message.to = props.to
+      const sent = new Date(message.sent).toISOString()
+      if(lastSent > sent) {
+        console.error("Message out of order", lastSent, '>', sent, "BY", props.from)
+        console.error("LAST MESSAGES", lastMessages)
+        console.error("RECEIVED MESSAGES", props.messages)
+       // process.exit(1)
+        throw new Error("Messages out of order")
+      }
+      lastSent = sent
+    }
+    for(const message of messages) {
+      postMessage(message, { client, service }, emit)
+    }
+    console.log("MESSAGES POSTED!")
+    return 'ok'
   }
 })

@@ -1,0 +1,31 @@
+{
+  "name": "@live-change/survey-service",
+  "version": "0.8.109",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-stack/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-stack",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "dependencies": {
+    "@live-change/access-control-service": "0.8.109",
+    "@live-change/framework": "0.8.109",
+    "@live-change/relations-plugin": "0.8.109",
+    "@live-change/user-service": "0.8.109"
+  },
+  "gitHead": "075bf3759fae6c40fb8e44d77d9f12c5c175e098",
+  "type": "module"
+}
