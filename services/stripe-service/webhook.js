@@ -24,7 +24,7 @@ definition.endpoint({
       try {
         const signature = request.headers['stripe-signature']
         const event = stripe.webhooks.constructEvent(request.body, signature, config.webhookSecret)
-        console.log("STRIPE WEBHOOK", event)
+        console.log("STRIPE WEBHOOK", event.type )//,JSON.stringify(event))
         await app.trigger({
           // service: 'stripe',
           type: `stripeEvent.${event.type}`
