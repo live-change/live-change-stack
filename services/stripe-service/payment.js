@@ -7,35 +7,35 @@ import config from './config.js'
 import stripe from "./stripeClient.js"
 
 const itemsArray = {
-    type: Array,
-    of: {
-      type: Object,
-      properties: {
-        name: {
-          type: String,
-          validation: ['nonEmpty']
-        },
-        price: {
-          type: Number,
-          validation: ['nonEmpty', 'number']
-        },
-        currency: {
-          type: String,
-          validation: ['nonEmpty']
-        },
-        quantity: {
-          type: Number,
-          validation: ['nonEmpty', 'number']
-        },
-        description: {
-          type: String
-        },
-        taxCode: {
-          type: String
-        }
+  type: Array,
+  of: {
+    type: Object,
+    properties: {
+      name: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      price: {
+        type: Number,
+        validation: ['nonEmpty', 'number']
+      },
+      currency: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      quantity: {
+        type: Number,
+        validation: ['nonEmpty', 'number']
+      },
+      description: {
+        type: String
+      },
+      taxCode: {
+        type: String
       }
     }
   }
+}
 
 const paymentParameters = {
   items: itemsArray,
@@ -90,12 +90,14 @@ definition.trigger({
   properties: {
     ...paymentParameters
   },
-  waitForEvents:true,
+  waitForEvents: true,
   async execute({ items, causeType, cause, successUrl, cancelUrl, payerType, payer }, { service }, emit) {
     const payment = app.generateUid()
+    if(!successUrl) successUrl = config.checkoutSuccessUrl + '/' + payment.replace(/\[/g, '(').replace(/]/g, ')')
+    if(!cancelUrl) cancelUrl = config.checkoutCancelUrl + '/' + payment.replace(/\[/g, '(').replace(/]/g, ')')
     console.log("URLS", {
-      success_url: successUrl ?? (config.checkoutSuccessUrl + '/' + payment),
-      cancel_url: cancelUrl ?? (config.checkoutCancelUrl + '/' + payment)
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     })
     const metadata = {
       type: 'payment',
@@ -128,14 +130,15 @@ definition.trigger({
         metadata
       },
       mode: 'payment',
-      success_url: successUrl ?? (config.checkoutSuccessUrl + '/' + payment),
-      cancel_url: cancelUrl ?? (config.checkoutCancelUrl + '/' + payment)
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     })
     emit({
       type: 'PaymentCreated',
       payment,
       data: {
         items, causeType, cause, payerType, payer,
+        successUrl, cancelUrl,
         stripeSession: session.id,
         state: 'created'
       }
@@ -147,3 +150,4 @@ definition.trigger({
     }
   }
 })
+

@@ -6,7 +6,7 @@ import config from './config.js'
 
 import { Billing } from './billing.js'
 
-definition.model({
+const TopUp = definition.model({
   name: "TopUp",
   itemOf: {
     what: Billing
@@ -20,7 +20,12 @@ definition.model({
     },
     currency: {
       type: String
-    }
+    },
+    state: {
+      type: String,
+      options: ['created', 'paid', 'failed', 'refunded'],
+      default: 'created'
+    },
   }
 })
 
@@ -86,5 +91,147 @@ definition.action({
     }
     console.log("TRIGGER RESULT", triggerResult)
     return triggerResult
+  }
+})
+
+definition.trigger({
+  name: 'chargeCollected_billing_TopUp',
+  properties: {
+    paymentType: {
+      type: String
+    },
+    payment: {
+      type: String
+    },
+    causeType: {
+      type: String
+    },
+    cause: {
+      type: String
+    },
+    payerType: {
+      type: String
+    },
+    payer: {
+      type: String
+    },
+    items: {
+      type: String
+    }
+  },
+  async execute(props, { client, triggerService, trigger }, emit) {
+    const { paymentType, payment, causeType, cause, payerType, payer, items } = props
+    const topUp = await TopUp.get(cause)
+    if(!topUp) throw new Error("TopUp not found")
+    if(topUp.state !== 'created') throw new Error("TopUp already processed")
+    const balance = App.encodeIdentifier(['billing_Billing', topUp.billing])
+    await trigger({
+      type: 'balance_doOperation'
+    }, {
+      balance,
+      causeType: 'billing_TopUp',
+      cause: topUp.id,
+      change: topUp.value
+    })
+    await triggerService({
+      service: definition.name,
+      type: 'billing_updateBillingOwnedTopUp'
+    }, {
+      billing: topUp.billing,
+      topUp: topUp.id,
+      state: 'paid'
+    })
+  }
+})
+
+definition.trigger({
+  name: 'chargeRefunded_billing_TopUp',
+  properties: {
+    paymentType: {
+      type: String
+    },
+    payment: {
+      type: String
+    },
+    causeType: {
+      type: String
+    },
+    cause: {
+      type: String
+    },
+    payerType: {
+      type: String
+    },
+    payer: {
+      type: String
+    },
+    items: {
+      type: String
+    }
+  },
+  async execute(props, { client, triggerService, trigger }, emit) {
+    const { paymentType, payment, causeType, cause, payerType, payer, items } = props
+    const topUp = await TopUp.get(cause)
+    if(!topUp) throw new Error("TopUp not found")
+    if(topUp.state !== 'paid') throw new Error("Impossible to refund not paid top up")
+    const balance = App.encodeIdentifier(['billing_Billing', topUp.billing])
+    await trigger({
+      type: 'balance_doOperation'
+    }, {
+      billing: topUp.billing,
+      causeType: 'billing_TopUp',
+      cause: topUp.id,
+      change: -topUp.value,
+      force: true,
+    })
+    await triggerService({
+      service: definition.name,
+      type: 'billing_updateBillingOwnedTopUp'
+    }, {
+      topUp: topUp.id,
+      state: 'paid'
+    })
+  }
+})
+
+definition.trigger({
+  name: 'paymentFailed_billing_TopUp',
+  properties: {
+    paymentType: {
+      type: String
+    },
+    payment: {
+      type: String
+    },
+    causeType: {
+      type: String
+    },
+    cause: {
+      type: String
+    },
+    payerType: {
+      type: String
+    },
+    payer: {
+      type: String
+    },
+    items: {
+      type: String
+    }
+  },
+  async execute(props, { client, triggerService }, emit) {
+    const { paymentType, payment, causeType, cause, payerType, payer, items } = props
+    const topUp = await TopUp.get(cause)
+    if(!topUp) throw new Error("TopUp not found")
+    if(topUp.state !== 'created') throw new Error("TopUp already processed")
+    if(topUp.state === 'paid') return // ignore, it's already paid
+    await triggerService({
+      service: definition.name,
+      type: 'billing_updateBillingOwnedTopUp'
+    }, {
+      billing: topUp.billing,
+      topUp: topUp.id,
+      state: 'failed'
+    })
   }
 })

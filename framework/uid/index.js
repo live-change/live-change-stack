@@ -60,7 +60,7 @@ function randomString(length = 8) {
 
 function hashCode(str) {
   let hash = 0
-  if(str.length == 0) return hash
+  if(str.length === 0) return hash
   for(let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
     hash = ((hash << 5) - hash) + char
@@ -74,7 +74,7 @@ function uidGenerator(fingerprint = randomString(4), numberLength = 0, borders =
   function next() {
     const date = new Date()
     const now = date.getTime()
-    if(now == lastMillisecond) {
+    if(now === lastMillisecond) {
       lastId ++
     } else {
       lastId = 0
@@ -98,7 +98,7 @@ function decodeUid(uid) {
 
 function verifyUidSource(uid, source) {
   const { at } = decodeUid(uid)
-  return at.slice(0, source.length) == source
+  return at.slice(0, source.length) === source
 }
 
 export {

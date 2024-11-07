@@ -354,13 +354,16 @@ definition.trigger({
     change: {
       ...config.currencyType,
       validation: ['nonEmpty']
+    },
+    force: {
+      type: Balance
     }
   },
   queuedBy: 'balance',
-  async execute({ balance, causeType, cause, change }, { client, service, triggerService }) {
+  async execute({ balance, causeType, cause, change, force }, { client, service, triggerService }) {
     const operation = app.generateUid()
     const balanceData = await getBalance(balance, triggerService)
-    if(!config.changePossible(balanceData.available, change)) throw "insufficientFunds"
+    if(!force && !config.changePossible(balanceData.available, change)) throw "insufficientFunds"
     const newAmount = config.currencyAdd(balanceData.amount, change)
     const newAvailable = config.currencyAdd(balanceData.available, change)
     await triggerService({

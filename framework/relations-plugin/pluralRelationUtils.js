@@ -156,7 +156,6 @@ function defineUpdateAction(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
   const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
@@ -187,7 +186,6 @@ function defineUpdateTrigger(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
   const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({

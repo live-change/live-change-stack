@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.8.110",
+    "@live-change/dao": "0.8.110",
     "bufferutil": "^4.0.3",
     "debug": "^4.3.4",
     "supports-color": "^9.4.0",
@@ -41,5 +41,5 @@
     "compileTests": "webpack tests/*.js tests-bundle.js",
     "test": "NODE_ENV=test tape tests/*"
   },
-  "gitHead": "075bf3759fae6c40fb8e44d77d9f12c5c175e098"
+  "gitHead": "8af31d640f43b00b2874f2c70fa4d4486541adfe"
 }

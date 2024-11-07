@@ -8,13 +8,6 @@ import stripe from "./stripeClient.js"
 
 import { Payment } from './payment.js'
 
-
-/// TODO: obsługa zdarzeń:
-/// dla stanu płatności:
-/// charge.succeeded
-/// charge.refunded
-
-
 definition.trigger({
   name: 'stripeEvent.checkout.session.completed',
   properties: {
@@ -42,6 +35,7 @@ definition.trigger({
       const payment = await Payment.get(referenceId)
       if(!payment) throw new Error('Payment '+referenceId+' not found')
       if(object.payment_status === 'paid') {
+        console.log("PAYMENT TO UPDATE", payment)
         await triggerService({
           service: definition.name,
           type: 'stripe_updatePayment'
@@ -50,6 +44,7 @@ definition.trigger({
           state: 'succeeded'
         })
         const triggerData = {
+          paymentType: 'stripe_Payment',
           payment: referenceId,
           causeType: payment.causeType,
           cause: payment.cause,
@@ -113,6 +108,7 @@ definition.trigger({
         state: 'failed'
       })
       const triggerData = {
+        paymentType: 'stripe_Payment',
         payment: referenceId,
         causeType: payment.causeType,
         cause: payment.cause,
@@ -168,6 +164,7 @@ definition.trigger({
           state: 'succeeded'
         })
         const triggerData = {
+          paymentType: 'stripe_Payment',
           payment: referenceId,
           causeType: payment.causeType,
           cause: payment.cause,
@@ -230,6 +227,7 @@ definition.trigger({
         state: 'failed'
       })
       const triggerData = {
+        paymentType: 'stripe_Payment',
         payment: referenceId,
         causeType: payment.causeType,
         cause: payment.cause,
@@ -267,6 +265,7 @@ definition.trigger({
     if(object.metadata?.type === 'payment') {
       const payment = await Payment.get(object.metadata.payment)
       const triggerData = {
+        paymentType: 'stripe_Payment',
         payment: payment.id,
         causeType: payment.causeType,
         cause: payment.cause,
@@ -303,6 +302,7 @@ definition.trigger({
     if(object.metadata?.type === 'payment') {
       const payment = await Payment.get(object.metadata.payment)
       const triggerData = {
+        paymentType: 'stripe_Payment',
         payment: payment.id,
         causeType: payment.causeType,
         cause: payment.cause,
