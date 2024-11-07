@@ -195,14 +195,15 @@ definition.action({
     if(visibilityTest) return true
     const [fromType, fromId, fromSession] = from.split(':')
     const [toType, toId, toSession] = to.split(':')
-    console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
+   // console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
     if(toType !== fromType || toId !== fromId) return false // different channel
     if(client.session !== fromSession) return false
     const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
     return hasRole
   },
-  queuedBy: (props) => props.to, // without this, messages order can be changed, it will block ice connection state
-  waitForEvents: true,
+  queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed
+                                                      // and it will block ice connection state
+  //waitForEvents: true,
   async execute(props, { client, service }, emit) {
     const lastMessages = await Message.rangeGet({
       gte: `${props.to}_`,
@@ -228,7 +229,7 @@ definition.action({
     for(const message of messages) {
       postMessage(message, { client, service }, emit)
     }
-    console.log("MESSAGES POSTED!")
+   // console.log("MESSAGES POSTED!")
     return 'ok'
   }
 })

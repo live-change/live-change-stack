@@ -101,38 +101,58 @@ const createPeerConnection = (peer, to) => {
       rtc.value.restartIce()
     } else {*/
     console.log("RESTART OFFER!")
-    const offer = 
-      await rtc.value.createOffer({ ...offerOptions.value, iceRestart: true })
-    if(rtc.value.signalingState !== "stable") {
-      console.log("RTC GOT OUT OF STABLE WHILE CREATING OFFER. IGNORE GENERATED OFFER!")
-      return
-    }
-    await rtc.value.setLocalDescription(offer)
-    sendMessage({ to, type: "sdp", data: offer })
+    createOffer()
   }
   
   watch(clientIp, ip => {
     if(rtc.value) restartConnection()
   })
 
-  async function handleNegotiationNeeded(event) {
-    console.log("NEGOTIATION NEEDED! IN STATE", rtc.value.signalingState)
-    if(!isEnabled.value) return
-    if(state.value === 'negotiating') {
-      console.log("SKIP NESTED NEGOTIATIONS WITH", to)
-      //return
-    }
-    state.value = 'negotiating'
-    // if it's disabled there is no need for offer
-    console.log("UPDATING OFFER")
+  let lastOfferId = 0
+  async function createOffer(){
+    if(state.value === 'rollback') return // if it's rollbacked there is no need for offer
+    const offerId = ++lastOfferId
+    state.value = 'creating-offer'
+    console.log("CREATING OFFER")
     const offer = await rtc.value.createOffer(offerOptions.value || undefined)
     if(rtc.value.signalingState !== "stable") {
       console.log("RTC GOT OUT OF STABLE WHILE CREATING OFFER. IGNORE GENERATED OFFER!")
-      return;
+      return
+    }
+    if(offerId !== lastOfferId) {
+      console.log("OFFER ID CHANGED WHILE CREATING OFFER. IGNORE GENERATED OFFER!")
+      return
     }
     await rtc.value.setLocalDescription(offer)
-    sendMessage({ type: "sdp", data: offer })
     console.log("SDP OFFER SET! RTC IN STATE", rtc.value.signalingState)
+    sendMessage({ type: "sdp", data: offer })
+    state.value = 'sent-offer'
+  }
+
+  let lastAnswerId = 0
+  async function createAnswer(){
+    const answerId = ++lastAnswerId
+    state.value = 'creating-answer'
+    console.log("CREATING ANSWER")
+    const answer = await rtc.value.createAnswer(answerOptions.value || undefined)
+    if(rtc.value.signalingState !== "have-remote-offer") {
+      console.log("RTC GOT OUT OF HAVE REMOTE OFFER WHILE CREATING ANSWER. IGNORE GENERATED ANSWER!")
+      return
+    }
+    if(answerId !== lastAnswerId) {
+      console.log("ANSWER ID CHANGED WHILE CREATING ANSWER. IGNORE GENERATED ANSWER!")
+      return
+    }
+    await rtc.value.setLocalDescription(answer)
+    console.log("SDP ANSWER SET! RTC IN STATE", rtc.value.signalingState)
+    sendMessage({ type: "sdp", data: answer })
+    state.value = 'sent-answer'
+  }
+
+  async function handleNegotiationNeeded(event) {
+    console.log("NEGOTIATION NEEDED! IN RTC STATE", rtc.value.signalingState, "STATE", state.value)
+    if(!isEnabled.value) return // if it's disabled there is no need for offer
+    await createOffer()
   }
 
   async function handleSignalingStateChange(event) {
@@ -221,33 +241,29 @@ const createPeerConnection = (peer, to) => {
     //console.log("DO HANDLE MESSAGE")
     switch(message.type) {
       case "sdp": {
-        console.log("RECEIVED SDP", message.data.type, "IN STATE", rtc.value.signalingState)
+        console.log("RECEIVED SDP", message.data.type, "IN RTC STATE", rtc.value.signalingState, "STATE", state.value)
         if(message.data.type === 'offer') {
-          if(rtc.value.signalingState !== "stable") {
-            console.log("SDP CONFLICT, RECEIVED OFFER IN UNSTABLE STATE")
+          if(rtc.value.signalingState !== "stable"
+            || state.value === 'sent-offer' || state.value === 'creating-offer') {
+            console.log("SDP CONFLICT, RECEIVED OFFER WHEN CREATING/GOT OFFER")
             if(isPolite.value) {
               console.log("I AM POLITE SO I WILL ROLLBACK RTC STATE MACHINE")
-              await rtc.value.setLocalDescription({ type: "rollback" })
+              lastOfferId ++ // ignore currently creating offer
+              state.value = 'rollback'
+              if(rtc.value.signalingState !== "stable") {
+                console.log("RTC NOT STABLE! ROLLBACK NEEDED!")
+                await rtc.value.setLocalDescription({ type: "rollback" })
+                console.log("ROLLBACK DONE!")
+              }
               await rtc.value.setRemoteDescription(message.data)
-              console.log("ROLLBACK DONE")
-              const answer =
-                await rtc.value.createAnswer(answerOptions.value || undefined)
-              console.log("GOT RTC ANSWER IN STATE", rtc.value.signalingState)
-              await rtc.value.setLocalDescription(answer)
-              console.log("LOCAL ANSWER DESCRIPTION SET! SENDING ANSWER!")
-              sendMessage({ type: "sdp", data: answer })
+              await createAnswer()
             } else {
               console.log("I AM NOT POLITE SO I WILL IGNORE OFFER")
             }
           } else {
             console.log("SDP STATE GOOD!")
             await rtc.value.setRemoteDescription(message.data)
-            const answer =
-              await rtc.value.createAnswer(answerOptions.value || undefined)
-            console.log("GOT RTC ANSWER IN STATE", rtc.value.signalingState)
-            await rtc.value.setLocalDescription(answer)
-            console.log("LOCAL ANSWER DESCRIPTION SET! SENDING ANSWER!")
-            sendMessage({ type: "sdp", data: answer })
+            await createAnswer()
           }
         } else {
           console.log("GOT ANSWER FROM REMOTE PEER")
