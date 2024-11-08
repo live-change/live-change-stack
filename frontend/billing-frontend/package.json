@@ -3,7 +3,7 @@
   "version": "0.8.110",
   "scripts": {
     "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
-    "localDevInit": "rm tmp.db; node server/start.js localDev --enableSessions --initScript ./init.js",
+    "localDevInit": "rm tmp.db; node server/start.js localDev --enableSessions --dbAccess --initScript ./init.js",
     "localDev": "node server/start.js localDev --enableSessions --dbAccess",
     "dev": "node server/start.js dev --enableSessions",
     "ssrDev": "node server/start.js ssrDev --enableSessions",

@@ -9,7 +9,10 @@ import { Billing } from './billing.js'
 const TopUp = definition.model({
   name: "TopUp",
   itemOf: {
-    what: Billing
+    what: Billing,
+    readAccessControl: {
+      roles: ['owner', 'admin']
+    }
   },
   properties: {
     value: {
@@ -29,6 +32,28 @@ const TopUp = definition.model({
   }
 })
 
+definition.view({
+  name: "topUp",
+  properties: {
+    topUp: {
+      type: TopUp
+    }
+  },
+  returns: {
+    type: TopUp
+  },
+  accessControl: {
+    roles: ['owner'],
+    objects: (props) => [{
+      objectType: definition.name + '_TopUp',
+      object: props.topUp
+    }]
+  },
+  async daoPath({ topUp }, { client, service }, method) {
+    return TopUp.path(topUp)
+  }
+})
+
 definition.action({
   name: "topUp",
   properties: {
@@ -45,7 +70,7 @@ definition.action({
   returns: {
     type: Object
   },
-  async execute({ value, price, currency, cancelUrl, successUrl }, { trigger, client }, emit) {
+  async execute({ value, price, currency, cancelUrl, successUrl }, { trigger, triggerService, client }, emit) {
     const offer = config.topUpOffers
       ?.find(offer => (offer.currency === currency) && (offer.price === price) && (offer.value === value))
     const anyTopUpPrice = config?.anyTopUpPrices
@@ -65,6 +90,15 @@ definition.action({
       }
     }
     const billing = client.user // billing is user property
+    const billingData = await Billing.get(billing)
+    if(!billingData) { // billing not found, create billing with first top up
+      await triggerService({
+        service: definition.name,
+        type: 'billing_setOrUpdateUserOwnedBilling'
+      }, {
+        user: client.user
+      })
+    }
     const topUp = app.generateUid()
     emit({
       type: 'billingOwnedTopUpCreated',

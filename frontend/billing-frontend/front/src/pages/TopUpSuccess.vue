@@ -4,6 +4,9 @@
       {{ topUpId }}
     </h1>
     <pre>
+      {{ topUp }}
+    </pre>
+    <pre>
       {{ billing }}
     </pre>
   </div>
@@ -35,15 +38,17 @@
         ownerType: 'billing_Billing',
         owner: billing.id
       }).bind('balance'))
-      .with(billing => path.billing.billingOwnedTopUps({
-        billing: billing.id,
-        gte: topUpId.value,
-        lte: topUpId.value
-      }).bind('topUps'))
   )
 
-  const [ billing ] = await Promise.all([
-    live(billingPath)
+  const topUpPath = computed(() =>
+    path.billing.topUp({
+      topUp: topUpId.value
+    })
+  )
+
+  const [ billing, topUp ] = await Promise.all([
+    live(billingPath),
+    live(topUpPath)
   ])
 
 </script>

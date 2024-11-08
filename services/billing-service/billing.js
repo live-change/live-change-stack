@@ -16,4 +16,23 @@ const Billing = definition.model({
   },
 })
 
+definition.trigger({
+  name: 'createBilling_Billing',
+  properties: {
+    object: {
+      type: Billing
+    }
+  },
+  async execute({ object }, { triggerService }, emit) {
+    const ownerInfo = { ownerType: 'billing_Billing', ownerId: object }
+    const existingBalance = await app.serviceViewGet('balance', 'ownerOwnedBalance', ownerInfo)
+    if(!existingBalance) {
+      await triggerService({
+        service: 'balance',
+        type: 'balance_setOrUpdateOwnerOwnedBalance',
+      }, ownerInfo)
+    }
+  }
+})
+
 export { Billing }

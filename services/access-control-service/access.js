@@ -226,8 +226,9 @@ export default (definition) => {
         async function updateRoles() {
           if(!loaded) return
           const roots = await Promise.all(rolesTreesRoots)
+          //output.debug('accessRoots', JSON.stringify(roots, null, 2))
           const accessesRoles = roots.map(root => computeNodeRoles(root))
-          output.debug(outputObjectId, "Accesses roles:", accessesRoles)
+          //output.debug(outputObjectId, "Accesses roles:", accessesRoles)
           const firstAccessRoles = accessesRoles.shift()
           let roles = firstAccessRoles
           for(const accessRoles of accessesRoles) {

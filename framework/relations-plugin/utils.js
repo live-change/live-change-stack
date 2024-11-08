@@ -96,7 +96,7 @@ export function processModelsAnnotation(service, app, annotation, multiple, cb) 
           config = { what: config }
         }
 
-        console.log("MODEL " + modelName + " IS " + annotation + " " + config.what)
+        console.log("MODEL " + modelName + " IS " + annotation + " " + config.what ?? '')
 
         const what = (Array.isArray(config.what) ? config.what : [config.what])
         const others = what.map(other => other.getTypeName ? other.getTypeName() : (other.name ? other.name : other))
@@ -127,17 +127,21 @@ export function addAccessControlParents(context) {
   context.model.accessControlParents = async (what) => {
     const id = what.object
     const data = await modelRuntime().get(id)
-    return context.otherPropertyNames.map(otherPropertyName => {
-      const objectType = (otherPropertyName.slice(0, 1).toUpperCase() + otherPropertyName.slice(1))
+    return context.otherPropertyNames.map((otherPropertyName, i) => {
+      const other = context.others[i]
+      const objectType = other
       const object = data[otherPropertyName]
       return { objectType, object }
     }).filter(parent => parent.object && parent.objectType)
   }
   context.model.accessControlParentsSource = context.otherPropertyNames.map(
-    otherPropertyName => ({
-      property: otherPropertyName,
-      type: (otherPropertyName.slice(0, 1).toUpperCase() + otherPropertyName.slice(1))
-    })
+    (otherPropertyName, i) => {
+      const other = context.others[i]
+      return ({
+        property: otherPropertyName,
+        type: other
+      })
+    }
   )
 }
 
