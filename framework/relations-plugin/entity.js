@@ -21,6 +21,7 @@ function entityAccessControl({service, modelName, modelPropertyName}, accessCont
 function defineView(config, context, external) {
   const { service, modelRuntime, modelPropertyName, modelName, model } = context
   const viewName = (config.prefix || '' ) + (config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
+  if(external) model.crud.read = viewName
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -140,6 +141,7 @@ function defineCreateAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'create' + modelName
+  model.crud.create = actionName
   const action = new ActionDefinition({
     name: actionName,
     properties: { ...model.properties },
@@ -209,7 +211,7 @@ function defineUpdateAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'update' + modelName
-  const triggerName = `${service.name}_${actionName}`
+  model.crud.update = actionName
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -282,7 +284,7 @@ function defineDeleteAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'delete' + modelName
-  const triggerName = `${service.name}_${actionName}`
+  model.crud.delete = actionName
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
@@ -335,6 +337,9 @@ export default function(service, app) {
     const originalModelProperties = { ...model.properties }
     const modelProperties = Object.keys(model.properties)
     const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
+
+    model.identifiers = [{ [modelPropertyName]: 'id' }]
+    model.crud = {}
 
     function modelRuntime() {
       return service._runtime.models[modelName]

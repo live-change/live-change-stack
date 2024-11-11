@@ -19,6 +19,7 @@ function defineView(config, context, external = true) {
   }
   const viewName = config.name || ((config.prefix ? (config.prefix + joinedOthersClassName) : joinedOthersPropertyName) +
       'Owned' + modelName + (config.suffix || ''))
+  model.crud.read = viewName
   const accessControl = external && (config.readAccessControl || config.writeAccessControl)
   prepareAccessControl(accessControl, otherPropertyNames, others)
   service.views[viewName] = new ViewDefinition({
@@ -70,6 +71,7 @@ function defineSetAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'set' + joinedOthersClassName + 'Owned' + modelName
+  model.crud.create = actionName
   const accessControl = config.setAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -142,6 +144,7 @@ function defineUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  model.crud.update = actionName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -215,8 +218,8 @@ function defineSetOrUpdateAction(config, context) {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
   const actionName = 'setOrUpdate' + joinedOthersClassName + 'Owned' + modelName
+  model.crud.createOrUpdate = actionName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -286,6 +289,7 @@ function defineResetAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
   } = context
   const actionName = 'reset' + joinedOthersClassName + 'Owned' + modelName
+  model.crud.delete = actionName
   const accessControl = config.resetAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
   const action = new ActionDefinition({

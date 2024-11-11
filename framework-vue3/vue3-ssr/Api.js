@@ -174,6 +174,7 @@ class Api extends DaoProxy {
     api.client = this.metadata.client
     api.uid = api.uidGenerator
     api.services = globalServices
+    api.models = globalModels
 
     api.globals.$lc = api
 

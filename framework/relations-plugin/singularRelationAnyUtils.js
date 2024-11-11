@@ -45,6 +45,7 @@ function defineObjectView(config, context, external = true) {
   prepareAccessControl(accessControl, otherPropertyNames)
   const viewName = config.name || ((config.prefix ? (config.prefix + joinedOthersClassName) : joinedOthersPropertyName) +
       context.reverseRelationWord + modelName + (config.suffix || ''))
+  model.crud.read = viewName
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -127,6 +128,7 @@ function defineSetAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'set' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.create = actionName
   const accessControl = config.setAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -198,6 +200,7 @@ function defineUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.update = actionName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -274,6 +277,7 @@ function defineSetOrUpdateAction(config, context) {
   } = context
   const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
   const actionName = 'setOrUpdate' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.createOrUpdate = actionName
   const accessControl = config.setOrUpdateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -343,6 +347,7 @@ function defineResetAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
   } = context
   const actionName = 'reset' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.delete = actionName
   const accessControl = config.resetAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames)
   service.actions[actionName] = new ActionDefinition({

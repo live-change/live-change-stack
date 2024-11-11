@@ -4,12 +4,12 @@ import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
 } from "@live-change/framework"
 import { extractTypeAndIdParts, extractIdentifiersWithTypes, prepareAccessControl } from "./utilsAny.js"
-import { extractObjectData, extractIdentifiers} from "./utils.js"
+import { extractObjectData, extractIdentifiers, extractIdParts } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 
 import pluralize from 'pluralize'
 
-function defineView(config, context, external = true) {
+function defineRangeView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
   const indexName = 'by'+context.joinedOthersClassName
@@ -27,6 +27,7 @@ function defineView(config, context, external = true) {
   const accessControl = external && (config.readAccessControl || config.writeAccessControl)
   prepareAccessControl(accessControl, otherPropertyNames)
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
+  model.crud.range = viewName
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -46,6 +47,54 @@ function defineView(config, context, external = true) {
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
       const range = extractRange(properties)
       const path = modelRuntime().sortedIndexRangePath(indexName, typeAndIdParts, range)
+      return path
+    }
+  })
+}
+
+function defineSingleView(config, context, external = true) {
+  const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
+    modelName, others, model, modelPropertyName } = context
+  const indexName = 'by'+context.joinedOthersClassName
+  const viewProperties = {}
+  for (let i = 0; i < others.length; i++) {
+    viewProperties[otherPropertyNames[i]] = new PropertyDefinition({
+      type: 'String',
+      validation: ['nonEmpty']
+    })
+    viewProperties[otherPropertyNames[i] + 'Type'] = new PropertyDefinition({
+      type: 'String',
+      validation: ['nonEmpty']
+    })
+  }
+  viewProperties[modelPropertyName] = new PropertyDefinition({
+    type: model,
+    validation: ['nonEmpty']
+  })
+  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
+  prepareAccessControl(accessControl, otherPropertyNames)
+  const viewName = joinedOthersPropertyName + context.reverseRelationWord + modelName
+  model.crud.read = viewName
+  service.views[viewName] = new ViewDefinition({
+    name: viewName,
+    properties: {
+      ...viewProperties,
+      ...App.utils.rangeProperties
+    },
+    returns: {
+      type: model
+    },
+    internal: !external,
+    access: external && (config.readAccess || config.writeAccess),
+    accessControl,
+    daoPath(properties, { client, context }) {
+      const idParts = extractIdParts(otherPropertyNames, properties)
+      const prefix = App.encodeIdentifier(idParts)
+      const range = {
+        gte: prefix+'_'+properties[modelPropertyName],
+        lte: prefix+'_'+properties[modelPropertyName]
+      }
+      const path = modelRuntime().indexObjectPath(indexName, idParts, range)
       return path
     }
   })
@@ -82,6 +131,7 @@ function defineCreateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.create = actionName
   const accessControl = config.createAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -168,6 +218,7 @@ function defineUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.update = actionName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -250,6 +301,7 @@ function defineDeleteAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'delete' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.delete = actionName
   const accessControl = config.deleteAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -310,7 +362,7 @@ function defineSortIndex(context, sortFields) {
 }
 
 export {
-  defineView,
+  defineSingleView, defineRangeView,
   defineCreateAction, defineUpdateAction, defineDeleteAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
   defineSortIndex

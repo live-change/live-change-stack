@@ -7,7 +7,7 @@ import {
 } from './itemEvents.js'
 
 import {
-  defineView,
+  defineSingleView, defineRangeView,
   defineCreateAction, defineUpdateAction, defineDeleteAction, defineCopyAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger, defineCopyTrigger,
   defineSortIndex,
@@ -28,7 +28,10 @@ export default function(service, app) {
       }
     }
 
-    defineView(config, context,
+    defineSingleView(config, context,
+      config.readAccess || config.readAccessControl || config.writeAccessControl
+    )
+    defineRangeView(config, context,
       config.readAccess || config.readAccessControl || config.writeAccessControl
     )
     /// TODO: multiple views with limited fields

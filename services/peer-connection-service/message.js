@@ -43,13 +43,16 @@ const Message = definition.model({
       property: ['to', 'timestamp']
     },*/
   },
-  crud: {
-    deleteTrigger: true,
-    writeOptions: {
-      access: (params, {client, service}) => {
-        return client.roles.includes('admin')
-      }
-    }
+})
+
+definition.event({
+  name: "MessageCreated",
+  async execute({ message, data }, { client, service }) {
+    if(data.id) delete data.id
+    await Message.create({
+      id: message,
+      ...data
+    })
   }
 })
 
@@ -154,15 +157,16 @@ definition.action({
     if(visibilityTest) return true
     const [fromType, fromId, fromSession] = from.split(':')
     const [toType, toId, toSession] = to.split(':')
-    console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
+    //console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
     if(toType !== fromType || toId !== fromId) return false // different channel
     if(client.session !== fromSession) return false
     const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
     return hasRole
   },
-  queuedBy: (props) => props.to, // without this, messages order can be changed, it will block ice connection state
+  queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed
+  // and it will block ice connection state
   async execute(props, { client, service }, emit) {
-    throw new Error('postMessage is deprecated, use postMessages instead')
+    console.error('postMessage is deprecated, use postMessages instead')
     const result = postMessage(props, { client, service }, emit)
     console.log("MESSAGE POSTED!")
     return result

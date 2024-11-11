@@ -12,6 +12,9 @@ const Draft = definition.model({
     extendedWith: ['action', 'target']
   },
   properties: {
+    source: { // used for comparison of data that is being edited
+      type: Object
+    },
     data: {
       type: Object,
       validation: ['nonEmpty']

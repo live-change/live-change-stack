@@ -76,6 +76,9 @@ export function processModelsAnnotation(service, app, annotation, multiple, cb) 
       const modelProperties = Object.keys(model.properties)
       const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
 
+      if(!model.editableProperties) model.editableProperties = modelProperties
+      model.crud = {}
+
       function modelRuntime() {
         return service._runtime.models[modelName]
       }

@@ -9,7 +9,7 @@ import {
 } from './itemEvents.js'
 
 import {
-  defineView,
+  defineSingleView, defineRangeView,
   defineCreateAction, defineUpdateAction, defineDeleteAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
   defineSortIndex
@@ -22,6 +22,8 @@ export default function(service, app) {
     context.reverseRelationWord = 'Owned'
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
+    context.model.identifiers = [...Object.keys(context.identifiers), { [context.modelPropertyName]: 'id' }]
+
     addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames)
 
@@ -31,7 +33,9 @@ export default function(service, app) {
       }
     }
 
-    defineView(config, context,
+    defineSingleView(config, context,
+      config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
+    defineRangeView(config, context,
       config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
     /// TODO: multiple views with all properties combinations
     /// TODO: multiple views with limited fields

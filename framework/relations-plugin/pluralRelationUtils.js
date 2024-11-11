@@ -6,7 +6,7 @@ import { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessCon
 import { fireChangeTriggers } from "./changeTriggers.js"
 import pluralize from 'pluralize'
 
-function defineView(config, context, external = true) {
+function defineRangeView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
   const indexName = 'by'+context.joinedOthersClassName
@@ -18,6 +18,7 @@ function defineView(config, context, external = true) {
     })
   }
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
+  model.crud.range = viewName
   const accessControl = external && (config.readAccessControl || config.writeAccessControl)
   prepareAccessControl(accessControl, otherPropertyNames, others)
   service.views[viewName] = new ViewDefinition({
@@ -39,6 +40,49 @@ function defineView(config, context, external = true) {
       const idParts = extractIdParts(otherPropertyNames, properties)
       const range = App.extractRange(properties)
       const path = modelRuntime().sortedIndexRangePath(indexName, idParts, range)
+      return path
+    }
+  })
+}
+
+function defineSingleView(config, context, external = true) {
+  const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
+    modelName, others, model, modelPropertyName } = context
+  const indexName = 'by'+context.joinedOthersClassName
+  const viewProperties = {}
+  for (let i = 0; i < others.length; i++) {
+    viewProperties[otherPropertyNames[i][0].toLowerCase() + otherPropertyNames[i].slice(1) ] = new PropertyDefinition({
+      type: others[i],
+      validation: ['nonEmpty']
+    })
+  }
+  viewProperties[modelPropertyName] = new PropertyDefinition({
+    type: model,
+    validation: ['nonEmpty']
+  })
+  const viewName = joinedOthersPropertyName + context.reverseRelationWord + modelName
+  model.crud.read = viewName
+  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
+  prepareAccessControl(accessControl, otherPropertyNames, others)
+  service.views[viewName] = new ViewDefinition({
+    name: viewName,
+    properties: {
+      ...viewProperties,
+    },
+    returns: {
+      type: model
+    },
+    internal: !external,
+    access: external && (config.readAccess || config.writeAccess),
+    accessControl: config.readAccessControl || config.writeAccessControl,
+    daoPath(properties, { client, context }) {
+      const idParts = extractIdParts(otherPropertyNames, properties)
+      const prefix = App.encodeIdentifier(idParts)
+      const range = {
+        gte: prefix+'_'+properties[modelPropertyName],
+        lte: prefix+'_'+properties[modelPropertyName]
+      }
+      const path = modelRuntime().indexObjectPath(indexName, idParts, range)
       return path
     }
   })
@@ -75,6 +119,7 @@ function defineCreateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.create = actionName
   const accessControl = config.createAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -157,6 +202,7 @@ function defineUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
+  model.crud.update = actionName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -505,7 +551,7 @@ function defineSortIndex(context, sortFields) {
 }
 
 export {
-  defineView,
+  defineRangeView, defineSingleView,
   defineCreateAction, defineUpdateAction, defineDeleteAction, defineCopyAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger, defineCopyTrigger,
   defineCopyOnParentCopyTrigger,

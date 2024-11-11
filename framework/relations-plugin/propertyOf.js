@@ -21,6 +21,8 @@ export default function(service, app) {
     context.sameIdAsParent = true
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
+    context.model.identifiers = Object.keys(context.identifiers)
+
     addAccessControlParents(context)
     defineIndexes(context.model, context.otherPropertyNames, context.others)
 

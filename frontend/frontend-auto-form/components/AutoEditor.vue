@@ -32,15 +32,24 @@
     i18n: {
       type: String,
       default: ''
+    },
+    editableProperties: {
+      type: Array,
+      items: {
+        type: String
+      }
     }
   })
 
-  const { modelValue, definition, propName } = toRefs(props)
+  const { modelValue, definition, propName, editableProperties } = toRefs(props)
 
   const emit = defineEmits(['update:modelValue'])
 
-  const propertiesList = computed(() => Object.keys(props.definition.properties)
-    .filter(key => props.definition.properties[key]))
+  const propertiesList = computed(() =>
+    editableProperties.value ??
+    props.definition.editableProperties ??
+    Object.keys(props.definition.properties).filter(key => props.definition.properties[key])
+  )
 
   function updateModelProperty(property, value) {
     const data = modelValue.value || {}
