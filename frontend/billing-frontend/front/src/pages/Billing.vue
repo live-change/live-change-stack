@@ -42,15 +42,20 @@
         </div>
       </div>
     </div>
+
+    <div class="mt-2">
+      <OperationsList ownerType="billing_Billing" :owner="billing.to ?? billing.id"
+                      :currency="settings.currency" />
+    </div>
   </div>
 </template>
 
 <script setup>
   import BillingBalance from '../components/BillingBalance.vue'
 
-  import { CurrencyDisplay } from '@live-change/balance-frontend'
+  import { CurrencyDisplay, OperationsList } from '@live-change/balance-frontend'
 
-  import { defineProps, toRefs, computed, inject } from 'vue'
+  import { defineProps, toRefs, computed, inject, provide } from 'vue'
 
   const props = defineProps({
     user: {
@@ -87,6 +92,12 @@
   const availableDifferent = computed(() => billing.value?.balance?.available !== billing.value?.balance?.all)
 
   const settings = computed(() => billingSettings( billing ))
+
+  provide('currencyI18nConfig:'+settings.value.currency, {
+    ...inject('currencyI18nConfig:'+settings.value.currency, {}),
+    currency: settings.value.currency,
+    denomination: settings.value.denomination
+  })
 </script>
 
 <style scoped>

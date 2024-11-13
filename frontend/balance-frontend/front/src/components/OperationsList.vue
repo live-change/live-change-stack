@@ -22,10 +22,10 @@
         </time>
         <div class="w-10rem text-right pl-3 font-semibold mr-3"
              :class="operation.change > 0 ? 'text-green-500' : 'text-red-500'">
-          {{ operation.change > 0 ? '+' : '-' }} <CurrencyDisplay :value="Math.abs(operation.change)" />
+          {{ operation.change > 0 ? '+' : '-' }} <CurrencyDisplay :value="Math.abs(operation.change)" :currency="currency" />
         </div>
         <div class="w-10rem text-right pl-3 font-semibold mr-3">
-          <CurrencyDisplay :value="operation.amountAfter" />
+          <CurrencyDisplay :value="operation.amountAfter" :currency="currency" />
         </div>
       </div>
     </template>
@@ -50,9 +50,13 @@
     state: {
       type: String,
       default: null
+    },
+    currency: {
+      type: String,
+      default: null
     }
   })
-  const { ownerType, owner, state } = toRefs(props)
+  const { ownerType, owner, state, currency } = toRefs(props)
 
   import { usePath, live, reverseRange } from '@live-change/vue3-ssr'
   const path = usePath()
