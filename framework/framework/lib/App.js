@@ -291,9 +291,11 @@ class App {
         ['database', 'tableObject', this.databaseName, triggersTable, trigger.id],
         ReactiveDao.ObservableValue
     )
-    await this.dao.request(['database', 'update', this.databaseName, triggersTable, trigger.id, [
-      { op: 'reverseMerge', value: trigger }
-    ]])
+    await this.dao.request(['database', 'update', this.databaseName, triggersTable, trigger.id, [{
+      op: 'conditional',
+      conditions: [{ test: 'notExist', property: 'type' }],
+      operations: [{ op: 'reverseMerge', value: trigger }],
+    }]])
     let observer
     const promise = new Promise((resolve, reject) => {
       observer = (signal, value) => {
@@ -396,9 +398,11 @@ class App {
         ['database', 'tableObject', this.databaseName, commandsTable, data.id],
         ReactiveDao.ObservableValue
       )
-      await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [
-        {op: 'reverseMerge', value: data}
-      ]])
+      await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [{
+        op: 'conditional',
+        conditions: [{ test: 'notExist', property: 'type' }],
+        operations: [{ op: 'reverseMerge', value: data }],
+      }]])
       let observer
       const promise = new Promise((resolve, reject) => {
         observer = (signal, value) => {

@@ -74,7 +74,7 @@ const tests = {
     return getProperty(obj, property) <= value
   },
   eq(obj, { property, value }) {
-    return JSON.stringify(getProperty(obj, property)) == JSON.stringify(value)
+    return JSON.stringify(getProperty(obj, property)) === JSON.stringify(value)
   },
   exist(obj, { property }) {
     return hasProperty(obj, property)
@@ -182,7 +182,7 @@ class WriteQueue {
   }
 
   tryDeleteQueue() {
-    if(this.operations.length == 0) {
+    if(this.operations.length === 0) {
       //console.log("DELETE QUEUE", this.id)
       this.atomicWriter.writes.delete(this.id)
     }

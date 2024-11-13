@@ -98,7 +98,7 @@
     ?? billingClientConfig?.currencyDenomination.default
   )
 
-/*  onMounted(() => {
+  onMounted(() => {
     if(!selectedTopUp.value) return
     const topUp = selectedTopUp.value
     workingZone.addPromise('topUp', (async () => {
@@ -106,7 +106,7 @@
       console.log("TopUp", topUpResult)
       window.location.href = topUpResult.redirectUrl
     })())
-  })*/
+  })
 
 </script>
 
