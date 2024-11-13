@@ -22,19 +22,19 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.5.2",
-    "@live-change/cli": "^0.8.112",
-    "@live-change/dao": "^0.8.112",
-    "@live-change/dao-vue3": "^0.8.112",
-    "@live-change/dao-websocket": "^0.8.112",
-    "@live-change/framework": "^0.8.112",
-    "@live-change/password-authentication-service": "^0.8.112",
-    "@live-change/secret-code-service": "^0.8.112",
-    "@live-change/secret-link-service": "^0.8.112",
-    "@live-change/security-frontend": "^0.8.112",
-    "@live-change/session-service": "^0.8.112",
-    "@live-change/user-service": "^0.8.112",
-    "@live-change/vue3-components": "^0.8.112",
-    "@live-change/vue3-ssr": "^0.8.112",
+    "@live-change/cli": "0.8.112",
+    "@live-change/dao": "0.8.112",
+    "@live-change/dao-vue3": "0.8.112",
+    "@live-change/dao-websocket": "0.8.112",
+    "@live-change/framework": "0.8.112",
+    "@live-change/password-authentication-service": "0.8.112",
+    "@live-change/secret-code-service": "0.8.112",
+    "@live-change/secret-link-service": "0.8.112",
+    "@live-change/security-frontend": "0.8.112",
+    "@live-change/session-service": "0.8.112",
+    "@live-change/user-service": "0.8.112",
+    "@live-change/vue3-components": "0.8.112",
+    "@live-change/vue3-ssr": "0.8.112",
     "@vueuse/core": "^10.11.0",
     "codeceptjs-assert": "^0.0.5",
     "compression": "^1.7.4",
@@ -53,7 +53,7 @@
     "vue3-scroll-border": "0.1.6"
   },
   "devDependencies": {
-    "@live-change/codeceptjs-helper": "^0.8.112",
+    "@live-change/codeceptjs-helper": "0.8.112",
     "codeceptjs": "^3.6.5",
     "generate-password": "1.7.1",
     "playwright": "^1.41.2",
@@ -64,5 +64,5 @@
   "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "BSD-3-Clause",
   "description": "",
-  "gitHead": "9b96afb2fc61ab3d2a5d143924e2c56d411280b4"
+  "gitHead": "e0d0db33777f8f9fc9f5ebe1a977cf574b837be6"
 }

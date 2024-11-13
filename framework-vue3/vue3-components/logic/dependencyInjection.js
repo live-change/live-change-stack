@@ -1,4 +1,4 @@
-import { provide, inject } from 'vue'
+import { provide, inject, h } from 'vue'
 
 export function provideComponent(description, component) {
   if(!description) throw new Error("provideComponent: description is required")
@@ -44,4 +44,16 @@ export function injectComponent(request, defaultComponent, factory) {
     if(isValid && filter(component)) return component.component
   }
   return factory ? defaultComponent() : defaultComponent
+}
+
+// functional component that injects a component based on the request
+export function InjectComponent({ request, defaultComponent, factory, props }, { slots, emit, attrs }) {
+  const component = injectComponent(request, defaultComponent, factory)
+  const allProps = { ...props }
+  if(component?.emits) {
+    for(let event of component.emits) {
+      allProps['on'+event[0].toUpperCase()+event.slice(1)] = (...args) => emit(event, ...args)
+    }
+  }
+  return component ? h(component, allProps, slots) : slots.fallback()
 }

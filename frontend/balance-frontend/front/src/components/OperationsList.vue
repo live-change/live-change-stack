@@ -11,12 +11,17 @@
     </template>
     <template #default="{ item: operation }">
       <div class="surface-card shadow-1 border-round mb-1 flex flex-row align-items-center">
-        <div class="flex-1 flex-grow pl-3 py-1">
-          <slot name="operationCause">
-            <pre>{{ operation.cause }}</pre>
+        <div class="flex-1 flex-grow-1 pl-3 py-1" style="min-width: 10rem">
+          <slot name="operationCause" v-bind="operation">
+            <InjectComponent :request="{ name: 'balanceOperationCause', causeType: operation.causeType }"
+                             :props="operation">
+              <template #fallback>
+                <pre>{{ operation.causeType + ':' + operation.cause }}</pre>
+              </template>
+            </InjectComponent>
           </slot>
         </div>
-        <time class="w-15rem text-right pl-3 font-semibold mr-3"
+        <time class="w-10rem text-right pl-3 font-medium mr-3"
               :datetime="operation.updatedAt ?? operation.createdAt">
           {{ d(operation.updatedAt ?? operation.createdAt, 'shortTime') }}
         </time>
@@ -34,7 +39,7 @@
 
 <script setup>
 
-  import { RangeViewer } from "@live-change/vue3-components"
+  import { RangeViewer, InjectComponent } from "@live-change/vue3-components"
 
   import { defineProps, toRefs, computed } from 'vue'
 

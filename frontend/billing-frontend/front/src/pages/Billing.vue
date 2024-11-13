@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9">
+  <div class="w-full" style="max-width: 800px">
     <div class="surface-card border-round shadow-1 p-3">
-      <div class="flex flex-row flex-wrap">
+      <div class="flex flex-row flex-wrap align-items-center">
         <div class="flex-1">
           <div>
             <div class="text-lg">
@@ -55,7 +55,8 @@
 
   import { CurrencyDisplay, OperationsList } from '@live-change/balance-frontend'
 
-  import { defineProps, toRefs, computed, inject, provide } from 'vue'
+  import { defineProps, toRefs, computed, inject, provide, h } from 'vue'
+  import { provideComponent } from '@live-change/vue3-components'
 
   const props = defineProps({
     user: {
@@ -98,6 +99,11 @@
     currency: settings.value.currency,
     denomination: settings.value.denomination
   })
+
+  provideComponent({
+    name: 'balanceOperationCause',
+    causeType: 'billing_TopUp'
+  }, (props) => h('span', { class: 'font-semibold' }, 'Account top-up'))
 </script>
 
 <style scoped>

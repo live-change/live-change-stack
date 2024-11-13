@@ -20,7 +20,7 @@ export { createReactiveObject }
 
 export { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList } from "./logic"
 
-export { injectComponent, provideComponent } from "./logic/dependencyInjection.js"
+export { injectComponent, provideComponent, InjectComponent } from "./logic/dependencyInjection.js"
 
 export {
   useLocale, Locale
