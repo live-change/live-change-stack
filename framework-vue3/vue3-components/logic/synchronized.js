@@ -59,7 +59,10 @@ function synchronized(options) {
       // console.log("SYNCHRONIZED JSON", JSON.stringify(synchronizedValue.value))
       try {
         if(updateDataProperty) {
-          await update({ [updateDataProperty]: data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+          await update({
+            [updateDataProperty]: { ...data, [timeField]: lastLocalUpdate.value },
+            ...unref(identifiers)
+          })
         } else {
           await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
         }
@@ -93,23 +96,28 @@ function synchronized(options) {
           lastLocalUpdate.value = sourceData[timeField]
           synchronizedValue.value = copy(sourceData)
         }
-
       }
     })
-    return { value: synchronizedValue, save, changed }
+    return { value: synchronizedValue, save, changed, saving }
   } else {
     const local = ref(source.value)
     const changed = computed(() => (JSON.stringify(source.value) !== JSON.stringify(local.value))
                                 && ( ((local.value && local.value[timeField]) ?? '')
                                    > ((source.value && source.value[timeField]) ?? '')))
+    const saving = ref(false)
     async function save() {
       if((JSON.stringify(source.value) === JSON.stringify(local.value))
          || ( ((local.value && local.value[timeField]) ?? '')
            <= ((source.value && source.value[timeField]) ?? ''))) return false // identical, no need to save
+
+      saving.value = true
       const data = JSON.parse(JSON.stringify(local.value))
       try {
         if(updateDataProperty) {
-          await update({ [updateDataProperty]: data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+          await update({
+            [updateDataProperty]: { ...data, [timeField]: lastLocalUpdate.value },
+            ...unref(identifiers)
+          })
         } else {
           await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
         }
@@ -119,6 +127,7 @@ function synchronized(options) {
         console.error("SAVE ERROR", e)
         onSaveError(e)
       }
+      saving.value = false
       return true
     }
     const throttledSave = debounce ? () => {} : (throttle ? useThrottleFn(save, throttle) : save)

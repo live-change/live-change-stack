@@ -213,7 +213,7 @@ export default function task(definition, serviceDefinition) {
         }
       }
       try {
-        const result = await definition.execute(props, runContext)
+        const result = await definition.execute(props, runContext, emit)
         await updateTask({
           state: 'done',
           doneAt: new Date(),

@@ -1,9 +1,31 @@
 <template>
-  <div>
-    <div v-if="selectedTopUp">
+  <div class="w-full flex flex-column align-items-center">
+    <div v-if="selectedTopUp" class="w-full lg:w-6 md:w-9 surface-card border-round shadow-1 p-3
+                             flex flex-column align-items-center text-center">
+      <div class="text-2xl font-semibold my-2">
+        Top-up
+        <CurrencyDisplay :value="selectedTopUp.value"
+                         :currency="settings.currency" :denomination="settings.denomination" />
+        for
+        <CurrencyDisplay :value="selectedTopUp?.price" :currency="selectedTopUp.currency"
+                         :denomination="priceDenomination" />
+      </div>
+
+      <div class="relative mt-4">
+        <ProgressSpinner style="width: 400px; height: 400px; max-width: 90vw; max-height: 70vh" strokeWidth="1"
+                         animationDuration="1s" aria-label="Connecting to payment gateway" />
+        <div class="absolute w-full h-full top-0 left-0 flex align-items-center justify-content-center">
+          <div class="text-lg w-10rem text-center">
+            Connecting to payment gateway...
+          </div>
+        </div>
+      </div>
+
+
+<!--
       <h1>{{ offer }}</h1>
       <h2>{{ anyTopUpPrice }}</h2>
-      <pre>{{ billingClientConfig.topUpOffers }}</pre>
+      <pre>{{ billingClientConfig.topUpOffers }}</pre>-->
     </div>
     <NotFound v-else />
   </div>
@@ -53,7 +75,30 @@
 
   const workingZone = inject('workingZone')
 
-  onMounted(() => {
+  const billingPath = computed(() =>
+    (path.billing.myUserBilling({}))
+      .with(billing => path.balance.ownerOwnedBalance({
+        ownerType: 'billing_Billing',
+        owner: billing.id
+      }).bind('balance'))
+  )
+
+  const [ billing ] = await Promise.all([
+    live(billingPath)
+  ])
+
+  const billingSettings = inject('billingSettings', (billing) => ({
+    currency: billingClientConfig?.currency ?? 'usd',
+    denomination: billingClientConfig?.denomination ?? 100
+  }))
+  const settings = computed(() => billingSettings( billing ))
+
+  const priceDenomination = computed(() =>
+    billingClientConfig?.currencyDenomination[selectedTopUp.value?.currency]
+    ?? billingClientConfig?.currencyDenomination.default
+  )
+
+/*  onMounted(() => {
     if(!selectedTopUp.value) return
     const topUp = selectedTopUp.value
     workingZone.addPromise('topUp', (async () => {
@@ -61,7 +106,7 @@
       console.log("TopUp", topUpResult)
       window.location.href = topUpResult.redirectUrl
     })())
-  })
+  })*/
 
 </script>
 

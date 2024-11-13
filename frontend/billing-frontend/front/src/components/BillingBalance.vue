@@ -58,8 +58,8 @@
   const settings = computed(() => billingSettings( billing ))
 
   const value = computed(() => available.value
-    ? billing?.balance?.value?.available ?? 0
-    : billing?.balance?.value?.amount ?? 0
+    ? billing?.value?.balance?.available ?? 0
+    : billing?.value?.balance?.amount ?? 0
   )
 
 </script>

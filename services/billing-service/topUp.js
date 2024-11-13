@@ -223,7 +223,7 @@ definition.trigger({
       type: 'billing_updateBillingOwnedTopUp'
     }, {
       topUp: topUp.id,
-      state: 'paid'
+      state: 'refunded'
     })
   }
 })

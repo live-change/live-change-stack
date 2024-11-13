@@ -103,6 +103,13 @@ app.config = {
       name: 'task',
     },
     {
+      name: 'draft',
+    },
+    {
+      name: 'agreement',
+      agreements: ['privacyPolicy', 'termsOfService', 'marketing']
+    },
+    {
       name: 'backup',
       port: 8007
     },

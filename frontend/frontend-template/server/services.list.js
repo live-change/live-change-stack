@@ -23,6 +23,8 @@ import geoIp from '@live-change/geoip-service'
 import vote from '@live-change/vote-service'
 import backup from '@live-change/backup-service'
 import task from '@live-change/task-service'
+import draft from "@live-change/draft-service"
+import agreement from "@live-change/agreement-service"
 import init from './init.js'
 
 export {
@@ -51,5 +53,7 @@ export {
   vote,
   backup,
   task,
+  draft,
+  agreement,
   init
 }
