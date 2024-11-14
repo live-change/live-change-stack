@@ -14,7 +14,10 @@
           <div class="flex flex-row align-items-center">
             <i v-if="contact.contactType.contactType === 'email'" class="pi pi-envelope mr-2"></i>
             <i v-if="contact.contactType.contactType === 'phone'" class="pi pi-mobile mr-2"></i>
-            <span class="block text-900 font-medium text-lg">{{ contact.id }}</span>
+            <span v-if="contact.contactType.contactType === 'phone'"
+                  class="block text-900 font-medium text-lg">{{ formatPhoneNumber(contact.id) }}</span>
+            <span v-else
+                  class="block text-900 font-medium text-lg">{{ contact.id }}</span>
           </div>
           <Button class="p-button-text p-button-plain p-button-rounded mr-1" icon="pi pi-times"
                   v-if="canDelete"
@@ -73,6 +76,8 @@
   let isMounted = ref(false)
   onMounted(() => isMounted.value = true)
   onUnmounted(() => isMounted.value = false)
+
+  import { formatPhoneNumber } from '../phone/phoneNumber.js'
 
   const workingZone = inject('workingZone')
 

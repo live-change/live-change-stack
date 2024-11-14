@@ -17,6 +17,10 @@ export { Password }
 import GoogleAccess from './front/src/google-access/GoogleAccess.vue'
 export { GoogleAccess }
 
+export * from "./front/src/phone/phoneNumber.js"
+import PhoneInput from "./front/src/phone/PhoneInput.vue"
+export { PhoneInput }
+
 export * from './front/src/connected/connected.js'
 
 export * from "./front/src/router.js"
