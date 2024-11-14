@@ -1,6 +1,6 @@
 {
   "name": "@live-change/user-service",
-  "version": "0.8.112",
+  "version": "0.8.113",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.8.112",
-    "@live-change/relations-plugin": "0.8.112",
+    "@live-change/framework": "^0.8.113",
+    "@live-change/relations-plugin": "^0.8.113",
     "pluralize": "^8.0.0"
   },
   "gitHead": "e0d0db33777f8f9fc9f5ebe1a977cf574b837be6"

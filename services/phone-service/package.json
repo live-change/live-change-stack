@@ -1,6 +1,6 @@
 {
   "name": "@live-change/phone-service",
-  "version": "0.8.112",
+  "version": "0.8.113",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.8.112",
-    "@live-change/relations-plugin": "0.8.112",
+    "@live-change/framework": "^0.8.113",
+    "@live-change/relations-plugin": "^0.8.113",
     "got": "^11.8.6",
     "html-to-text": "8.1.0",
     "jsdom": "^24.1.0",
