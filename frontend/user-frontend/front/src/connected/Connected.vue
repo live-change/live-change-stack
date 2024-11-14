@@ -51,7 +51,7 @@
         </router-link>
         <router-link v-for="accountType in accountTypes"
                      :to="{ name: 'user:connect-'+accountType.accountType }" class="mr-2 no-underline block mb-1">
-          <Button :label="'Add '+accountType.accountType" icon="pi pi-google" id="connect" />
+          <Button v :label="'Add '+accountType.accountType" icon="pi pi-google" id="connect" />
         </router-link>
 
       </div>

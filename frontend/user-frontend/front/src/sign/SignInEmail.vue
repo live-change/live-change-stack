@@ -51,26 +51,19 @@
 
       </command-form>
 
-      <Divider align="center" class="my-4">
+      <Divider v-if="accountTypes.length > 0" align="center" class="my-4">
         <span class="text-600 font-normal text-sm">OR</span>
       </Divider>
 
-      <!--        <Button label="Sign In with GitHub" icon="pi pi-github" class="w-full p-button-secondary mb-2" />-->
-      <router-link :to="{ name: 'user:googleAuth', params: { action: 'signInOrSignUp' } }" class="no-underline">
+      <router-link v-for="accountType in accountTypes"
+                   :to="{ name: `user:${accountType.accountType}Auth`, params: { action: 'signInOrSignUp' } }"
+                   class="no-underline">
         <Button
-          label="Sign In with Google"
-          icon="pi pi-google"
+          :label="`Sign In with ${accountType.accountType[0].toUpperCase()}${accountType.accountType.slice(1)}`"
+          :icon="`pi pi-${accountType.accountType}`"
           class="w-full p-button-secondary mb-1"
         />
       </router-link>
-
-<!--      <router-link :to="{ name: 'user:linkedinAuth', params: { action: 'signInOrSignUp' } }" class="no-underline">
-        <Button
-          label="Sign In with Linkedin"
-          icon="pi pi-linkedin"
-          class="w-full p-button-secondary mb-1"
-        />
-      </router-link>-->
 
     </div>
   </div>
@@ -93,6 +86,10 @@
 
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
+
+  import { getContactTypes, getAccountTypes} from '../connected/connected.js'
+  const contactsTypes = getContactTypes()
+  const accountTypes = getAccountTypes()
 
   function handleDone({ parameters, result }) {
     console.log("DONE RESULT", result)

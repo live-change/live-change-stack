@@ -47,11 +47,12 @@ export function getAccountTypes(api = useApi()) {
     let viewName = 'myUserAccounts'
     console.log('remoteAccountType', accountType, 'serviceName', serviceName, 'viewName', viewName)
     console.log(`path[${serviceName}][${viewName}] =`, path[serviceName][viewName])
+    const accountsPath = computed(() => path[serviceName][viewName] && path[serviceName][viewName]({}))
     return {
       accountType,
       serviceName,
       viewName,
-      path: path[serviceName][viewName]({}),
+      path: accountsPath,
       accounts: null,
       async fetchAccounts(context, onUnmountedCb){
         const accounts = await live(path[serviceName][viewName]({}), context, onUnmountedCb)
