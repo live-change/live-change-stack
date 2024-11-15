@@ -21,14 +21,14 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.8.113",
-    "@live-change/relations-plugin": "^0.8.113",
+    "@live-change/framework": "0.8.113",
+    "@live-change/relations-plugin": "0.8.113",
     "lru-cache": "^7.12.0",
     "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0",
     "prosemirror-model": "^1.18.1",
     "stripe": "^17.2.1"
   },
-  "gitHead": "e0d0db33777f8f9fc9f5ebe1a977cf574b837be6",
+  "gitHead": "80dd8415e06d849cc00a7711c635a7388143ce1d",
   "type": "module"
 }

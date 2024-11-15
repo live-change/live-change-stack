@@ -55,7 +55,7 @@ export function defineIndexes(model, props, types) {
       const prop = props[id]
       return prop[0].toUpperCase() + prop.slice(1)
     })
-    defineIndex(model, upperCaseProps.join('And'), props[propCombination])
+    defineIndex(model, upperCaseProps.join('And'), propCombination)
   }
 }
 
@@ -106,7 +106,8 @@ export function processModelsAnnotation(service, app, annotation, multiple, cb) 
 
         const writeableProperties = modelProperties || config.writeableProperties
         const otherNames = what.map(other => other.name ? other.name : other)
-        const otherPropertyNames = otherNames.map(name => name[0].toLowerCase() + name.slice(1))
+        const otherPropertyNames = config.propertyNames
+          ?? otherNames.map(name => name[0].toLowerCase() + name.slice(1))
 
         const joinedOthersPropertyName = (otherNames[0][0].toLowerCase() + otherNames[0].slice(1)) +
             (otherNames.length > 1 ? ('And' + otherNames.slice(1).join('And')) : '')

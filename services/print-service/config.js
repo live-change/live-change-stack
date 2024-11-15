@@ -1,7 +1,8 @@
 import definition from './definition.js'
+import crypto from 'crypto'
 
 const {
-  browserUrl = 'http://localhost:9222',
+  browserUrl,
   browserWebSocketDebuggerUrl,
   concurrency = 1,
   printAuthenticationKey = crypto.randomBytes(24).toString('hex'),

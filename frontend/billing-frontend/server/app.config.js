@@ -124,6 +124,35 @@ app.config = {
           price: 11000,
           currency: 'usd'
         },
+      ],
+      subscriptionOffers: [
+        {
+          name: 'low',
+          value: 1000,
+          price: 1000,
+          currency: 'usd',
+          interval: 'day',
+          intervalCount: 1,
+          roles: ['member']
+        },
+        {
+          name: 'mid',
+          value: 3000,
+          price: 3000,
+          currency: 'usd',
+          interval: 'day',
+          intervalCount: 1,
+          roles: ['member', 'premium']
+        },
+        {
+          name: 'high',
+          value: 10000,
+          price: 10000,
+          currency: 'usd',
+          interval: 'day',
+          intervalCount: 1,
+          roles: ['member', 'premium', 'enterprise']
+        }
       ]
     },
     {

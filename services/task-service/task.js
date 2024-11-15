@@ -273,7 +273,6 @@ export default function task(definition, serviceDefinition) {
   serviceDefinition.beforeStart(async () => {
     setTimeout(async () => {
       let gt = undefined
-      console.log("GT", gt)
       let tasksToRestart = await app.viewGet('runningTaskRootsByName', {
         name: definition.name,
         gt,

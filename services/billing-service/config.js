@@ -6,6 +6,7 @@ const {
   minimumTopUp = 1000,
   anyTopUpPrices = [],
   topUpOffers = [],
+  subscriptionOffers = [],
   baseHref = process.env.BASE_HREF || 'http://localhost:8001',
   topUpSuccessUrl,
   topUpCancelUrl,
@@ -22,6 +23,7 @@ definition.clientConfig = {
   minimumTopUp,
   anyTopUpPrices,
   topUpOffers,
+  subscriptionOffers,
   currencyDenomination
 }
 
@@ -31,6 +33,7 @@ const config = {
   minimumTopUp,
   anyTopUpPrices,
   topUpOffers,
+  subscriptionOffers,
   topUpSuccessUrl: topUpSuccessUrl ?? `${baseHref}/billing/topUpSuccess`,
   topUpCancelUrl: topUpCancelUrl ?? `${baseHref}/billing/topUpCancel`,
   currencyDenomination
