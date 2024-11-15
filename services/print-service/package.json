@@ -1,6 +1,6 @@
 {
   "name": "@live-change/print-service",
-  "version": "0.8.113",
+  "version": "0.8.114",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,9 +21,9 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.8.113",
-    "@live-change/relations-plugin": "0.8.113",
-    "@live-change/user-service": "0.8.113",
+    "@live-change/framework": "^0.8.114",
+    "@live-change/relations-plugin": "^0.8.114",
+    "@live-change/user-service": "^0.8.114",
     "got": "^11.8.6",
     "p-queue": "^8.0.1",
     "playwright": "^1.41.2"
