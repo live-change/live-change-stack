@@ -1,6 +1,6 @@
 {
   "name": "@live-change/notification-service",
-  "version": "0.8.115",
+  "version": "0.8.116",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.8.115"
+    "@live-change/framework": "^0.8.116"
   },
   "gitHead": "fc360f214e2cd529db9e5795849005a563cb6866",
   "type": "module"
