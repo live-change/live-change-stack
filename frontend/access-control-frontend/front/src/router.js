@@ -62,6 +62,11 @@ export function createRouter(app, config) {
         redirect: { name: 'accessControl:testPage' }
       },
 
+      {
+        name: 'accessControl:invitationFallback', path: '/fallback', meta: { },
+        redirect: { name: 'accessControl:testPage' }
+      },
+
       ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) })
     ]
   })

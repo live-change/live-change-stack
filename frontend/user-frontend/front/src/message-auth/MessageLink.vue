@@ -70,14 +70,14 @@
     )
   ])
 
-  const authenticationState = computed(() => link?.value?.authenticationData?.state )
+  const authenticationState = computed(() => link?.value?.authenticationData?.state)
 
   const isUnknown = computed(() => link.value === null)
   const isExpired = computed(() => link.value ? (now.value.toISOString() > link.value.expire) : false )
-  const isUsed = computed(() => authenticationState.value && authenticationState.value == 'used')
+  const isUsed = computed(() => authenticationState.value && authenticationState.value === 'used')
   const isReady = computed(() => !(isUnknown.value || isExpired.value || isUsed.value))
 
-  //const targetPage = computed(() => link.value?.authentication?.targetPage )
+  //const targetPage = computed(() => link.value?.authenticationData?.targetPage )
 
   if(typeof window != 'undefined') setTimeout(() => { /// timeout "fixes" suspense bug
     if(isReady.value) {
@@ -85,6 +85,14 @@
         const { result, targetPage } = await finishMessageAuthentication({ secretType: 'link', secret: secretCode })
         router.push(targetPage)
       })())
+    }
+    if(isUsed.value || isExpired.value) {
+      const fallbackPage = link.value?.authenticationData?.fallbackPage
+      console.log("FB", fallbackPage)
+      if(fallbackPage) {
+        const error = isUsed.value ? 'used' : 'expired'
+        router.push({ ...fallbackPage, params: { ...fallbackPage.params, error } })
+      }
     }
   }, 10)
 

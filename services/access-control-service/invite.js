@@ -271,7 +271,8 @@ for(const contactType of config.contactTypes) {
           messageData,
           action: 'inviteWithMessage',
           actionProperties: { objectType, object },
-          targetPage: { name: 'accessControl:invitationAccepted', params: { objectType, object } }
+          targetPage: { name: 'accessControl:invitationAccepted', params: { objectType, object } },
+          fallbackPage: { name: 'accessControl:invitationFallback', params: { objectType, object } }
         })
         emit({
           type: 'contactInvited',
