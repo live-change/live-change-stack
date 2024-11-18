@@ -1,6 +1,6 @@
 {
   "name": "@live-change/message-authentication-service",
-  "version": "0.8.116",
+  "version": "0.8.117",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.8.116",
+    "@live-change/framework": "^0.8.117",
     "nodemailer": "^6.7.2"
   },
   "gitHead": "32131af3707ec744c9d314035676d09512483799",
