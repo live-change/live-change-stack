@@ -292,7 +292,7 @@ class Server {
         const indexesInfo = await indexesTable.rangeGet({})
         const infoByName = new Map()
         for(const indexInfo of indexesInfo) {
-          const indexMeta = metadata.indexes[indexInfo.name]
+          const indexMeta = metadata?.indexes[indexInfo.name]
           if(!indexMeta || (indexMeta.uid !== indexInfo.id)) {
             console.error("CORRUPTED INDEX INFO", indexInfo.name, indexInfo.id)
             console.log("DELETING CORRUPTED INFO")

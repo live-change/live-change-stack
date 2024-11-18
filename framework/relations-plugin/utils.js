@@ -48,15 +48,15 @@ export function defineIndex(model, what, props) {
   })
 }
 export function defineIndexes(model, props, types) {
-  console.log("DEFINE INDEXES", model.name, props, types)
-  const propCombinations = allCombinations(Object.keys(props))
-  console.log("COMBINATIONS", propCombinations)
+  console.log("DEFINE INDEXES!", model.name, props, types)
+  const propCombinations = allCombinations(Object.keys(props)) /// combinations of indexes
   for(const propCombination of propCombinations) {
     const upperCaseProps = propCombination.map(id => {
       const prop = props[id]
       return prop[0].toUpperCase() + prop.slice(1)
     })
-    defineIndex(model, upperCaseProps.join('And'), props[propCombination]) // it's ok!
+    const indexProps = propCombination.map(id => props[id])
+    defineIndex(model, upperCaseProps.join('And'), indexProps)
   }
 }
 

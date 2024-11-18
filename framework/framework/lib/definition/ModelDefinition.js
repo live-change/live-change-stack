@@ -1,5 +1,5 @@
 import PropertyDefinition from "./PropertyDefinition.js"
-import { crudChanges } from "../utils.js"
+import { crudChanges, definitionToJSON } from "../utils.js"
 
 class ModelDefinition {
 
@@ -44,8 +44,9 @@ class ModelDefinition {
         }
       }
     }
+    const fixed = definitionToJSON(this, true)
     return {
-      ... this,
+      ...fixed,
       properties,
       indexes
     }
@@ -62,12 +63,12 @@ class ModelDefinition {
         "Index", "index", { model: this.name, storage: this.storage }))
     if(oldModel.search && !this.search) changes.push({ operation: "searchDisabled", model: this.name })
     if(!oldModel.search && this.search) changes.push({ operation: "searchEnabled", model: this.name })
-    if(oldModel.search && this.search && JSON.stringify(oldModel.search) != JSON.stringify(this.search))
+    if(oldModel.search && this.search && JSON.stringify(oldModel.search) !== JSON.stringify(this.search))
       changes.push({ operation: "searchUpdated", model: this.name })
 
     const oldStorage = oldModel.storage || {}
     const newStorage = this.storage || {}
-    if(JSON.stringify(oldStorage) != JSON.stringify(newStorage)) {
+    if(JSON.stringify(oldStorage) !== JSON.stringify(newStorage)) {
       changes.push({ operation: "storageChanged", model: this.name, oldStorage, storage: newStorage })
       for(let indexName in this.indexes) {
         changes.push({ operation: "indexStorageChanged", index: indexName, oldStorage, storage: newStorage })

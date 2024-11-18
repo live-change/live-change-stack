@@ -1,8 +1,8 @@
 <template>
   <div class="notification-buttons">
-    <Button v-if="notification.readState == 'new'" @click="markRead()"
-            icon="pi pi-eye" class="p-button-rounded p-button-outlined surface-0" />
-    <Button v-if="notification.readState == 'read'" @click="markUnread()"
+    <Button v-if="notification.readState === 'new'" @click="markRead()"
+            icon="pi pi-eye" class="p-button-rounded p-button-outlined surface-0 " />
+    <Button v-if="notification.readState === 'read'" @click="markUnread()"
             icon="pi pi-eye-slash" class="p-button-rounded p-button-outlined surface-0" />
     <Button @click="deleteNotification()"
             icon="pi pi-trash" class="p-button-rounded p-button-outlined ml-1 surface-0" />

@@ -10,12 +10,15 @@
   <ul class="list-none p-0 m-0 notifications">
     <div v-for="(bucket, bucketIndex) in notificationsBuckets.buckets" :key="bucket.id"
          :style="{ backgroundz: `hsl(${bucket.id * 11}, 100%, 80%)` }">
-      <div v-for="(notification, index) in bucket.data" :key="notification.id" :ref="el => bucket.domElements[index] = el"
+      <div v-for="(notification, index) in bucket.data" :key="notification.id"
+           :ref="el => bucket.domElements[index] = el"
            class="notification border-bottom-1 surface-border"
            :class="{ selected: selectedNotification === notification.to }">
         <component :is="notificationComponent(notification)" :notification="notification" />
-        <Button @click="() => selectNotification(notification)"
-                icon="pi pi-ellipsis-h" class="p-button-rounded p-button-text notification-more-button" />
+        <div class="notification-more-button flex align-items-end justify-content-center">
+          <Button @click="() => selectNotification(notification)"
+                  icon="pi pi-ellipsis-h" class="p-button-rounded p-button-text " />
+        </div>
         <NotificationButtons :notification="notification" />
       </div>
     </div>
@@ -110,13 +113,14 @@
         visibility: hidden;
         position: absolute;
         right: 40px;
-        top: 5px;
+        bottom: 5px;
         //transform: translate(0, -50%);
       }
       .notification-more-button {
         position: absolute;
-        right: 5px;
-        top: 2%;
+        right: 0px;
+        bottom: -5px;
+        height: 100%;
       }
     }
     .notification.selected {

@@ -10,6 +10,8 @@ export { inputConfig }
 import editorData from './logic/editorData.js'
 export { editorData }
 
+export * from './logic/relations.js'
+
 import en from "./locales/en.json"
 const locales = { en }
 export { locales }

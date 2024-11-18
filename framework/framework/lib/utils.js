@@ -28,6 +28,21 @@ function toJSON(data) {
   }))
 }
 
+export function definitionToJSON(definition, ignoreRoot = false) {
+  if(!definition) return definition
+  if(!ignoreRoot) {
+    if(typeof definition.getTypeName === 'function')
+      return definition.getTypeName()
+    if(typeof definition.toJSON === 'function')
+      return definition.toJSON()
+  }
+  if(typeof definition !== 'object') return definition
+  if(Array.isArray(definition)) return definition.map(definitionToJSON)
+  return Object.fromEntries(Object.entries(definition).map(
+    ([key, value]) => [key, definitionToJSON(value)])
+  )
+}
+
 function setDifference(setA, setB) {
   var difference = new Set(setA)
   for (let elem of setB) difference.delete(elem)
