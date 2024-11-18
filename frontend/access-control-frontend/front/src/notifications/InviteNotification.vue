@@ -52,10 +52,12 @@
   const notificationApi = actions.notification
   const accessControlApi = actions.accessControl
 
-  const invitationPath = computed(() => path.accessControl.myAccessInvitation({
-    objectType: notification.objectType,
-    object: notification.object
-  }))
+  const invitationPath = computed(() => notification.objectType && notification.object
+    && path.accessControl.myAccessInvitation({
+        objectType: notification.objectType,
+        object: notification.object
+      })
+  )
 
   const [invitation] = await Promise.all([
     live(invitationPath)

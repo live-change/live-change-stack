@@ -25,7 +25,6 @@
                          aria-describedby="code-help" :class="{ 'p-invalid': data.secretError }" />-->
               <span v-if="data.secretError" id="code-help" class="p-error">{{ t(`errors.${data.secretError}`) }}</span>
             </div>
-            {{ data.secret }}
             <div class="flex flex-column">
               <Button label="OK" type="submit" class="p-button-lg flex-grow-0"
                       :disableda="data.secret?.length < 6" />
