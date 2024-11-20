@@ -80,9 +80,8 @@ for(const contactType of config.contactTypes) {
       ...contactTypeProperties
     },
     async execute({ [contactTypeName]: contact }, { client, service }, emit) {
-      const contactData = (await service.trigger({ type: 'get' + contactTypeUName }, {
-        [contactTypeName]: contact,
-      }))[0]
+      const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
+      if(!contactData) throw { properties: { email: 'notFound' } }
       const { user } = contactData
       const messageData = { user }
       const actionProperties = { user }

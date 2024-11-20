@@ -27,15 +27,14 @@ for(const contactType of config.contactTypes) {
       ...secretProperties
     },
     async execute({ [contactTypeName]: contact, passwordHash }, { client, service }, emit) {
-      const contactData = (await service.trigger({ type: 'get' + contactTypeUName }, {
-        [contactType]: contact,
-      }))[0]
+      const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
+      if(!contactData) throw { properties: { email: 'notFound' } }
       const { user } = contactData
       if(passwordHash) { // login with password
         console.log("USER!", user)
         const passwordAuthenticationData = await PasswordAuthentication.get(user)
         console.log("PASSWORD AUTH!", passwordAuthenticationData)
-        if(!passwordAuthenticationData || passwordAuthenticationData.passwordHash != passwordHash)
+        if(!passwordAuthenticationData || passwordAuthenticationData.passwordHash !== passwordHash)
           throw { properties: { passwordHash: 'wrongPassword' } }
         const { session } = client
         await service.trigger({ type: 'signIn' }, {

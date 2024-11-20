@@ -101,31 +101,21 @@ definition.trigger({
   }
 })
 
-definition.trigger({
-  name: "getEmail",
+definition.view({
+  name: 'getEmail',
+  internal: true,
+  global: true,
   properties: {
     email: {
       type: String,
       validation: ['nonEmpty', 'email']
     }
   },
-  async execute({ email }, context, _emit) {
-    const emailData = await Email.get(preFilter(email))
-    if(!emailData) throw { properties: { email: 'notFound' } }
-    return emailData
-  }
-})
-
-definition.trigger({
-  name: "getEmailOrNull",
-  properties: {
-    email: {
-      type: String,
-      validation: ['nonEmpty', 'email']
-    }
+  returns: {
+    type: Email
   },
-  async execute({ email }, context, _emit) {
-    return await Email.get(preFilter(email))
+  async daoPath({ email }) {
+    return Email.path(preFilter(email))
   }
 })
 

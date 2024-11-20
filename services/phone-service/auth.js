@@ -107,34 +107,21 @@ definition.trigger({
   }
 })
 
-definition.trigger({
-  name: "getPhone",
+definition.view({
+  name: 'getPhone',
+  internal: true,
+  global: true,
   properties: {
     phone: {
       type: String,
       validation: ['nonEmpty', 'phone']
     }
   },
-  async execute({ phone }, context, emit) {
-    phone = preFilter(phone)
-    const phoneData = await Phone.get(phone)
-    if(!phoneData) throw { properties: { phone: 'notFound' } }
-    return phoneData
-  }
-})
-
-definition.trigger({
-  name: "getPhoneOrNull",
-  properties: {
-    phone: {
-      type: String,
-      validation: ['nonEmpty', 'phone']
-    }
+  returns: {
+    type: Phone
   },
-  async execute({ phone }, context, emit) {
-    phone = preFilter(phone)
-    const phoneData = await Phone.get(phone)
-    return phoneData
+  async daoPath({ phone }) {
+    return Phone.path(preFilter(phone))
   }
 })
 
