@@ -146,10 +146,6 @@ expressApp.post('/restore/:fileName', async (req, res) => {
   return 'ok'
 })
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
-})
-
 definition.beforeStart(() => {
 
   expressApp.listen(backupServerPort, () => {
