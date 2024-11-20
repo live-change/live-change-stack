@@ -1,6 +1,6 @@
 {
   "name": "@live-change/image-service",
-  "version": "0.8.118",
+  "version": "0.8.119",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.8.118",
-    "@live-change/relations-plugin": "0.8.118",
+    "@live-change/framework": "^0.8.119",
+    "@live-change/relations-plugin": "^0.8.119",
     "download": "^8.0.0",
     "pluralize": "^8.0.0",
     "sharp": "^0.32.5"
