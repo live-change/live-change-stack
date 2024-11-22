@@ -273,7 +273,7 @@ for(const contactType of config.contactTypes) {
     },
     access: (params, { client, context, visibilityTest}) =>
         visibilityTest || access.clientCanInvite(client, params),
-    async execute(params, { client, service, trigger  }, emit) {
+    async execute(params, { client, service, trigger }, emit) {
       const { [contactTypeName]: contact } = params
       const { objectType, object } = params
       const { roles } = params
@@ -315,12 +315,13 @@ for(const contactType of config.contactTypes) {
       ...invitationProperties
     },
     maxRetries: 1,
-    async execute(params, { service, task }, emit) {
+    async execute(params, { service, task, trigger }, emit) {
       const { [contactTypeName]: contact } = params
       const { objectType, object } = params
       const { roles } = params
       const { fromType, from } = params
       const invitationData = { fromType, from, roles }
+      for(const propertyName in invitationProperties) invitationData[propertyName] = params[propertyName]
       return await doInvite(contact, objectType, object, invitationData, emit, trigger)
     }
   }, definition)
@@ -353,18 +354,19 @@ for(const contactType of config.contactTypes) {
         }
       }
     },
-    async execute(params, { service, task }, emit) {
-      const { objectType, object } = params
+    async execute(params, { service, task, trigger }, emit) {
       const { roles } = params
       const { fromType, from } = params
-      const invitationData = { fromType, from, roles }
-      for(const propertyName in invitationProperties) invitationData[propertyName] = params[propertyName]
       for(const contact of params.contacts) {
-        try {
-          await doInvite(contact[contactTypeName], objectType, object, invitationData, emit, trigger)
-        } catch(e) {
+//        try {
+          task.run(inviteOneTask, {
+            ...params,
+            ...contact
+          })
+          //await doInvite(contact[contactTypeName], objectType, object, invitationData, emit, trigger)
+        /*} catch(e) {
           // ignore errors
-        }
+        }*/
       }
     }
   }, definition)
@@ -383,6 +385,7 @@ for(const contactType of config.contactTypes) {
       },
       ...invitationProperties,
       contacts: {
+        validation: ['nonEmpty'],
         type: Array,
         of: {
           type: Object,
@@ -393,7 +396,6 @@ for(const contactType of config.contactTypes) {
     access: (params, { client, context, visibilityTest}) =>
       visibilityTest || access.clientCanInvite(client, params),
     async execute(params, { client, service, trigger, command  }, emit) {
-      const { [contactTypeName]: contact } = params
       const { objectType, object } = params
 
       const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
@@ -405,11 +407,74 @@ for(const contactType of config.contactTypes) {
 
       const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
 
-      await inviteManyTask.start({
+      return await inviteManyTask.start({
         ...params,
         fromType, from,
         ownerType: objectType,
         owner: object,
+      }, 'action', command.id )
+    }
+  })
+
+  definition.action({
+    name: 'inviteMany' + pluralize(contactTypeUpperCaseName) + 'FromText',
+    waitForEvents: true,
+    properties: {
+      objectType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      object: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      ...invitationProperties,
+      [pluralize(contactTypeName) + 'Text']: {
+        type: String,
+        validation: ['nonEmpty']
+      }
+    },
+    access: (params, { client, context, visibilityTest}) =>
+      visibilityTest || access.clientCanInvite(client, params),
+    async execute(params, { client, service, trigger, command  }, emit) {
+      const fieldName = pluralize(contactTypeName) + 'Text'
+      const contacts = params[fieldName].split(/[,;\n]/).map(line => {
+        const parts = line.split('\t')
+        return { [contactTypeName]: parts[0].trim() }
+      })
+
+      if(contacts.length === 0) throw {
+        properties: { [fieldName]: 'empty' }
+      }
+      for(const contact of contacts) {
+        console.log("C", contact)
+        const error = service.definition.validators[contactTypeName]()(contact[contactTypeName], {
+          source: { properties: { [fieldName]: contact[contactTypeName] } }
+        })
+        if(error) throw {
+          properties: { [fieldName]: error }
+        }
+      }
+
+      const { objectType, object } = params
+
+      const myRoles = await access.getClientObjectRoles(
+        client, { objectType, object }, true
+      )
+      if(!myRoles.includes('admin')) {
+        for(const requestedRole of roles) {
+          if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+        }
+      }
+
+      const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+
+      return await inviteManyTask.start({
+        ...params,
+        fromType, from,
+        ownerType: objectType,
+        owner: object,
+        contacts
       }, 'action', command.id )
     }
   })

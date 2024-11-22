@@ -150,8 +150,10 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
   const taskFunction = async (props, context,
                               emit = events => app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {}),
                               reportProgress = (current, total, selfProgress) => {}) => {
-    if(!emit) emit = (events) =>
-      app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {})
+    if(!emit) {
+      emit = (events) =>
+        app.emitEvents(serviceDefinition.name, Array.isArray(events) ? events : [events], {})
+    }
 
     let taskObject = context.taskObject
       ?? await createOrReuseTask(definition, props, context.causeType, context.cause)
@@ -235,7 +237,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
                 causeType: 'task_Task',
                 cause: taskObject.id
               },
-              (events) => app.emitEvents(definition.name,
+              (events) => app.emitEvents(serviceDefinition.name,
                 Array.isArray(events) ? events : [events], {}),
               (current, total, action) => {
                 subtaskProgress.current = current

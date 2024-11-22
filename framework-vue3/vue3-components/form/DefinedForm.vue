@@ -9,7 +9,7 @@
   import { computed, watch } from 'vue'
   import { getElementPositionInDocument } from '../utils/dom.mjs'
 
-  const errorSufix = 'Error'
+  const errorSuffix = 'Error'
 
   class FormValue {
     constructor(definition, component, data, property) {
@@ -69,10 +69,10 @@
       return this.data[this.property]
     }
     setError(error) {
-      this.data[this.property+errorSufix] = error
+      this.data[this.property+errorSuffix] = error
     }
     getError() {
-      return this.data[this.property+errorSufix]
+      return this.data[this.property+errorSuffix]
     }
 
     setProperty(name) {
@@ -111,7 +111,7 @@
       return Promise.all(promises).then(results => {
         for(let error of results) {
           if(error) {
-            if(this.data[this.property + errorSufix] === error) return error
+            if(this.data[this.property + errorSuffix] === error) return error
             this.setError(error)
             return error
           }

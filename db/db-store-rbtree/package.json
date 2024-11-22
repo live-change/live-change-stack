@@ -29,5 +29,5 @@
     "@live-change/flatten-interval-tree": "^0.8.121",
     "functional-red-black-tree": "^1.0.1"
   },
-  "gitHead": "adf31fd8365df0655d88293f96a93734058d3dd4"
+  "gitHead": "2fd79c450701fcfe3f69fa92276efd351eb57580"
 }
