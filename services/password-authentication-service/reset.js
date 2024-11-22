@@ -3,7 +3,7 @@ const app = App.app()
 import { randomString } from '@live-change/uid'
 import definition from './definition.js'
 const config = definition.config
-import { PasswordAuthentication, secretProperties } from './model.js'
+import { secretProperties } from './model.js'
 
 const User = definition.foreignModel('user', 'User')
 
@@ -141,7 +141,7 @@ definition.action({
     const resetPasswordAuthenticationData = await ResetPasswordAuthentication.indexObjectGet('byKey', key)
     console.log("RESET AUTH", resetPasswordAuthenticationData)
     if(!resetPasswordAuthenticationData) throw 'authenticationNotFound'
-    if(resetPasswordAuthenticationData.state == 'used') throw 'authenticationUsed'
+    if(resetPasswordAuthenticationData.state === 'used') throw 'authenticationUsed'
     if(resetPasswordAuthenticationData.expire < (new Date().toISOString())) throw 'authenticationExpired'
     const { user } = resetPasswordAuthenticationData
     emit([{

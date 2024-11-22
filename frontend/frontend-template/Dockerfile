@@ -1,4 +1,4 @@
-FROM --platform=amd64 debian:buster
+FROM --platform=amd64 debian:bookworm
 
 # SYSTEM
 RUN echo no cache 3
@@ -15,7 +15,7 @@ RUN echo "LANG=en_US.UTF-8" > /etc/locale.conf
 RUN locale-gen en_US.UTF-8
 
 # NODE
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get install -y nodejs
 
 #NPM, PM2
