@@ -2,6 +2,7 @@ import App from '@live-change/framework'
 const app = App.app()
 import definition from './definition.js'
 const config = definition.config
+import pluralize from 'pluralize'
 
 const inviteMessageActionByObjectType = config.inviteMessageActionByObjectType ?? {}
 
@@ -190,7 +191,7 @@ definition.action({
   }
 })
 
-import task from '@live-change/task-service/task.js' // need to import taks.js to avoid circular dependency
+import task from '@live-change/task-service/task.ts' // need to import taks.js to avoid circular dependency
 
 
 for(const contactType of config.contactTypes) {
@@ -368,5 +369,49 @@ for(const contactType of config.contactTypes) {
     }
   }, definition)
 
+  definition.action({
+    name: 'inviteMany' + pluralize(contactTypeUpperCaseName),
+    waitForEvents: true,
+    properties: {
+      objectType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      object: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      ...invitationProperties,
+      contacts: {
+        type: Array,
+        of: {
+          type: Object,
+          properties: contactTypeProperties
+        }
+      }
+    },
+    access: (params, { client, context, visibilityTest}) =>
+      visibilityTest || access.clientCanInvite(client, params),
+    async execute(params, { client, service, trigger, command  }, emit) {
+      const { [contactTypeName]: contact } = params
+      const { objectType, object } = params
+
+      const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
+      if(!myRoles.includes('admin')) {
+        for(const requestedRole of roles) {
+          if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+        }
+      }
+
+      const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+
+      await inviteManyTask.start({
+        ...params,
+        fromType, from,
+        ownerType: objectType,
+        owner: object,
+      }, 'action', command.id )
+    }
+  })
 
 }
