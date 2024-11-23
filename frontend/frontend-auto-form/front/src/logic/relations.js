@@ -20,6 +20,13 @@ export function getModelByTypeName(model, api = useApi()) {
   return model
 }
 
+export function getServiceByName(service, api = useApi()) {
+  if(typeof service === 'string') {
+    return api.services[service]
+  }
+  return service
+}
+
 export function getForwardRelations(model, filter = () => true, api = useApi()) {
   model = getModelByTypeName(model, api)
   const results = []
@@ -48,4 +55,22 @@ export function getBackwardRelations(model, api = useApi()) {
       model => getForwardRelations(model, ({ what }) => what === key, api)
     ).flat()
   ).flat()
+}
+
+
+export function getServiceModelsWithRelation(service, relationName, api = useApi()) {
+  service = getServiceByName(service)
+  if(!Array.isArray(relationName)) relationName = [relationName]
+  return Array.from(new Set(Object.values(service.models).filter(
+      model => relationName.some(relation => model[relation])
+    ).flat()
+  ))
+}
+
+
+export function getModelsWithRelation(relationName, api = useApi()) {
+  if(!Array.isArray(relationName)) relationName = [relationName]
+  return Array.from(new Set(Object.values(api.services).map(
+    service => getServiceModelsWithRelation(service, relationName, api)
+  ).flat()))
 }

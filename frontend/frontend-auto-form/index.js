@@ -1,17 +1,19 @@
-import AutoInput from './components/AutoInput.vue'
-import AutoField from './components/AutoField.vue'
-import AutoEditor from './components/AutoEditor.vue'
+import AutoInput from './front/src/components/form/AutoInput.vue'
+import AutoField from './front/src/components/form/AutoField.vue'
+import AutoEditor from './front/src/components/form/AutoEditor.vue'
 
 export { AutoInput, AutoField, AutoEditor }
 
-import * as inputConfig from './config.js'
+import * as inputConfig from './front/src/config.js'
 export { inputConfig }
 
-import editorData from './logic/editorData.js'
+import editorData from './front/src/logic/editorData.js'
 export { editorData }
 
-export * from './logic/relations.js'
+export * from './front/src/logic/relations.js'
 
-import en from "./locales/en.json"
+export * from './front/src/router.js'
+
+import en from "./front/locales/en.json"
 const locales = { en }
 export { locales }

@@ -1,11 +1,3 @@
-import {
-  createMemoryHistory,
-  createRouter as _createRouter,
-  createWebHistory
-} from 'vue-router'
-
-import { dbAdminRoutes } from "@live-change/db-admin"
-
 export function peerConnectionRoutes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
@@ -23,6 +15,12 @@ export async function sitemap(route, api) {
 
 }
 
+import {
+  createMemoryHistory,
+  createRouter as _createRouter,
+  createWebHistory
+} from 'vue-router'
+import { dbAdminRoutes } from "@live-change/db-admin"
 import { client as useClient } from '@live-change/vue3-ssr'
 
 export function createRouter(app, config) {

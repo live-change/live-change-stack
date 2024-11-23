@@ -44,7 +44,7 @@
 
   import AutoInput from "./AutoInput.vue"
 
-  import { inputs, types } from '../config.js'
+  import { inputs, types } from '../../config.js'
   import { computed, getCurrentInstance, inject, toRefs, onMounted, ref } from 'vue'
 
   const isMounted = ref(false)

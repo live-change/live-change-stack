@@ -25,15 +25,15 @@ const number = input(() => import('primevue/inputnumber'))
 inputs.integer = number
 types.Number = inputs.decimal = number.with({ attributes: { mode: 'decimal' } })
 
-types.Object = inputs.object = input(() => import('./components/AutoEditor.vue'), {
-  fieldComponent: defineAsyncComponent(() => import('./components/GroupField.vue'))
+types.Object = inputs.object = input(() => import('./components/form/AutoEditor.vue'), {
+  fieldComponent: defineAsyncComponent(() => import('./components/form/GroupField.vue'))
 })
 
-types.Array = inputs.list = input(() => import('./components/ArrayInput.vue'), {
-  fieldComponent: defineAsyncComponent(() => import('./components/GroupField.vue'))
+types.Array = inputs.list = input(() => import('./components/form/ArrayInput.vue'), {
+  fieldComponent: defineAsyncComponent(() => import('./components/form/GroupField.vue'))
 })
 
-types.Date = inputs.datetime = input(() => import('./components/Calendar.vue'), { attributes: { showTime: true } })
+types.Date = inputs.datetime = input(() => import('./components/form/Calendar.vue'), { attributes: { showTime: true } })
 
 inputs.select = input(() => import('primevue/dropdown'), {
   attributes: (config) => {

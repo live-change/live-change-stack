@@ -9,7 +9,7 @@
 </template>
 
 <script setup>
-  import { inputs, types } from '../config.js'
+  import { inputs, types } from '../../config.js'
   import { computed, inject, toRefs } from 'vue'
   import deepmerge from 'deepmerge';
 
