@@ -355,19 +355,20 @@ for(const contactType of config.contactTypes) {
       }
     },
     async execute(params, { service, task, trigger }, emit) {
-      const { roles } = params
-      const { fromType, from } = params
-      for(const contact of params.contacts) {
-//        try {
+      const contactsCount = params.contacts.length
+      for(let i = 0; i < contactsCount; i++) {
+        task.progress(i, contactsCount, 'inviting')
+        const contact = params.contacts[i]
+        try {
           task.run(inviteOneTask, {
             ...params,
             ...contact
           })
-          //await doInvite(contact[contactTypeName], objectType, object, invitationData, emit, trigger)
-        /*} catch(e) {
+        } catch(e) {
           // ignore errors
-        }*/
+        }
       }
+      task.progress(contactsCount, contactsCount, 'done')
     }
   }, definition)
 
@@ -440,8 +441,8 @@ for(const contactType of config.contactTypes) {
       const fieldName = pluralize(contactTypeName) + 'Text'
       const contacts = params[fieldName].split(/[,;\n]/).map(line => {
         const parts = line.split('\t')
-        return { [contactTypeName]: parts[0].trim() }
-      })
+        return parts[0].trim()
+      }).filter(x => !!x).map(contact => ({ [contactTypeName]: contact }))
 
       if(contacts.length === 0) throw {
         properties: { [fieldName]: 'empty' }

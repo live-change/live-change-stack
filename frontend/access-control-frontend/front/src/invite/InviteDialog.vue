@@ -115,10 +115,15 @@
       <Button v-else
               label="Invite emails" icon="pi pi-envelope" autofocus @click="inviteManyForm.submit()" />
     </template>
+
+    <TaskModal v-model:visible="taskModalVisible" :task="inviteTask" :taskTypes="taskTypes" />
+
   </Dialog>
 </template>
 
 <script setup>
+  import { TaskModal } from "@live-change/task-frontend"
+
   import TabView from 'primevue/tabview'
   import TabPanel from 'primevue/tabpanel'
 
@@ -136,7 +141,7 @@
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
 
-  import { ref, defineProps, defineModel } from 'vue'
+  import { ref, defineProps, defineModel, watch } from 'vue'
   import { toRefs } from "@vueuse/core"
 
   const props = defineProps({
@@ -170,18 +175,43 @@
   }
 
   const inviteForm = ref()
-  function handleInvited() {
+  function handleInvited({ parameters, result }) {
     visible.value = false
-    toast.add({ severity:'info', summary: 'Invitation sent!', life: 1500 })
+    toast.add({ severity: 'success', summary: 'Invitation sent!', life: 1500 })
     console.log("INVITED", arguments)
   }
 
+  const taskModalVisible = ref(false)
+  const inviteTask = ref()
+
+  watch(taskModalVisible, tmv => {
+    if(!tmv) {
+      inviteTask.value = null
+      visible.value = false
+      toast.add({ severity: 'success', summary: 'Invitations were sent!', life: 1500 })
+    }
+  })
+
+  const taskTypes = {
+    inviteManyEmail: {
+      label(task) {
+        return 'Invite ' + task.properties.contacts.length + ' emails'
+      }
+    },
+    inviteEmail: {
+      label(task) {
+        return 'Invite '+ task.properties.email
+      }
+    }
+  }
+
   const inviteManyForm = ref()
-  function handleInvitedMany() {
-    console.log("INVITED MANY", arguments)
-    visible.value = false
-    toast.add({ severity:'info', summary: 'Invitation will be sent!', life: 1500 })
-    console.log("INVITED", arguments)
+  function handleInvitedMany({ parameters, result }) {
+    console.log("INVITE MANY", result)
+    const { task } = result
+    inviteTask.value = task
+    taskModalVisible.value = true
+    toast.add({ severity: 'info', summary: 'Invitation will be sent!', life: 1500 })
   }
 
 </script>

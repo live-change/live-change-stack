@@ -107,7 +107,7 @@ const Task = definition.model({
     byRoot: {
       function: async function(input, output, { tableName }) {
         async function findAncestors(object){
-          const result = []
+          const result = [`"task_Task":"${object.id}"`]
           let current = object
           while(current) {
             result.push(`"${current.causeType}":"${current.cause}"`)
