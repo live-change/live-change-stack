@@ -18,13 +18,13 @@
           </div>
           <div>
             <Button icon="pi pi-list" severity="primary" label="List" class="mr-2" />
-            <Button icon="pi pi-plus" severity="warning" :label="'Create new '+model.name" />
+            <router-link :to="createRoute(serviceWithModels.name, model)" class="no-underline">
+              <Button icon="pi pi-plus" severity="warning" :label="'Create new '+model.name" />
+            </router-link>
           </div>
         </div>
       </div>
     </div>
-
-
   </div>
 </template>
 
@@ -68,6 +68,16 @@
     }
     return results
   })
+
+  function createRoute(serviceName, model) {
+    return {
+      name: 'auto-form:editor',
+      params: {
+        serviceName,
+        modelName: model.name
+      }
+    }
+  }
 
 </script>
 

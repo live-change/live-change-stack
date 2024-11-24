@@ -25,12 +25,12 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao": "^0.8.123",
-    "@live-change/dao-sockjs": "^0.8.123",
-    "@live-change/dao-websocket": "^0.8.123",
-    "@live-change/db-server": "^0.8.123",
-    "@live-change/framework": "^0.8.123",
-    "@live-change/server": "^0.8.123",
+    "@live-change/dao": "0.8.123",
+    "@live-change/dao-sockjs": "0.8.123",
+    "@live-change/dao-websocket": "0.8.123",
+    "@live-change/db-server": "0.8.123",
+    "@live-change/framework": "0.8.123",
+    "@live-change/server": "0.8.123",
     "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "http-proxy-middleware": "2.0.6",
@@ -40,5 +40,5 @@
     "websocket": "^1.0.34",
     "yargs": "^17.7.2"
   },
-  "gitHead": "3d1935bdc16579c96f009d49f1e9aa70a7697c71"
+  "gitHead": "42148742342a5ac004deb122042ead1d977cb8f8"
 }

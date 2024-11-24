@@ -8,6 +8,12 @@ export function autoFormRoutes(config = {}) {
       props: true
     }),
 
+    route({
+      name: 'auto-form:editor', path: prefix + '/editor/:serviceName/:modelName/:identifiers*', meta: { },
+      component: () => import("./pages/Editor.vue"),
+      props: true
+    }),
+
   ]
 }
 

@@ -29,6 +29,7 @@ export default function editorData(options) {
     onDraftSaved = () => {},
     onDraftDiscarded = () => {},
     onSaveError = () => {},
+    onCreated = (createResult) => {},
 
     toast = useToast(),
     path = usePath(),
@@ -65,7 +66,7 @@ export default function editorData(options) {
     }
   }
   const draftId = idKey ? identifiers[idKey]
-    : identifiersNames.map(identifier => draftIdParts.map(key => JSON.stringify(identifier[key])).join('_'))
+    : draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_')
 
   const draftIdentifiers = {
     actionType: serviceName, action: crudMethods.read, targetType: modelName, target: draftId
@@ -103,7 +104,9 @@ export default function editorData(options) {
           if(savedData.value) {
             return updateAction(data)
           } else {
-            return createAction(data)
+            const createResult = await createAction(data)
+            await onCreated(createResult)
+            return createResult
           }
         } finally {
           saving.value = false
@@ -149,6 +152,7 @@ export default function editorData(options) {
         await saveData()
         if(draftData.value) await removeDraftAction(draftIdentifiers)
         onSaved()
+        if(toast && savedToast) toast.add({ severity: 'success', summary: savedToast, life: 1500 })
       }
 
       async function discardDraft() {
@@ -183,7 +187,7 @@ export default function editorData(options) {
         debounce,
         onSave: () => {
           onSaved()
-          if(toast && savedDraftToast) toast.add({ severity: 'info', summary: savedDraftToast, life: 1500 })
+          if(toast && savedToast) toast.add({ severity: 'success', summary: savedToast, life: 1500 })
         },
         onSaveError(e) {
           console.error("SAVE ERROR", e)
