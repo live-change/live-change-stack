@@ -11,11 +11,15 @@
       <h4>definition</h4>
       <pre>{{ modelDefinition }}</pre>
 
+      <ModelEditor :service="serviceName" :model="modelName" :identifiers="identifiersObject" draft />
+
     </div>
   </div>
 </template>
 
 <script setup>
+
+  import ModelEditor from "../components/crud/ModelEditor.vue"
 
   import { ref, computed, onMounted, defineProps, toRefs } from 'vue'
 
@@ -60,23 +64,10 @@
     return result
   })
 
-
-  import { editorData } from "@live-change/frontend-auto-form"
-
-  /*const treeSettings = computedAsync(async () => {
-    const ed = await editorData({
-      service: serviceName,
-      model: modelName,
-      identifiers: { file: tree.value },
-      draft: true,
-      onCreated() {
-        console.log("CREATED")
-        // TODO: change route - add identifiers
-      },
-    })
-    console.log("ED", ed)
-    return ed
-  })*/
+  function handleCreated() {
+    console.log("CREATED")
+    // TODO: change route - add identifiers
+  }
 
 </script>
 

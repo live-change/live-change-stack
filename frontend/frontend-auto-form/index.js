@@ -12,6 +12,9 @@ export { editorData }
 
 export * from './front/src/logic/relations.js'
 
+import ModelEditor from './front/src/components/crud/ModelEditor.vue'
+export { ModelEditor }
+
 export * from './front/src/router.js'
 
 import en from "./front/locales/en.json"

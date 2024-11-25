@@ -19,16 +19,16 @@ const SurveyDesign = definition.model({
   properties: {
     name: {
       type: String,
-      validation: ['nonEmpty', { name: 'maxLength', length: 128 }]
+      softValidation: ['nonEmpty', { name: 'maxLength', length: 128 }]
     },
     title: {
       type: String,
-      validation: ['nonEmpty', { name: 'maxLength', length: 128 }]
+      softValidation: ['nonEmpty', { name: 'maxLength', length: 128 }]
     },
     introduction: {
       type: String,
       input: 'textarea',
-      validation: ['nonEmpty', { name: 'maxLength', length: 512 }]
+      softValidation: ['nonEmpty', { name: 'maxLength', length: 512 }]
     },
     questions: {
       type: Array,
@@ -37,21 +37,22 @@ const SurveyDesign = definition.model({
         properties: {
           type: {
             type: String,
-            validation: ['nonEmpty'],
-            options: ['text', 'textarea', 'choice', 'multipleChoice']
+            softValidation: ['nonEmpty'],
+            options: ['text', 'textarea', 'choice', 'multipleChoice'],
+            input: 'select'
           },
           name: {
             type: String,
-            validation: ['nonEmpty', { name: 'maxLength', length: 128 }]
+            softValidation: ['nonEmpty', { name: 'maxLength', length: 128 }]
           },
           label: {
             type: String,
-            validation: ['nonEmpty', { name: 'maxLength', length: 128 }]
+            softValidation: ['nonEmpty', { name: 'maxLength', length: 128 }]
           },
           description: {
             type: String,
             input: 'textarea',
-            validation: ['nonEmpty', { name: 'maxLength', length: 512 }]
+            softValidation: ['nonEmpty', { name: 'maxLength', length: 512 }]
           },
           required: {
             type: Boolean,
@@ -84,12 +85,12 @@ const SurveyDesign = definition.model({
               properties: {
                 name: {
                   type: String,
-                  validation: ['nonEmpty', { name: 'maxLength', length: 128 }]
+                  softValidation: ['nonEmpty', { name: 'maxLength', length: 128 }]
                 },
                 label: {
                   type: String,
                   input: 'textarea',
-                  validation: ['nonEmpty', { name: 'maxLength', length: 512 }]
+                  softValidation: ['nonEmpty', { name: 'maxLength', length: 512 }]
                 }
               }
             }
