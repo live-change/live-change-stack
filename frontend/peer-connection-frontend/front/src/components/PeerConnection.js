@@ -226,11 +226,6 @@ const createPeerConnection = (peer, to) => {
   let lastReceivedMessageSent = ''
 
   async function handleMessage(message) {
-    if(lastReceivedMessageSent > message.sent) {
-      console.error("MESSAGE OUT OF ORDER", message)
-      throw new Error("Message sent before last received message - message order broken!")
-    }
-    lastReceivedMessageSent = message.sent
     //console.log("PC", to, "HANDLE MESSAGE", message)
     if(state.value === 'created') {
       console.log("ADD MESSAGE TO WAITING QUEUE")
@@ -238,6 +233,12 @@ const createPeerConnection = (peer, to) => {
       return
     }
     if(state.value === 'close') return
+
+    if(lastReceivedMessageSent > message.sent) {
+      console.error("MESSAGE OUT OF ORDER", message)
+      throw new Error("Message sent before last received message - message order broken!")
+    }
+    lastReceivedMessageSent = message.sent
     //console.log("DO HANDLE MESSAGE")
     switch(message.type) {
       case "sdp": {
