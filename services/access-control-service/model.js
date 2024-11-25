@@ -55,6 +55,10 @@ const PublicAccess = definition.model({
     availableRoles: rolesArrayType,
     lastUpdate: {
       type: Date
+    },
+    autoGrantRequests: {
+      type: Number,
+      default: 0
     }
   },
   indexes: {

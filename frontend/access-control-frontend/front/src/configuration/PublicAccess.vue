@@ -31,7 +31,8 @@
                    v-model="synchronizedPublicAccess.userRoles"
                    :feedback="false" toggleMask :disabled="disabled" />
     </div>
-    <div class="p-field field mb-4 col-12" v-if="isMounted && requestedRolesVisible">
+    <div class="p-field field mb-4" v-if="isMounted && requestedRolesVisible"
+         :class="autoGrantRequestsVisible ? 'col-6' : 'col-12'">
       <label for="availablePublicAccess" class="block text-900 font-medium mb-2">Roles available to request:</label>
       <MultiSelect id="userPublicAccess" class="w-full" inputClass="w-full"
                    :options="availableRequestedRoles"
@@ -39,12 +40,21 @@
                    v-model="synchronizedPublicAccess.availableRoles"
                    :feedback="false" toggleMask :disabled="disabled" />
     </div>
+    <div class="p-field field mb-4 col-6" v-if="isMounted && autoGrantRequestsVisible">
+      <label for="autoGrantRequests" class="block text-900 font-medium mb-2">
+        Automatically grant number of requests:
+      </label>
+      <InputNumber id="autoGrantRequests" class="w-full" inputClass="w-full"
+                   v-model="synchronizedPublicAccess.autoGrantRequests" showButtons
+                   :min="0" :max="100" :step="1" mode="decimal" :feedback="false" :disabled="disabled" />
+    </div>
   </div>
 </template>
 
 <script setup>
   import Dropdown from "primevue/dropdown"
   import MultiSelect from "primevue/multiselect"
+  import InputNumber from "primevue/inputnumber"
 
   import { useToast } from 'primevue/usetoast'
   const toast = useToast()
@@ -81,6 +91,10 @@
       default: true
     },
     requestedRolesVisible: {
+      type: Boolean,
+      default: true
+    },
+    autoGrantRequestsVisible: {
       type: Boolean,
       default: true
     },
