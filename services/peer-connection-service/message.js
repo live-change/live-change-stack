@@ -207,7 +207,7 @@ definition.action({
   },
   queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed
                                                       // and it will block ice connection state
-  waitForEvents: true,
+  //waitForEvents: true,
   async execute(props, { client, service }, emit) {
     const lastMessages = await Message.rangeGet({
       gte: `${props.to}_`,
