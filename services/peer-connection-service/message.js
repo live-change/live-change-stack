@@ -2,7 +2,10 @@ import definition from './definition.js'
 const config = definition.config
 const {
   readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'],
-  writerRoles = ['speaker', 'vip', 'moderator', 'owner']
+  writerRoles = ['speaker', 'vip', 'moderator', 'owner'],
+  messageWaitForEvents = false,
+  messageSkipEmit = false,
+  groupMessages = false
 } = config
 
 
@@ -23,6 +26,12 @@ const messageFields = {
   },
   data: {
     type: Object
+  },
+  messages: {
+    type: Array,
+    of: {
+      type: Object
+    }
   },
   sent: {
     type: Date
@@ -116,7 +125,7 @@ definition.view({
 
 let lastMessageTime = new Map()
 
-function postMessage(props, { client, service }, emit, conversation) {
+async function postMessage(props, { client, service }, emit) {
   console.log("POST MESSAGE", props)
   const channelId = props.to
   let lastTime = lastMessageTime.get(channelId)
@@ -139,11 +148,18 @@ function postMessage(props, { client, service }, emit, conversation) {
   if(!data.user) {
     data.session = client.session
   }
-  emit({
-    type: "MessageCreated",
-    message,
-    data
-  })
+  if(messageSkipEmit) {
+    await Message.create({
+      id: message,
+      ...data
+    })
+  } else {
+    emit({
+      type: "MessageCreated",
+      message,
+      data
+    })
+  }
 }
 
 definition.action({
@@ -151,7 +167,6 @@ definition.action({
   properties: {
     ...messageFields
   },
-  //queuedBy: (command) => `${command.toType}_${command.toId})`,
   access: async ({ from, to }, context) => {
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
@@ -165,14 +180,13 @@ definition.action({
   },
   queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed
   // and it will block ice connection state
+  waitForEvents: messageWaitForEvents,
   async execute(props, { client, service }, emit) {
     console.error('postMessage is deprecated, use postMessages instead')
-    const result = postMessage(props, { client, service }, emit)
+    await postMessage(props, { client, service }, emit)
     console.log("MESSAGE POSTED!")
-    return result
   }
 })
-
 
 definition.action({
   name: "postMessages",
@@ -207,31 +221,47 @@ definition.action({
   },
   queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed
                                                       // and it will block ice connection state
-  waitForEvents: true,
+  waitForEvents: messageWaitForEvents,
   async execute(props, { client, service }, emit) {
-    const lastMessages = await Message.rangeGet({
-      gte: `${props.to}_`,
-      lte: `${props.to}_\xFF\xFF\xFF\xFF`,
-      limit: 10,
-      reverse: true
-    })
-    let lastSent = lastMessages?.[0]?.sent
+    let lastSent = ''
+    let lastMessages
+    if(messageWaitForEvents) {
+      lastMessages = await Message.rangeGet({
+        gte: `${props.to}_`,
+        lte: `${props.to}_\xFF\xFF\xFF\xFF`,
+        limit: 10,
+        reverse: true
+      })
+      lastSent = lastMessages?.[0]?.sent
+    }
     const messages = props.messages
     for(const message of messages) {
-      message.from = props.from
-      message.to = props.to
-      const sent = new Date(message.sent).toISOString()
-      if(lastSent > sent) {
-        console.error("Message out of order", lastSent, '>', sent, "BY", props.from)
-        console.error("LAST MESSAGES", lastMessages)
-        console.error("RECEIVED MESSAGES", props.messages)
-       // process.exit(1)
-        throw new Error("Messages out of order")
+      if(messageWaitForEvents) {
+        const sent = new Date(message.sent).toISOString()
+        if(lastSent > sent) {
+          console.error("Message out of order", lastSent, '>', sent, "BY", props.from)
+          console.error("LAST MESSAGES", lastMessages)
+          console.error("RECEIVED MESSAGES", props.messages)
+          // process.exit(1)
+          throw new Error("Messages out of order")
+        }
+        lastSent = sent
       }
-      lastSent = sent
     }
-    for(const message of messages) {
-      postMessage(message, { client, service }, emit)
+    if(groupMessages) {
+      await postMessage({
+        from: props.from,
+        to: props.to,
+        type: 'bucket',
+        sent: messages[0].sent,
+        messages
+      }, { client, service }, emit)
+    } else {
+      for(const message of messages) {
+        message.from = props.from
+        message.to = props.to
+        await postMessage(message, { client, service }, emit)
+      }
     }
    // console.log("MESSAGES POSTED!")
     return 'ok'

@@ -225,21 +225,7 @@ const createPeerConnection = (peer, to) => {
 
   let lastReceivedMessageSent = ''
 
-  async function handleMessage(message) {
-    //console.log("PC", to, "HANDLE MESSAGE", message)
-    if(state.value === 'created') {
-      console.log("ADD MESSAGE TO WAITING QUEUE")
-      waitingMessages.value.push(message)
-      return
-    }
-    if(state.value === 'close') return
-
-    if(lastReceivedMessageSent > message.sent) {
-      console.error("MESSAGE OUT OF ORDER", message)
-      throw new Error("Message sent before last received message - message order broken!")
-    }
-    lastReceivedMessageSent = message.sent
-    //console.log("DO HANDLE MESSAGE")
+  async function doHandleMessage(message) {
     switch(message.type) {
       case "sdp": {
         console.log("RECEIVED SDP", message.data.type, "IN RTC STATE", rtc.value.signalingState, "STATE", state.value)
@@ -297,6 +283,30 @@ const createPeerConnection = (peer, to) => {
       case "pong": break; // ignore pong
       default:
         console.error("Unknown peer message", message)
+    }
+  }
+
+  async function handleMessage(message) {
+    //console.log("PC", to, "HANDLE MESSAGE", message)
+    if(state.value === 'created') {
+      console.log("ADD MESSAGE TO WAITING QUEUE")
+      waitingMessages.value.push(message)
+      return
+    }
+    if(state.value === 'close') return
+
+    if(lastReceivedMessageSent > message.sent) {
+      console.error("MESSAGE OUT OF ORDER", message)
+      throw new Error("Message sent before last received message - message order broken!")
+    }
+    lastReceivedMessageSent = message.sent
+    //console.log("DO HANDLE MESSAGE")
+    if(message.type === 'bucket' && message.messages) {
+      for(const subMessage of message.messages) {
+        await doHandleMessage(subMessage)
+      }
+    } else {
+      await doHandleMessage(message)
     }
   }
 

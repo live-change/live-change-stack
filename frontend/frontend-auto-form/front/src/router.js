@@ -45,7 +45,7 @@ export function createRouter(app, config) {
     if(to?.matched.find(m => m?.meta.signedIn)) {
       if(!client.value.user) {
         console.log("REDIRECT TO LOGIN BECAUSE PAGE REQUIRES LOGIN!")
-        router.redirectAfterSignIn = to.fullPath
+        router.redirectAfterSignIn = JSON.stringify(to.fullPath)
         return { name: 'user:signInEmail' }
       }
     }
@@ -57,7 +57,7 @@ export function createRouter(app, config) {
     }
     if(to && to.name === 'user:signInEmail' && from?.matched.find(m => m?.meta.saveForSignIn)) {
       console.log("SAVE FOR LOGIN", from.fullPath)
-      localStorage.redirectAfterLogin = from.fullPath
+      router.redirectAfterSignIn = JSON.stringify(to.fullPath)
     }
   })
   return router

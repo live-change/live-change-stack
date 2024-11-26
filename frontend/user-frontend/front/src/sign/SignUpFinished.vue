@@ -8,9 +8,17 @@
       </div>
       <p class="mt-0 p-0 line-height-3">
         Congratulations! You have successfully created your account.
-        <span v-if="needPassword">
+        <span v-if="needPassword && !afterSignIn">
           You can now set password to secure your account.
         </span>
+        <div v-else-if="afterSignIn" class="flex flex-row justify-content-center align-items-center">
+          <router-link :to="afterSignIn" class="no-underline">
+            <Button label="Next" v-ripple />
+          </router-link>
+          <p class="ml-4" v-if="isMounted && redirectTime">
+            Redirect in {{ pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }}...
+          </p>
+        </div>
         <p v-else>
 
           Setup your <router-link :to="{ name: 'user:identification' }">profile</router-link>
@@ -19,7 +27,7 @@
       </p>
     </div>
 
-    <div class="surface-card p-4 shadow-2 border-round mt-2" v-if="needPassword">
+    <div class="surface-card p-4 shadow-2 border-round mt-2" v-if="needPassword && !afterSignIn">
       <div class="text-center mb-5">
         <div class="text-900 text-3xl font-medium mb-3">
           {{ passwordExists ? 'Change password' : 'Set password' }}
@@ -82,6 +90,10 @@
   import { live, path } from '@live-change/vue3-ssr'
   import { computed, ref, onMounted } from 'vue'
 
+  import { currentTime } from "@live-change/frontend-base"
+
+  import pluralize from 'pluralize'
+
   import { useRouter } from 'vue-router'
   const router = useRouter()
 
@@ -98,6 +110,18 @@
     live(path().email?.myUserEmails()),
     live(path().phone?.myUserPhones())
   ])
+
+  const afterSignIn = computed( () => isMounted.value && localStorage.redirectAfterSignIn )
+  const redirectTime = ref()
+  onMounted(() => {
+    redirectTime.value = new Date(Date.now() + 10 * 1000)
+    setTimeout(() => {
+      if (afterSignIn.value) {
+        localStorage.removeItem('redirectAfterSignIn')
+        router.push(JSON.parse(afterSignIn.value))
+      }
+    }, redirectTime.value - currentTime.value)
+  })
 
   const needPassword = computed(() => (!passwordExists.value
     && (emails.value?.length > 0 || phones.value?.length > 0)

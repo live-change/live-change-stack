@@ -3,7 +3,7 @@
     <div class="surface-card border-round shadow-2 p-4">
       <div class="text-900 font-medium mb-3 text-xl mb-4">Signed In</div>
       <p class="mt-0 p-0 line-height-3">Congratulations! You have successfully logged in to your account.</p>
-      <div v-if="afterSignIn" class="flex flex-row align-items-center">
+      <div v-if="afterSignIn" class="flex flex-row justify-content-center align-items-center">
         <router-link :to="afterSignIn" class="no-underline">
           <Button label="Next" v-ripple />
         </router-link>
@@ -35,15 +35,15 @@
   import pluralize from 'pluralize'
 
   const afterSignIn = computed( () => isMounted.value && localStorage.redirectAfterSignIn )
-  let redirectTime
+  const redirectTime = ref()
   onMounted(() => {
-    redirectTime = new Date(Date.now() + 10 * 1000)
+    redirectTime.value = new Date(Date.now() + 10 * 1000)
     setTimeout(() => {
       if (afterSignIn.value) {
         localStorage.removeItem('redirectAfterSignIn')
-        router.push(afterSignIn.value)
+        router.push(JSON.parse(afterSignIn.value))
       }
-    }, 10 * 1000)
+    }, redirectTime.value - currentTime.value)
   })
 </script>
 
