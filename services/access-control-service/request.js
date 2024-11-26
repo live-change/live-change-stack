@@ -34,8 +34,7 @@ definition.action({
   },
   queuedBy: ['objectType', 'object'],
   waitForEvents: true,
-  access: (params, { client, context, visibilityTest }) =>
-      visibilityTest || access.clientCanInvite(client, params),
+  access: (params, { client, context, visibilityTest }) => true,
   async execute({ objectType, object, roles }, { client, service }, emit) {
     const publicAccess = await PublicAccess.get(App.encodeIdentifier([objectType, object]))
     const [sessionOrUserType, sessionOrUser] =
