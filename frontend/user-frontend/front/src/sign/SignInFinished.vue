@@ -4,7 +4,7 @@
       <div class="text-900 font-medium mb-3 text-xl mb-4">Signed In</div>
       <p class="mt-0 p-0 line-height-3">Congratulations! You have successfully logged in to your account.</p>
       <div v-if="afterSignIn" class="flex flex-row justify-content-center align-items-center">
-        <router-link :to="afterSignIn" class="no-underline">
+        <router-link :to="JSON.parse(afterSignIn)" class="no-underline">
           <Button label="Next" v-ripple />
         </router-link>
         <p class="ml-4" v-if="isMounted && redirectTime">

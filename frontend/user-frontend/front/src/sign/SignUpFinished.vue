@@ -12,7 +12,7 @@
           You can now set password to secure your account.
         </span>
         <div v-else-if="afterSignIn" class="flex flex-row justify-content-center align-items-center">
-          <router-link :to="afterSignIn" class="no-underline">
+          <router-link :to="JSON.parse(afterSignIn)" class="no-underline">
             <Button label="Next" v-ripple />
           </router-link>
           <p class="ml-4" v-if="isMounted && redirectTime">
