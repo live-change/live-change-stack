@@ -191,7 +191,7 @@ definition.action({
   }
 })
 
-import task from '@live-change/task-service/task.js' // need to import taks.js to avoid circular dependency
+import task from '@live-change/task-service/task.ts' // need to import taks.js to avoid circular dependency
 
 
 for(const contactType of config.contactTypes) {
