@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowSyntheticDefaultImports": true,
+
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM"],
+
+    /* Linting */
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "dist",
+    "checkJs": false,
+    "esModuleInterop": true,    // Enable interop for ES modules
+    "resolveJsonModule": true,  // Allow importing JSON files
+    "skipLibCheck": true,
+    "noImplicitAny": false
+  },
+  "files": ["server/start.js"],
+  "include": [
+    "server/**/*.ts", "server/**/*.js",
+    "node_modules/@live-change/task-service/**/*.ts", "node_modules/@live-change/*-service/**/*.js"],
+  "exclude": ["node_modules/@types", "node_modules/**/*.d.ts", "**/*.test.js"]
+}
+

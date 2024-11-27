@@ -19,7 +19,7 @@ RUN curl -sL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get install -y nodejs
 
 #NPM, PM2
-RUN npm install cross-env yarn tsx -g
+RUN npm install cross-env yarn typescript -g
 
 # APP
 RUN mkdir -p /app
@@ -34,6 +34,7 @@ COPY docker/restore-backup.sh /app/docker/restore-backup.sh
 COPY /front front
 COPY /server server
 COPY package.json package.json
+COPY tsconfig.json tsconfig.json
 
 ARG VERSION='unknown'
 ARG BASE_HREF='http://localhost:8001/'
@@ -68,4 +69,4 @@ COPY docker/start-service.sh /start-service.sh
 COPY docker/app.initd.sh /etc/init.d/app
 
 #CMD /start-service.sh
-CMD tsx server/start.js ssrServer --withApi --withServices --updateServices --enableSessions --createDb
+CMD node dist/server/start.js ssrServer --withApi --withServices --updateServices --enableSessions --createDb
