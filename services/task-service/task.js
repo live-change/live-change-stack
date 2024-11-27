@@ -1,8 +1,7 @@
 import App from '@live-change/framework'
-// @ts-ignore:next-line
 const app = App.app()
 
-import * as crypto from 'crypto'
+import crypto from 'crypto'
 
 import PQueue from 'p-queue'
 
@@ -88,72 +87,12 @@ async function startTask(taskFunction, props, causeType, cause){
   return { task: taskObject.id, taskObject, promise, causeType, cause }
 }
 
-interface TaskExecuteApi {
-  id: string,
-  run: (taskFunction, props, progressFactor) => Promise<any>,
-  progress: (current, total, action, opts) => void,
-  trigger: (trigger, props) => Promise<any>,
-  triggerService: (trigger, props, returnArray) => Promise<any>
-}
-
-interface TaskExecuteContext {
-  task: TaskExecuteApi,
-  trigger: (trigger, props) => Promise<any>,
-  triggerService: (trigger, props, returnArray) => Promise<any>,
-  causeType: string,
-  cause: string
-}
-
-interface TaskDefinition {
-  /**
-   * Task name
-   */
-  name: string,
-
-  /**
-   * Maximum number of retries
-   */
-  maxRetries?: number,
-
-  /**
-   * Task execution function
-   * @param props - task properties/parameters
-   * @param context - task context
-   * @param emit - event emitter function
-   * @returns {Promise<any>} - task result promise
-   */
-  execute: (props, context: TaskExecuteContext, emit) => Promise<any>,
-
-  /**
-   * Cleanup function
-   * @param props - task properties/parameters
-   * @param context - task context
-   * @returns {Promise<void>} - cleanup result promise
-   */
-  cleanup?: (props, context: TaskExecuteContext) => Promise<void>,
-
-  /**
-   * Fallback function
-   * @param props - task properties/parameters
-   * @param context - task context
-   * @param error - error object
-   * @returns {Promise<any>} - fallback result
-   */
-  fallback?: (props, context: TaskExecuteContext, error) => any
-}
-
-type TaskFunction = (props, context: TaskExecuteContext, emit, reportProgress) => Promise<any>
-
-export default function task(definition:TaskDefinition, serviceDefinition) {
+export default function task(definition, serviceDefinition) {
   if(!definition) throw new Error('Task definition is not defined')
   if(!serviceDefinition) throw new Error('Service definition is not defined')
-  const taskFunction = async (props, context,
-                              emit = events => app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {}),
-                              reportProgress = (current, total, selfProgress) => {}) => {
-    if(!emit) {
-      emit = (events) =>
-        app.emitEvents(serviceDefinition.name, Array.isArray(events) ? events : [events], {})
-    }
+  const taskFunction = async (props, context, emit, reportProgress = () => {}) => {
+    if(!emit) emit = (events) =>
+      app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {})
 
     let taskObject = context.taskObject
       ?? await createOrReuseTask(definition, props, context.causeType, context.cause)
@@ -188,7 +127,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       })
     }
 
-    let selfProgress = { current: 0, total: 0, action: undefined }
+    let selfProgress = { current: 0, total: 0 }
     const subtasksProgress = []
     let progressUpdateTimer, lastProgressUpdate = 0
     const progressThrottleTime = 400
@@ -220,7 +159,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         ...context,
         task: {
           id: taskObject.id,
-          async run(taskFunction: TaskFunction, props, progressFactor = 1) {
+          async run(taskFunction, props, progressFactor = 1) {
             if(typeof taskFunction !== 'function') {
               console.log("TASK FUNCTION", taskFunction)
               throw new Error('Task function is not a function')
@@ -237,7 +176,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
                 causeType: 'task_Task',
                 cause: taskObject.id
               },
-              (events) => app.emitEvents(serviceDefinition.name,
+              (events) => app.emitEvents(definition.name,
                 Array.isArray(events) ? events : [events], {}),
               (current, total, action) => {
                 subtaskProgress.current = current
@@ -274,7 +213,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         }
       }
       try {
-        const result = await definition.execute(props, runContext, emit)
+        const result = await definition.execute(props, runContext)
         await updateTask({
           state: 'done',
           doneAt: new Date(),
