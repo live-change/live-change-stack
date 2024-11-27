@@ -4,7 +4,7 @@ const app = App.app()
 import definition from './definition.js'
 
 import './model.js'
-import task from './task.ts'
+import task from './task.js'
 
 export { task }
 
