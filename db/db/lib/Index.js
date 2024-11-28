@@ -68,8 +68,6 @@ class RangeReader extends ChangeStream {
   }
 }
 
-let commandsReaderCreated = false
-
 class TableReader extends ChangeStream {
 
  /* set opLogPromise(promise) {
@@ -94,15 +92,6 @@ class TableReader extends ChangeStream {
     this.callbacks = []
 
     this.readOpLog(this.opLogReader.currentKey)
-
-    if(table.name === 'commands') {
-      console.trace("TABLE READER CREATED", prefix, table.name)
-      if(commandsReaderCreated) {
-        console.error("TABLE READER CREATED TWICE!!!", prefix, table.name)
-        process.exit(1)
-      }
-      commandsReaderCreated = true
-    }
 
     let firstFull = 0
     /*setInterval(() => {

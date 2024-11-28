@@ -93,7 +93,12 @@ function decodeUid(uid) {
   const date = decodeDate(uid.slice(1, dotIndex))
   const number = decodeNumber(uid.slice(dotIndex + 1, atIndex))
   const at = uid.slice(atIndex + 1, -1)
-  return { date, number, at }
+  const borders = uid.slice(0, 1) + uid.slice(-1)
+  return { date, number, at, borders }
+}
+
+function encodeUid({ date, number, at, borders }) {
+  return borders[0] + encodeDate(date) + '.' + encodeNumber(number) + '@' + at + borders[1]
 }
 
 function verifyUidSource(uid, source) {
@@ -109,5 +114,6 @@ export {
   randomString,
   uidGenerator,
   decodeUid,
+  encodeUid,
   verifyUidSource
 }

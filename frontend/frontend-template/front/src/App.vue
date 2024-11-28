@@ -13,7 +13,7 @@
 
   import { useLocale } from '@live-change/vue3-components'
   const locale = useLocale()
-  locale.captureLocale()
+  if(typeof window !== 'undefined') locale.captureLocale()
 
   import { ViewRoot, NavBar, UpdateBanner } from "@live-change/frontend-base"
 

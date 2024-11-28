@@ -105,12 +105,13 @@ async function dump(
   }
 
   async function stream(path, output) {
-    const bucket = 256
+    const bucket = options.bucket ?? 256
     let found = 0
     let position = ''
     do {
       const results = await dao.get(path(position, bucket))
       await Promise.all(results.map(output))
+      if(options.delay) await new Promise(resolve => setTimeout(resolve, options.delay))
       found = results.length
       if(results.length) position = results[results.length - 1].id
     } while(found === bucket)

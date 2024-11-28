@@ -10,7 +10,10 @@ const expressApp = express()
 import fs from 'fs'
 import { createBackup, currentBackupPath, removeOldBackups } from './backup.js'
 import { restoreBackup } from './restore.js'
-import { getLastEventId, removeOldEvents } from './clearEvents.js'
+import {
+  getLastEventId, removeOldEvents, removeOldOpLogs,
+  getLastCommandTimestamp, getLastTriggerTimestamp, removeOldTriggers, removeOldCommands
+} from './clear.js'
 
 import progress from "progress-stream"
 
@@ -46,6 +49,7 @@ if(Object.keys(users) > 0) {
   }))
 }
 
+
 function doBackup() {
   console.log("DOING BACKUP!")
   if(currentBackup) return currentBackup
@@ -54,10 +58,45 @@ function doBackup() {
   currentBackup = {
     path, filename,
     promise: queue.add(async () => {
-      const lastEventId = await getLastEventId()
+      let lastEventId = await getLastEventId()
+      let lastTriggerTimestamp = await getLastTriggerTimestamp()
+      let lastCommandTimestamp = await getLastCommandTimestamp()
+
       await removeOldBackups(backupsDir, 10 * TWENTY_FOUR_HOURS, 10)
       await createBackup(path)
+
+      console.log("====== CLEAR STATS:")
+      console.log("Last event id:", lastEventId)
+      console.log("Last trigger timestamp:", lastTriggerTimestamp)
+      console.log("Last command timestamp:", lastCommandTimestamp)
+
+      if(Number.isInteger(config.clearEvents) && lastEventId) {
+        const ts = (+(lastEventId.split(':')[0]) - config.clearEvents)
+        console.log("Clear events before", new Date(ts))
+        lastEventId = ts.toFixed(0).padStart(16, '0')+':'
+      }
+      if(Number.isInteger(config.clearTriggers) && lastTriggerTimestamp) {
+        const date = new Date(lastTriggerTimestamp)
+        const old = new Date(date.getTime() - config.clearTriggers)
+        console.log("Clear triggers before", old)
+        lastTriggerTimestamp = old.toISOString()
+      }
+      if(Number.isInteger(config.clearCommands) && lastCommandTimestamp) {
+        const date = new Date(lastCommandTimestamp)
+        const old = new Date(date.getTime() - config.clearCommands)
+        console.log("Clear commands before", old)
+        lastCommandTimestamp = old.toISOString()
+      }
+
+      console.log("====== CLEARING:")
+      console.log("Last remaining event id:", lastEventId)
+      console.log("Last remaining trigger timestamp:", lastTriggerTimestamp)
+      console.log("Last remaining command timestamp:", lastCommandTimestamp)
+
+      if(config.clearCommands) await removeOldCommands(lastCommandTimestamp, { delay: 10 })
+      if(config.clearTriggers) await removeOldTriggers(lastTriggerTimestamp, { delay: 10 })
       if(config.clearEvents) await removeOldEvents(lastEventId)
+      if(config.clearOpLogs) await removeOldOpLogs()
     })
   }
   currentBackup.promise.then(done => {

@@ -113,7 +113,8 @@ export default function editorData(options) {
           savePromise = null
         }
       })()
-      if(!autoSave && workingZone) workingZone.addPromise(savePromise.catch(() => {}))
+      if(!autoSave && workingZone)
+        workingZone.addPromise('save:'+serviceName+':'+modelName, savePromise.catch(() => {}))
       await savePromise
     }
 
@@ -157,7 +158,8 @@ export default function editorData(options) {
 
       async function discardDraft() {
         const discardPromise = removeDraftAction(draftIdentifiers)
-        if(workingZone) workingZone.addPromise(discardPromise)
+        if(workingZone)
+          workingZone.addPromise('discardDraft:'+serviceName+':'+modelName, discardPromise)
         await discardPromise
         onDraftDiscarded()
         if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: discardedDraftToast, life: 1500 })

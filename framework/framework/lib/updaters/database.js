@@ -25,6 +25,14 @@ async function update(changes, service, app, force) {
       dao.request(['database', 'createTable'], database, service.name + '_commands').catch(e => 'ok')
     } else {
       dao.request(['database', 'createTable'], database, 'commands').catch(e => 'ok')
+      dao.request(['database', 'createIndex'], database, 'commands_byTimestamp', `${
+        async (input, output) => {
+          await input.table('commands').onChange((obj, oldObj) => {
+            if(obj) output.change({ id: obj.timestamp, to: obj.id })
+            if(oldObj) output.change(null, { id: oldObj.timestamp, to: oldObj.id })
+          })
+        }
+      }`, {}).catch(e => 'ok')
     }
   }
   if(!app.shortTriggers) {
@@ -33,6 +41,14 @@ async function update(changes, service, app, force) {
       dao.request(['database', 'createTable'], database, service.name + '_triggers').catch(e => 'ok')
     } else {
       dao.request(['database', 'createTable'], database, 'triggers').catch(e => 'ok')
+      dao.request(['database', 'createIndex'], database, 'triggers_byTimestamp', `${
+        async (input, output) => {
+          await input.table('triggers').onChange((obj, oldObj) => {
+            if(obj) output.change({ id: obj.timestamp, to: obj.id })
+            if(oldObj) output.change(null, { id: oldObj.timestamp, to: oldObj.id })
+          })
+        }
+      }`, {}).catch(e => 'ok')
     }
   }
 
