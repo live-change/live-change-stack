@@ -280,6 +280,20 @@ definition.trigger({
   }
 })
 
+definition.trigger({
+  name: 'deleteImage_Image',
+  properties: {
+    object: {
+      type: Image,
+      validation: ['nonEmpty']
+    }
+  },
+  async execute({ object: image }, { client, service }, emit) {
+    const imageDir = `${imagesPath}${image}`
+    await rmdir(imageDir)
+  }
+})
+
 definition.view({
   name: 'image',
   properties: {

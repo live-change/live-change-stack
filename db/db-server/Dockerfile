@@ -1,4 +1,4 @@
-FROM node:22
+FROM node:20
 USER root
 
 #RUN npm -g config set user root

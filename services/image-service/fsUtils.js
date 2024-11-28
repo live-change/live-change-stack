@@ -1,4 +1,5 @@
 import fs from 'fs'
+import rimraf from 'rimraf'
 
 function move(from, to) {
   return new Promise((resolve,reject) => {
@@ -29,7 +30,7 @@ function mkdir(name) {
 
 function rmdir(path) {
   return new Promise( (resolve, reject) => {
-    rimraf("/some/directory", (err) => {
+    rimraf(path, (err) => {
       if(err) return reject(err)
       resolve(path)
     })

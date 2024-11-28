@@ -97,14 +97,18 @@ export default function editorData(options) {
     let savePromise = null
     const saving = ref(false)
     async function saveData(data){
+      const requestData = {
+        ...(updateDataProperty ? { [updateDataProperty]: data } : data),
+        ...identifiers
+      }
       if(savePromise) await savePromise // wait for previous save
       saving.value = true
       savePromise = (async () => {
         try {
           if(savedData.value) {
-            return updateAction(data)
+            return updateAction(requestData)
           } else {
-            const createResult = await createAction(data)
+            const createResult = await createAction(requestData)
             await onCreated(createResult)
             return createResult
           }
@@ -148,9 +152,8 @@ export default function editorData(options) {
       const sourceChanged = computed(() =>
         JSON.stringify(draftData.value.from) !== JSON.stringify(editableSavedData.value))
 
-
       async function save() {
-        await saveData()
+        await saveData(synchronizedData.value.value)
         if(draftData.value) await removeDraftAction(draftIdentifiers)
         onSaved()
         if(toast && savedToast) toast.add({ severity: 'success', summary: savedToast, life: 1500 })
