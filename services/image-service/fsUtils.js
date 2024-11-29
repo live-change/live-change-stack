@@ -1,5 +1,5 @@
 import fs from 'fs'
-import rimraf from 'rimraf'
+import { rimraf } from 'rimraf'
 
 function move(from, to) {
   return new Promise((resolve,reject) => {
