@@ -1,40 +1,19 @@
-import fs from 'fs'
-import { rimraf } from 'rimraf'
+import fs from 'fs/promises'
 
 function move(from, to) {
-  return new Promise((resolve,reject) => {
-    fs.rename(from, to, (err) => {
-      if(err) return reject(err)
-      resolve(to)
-    })
-  })
+  return fs.rename(from, to)
 }
 
 function copy(from, to) {
-  return new Promise((resolve,reject) => {
-    fs.copyFile(from, to, (err) => {
-      if(err) return reject(err)
-      resolve(to)
-    })
-  })
+  return fs.copyFile(from, to)
 }
 
 function mkdir(name) {
-  return new Promise( (resolve, reject) => {
-    fs.mkdir(name, { recursive: true }, (err) => {
-      if(err) return reject(err)
-      resolve(name)
-    })
-  })
+  return fs.mkdir(name, { recursive: true })
 }
 
 function rmdir(path) {
-  return new Promise( (resolve, reject) => {
-    rimraf(path, (err) => {
-      if(err) return reject(err)
-      resolve(path)
-    })
-  })
+  return fs.rm(path, { recursive: true, force: true })
 }
 
 export { move, copy, mkdir, rmdir }

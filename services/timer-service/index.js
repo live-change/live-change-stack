@@ -239,8 +239,8 @@ async function startTimers() {
 }
 
 function runTimerAction(timer) {
-  console.error("RUN ACTION", timer)
-  console.trace("RUN ACTION")
+/*  console.error("RUN ACTION", timer)
+  console.trace("RUN ACTION")*/
   if(timer.command) {
     if(!timer.command.service) timer.command.service = timer.service
     return app.command({

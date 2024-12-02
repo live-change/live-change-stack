@@ -19,7 +19,7 @@ RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt-get install -y nodejs
 
 # NPM YARN
-RUN npm install cross-env yarn -g
+RUN npm install cross-env yarn tsx typescript -g
 
 # PATH
 ENV PATH="${PATH}:/app/node_modules/.bin"
