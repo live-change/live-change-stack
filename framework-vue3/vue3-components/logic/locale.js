@@ -149,7 +149,8 @@ export class Locale {
   }
 
   localTime(date) {
-    return new Date(new Date(date).getTime() + this.timezoneOffset?.value)
+    if(typeof window !== 'undefined') return date // convert to local time only on server
+    return new Date(new Date(date).getTime() - this.timezoneOffset?.value * 60 * 1000)
   }
 
 }
