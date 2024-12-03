@@ -7,13 +7,13 @@
           Task <strong>{{ taskData?.name }}</strong> {{ taskData?.state }}
         </div>
 
-        <div class="my-3">
+        <div class="my-3" v-if="!noClose">
           <Button icon="pi pi-times" label="Close" class="w-full" @click="close" />
         </div>
 
         <Task :task="taskData" :tasks="allTasks" :taskTypes="taskTypes" />
 
-        <pre>{{ taskData }}</pre>
+<!--        <pre>{{ taskData }}</pre>-->
       </div>
     </template>
   </Dialog>
@@ -50,6 +50,10 @@
     taskTypes: {
       type: Object,
       default: () => ({})
+    },
+    noClose: {
+      type: Boolean,
+      default: true
     }
   })
   const { task, tasks, taskTypes } = toRefs(props)
@@ -73,7 +77,6 @@
     type: Boolean,
     default: false
   })
-
 
   const closeable = computed(() => taskData.value?.state === 'failed' || taskData.value?.state === 'done')
 

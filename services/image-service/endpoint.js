@@ -139,7 +139,7 @@ async function handleImageGet(req, res, params) {
         height = Math.round(height * metadata.width / width)
         width = metadata.width
       }
-      if(width == metadata.width && height == metadata.height) return res.sendFile(sourceFilePath)
+      if(width === metadata.width && height === metadata.height) return res.sendFile(sourceFilePath)
       const normalized = normalizeFormat(params.format || metadata.extension)
       const convertedFilePath = path.resolve(imagePrefix + `rect-${width}-${height}.${normalized}`)
       if(!(await fileExists(convertedFilePath))) {

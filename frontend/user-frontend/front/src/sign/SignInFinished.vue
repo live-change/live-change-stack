@@ -26,7 +26,7 @@
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
 
-  import { computed } from 'vue'
+  import { computed, onUnmounted } from 'vue'
   import { currentTime } from "@live-change/frontend-base"
 
   import { useRouter } from 'vue-router'
@@ -36,15 +36,20 @@
 
   const afterSignIn = computed( () => isMounted.value && localStorage.redirectAfterSignIn )
   const redirectTime = ref()
+  let timeout
   onMounted(() => {
     redirectTime.value = new Date(Date.now() + 10 * 1000)
-    setTimeout(() => {
+    timeout = setTimeout(() => {
       if (afterSignIn.value) {
         localStorage.removeItem('redirectAfterSignIn')
         router.push(JSON.parse(afterSignIn.value))
       }
     }, redirectTime.value - currentTime.value)
   })
+  onUnmounted(() => {
+    clearTimeout(timeout)
+  })
+
 </script>
 
 <style>

@@ -88,7 +88,7 @@
   import Password from "../password/Password.vue"
 
   import { live, path } from '@live-change/vue3-ssr'
-  import { computed, ref, onMounted } from 'vue'
+  import { computed, ref, onMounted, onUnmounted } from 'vue'
 
   import { currentTime } from "@live-change/frontend-base"
 
@@ -113,14 +113,18 @@
 
   const afterSignIn = computed( () => isMounted.value && localStorage.redirectAfterSignIn )
   const redirectTime = ref()
+  let timeout
   onMounted(() => {
     redirectTime.value = new Date(Date.now() + 10 * 1000)
-    setTimeout(() => {
+    timeout = setTimeout(() => {
       if (afterSignIn.value) {
         localStorage.removeItem('redirectAfterSignIn')
         router.push(JSON.parse(afterSignIn.value))
       }
     }, redirectTime.value - currentTime.value)
+  })
+  onUnmounted(() => {
+    clearTimeout(timeout)
   })
 
   const needPassword = computed(() => (!passwordExists.value

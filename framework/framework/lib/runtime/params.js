@@ -1,4 +1,3 @@
-import Model from './Model.js'
 import ModelDefinition from '../definition/ModelDefinition.js'
 
 function getModelName(t) {
@@ -70,10 +69,10 @@ async function processReturns(data, definition, service) {
 async function processReturn(data, definition, service) {
   if(!definition) return data
   if(definition.type === Object && definition.properties) {
-    return processReturns(data, definition.properties)
+    return processReturns(data, definition.properties, service)
   }
   if(definition.type === Array) {
-    return data.map(item => processReturn(item, definition.of))
+    return data.map(item => processReturn(item, definition.of, service))
   }
   let modelName = getModelName(definition.type)
   if(modelName) {
@@ -83,13 +82,13 @@ async function processReturn(data, definition, service) {
         if (definition.optional) return null
         throw new Error("Return data " + data + " is not " + model.definition.name + "!")
       }
-      if (definition.idOnly) return data.id || data
+/*      if (definition.idOnly) return data.id || data
       if (!(data instanceof Entity)) {
         if (typeof data != "string")
           throw new Error("Return data " + data + " is not " + model.definition.name + " id!")
         data = await model.get(data)
       }
-      return await data.get()
+      return await data.get()*/
     }
   }
   return data
