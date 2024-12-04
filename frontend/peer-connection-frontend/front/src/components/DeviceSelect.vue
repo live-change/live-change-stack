@@ -145,7 +145,7 @@
       </template>
     </PermissionsDialog>
 
-    <pre>{{ model }}</pre>
+<!--    <pre>{{ model }}</pre>-->
 <!--    <pre>{{ audioInputs }}</pre>-->
 <!--
 
