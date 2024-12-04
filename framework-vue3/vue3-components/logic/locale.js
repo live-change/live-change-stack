@@ -169,7 +169,6 @@ function nonEmptyObject(obj) { /// because command form can add empty objects on
   return obj
 }
 
-
 export function useLocale(context) {
   context = context ?? getCurrentInstance().appContext
   if(!context.config.globalProperties.$locale) {
@@ -177,4 +176,3 @@ export function useLocale(context) {
   }
   return context = context.config.globalProperties.$locale
 }
-

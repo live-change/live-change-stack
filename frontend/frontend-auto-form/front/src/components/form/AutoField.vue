@@ -17,7 +17,7 @@
     </slot>
     <div>
       <slot name="error"  v-bind="{ validationResult, uid }" >
-        <small v-if="validationResult" class="p-error mt-1">
+        <small v-if="validationResult && !minLengthErrorVisible" class="p-error mt-1">
           {{ (typeof validationResult === 'object')
                ? t( 'errors.' + validationResult.error, validationResult.validator )
                : t( 'errors.' + validationResult ) }}
@@ -25,13 +25,10 @@
       </slot>
       <small v-if="maxLengthValidation || minLengthValidation" style="float: right" class="mt-1"
              :class="{
-               'p-error': (maxLengthValidation && props.modelValue?.length
-                            && props.modelValue?.length > maxLengthValidation.length)
-                       || (minLengthValidation && props.modelValue?.length
-                            && props.modelValue?.length < minLengthValidation.length)
+               'p-error': minMaxError
              }">
         {{
-          (minLengthValidation && props.modelValue?.length && props.modelValue?.length < minLengthValidation.length)
+          (minLengthErrorVisible)
             ? t( 'info.minLength', { minLength: minLengthValidation.length, length: props.modelValue?.length ?? 0 })
             : t( 'info.maxLength', { maxLength: maxLengthValidation.length, length: props.modelValue?.length ?? 0 })
         }}
@@ -146,6 +143,18 @@
 
   const maxLengthValidation = computed(() => findValidation('maxLength'))
   const minLengthValidation = computed(() => findValidation('minLength'))
+
+  const minMaxError = computed(() =>
+    (maxLengthValidation.value && props.modelValue?.length
+      && props.modelValue?.length > maxLengthValidation.value.length)
+    || (minLengthValidation.value && props.modelValue?.length
+      && props.modelValue?.length < minLengthValidation.value.length)
+  )
+
+  const minLengthErrorVisible = computed(() =>
+    minLengthValidation.value && props.modelValue?.length
+    && props.modelValue?.length < minLengthValidation.value.length
+  )
 
   const config = inject('auto-form', {
     inputs: {},

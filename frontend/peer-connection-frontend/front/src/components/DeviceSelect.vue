@@ -145,7 +145,7 @@
       </template>
     </PermissionsDialog>
 
-<!--    <pre>{{ model }}</pre>-->
+    <pre>{{ model }}</pre>
 <!--    <pre>{{ audioInputs }}</pre>-->
 <!--
 
@@ -488,7 +488,6 @@
     const outputDeviceId = model.value?.audioOutput?.deviceId
     if(!output) return
     (async () => {
-      console.log("SET OUTPUT DEVICE", outputDeviceId)
       if(outputDeviceId) {
         await output.setSinkId(outputDeviceId)
       } else {
@@ -601,21 +600,91 @@
       ...model.value,
       audioInput: value,
     }
+    if(value && value.deviceId === audioInputs?.value?.[0]?.deviceId) {
+      localStorage.removeItem('audioInput')
+    } else if(value) localStorage.setItem('audioInput', JSON.stringify(value))
   }
   function updateAudioOutput(value) {
     model.value = {
       ...model.value,
       audioOutput: value
     }
+    console.log("UPDATE AUDIO OUTPUT", value)
+    if(value && value.deviceId === audioOutputs?.value?.[0]?.deviceId) {
+      localStorage.removeItem('audioOutput')
+    } else if(value) localStorage.setItem('audioOutput', JSON.stringify(value))
   }
   function updateVideoInput(value) {
-    console.log("UPDATE VIDEO INPUT", value)
     model.value = {
       ...model.value,
       videoInput: value
     }
-    console.log("UPDATED VIDEO INPUT", model.value.videoInput)
+    if(value && value.deviceId === videoInputs?.value?.[0]?.deviceId) {
+      localStorage.removeItem('videoInput')
+    } else if(value) localStorage.setItem('videoInput', JSON.stringify(value))
   }
+
+  watch(() => audioInputs.value, value => {
+    const saved = localStorage.getItem('audioInput')
+    if(saved) {
+      const parsed = JSON.parse(saved)
+      const exists = value.find(device => device.deviceId === parsed.deviceId)
+        || value.find(device => device.label === parsed.label)
+      if(exists) {
+        model.value = {
+          ...model.value,
+          audioInput: exists
+        }
+        setTimeout(() => {
+          model.value = {
+            ...model.value,
+            audioInput: exists
+          }
+        }, 23)
+      }
+    }
+  })
+  watch(() => audioOutputs.value, value => {
+    const saved = localStorage.getItem('audioOutput')
+    if(saved) {
+      const parsed = JSON.parse(saved)
+      const exists = value.find(device => device.deviceId === parsed.deviceId)
+        || value.find(device => device.label === parsed.label)
+      if(exists) {
+        console.log("SET AUDIO OUTPUT", exists)
+        model.value = {
+          ...model.value,
+          audioOutput: exists,
+        }
+        setTimeout(() => {
+          model.value = {
+            ...model.value,
+            audioOutput: exists,
+          }
+        }, 23)
+      }
+    }
+  })
+  watch(() => videoInputs.value, value => {
+    const saved = localStorage.getItem('videoInput')
+    if(saved) {
+      const parsed = JSON.parse(saved)
+      const exists = value.find(device => device.deviceId === parsed.deviceId)
+        || value.find(device => device.label === parsed.label)
+      if(exists) {
+        model.value = {
+          ...model.value,
+          videoInput: exists
+        }
+        setTimeout(() => {
+          model.value = {
+            ...model.value,
+            videoInput: exists
+          }
+        }, 23)
+      }
+    }
+  })
 
 </script>
 

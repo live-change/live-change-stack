@@ -78,8 +78,7 @@ function defineSingleView(config, context, external = true) {
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
-      ...viewProperties,
-      ...App.utils.rangeProperties
+      ...viewProperties
     },
     returns: {
       type: model
@@ -87,8 +86,8 @@ function defineSingleView(config, context, external = true) {
     internal: !external,
     access: external && (config.readAccess || config.writeAccess),
     accessControl,
-    daoPath(properties, { client, context }) {
-      const idParts = extractIdParts(otherPropertyNames, properties)
+    async daoPath(properties, { client, context }) {
+      const idParts = extractTypeAndIdParts(otherPropertyNames, properties)
       const prefix = App.encodeIdentifier(idParts)
       const range = {
         gte: prefix+'_'+properties[modelPropertyName],
