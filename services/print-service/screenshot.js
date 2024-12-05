@@ -64,7 +64,6 @@ export const screenshotToFileTask = task({
     let size
     task.progress(at++, all, 'gettingBrowserReady')
     await runWithBrowser(async browser => {
-      console.log("BROWSER", browser)
       task.progress(at++, all, 'creatingPage')
       const page = await browser.newPage()
       if(viewport) page.setViewport(viewport)

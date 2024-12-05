@@ -19,6 +19,7 @@ async function newBrowser() {
     const browserInfo = await got.post(config.browserUrl + '/json/version').json()
     const browser = await chromium.connect({ wsEndpoint: browserInfo.webSocketDebuggerUrl })
   } else {
+    process.exit(1)
     const browser = await chromium.launch()
     return browser
   }

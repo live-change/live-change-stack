@@ -17,7 +17,7 @@ definition.authenticator({
   }
 })
 
-const baseUrl = `http://${config.ssrHost}`+`:${config.ssrPort}`
+const baseUrl = config.ssrUrl
 
 export async function getAuthenticatedUrl(path, data) {
   const encodedData = data && encodeURIComponent(JSON.stringify(data))
