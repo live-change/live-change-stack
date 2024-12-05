@@ -26,7 +26,7 @@
     "@live-change/user-service": "^0.8.147",
     "got": "^11.8.6",
     "p-queue": "^8.0.1",
-    "playwright": "^1.41.2"
+    "playwright": "1.41.2"
   },
   "gitHead": "2aa34c0589d115aeaa573bd2cae09bb43a66d162",
   "type": "module"
