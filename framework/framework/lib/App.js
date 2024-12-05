@@ -13,10 +13,7 @@ import SessionDao from "./runtime/SessionDao.js"
 import LiveDao from "./runtime/LiveDao.js"
 import ApiServer from "./runtime/ApiServer.js"
 
-import reverseRelationProcessor from "./processors/reverseRelation.js"
 import indexListProcessor from "./processors/indexList.js"
-//import crudGenerator from "./processors/crudGenerator.js"
-import draftGenerator from "./processors/draftGenerator.js"
 import daoPathView from "./processors/daoPathView.js"
 import fetchView from "./processors/fetchView.js"
 import accessControl from "./processors/accessControl.js"
@@ -51,9 +48,6 @@ class App {
     this.requestTimeout = config?.db?.requestTimeout || 10*1000
 
     this.defaultProcessors = [
-      //  crudGenerator,
-      draftGenerator,
-      reverseRelationProcessor,
       indexListProcessor,
       daoPathView,
       fetchView,

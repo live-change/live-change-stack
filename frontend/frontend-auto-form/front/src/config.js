@@ -40,7 +40,7 @@ inputs.select = input(() => import('primevue/dropdown'), {
     const { definition, i18n, t, te } = config
    // console.log("SELECT", config)
     return {
-      options: definition.options,
+      options: definition.options ?? definition.enum,
       optionLabel: option => {
         const i18nId = (definition.i18n ?? i18n + ':options') + '.' + option
         if(te(i18nId)) return t(i18nId)
@@ -54,7 +54,7 @@ inputs.multiselect = input(() => import('primevue/multiselect'), {
   attributes: (config) => {
     const { definition, i18n, t, te } = config
     return {
-      options: definition.of.options ?? definition.options,
+      options: definition.of.options ?? definition.of.enum ?? definition.options ?? definition.enum,
       optionLabel: option => {
         const i18nId = (definition.i18n ?? i18n + ':options') + '.' + option
         if(te(i18nId)) return t(i18nId)

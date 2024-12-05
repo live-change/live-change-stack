@@ -45,7 +45,7 @@
         </div>
 
       </div>
-      <auto-input :modelValue="value" :definition="definition.of"
+      <auto-input :modelValue="value" :definition="definition.of || definition.items"
                    @update:modelValue="value => updateItem(index, value)"
                   :rootValue="props.rootValue" :propName="props.propName + '.' + index"
                   :i18n="i18n" />
@@ -106,7 +106,7 @@
 
   function insertItem(index) {
     const data = modelValue.value || []
-    const item = defaultData(definition.value.of)
+    const item = defaultData(definition.value.of || definition.value.items)
     data.splice(index ?? data.length, 0, item) /// TODO: default value
     emit('update:modelValue', data)
     toast.add({ severity: 'info', summary: 'Item added', life: 1500 })

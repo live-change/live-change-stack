@@ -116,6 +116,16 @@ interface TaskDefinition {
   maxRetries?: number,
 
   /**
+   * Task properties/parameters schema
+   */
+  properties?: Object,
+
+  /**
+   * Task returns schema
+   */
+  returns?: Object,
+
+  /**
    * Task execution function
    * @param props - task properties/parameters
    * @param context - task context
@@ -140,6 +150,31 @@ interface TaskDefinition {
    * @returns {Promise<any>} - fallback result
    */
   fallback?: (props, context: TaskExecuteContext, error) => any
+
+  /**
+   * create trigger for task, trigger will return object with task property
+   * @param trigger - true, or trigger name
+   */
+  trigger?: string | true
+
+  /**
+   * create action for task, action will return object with task property,
+   * @param action - true, or action name
+   */
+  action?: string | true
+
+  /**
+   * check if action is accessible for certain user
+   * @param props
+   * @param context
+   */
+  actionAccess?: (props, context) => boolean
+
+  /**
+   * action access control settings
+   */
+  actionAccessControl?: Object
+
 }
 
 type TaskFunction = (props, context: TaskExecuteContext, emit, reportProgress) => Promise<any>
@@ -363,6 +398,46 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       }
     }, 500)
   })
+
+  const Task = serviceDefinition.foreignModel('task', 'Task')
+
+  if(definition.trigger) {
+    serviceDefinition.trigger({
+      name: definition.trigger === true ? definition.name : definition.trigger,
+      properties: definition.properties,
+      returnsTask: true,
+      returns: {
+        type: Task
+      },
+      async execute(props, context, emit) {
+        const startResult =
+          await startTask(taskFunction, props, 'trigger', context.id)
+        return {
+          task: startResult.task
+        }
+      }
+    })
+  }
+
+  if(definition.action) {
+    serviceDefinition.action({
+      name: definition.action === true ? definition.name : definition.action,
+      properties: definition.properties,
+      returnsTask: true,
+      access: definition.actionAccess,
+      accessControl: definition.actionAccessControl,
+      returns: {
+        type: Task
+      },
+      async execute(props, context, emit) {
+        const startResult =
+          await startTask(taskFunction, { ...props, client: context.client }, 'command', context.id)
+        return {
+          task: startResult.task
+        }
+      }
+    })
+  }
 
   taskFunction.definition = definition
   taskFunction.start = async (props, causeType, cause) => {

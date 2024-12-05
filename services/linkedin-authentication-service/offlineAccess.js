@@ -109,13 +109,6 @@ definition.event({
   }
 })
 
-definition.event({
-  name: "offlineAccessDeleted",
-  async execute({ user }) {
-    await ApiAccess.delete(user)
-  }
-})
-
 definition.action({
   name: 'addOfflineAccessToken',
   properties: {
