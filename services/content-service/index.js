@@ -15,7 +15,7 @@ import { Metadata } from "./metadata.js"
 const Snapshot = definition.foreignModel("prosemirror", "Snapshot")
 
 definition.view({
-  name: "content",
+  name: "currentContent",
   properties: {
     objectType: {
       type: String,
@@ -147,7 +147,7 @@ definition.action({
     const snapshotId = App.encodeIdentifier([contentId, version.toFixed().padStart(10, '0')])
     if(contentData) {
       emit({
-        type: 'ownerOwnedContentUpdated',
+        type: 'ContentUpdated',
         identifiers: {
           ownerType: objectType, owner: object
         },
@@ -157,7 +157,7 @@ definition.action({
       })
     } else {
       emit({
-        type: 'ownerOwnedContentSet',
+        type: 'ContentSet',
         identifiers: {
           ownerType: objectType, owner: object
         },

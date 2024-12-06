@@ -55,7 +55,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.sessionSetAccess || config.sessionWriteAccess) {
-        const eventName = 'sessionOwned' + modelName + 'Set'
+        const eventName = modelName + 'Set'
         const actionName = 'setMySession' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -90,7 +90,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.sessionUpdateAccess || config.sessionWriteAccess) {
-        const eventName = 'sessionOwned' + modelName + 'Updated'
+        const eventName = modelName + 'Updated'
         const actionName = 'updateMySession' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -126,7 +126,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.sessionResetAccess || config.sessionWriteAccess) {
-        const eventName = 'sessionOwned' + modelName + 'Reset'
+        const eventName = modelName + 'Reset'
         const actionName = 'resetMySession' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

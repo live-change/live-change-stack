@@ -39,7 +39,7 @@ definition.trigger({
       if(accountData.user !== user) {
         if(transferOwnership) {
           emit({
-            'type': 'userOwnedAccountTransferred',
+            'type': 'AccountTransferred',
             account, to: user
           })
           await downloadData(user, data, context)

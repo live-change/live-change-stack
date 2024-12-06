@@ -53,7 +53,7 @@
   import { usePath, live, useClient, useActions, reverseRange, useTimeSynchronization } from '@live-change/vue3-ssr'
   const path = usePath()
 
-  const balancePath = computed(() => path.balance.ownerOwnedBalance({
+  const balancePath = computed(() => path.balance.balance({
     ownerType: ownerType.value,
     owner: owner.value
   }))

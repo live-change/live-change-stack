@@ -170,7 +170,7 @@ async function getBalance(balance, triggerService) {
     const [ownerType, owner] = balance.split(':').map(v => JSON.parse(v))
     await triggerService({
       service: definition.name,
-      type: 'balance_setOwnerOwnedBalance',
+      type: 'balance_setBalance',
     }, {
       ownerType: ownerType, owner: owner
     })
@@ -211,7 +211,7 @@ definition.trigger({
     if(!config.changePossible(balanceData.available, change)) throw "insufficientFunds"
     await triggerService({
       service: definition.name,
-      type: 'balance_createBalanceOwnedOperation',
+      type: 'balance_createOperation',
     }, {
       state: 'started',
       balance, causeType, cause, change,
@@ -221,7 +221,7 @@ definition.trigger({
     if(config.currencyIsPositive(change)) {
       await triggerService({
         service: definition.name,
-        type: 'balance_updateOwnerOwnedBalance',
+        type: 'balance_updateBalance',
       }, {
         ownerType: balanceData.ownerType, owner: balanceData.owner
       })
@@ -229,7 +229,7 @@ definition.trigger({
       const newAvailable = config.currencyAdd(balanceData.available, change)
       await triggerService({
         service: definition.name,
-        type: 'balance_updateOwnerOwnedBalance',
+        type: 'balance_updateBalance',
       }, {
         ownerType: balanceData.ownerType, owner: balanceData.owner,
         available: newAvailable
@@ -263,7 +263,7 @@ definition.trigger({
     const newAmount = config.currencyAdd(balanceData.amount, operationData.change)
     await triggerService({
       service: definition.name,
-      type: 'balance_updateBalanceOwnedOperation',
+      type: 'balance_updateOperation',
     }, {
       balance,
       operation,
@@ -274,7 +274,7 @@ definition.trigger({
       const newAvailable = config.currencyAdd(balanceData.available, operationData.change)
       await triggerService({
         service: definition.name,
-        type: 'balance_updateOwnerOwnedBalance',
+        type: 'balance_updateBalance',
       }, {
         ownerType: balanceData.ownerType, owner: balanceData.owner,
         available: newAvailable,
@@ -283,7 +283,7 @@ definition.trigger({
     } else {
       await triggerService({
         service: definition.name,
-        type: 'balance_updateOwnerOwnedBalance',
+        type: 'balance_updateBalance',
       }, {
         ownerType: balanceData.ownerType, owner: balanceData.owner,
         amount: newAmount
@@ -315,7 +315,7 @@ definition.trigger({
     const newAmount = balanceData.amount
     await triggerService({
       service: definition.name,
-      type: 'balance_updateBalanceOwnedOperation',
+      type: 'balance_updateOperation',
     }, {
       balance,
       operation,
@@ -326,7 +326,7 @@ definition.trigger({
       const newAvailable = config.currencyAdd(balanceData.available, config.currencyNegate(operationData.change))
       await triggerService({
         service: definition.name,
-        type: 'balance_updateOwnerOwnedBalance',
+        type: 'balance_updateBalance',
       }, {
         ownerType: balanceData.ownerType, owner: balanceData.owner,
         available: newAvailable
@@ -368,7 +368,7 @@ definition.trigger({
     const newAvailable = config.currencyAdd(balanceData.available, change)
     await triggerService({
       service: definition.name,
-      type: 'balance_createBalanceOwnedOperation',
+      type: 'balance_createOperation',
     }, {
       state: 'finished',
       balance, causeType, cause, change,
@@ -377,7 +377,7 @@ definition.trigger({
     })
     await triggerService({
       service: definition.name,
-      type: 'balance_updateOwnerOwnedBalance',
+      type: 'balance_updateBalance',
     }, {
       ownerType: balanceData.ownerType, owner: balanceData.owner,
       amount: newAmount,

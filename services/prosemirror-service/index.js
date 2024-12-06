@@ -22,7 +22,7 @@ const readerAccessControl = {
 import { Document, StepsBucket, Snapshot, schemas, getDocument } from "./model.js"
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
-
+/*
 definition.view({
   name: 'document',
   accessControl: readerAccessControl,
@@ -46,7 +46,7 @@ definition.view({
     //console.log("DOCUMENT DAO PATH", Document.path( document ))
     return Document.path( document )
   }
-})
+})*/
 
 definition.view({
   name: 'steps',

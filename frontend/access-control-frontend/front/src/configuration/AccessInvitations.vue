@@ -81,7 +81,7 @@
 
   const [ accessInvitations ] = await Promise.all([
     live(path().accessControl.objectOwnedAccessInvitations({ object, objectType })
-        .with(access => path().userIdentification.sessionOrUserOwnedIdentification({
+        .with(access => path().userIdentification.Identification({
           sessionOrUserType: access.contactOrUserType, sessionOrUser: access.contactOrUser
         }).bind('identification'))
     )
@@ -89,8 +89,8 @@
 
   const synchronizedAccessInvitationsList = synchronizedList({
     source: accessInvitations,
-    update: accessControlApi.updateContactOrUserAndObjectOwnedAccessInvitation,
-    delete: accessControlApi.resetContactOrUserAndObjectOwnedAccessInvitation,
+    update: accessControlApi.updateAccessInvitation,
+    delete: accessControlApi.resetAccessInvitation,
     identifiers: { object, objectType },
     objectIdentifiers: ({ to, sessionOrUser, sessionOrUserType }) =>
         ({ accessInvitation: to, sessionOrUser, sessionOrUserType, object, objectType }),

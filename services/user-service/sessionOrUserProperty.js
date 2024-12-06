@@ -41,8 +41,7 @@ definition.processor(function(service, app) {
 
       modelProperties.push(...extendedWith.map(p => [p, p+'Type']).flat())
 
-      const transferEventName = ['sessionOrUser', ...(extendedWith.map(e => e[0].toUpperCase() + e.slice(1)))]
-        .join('And') + 'Owned' + modelName + 'Transferred'
+      const transferEventName = modelName + 'Transferred'
 
       service.trigger({
         name: 'signedIn',
@@ -83,7 +82,7 @@ definition.processor(function(service, app) {
               const mergeResult = await config.merge(sessionProperty, userProperty)
               if(mergeResult && userProperty) {
                 emit({
-                  type: 'sessionOrUserOwned' + modelName + 'Updated',
+                  type: modelName + 'Updated',
                   identifiers: {
                     sessionOrUserType: 'user_User',
                     sessionOrUser: user
@@ -92,7 +91,7 @@ definition.processor(function(service, app) {
                 })
               } else {
                 emit({
-                  type: 'sessionOrUserOwned' + modelName + 'Set',
+                  type: modelName + 'Set',
                   identifiers: {
                     sessionOrUserType: 'user_User',
                     sessionOrUser: user
@@ -102,7 +101,7 @@ definition.processor(function(service, app) {
               }
               if(!config.mergeWithoutDelete) {
                 emit({
-                  type: 'sessionOrUserOwned' + modelName + 'Reset',
+                  type: modelName + 'Reset',
                   identifiers: {
                     sessionOrUserType: 'session_Session',
                     sessionOrUser: session
@@ -111,7 +110,7 @@ definition.processor(function(service, app) {
               }
             } else {
               if(!userProperty) {
-                await service.trigger({ type: 'contactOrUserOwned' + modelName + 'Moved' }, {
+                await service.trigger({ type: modelName + 'Moved' }, {
                   from: {
                     sessionOrUserType: 'session_Session',
                     sessionOrUser: session,
@@ -228,10 +227,7 @@ definition.processor(function(service, app) {
         }
       }
 
-      const eventPrefix = ['sessionOrUser',
-         ...(extendedWith.map(p => p[0].toUpperCase()+p.slice(1)))
-      ].join('And') +'Owned'
-
+      const eventPrefix = ''
       if(config.ownerSetAccess || config.ownerWriteAccess) {
         const eventName = eventPrefix + modelName + 'Set'
         const actionName = 'setMy' + modelName

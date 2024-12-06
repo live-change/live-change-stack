@@ -115,7 +115,7 @@ definition.action({
     const dir = `${imagesPath}${image}`
 
     emit({
-      type: "ownerOwnedImageCreated",
+      type: "ImageCreated",
       image,
       identifiers: {
         owner, ownerType
@@ -191,7 +191,7 @@ definition.trigger({
     }
 
     emit({
-      type: "ownerOwnedImageCreated",
+      type: "ImageCreated",
       image,
       identifiers: {
         owner, ownerType
@@ -256,7 +256,7 @@ definition.trigger({
     //console.log("IMAGE METADATA", metadata)
 
     emit({
-      type: "ownerOwnedImageCreated",
+      type: "ImageCreated",
       image,
       identifiers: {
         owner, ownerType
@@ -291,22 +291,6 @@ definition.trigger({
   async execute({ object: image }, { client, service }, emit) {
     const imageDir = `${imagesPath}${image}`
     await rmdir(imageDir)
-  }
-})
-
-definition.view({
-  name: 'image',
-  properties: {
-    image: {
-      type: Image,
-      validation: ['nonEmpty']
-    }
-  },
-  returns: {
-    type: Image
-  },
-  daoPath({ image }, { client, context }) {
-    return Image.path( image )
   }
 })
 

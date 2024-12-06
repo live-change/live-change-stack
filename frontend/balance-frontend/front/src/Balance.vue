@@ -158,7 +158,7 @@
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
 
-  const balancePath = computed(() => path.balance.ownerOwnedBalance({
+  const balancePath = computed(() => path.balance.balance({
     ownerType: 'balanceTest_balance',
     owner: name.value
   }))

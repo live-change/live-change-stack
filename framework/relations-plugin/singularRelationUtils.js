@@ -17,12 +17,12 @@ function defineView(config, context, external = true) {
       validation: ['nonEmpty']
     })
   }
-  const viewName = config.name || ((config.prefix ? (config.prefix + joinedOthersClassName) : joinedOthersPropertyName) +
-      'Owned' + modelName + (config.suffix || ''))
+  const viewName = config.name
+    || ((config.prefix ? config.prefix + modelName : modelName[0].toLowerCase() + modelName.slice(1)) + (config.suffix || ''))
   model.crud.read = viewName
   const accessControl = external && (config.readAccessControl || config.writeAccessControl)
   prepareAccessControl(accessControl, otherPropertyNames, others)
-  service.views[viewName] = new ViewDefinition({
+  service.view({
     name: viewName,
     properties: {
       ...viewProperties
@@ -31,6 +31,7 @@ function defineView(config, context, external = true) {
       type: model,
     },
     internal: !external,
+    global: config.globalView,
     access: external && (config.readAccess || config.writeAccess),
     accessControl,
     daoPath(properties, { client, context }) {
@@ -47,7 +48,7 @@ function getSetFunction( validators, validationContext, config, context) {
     service, app, model, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Set'
+  const eventName = modelName + 'Set'
   async function execute(properties, { client, service }, emit) {
     const idParts = extractIdParts(otherPropertyNames, properties)
     const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
@@ -70,7 +71,7 @@ function defineSetAction(config, context) {
     service, app, model, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'set' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'set' + modelName
   model.crud.create = actionName
   const accessControl = config.setAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
@@ -87,6 +88,7 @@ function defineSetAction(config, context) {
   const validators = App.validation.getValidators(action, service, action)
   const validationContext = { source: action, action }
   action.execute = getSetFunction( validators, validationContext, config, context)
+  if(service.actions[actionName]) throw new Error('Action ' + actionName + ' already defined')
   service.actions[actionName] = action
 }
 
@@ -95,7 +97,7 @@ function defineSetTrigger(config, context) {
     service, app, model, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'set' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'set' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -108,6 +110,7 @@ function defineSetTrigger(config, context) {
   const validators = App.validation.getValidators(trigger, service, trigger)
   const validationContext = { source: trigger, trigger }
   trigger.execute = getSetFunction( validators, validationContext, config, context)
+  if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
   service.triggers[triggerName] = [trigger]
 }
 
@@ -116,7 +119,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
+  const eventName = modelName + 'Updated'
   return async function execute(properties, { client, service }, emit) {
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const id = generateId(otherPropertyNames, properties)
@@ -143,7 +146,7 @@ function defineUpdateAction(config, context) {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'update' + modelName
   model.crud.update = actionName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
@@ -162,6 +165,7 @@ function defineUpdateAction(config, context) {
   const validators = App.validation.getValidators(action, service, action)
   const validationContext = { source: action, action }
   action.execute = getUpdateFunction( validators, validationContext, config, context)
+  if(service.actions[actionName]) throw new Error('Action ' + actionName + ' already defined')
   service.actions[actionName] = action
 }
 
@@ -170,7 +174,7 @@ function defineUpdateTrigger(config, context) {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'update' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'update' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -185,6 +189,7 @@ function defineUpdateTrigger(config, context) {
   const validators = App.validation.getValidators(trigger, service, trigger)
   const validationContext = { source: trigger, trigger }
   trigger.execute = getUpdateFunction( validators, validationContext, config, context)
+  if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
   service.triggers[triggerName] = [trigger]
 }
 
@@ -193,7 +198,7 @@ function getSetOrUpdateFunction( validators, validationContext, config, context)
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Updated'
+  const eventName = modelName + 'Updated'
   return async function execute(properties, { client, service }, emit) {
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const id = generateId(otherPropertyNames, properties)
@@ -218,7 +223,7 @@ function defineSetOrUpdateAction(config, context) {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'setOrUpdate' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'setOrUpdate' + modelName
   model.crud.createOrUpdate = actionName
   const accessControl = config.updateAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
@@ -237,6 +242,7 @@ function defineSetOrUpdateAction(config, context) {
   const validators = App.validation.getValidators(action, service, action)
   const validationContext = { source: action, action }
   action.execute = getSetOrUpdateFunction( validators, validationContext, config, context)
+  if(service.actions[actionName]) throw new Error('Action ' + actionName + ' already defined')
   service.actions[actionName] = action
 }
 
@@ -245,7 +251,7 @@ function defineSetOrUpdateTrigger(config, context) {
     service, app, model, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'setOrUpdate' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'setOrUpdate' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -260,6 +266,7 @@ function defineSetOrUpdateTrigger(config, context) {
   const validators = App.validation.getValidators(trigger, service, trigger)
   const validationContext = { source: trigger, trigger }
   trigger.execute = getSetOrUpdateFunction( validators, validationContext, config, context)
+  if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
   service.triggers[triggerName] = [trigger]
 }
 
@@ -268,7 +275,7 @@ function getResetFunction( validators, validationContext, config, context) {
     service, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
   } = context
-  const eventName = joinedOthersPropertyName + 'Owned' + modelName + 'Reset'
+  const eventName = modelName + 'Reset'
   return async function execute(properties, { client, service }, emit) {
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const id = generateId(otherPropertyNames, properties)
@@ -288,7 +295,7 @@ function defineResetAction(config, context) {
     service, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
   } = context
-  const actionName = 'reset' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'reset' + modelName
   model.crud.delete = actionName
   const accessControl = config.resetAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
@@ -309,6 +316,7 @@ function defineResetAction(config, context) {
   const validators = App.validation.getValidators(action, service, action)
   const validationContext = { source: action, action }
   action.execute = getResetFunction( validators, validationContext, config, context)
+  if(service.actions[actionName]) throw new Error('Action ' + actionName + ' already defined')
   service.actions[actionName] = action
 }
 
@@ -317,7 +325,7 @@ function defineResetTrigger(config, context) {
     service, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
   } = context
-  const actionName = 'reset' + joinedOthersClassName + 'Owned' + modelName
+  const actionName = 'reset' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -334,6 +342,7 @@ function defineResetTrigger(config, context) {
   const validators = App.validation.getValidators(trigger, service, trigger)
   const validationContext = { source: trigger, trigger }
   trigger.execute = getResetFunction( validators, validationContext, config, context)
+  if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
   service.triggers[triggerName] = [trigger]
 }
 

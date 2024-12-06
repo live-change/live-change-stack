@@ -84,7 +84,7 @@
 
   const [ accesses ] = await Promise.all([
     live(path().accessControl.objectOwnedAccesses({ object, objectType })
-        .with(access => path().userIdentification.sessionOrUserOwnedIdentification({
+        .with(access => path().userIdentification.identification({
           sessionOrUserType: access.sessionOrUserType, sessionOrUser: access.sessionOrUser
         }).bind('identification'))
     )
@@ -92,8 +92,8 @@
 
   const synchronizedAccessesList = synchronizedList({
     source: accesses,
-    update: accessControlApi.updateSessionOrUserAndObjectOwnedAccess,
-    delete: accessControlApi.resetSessionOrUserAndObjectOwnedAccess,
+    update: accessControlApi.updateAccess,
+    delete: accessControlApi.resetAccess,
     identifiers: { object, objectType },
     objectIdentifiers: ({ to, sessionOrUser, sessionOrUserType }) =>
         ({ access: to, sessionOrUser, sessionOrUserType, object, objectType }),

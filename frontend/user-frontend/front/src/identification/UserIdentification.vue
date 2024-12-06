@@ -75,7 +75,7 @@
 
   const path = usePath()
   const userIdentificationPath = computed(() => ownerType.value && owner.value &&
-    path.userIdentification.sessionOrUserOwnedIdentification({
+    path.userIdentification.identification({
       sessionOrUserType: ownerType.value, sessionOrUser: owner.value
     }) || null
   )

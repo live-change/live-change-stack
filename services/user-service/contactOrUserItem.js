@@ -65,7 +65,7 @@ definition.processor(function(service, app) {
               const { transferred, updated, deleted } = mergeResult
               for(const entity of transferred) {
                 emit({
-                  type: 'ownerOwned' + modelName + 'Transferred',
+                  type: modelName + 'Transferred',
                   [modelPropertyName]: entity.id,
                   to: {
                     id: entity.id,
@@ -76,7 +76,7 @@ definition.processor(function(service, app) {
               }
               for(const entity of updated) {
                 emit({
-                  type: 'ownerOwned' + modelName + 'Updated',
+                  type: modelName + 'Updated',
                   [modelPropertyName]: entity.id,
                   identifiers: {
                     id: entity.id,
@@ -88,7 +88,7 @@ definition.processor(function(service, app) {
               }
               for(const entity of deleted) {
                 emit({
-                  type: 'ownerOwned' + modelName + 'Deleted',
+                  type: modelName + 'Deleted',
                   [modelPropertyName]: entity.id,
                 })
               }
@@ -96,7 +96,7 @@ definition.processor(function(service, app) {
           } else {
             for(const entity of contactItems) {
               emit({
-                type: 'ownerOwned' + modelName + 'Transferred',
+                type: modelName + 'Transferred',
                 [modelPropertyName]: entity.id,
                 identifiers: {
                   id: entity.id,
@@ -142,7 +142,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.ownerCreateAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Created'
+        const eventName =  modelName + 'Created'
         const actionName = 'createMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -176,7 +176,7 @@ definition.processor(function(service, app) {
         })
       }
       if(config.ownerUpdateAccess || config.ownerWriteAccess) {
-        const eventName = 'ownerOwned' + modelName + 'Updated'
+        const eventName = modelName + 'Updated'
         const actionName = 'updateMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -225,7 +225,7 @@ definition.processor(function(service, app) {
         const validators = App.validation.getValidators(action, service, action)
       }
       if(config.userDeleteAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Deleted'
+        const eventName = modelName + 'Deleted'
         const actionName = 'deleteMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

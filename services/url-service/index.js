@@ -203,7 +203,7 @@ async function generateUrl(props, emit) {
   if(props.redirect) {
     url = app.generateUid()
     emit({
-      type: 'targetOwnedRedirectCreated',
+      type: 'RedirectCreated',
       redirect: app.generateUid(),
       identifiers: {
         targetType: props.targetType,
@@ -217,7 +217,7 @@ async function generateUrl(props, emit) {
   } else {
     if(existingCanonical) {
       emit({
-        type: 'targetOwnedRedirectCreated',
+        type: 'RedirectCreated',
         redirect: app.generateUid(),
         identifiers: {
           targetType: props.targetType,
@@ -230,7 +230,7 @@ async function generateUrl(props, emit) {
       })
     }
     emit({
-      type: 'targetOwnedCanonicalSet',
+      type: 'CanonicalSet',
       identifiers: {
         targetType: props.targetType,
         target: props.target
@@ -383,7 +383,7 @@ definition.action({
     if(redirect) {
       url = app.generateUid()
       emit({
-        type: 'targetOwnedRedirectCreated',
+        type: 'RedirectCreated',
         redirect: app.generateUid(),
         identifiers: {
           targetType, target,
@@ -395,7 +395,7 @@ definition.action({
     } else {
       if(existingCanonical) {
         emit({
-          type: 'targetOwnedRedirectCreated',
+          type: 'RedirectCreated',
           redirect: app.generateUid(),
           identifiers: {
             targetType, target
@@ -407,7 +407,7 @@ definition.action({
         })
       }
       emit({
-        type: 'targetOwnedCanonicalSet',
+        type: 'CanonicalSet',
         identifiers: {
           targetType, target,
         },

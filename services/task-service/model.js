@@ -190,22 +190,6 @@ definition.view({
 })
 
 definition.view({
-  name: 'task',
-  internal: true,
-  properties: {
-    task: {
-      type: String
-    }
-  },
-  returns: {
-    type: Task
-  },
-  async daoPath({ task }) {
-    return Task.path(task)
-  }
-})
-
-definition.view({
   name: 'runningTaskRootsByName',
   internal: true,
   global: true,

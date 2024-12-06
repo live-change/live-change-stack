@@ -39,13 +39,13 @@
     () =>  p.content.page({ page: pageId.value })
   )
   const liveCanonicalUrlPath = computed(
-    () =>  p.url.targetOwnedCanonical({ targetType: 'content_Page', target: pageId.value })
+    () =>  p.url.canonical({ targetType: 'content_Page', target: pageId.value })
   )
   const livePublicAccessPath = computed(
-    () =>  p.accessControl.objectOwnedPublicAccess({ objectType: 'content_Page', object: pageId.value })
+    () =>  p.accessControl.publicAccess({ objectType: 'content_Page', object: pageId.value })
   )
   const liveMetadataPath = computed(
-    () =>  p.content.objectOwnedMetadata({ objectType: 'content_Page', object: pageId.value })
+    () =>  p.content.metadata({ objectType: 'content_Page', object: pageId.value })
   )
 
   const [pageData, canonicalUrlData, publicAccessData, metadata] = await Promise.all([

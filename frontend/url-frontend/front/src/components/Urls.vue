@@ -98,8 +98,8 @@
   import { path, live, actions, serviceDefinition } from '@live-change/vue3-ssr'
   const urlsApi = actions().url
 
-  const isAccessible = serviceDefinition('url').views.targetOwnedCanonical
-  const isEditable = serviceDefinition('url').views.resetTargetOwnedCanonical
+  const isAccessible = serviceDefinition('url').views.canonical
+  const isEditable = serviceDefinition('url').views.resetCanonical
 
   const editCanonicalDialogVisible = ref(false)
   const createRedirectDialogVisible = ref(false)
@@ -120,7 +120,7 @@
       icon: 'pi pi-info-circle',
       acceptClass: 'p-button-danger',
       accept: async () => {
-        await urlsApi.resetTargetOwnedCanonical({ target, targetType })
+        await urlsApi.resetCanonical({ target, targetType })
         toast.add({ severity:'info', summary: 'Canonical url deleted', life: 1500 })
       },
       reject: () => {
@@ -136,7 +136,7 @@
       icon: 'pi pi-info-circle',
       acceptClass: 'p-button-danger',
       accept: async () => {
-        await urlsApi.deleteTargetOwnedRedirect({ redirect: redirect.to, target, targetType })
+        await urlsApi.deleteRedirect({ redirect: redirect.to, target, targetType })
         toast.add({ severity:'info', summary: 'Redirect deleted', life: 1500 })
       },
       reject: () => {
@@ -152,10 +152,10 @@
   }
 
   const [ canonical, redirects ] = isAccessible ? (await Promise.all([
-    live(path().url.targetOwnedCanonical({ target, targetType })),
+    live(path().url.canonical({ target, targetType })),
     live(path().url.targetOwnedRedirects({ target, targetType })
       .action('delete', ({ to, target, targetType }) =>
-        path().url.deleteTargetOwnedRedirect({ redirect: to, target, targetType })
+        path().url.deleteRedirect({ redirect: to, target, targetType })
       )
     )
   ])) : [null, []]

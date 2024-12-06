@@ -81,7 +81,7 @@
   const secretLink = secrets.find(secret => secret.type === 'link')
 
   const [ from ] = await Promise.all([
-    live(path().userIdentification.sessionOrUserOwnedIdentification(
+    live(path().userIdentification.identification(
         { sessionOrUserType: data.fromType, sessionOrUser: data.from }))
   ])
 

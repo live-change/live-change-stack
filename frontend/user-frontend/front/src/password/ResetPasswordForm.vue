@@ -84,7 +84,7 @@
     form.value.addValidator('passwordHash', () => {
       const value = form.value.getFieldValue('passwordHash')
       console.log("PASSWORDS MATCH?", secondPassword.value, value)
-      if(value != secondPassword.value) return "passwordsNotMatch"
+      if(value !== secondPassword.value) return "passwordsNotMatch"
     })
   })
 
@@ -96,13 +96,13 @@
 
   import { live, path } from '@live-change/vue3-ssr'
   const [ authentication ] = await Promise.all([
-    live( path().passwordAuthentication.resetPasswordAuthentication({ key: resetKey }) )
+    live( path().passwordAuthentication.resetPasswordAuthenticationByKey({ key: resetKey }) )
   ])
 
   const isUnknown = computed(() => authentication.value === null)
   const isExpired = computed(() =>
       authentication.value ? (now.value.toISOString() > authentication.value.expire) : false )
-  const isUsed = computed(() => authentication.value && authentication.value.state == 'used')
+  const isUsed = computed(() => authentication.value && authentication.value.state === 'used')
   const isReady = computed(() => !(isUnknown.value || isExpired.value || isUsed.value))
 
   function handleDone({ parameters, result }) {

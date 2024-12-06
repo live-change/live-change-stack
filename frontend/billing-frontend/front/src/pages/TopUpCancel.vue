@@ -93,7 +93,7 @@
 
   const billingPath = computed(() =>
     (path.billing.myUserBilling({}))
-      .with(billing => path.balance.ownerOwnedBalance({
+      .with(billing => path.balance.balance({
         ownerType: 'billing_Billing',
         owner: billing.id
       }).bind('balance'))

@@ -127,12 +127,12 @@
   const accessControlApi = actions().accessControl
 
   const [ publicAccess ] = await Promise.all([
-    live(path().accessControl.objectOwnedPublicAccess({ object, objectType }))
+    live(path().accessControl.publicAccess({ object, objectType }))
   ])
 
   const synchronizedPublicAccess = synchronized({
     source: publicAccess,
-    update: accessControlApi.setOrUpdateObjectOwnedPublicAccess,
+    update: accessControlApi.setOrUpdatePublicAccess,
     identifiers: { object, objectType },
     recursive: true,
     onSave: () => toast.add({ severity: 'info', summary: 'Public access saved', life: 1500 })

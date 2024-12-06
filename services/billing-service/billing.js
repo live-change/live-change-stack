@@ -25,11 +25,11 @@ definition.trigger({
   },
   async execute({ object }, { triggerService }, emit) {
     const ownerInfo = { ownerType: 'billing_Billing', ownerId: object }
-    const existingBalance = await app.serviceViewGet('balance', 'ownerOwnedBalance', ownerInfo)
+    const existingBalance = await app.serviceViewGet('balance', 'balance', ownerInfo)
     if(!existingBalance) {
       await triggerService({
         service: 'balance',
-        type: 'balance_setOrUpdateOwnerOwnedBalance',
+        type: 'balance_setOrUpdateBalance',
       }, ownerInfo)
     }
   }

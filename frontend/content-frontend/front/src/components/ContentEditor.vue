@@ -105,7 +105,7 @@
   const p = path()
 
   const liveCanonicalUrlPath = computed(
-    () =>  p.url.targetOwnedCanonical({ targetType: objectType.value, target: object.value })
+    () =>  p.url.canonical({ targetType: objectType.value, target: object.value })
   )
 
   const [canonicalUrlData] = await Promise.all([

@@ -53,12 +53,12 @@
 
   import { synchronized, defaultData, validateData } from "@live-change/vue3-components"
 
-  const serverMetadata = await live(p.content.objectOwnedMetadata({ objectType, object }))
+  const serverMetadata = await live(p.content.metadata({ objectType, object }))
   const metadata = computed(() => serverMetadata.value || defaultData(editableDefinition))
 
   const synchronizedMetadata = synchronized({
     source: metadata,
-    update: api.actions.content.setOrUpdateObjectOwnedMetadata,
+    update: api.actions.content.setOrUpdateMetadata,
     identifiers: { object, objectType },
     recursive: true,
     autoSave: false,

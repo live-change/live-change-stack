@@ -64,7 +64,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.userCreateAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Created'
+        const eventName = modelName + 'Created'
         const actionName = 'createMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -95,7 +95,7 @@ definition.processor(function(service, app) {
         })
       }
       if(config.userUpdateAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Updated'
+        const eventName = modelName + 'Updated'
         const actionName = 'updateMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -136,7 +136,7 @@ definition.processor(function(service, app) {
         const validators = App.validation.getValidators(action, service, action)
       }
       if(config.userDeleteAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Deleted'
+        const eventName = modelName + 'Deleted'
         const actionName = 'deleteMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

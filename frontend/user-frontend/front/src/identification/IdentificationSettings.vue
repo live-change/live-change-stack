@@ -57,7 +57,7 @@
       ? ['user_User', api.client.value.user]
       : ['session_Session', api.client.value.session]
 
-  const dataPromise = live(path().userIdentification.sessionOrUserOwnedIdentification({
+  const dataPromise = live(path().userIdentification.identification({
     sessionOrUserType: ownerType, sessionOrUser: owner
   }))
 

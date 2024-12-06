@@ -6,7 +6,7 @@ function defineCreatedEvent(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Created'
+  const eventName = modelName + 'Created'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {

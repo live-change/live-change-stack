@@ -65,7 +65,7 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause) {
 
   if(!oldTask) {
     /// app.emitEvents
-    await app.triggerService({ service: 'task', type: 'task_createCauseOwnedTask' }, {
+    await app.triggerService({ service: 'task', type: 'task_createTask' }, {
       ...taskObject,
       causeType,
       cause,
@@ -211,7 +211,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       })
       console.trace("UPDATING TASK!")*/
       await updateQueue.add(async () => {
-        const result = await app.triggerService({ service: 'task', type: 'task_updateCauseOwnedTask' }, {
+        const result = await app.triggerService({ service: 'task', type: 'task_updateTask' }, {
           ...data,
           causeType: context.causeType,
           cause: context.cause,

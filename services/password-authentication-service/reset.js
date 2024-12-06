@@ -48,7 +48,7 @@ definition.event({
 })
 
 definition.view({
-  name: "resetPasswordAuthentication",
+  name: "resetPasswordAuthenticationByKey",
   properties: {
     key: {
       type: String,

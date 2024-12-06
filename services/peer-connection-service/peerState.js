@@ -46,28 +46,6 @@ definition.event({
   }
 })
 
-definition.view({
-  name: "peerState",
-  properties: {
-    peer: {
-      type: Peer
-    }
-  },
-  returns: {
-    type: PeerState
-  },
-  access: async ({ peer }, context) => {
-    const { client, service, visibilityTest } = context
-    if(visibilityTest) return true
-    const [toType, toId, toSession] = peer.split(':')
-    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
-    return hasRole
-  },
-  async daoPath({ peer }, { client, service }, method) {
-    return PeerState.path(peer)
-  }
-})
-
 definition.action({
   name: "setPeerState",
   properties: {

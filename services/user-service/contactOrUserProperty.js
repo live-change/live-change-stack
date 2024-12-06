@@ -40,8 +40,7 @@ definition.processor(function(service, app) {
         to: ['contactOrUser', ...extendedWith]
       }
 
-      const transferEventName = ['contactOrUser', ...(extendedWith.map(e => e[0].toUpperCase() + e.slice(1)))]
-          .join('And') + 'Owned' + modelName + 'Transferred'
+      const transferEventName = modelName + 'Transferred'
 
       service.trigger({
         name: 'contactConnected',
@@ -77,7 +76,7 @@ definition.processor(function(service, app) {
               const mergeResult = await config.merge(contactProperty, userProperty)
               if(mergeResult && userProperty) {
                 emit({
-                  type: 'contactOrUserOwned' + modelName + 'Updated',
+                  type: modelName + 'Updated',
                   identifiers: {
                     contactOrUserType: 'user_User',
                     contactOrUser: user
@@ -86,7 +85,7 @@ definition.processor(function(service, app) {
                 })
               } else {
                 emit({
-                  type: 'contactOrUserOwned' + modelName + 'Set',
+                  type: modelName + 'Set',
                   identifiers: {
                     contactOrUserType: 'user_User',
                     contactOrUser: user
@@ -95,7 +94,7 @@ definition.processor(function(service, app) {
                 })
               }
               emit({
-                type: 'contactOrUserOwned' + modelName + 'Reset',
+                type: modelName + 'Reset',
                 identifiers: {
                   contactOrUserType: contactType,
                   contactOrUser: contact
@@ -108,7 +107,7 @@ definition.processor(function(service, app) {
                   extendedIdentifiers[key+'Type'] = contactProperty[key+'Type']
                   extendedIdentifiers[key] = contactProperty[key]
                 }
-                await service.trigger({ type: 'contactOrUserOwned' + modelName + 'Moved' }, {
+                await service.trigger({ type: modelName + 'Moved' }, {
                   from: {
                     contactOrUserType: contactType,
                     contactOrUser: contact
@@ -206,9 +205,7 @@ definition.processor(function(service, app) {
         }
       }
 
-      const eventPrefix = ['contactOrUser',
-        ...(extendedWith.map(p => p[0].toUpperCase()+p.slice(1)))
-      ].join('And') +'Owned'
+      const eventPrefix = ''
 
       if(config.ownerSetAccess || config.ownerWriteAccess) {
         const eventName = eventPrefix + modelName + 'Set'

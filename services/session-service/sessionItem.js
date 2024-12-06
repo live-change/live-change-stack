@@ -58,7 +58,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.sessionCreateAccess || config.sessionWriteAccess) {
-        const eventName = 'sessionOwned' + modelName + 'Created'
+        const eventName = modelName + 'Created'
         const actionName = 'createMySession' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -89,7 +89,7 @@ definition.processor(function(service, app) {
         })
       }
       if(config.sessionUpdateAccess || config.sessionWriteAccess) {
-        const eventName = 'sessionOwned' + modelName + 'Updated'
+        const eventName =  modelName + 'Updated'
         const actionName = 'updateMySession' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -130,7 +130,7 @@ definition.processor(function(service, app) {
         const validators = App.validation.getValidators(action, service, action)
       }
       if(config.sessionDeleteAccess || config.sessionWriteAccess) {
-        const eventName = 'sessionOwned' + modelName + 'Deleted'
+        const eventName = modelName + 'Deleted'
         const actionName = 'deleteMySession' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

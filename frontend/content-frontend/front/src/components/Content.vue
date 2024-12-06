@@ -32,7 +32,7 @@
   const liveContentPath = computed(() =>
     props.preview
       ? p.content.contentPreview({ objectType: props.objectType, object: props.object })
-      : p.content.content({ objectType: props.objectType, object: props.object })
+      : p.content.currentContent({ objectType: props.objectType, object: props.object })
   )
 
   const [content] = await Promise.all([

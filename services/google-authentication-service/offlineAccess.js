@@ -141,7 +141,7 @@ definition.action({
       accessTokenExpire: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,
       lastRefresh: new Date()
     })
-    await service.triggerService({ type: 'googleAuthentication_setUserOwnedOfflineAccess', service: definition.name }, {
+    await service.triggerService({ type: 'googleAuthentication_setOfflineAccess', service: definition.name }, {
       user, scopes,
       accessToken: tokens.access_token,
       accessTokenExpire: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : null,

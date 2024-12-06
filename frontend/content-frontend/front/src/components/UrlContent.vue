@@ -68,8 +68,8 @@
 
   const urlMore = computed(() => [
     url => p.content.content({ objectType: objectType.value, object: url.target }),
-    url => p.content.objectOwnedMetadata({ objectType: objectType.value, object: url.target }),
-    url => p.url.targetOwnedCanonical({ targetType: objectType.value, target: url.target })
+    url => p.content.metadata({ objectType: objectType.value, object: url.target }),
+    url => p.url.canonical({ targetType: objectType.value, target: url.target })
   ])
 
   const canCreateContent = computed(() => api.client.value.roles.includes('writer'))

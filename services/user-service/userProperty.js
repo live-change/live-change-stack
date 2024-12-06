@@ -65,7 +65,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.userSetAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Set'
+        const eventName = modelName + 'Set'
         const actionName = 'setMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -100,7 +100,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.userUpdateAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Updated'
+        const eventName = modelName + 'Updated'
         const actionName = 'updateMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -136,7 +136,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.userResetAccess || config.userWriteAccess) {
-        const eventName = 'userOwned' + modelName + 'Reset'
+        const eventName = modelName + 'Reset'
         const actionName = 'resetMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

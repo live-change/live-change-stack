@@ -94,14 +94,14 @@ definition.action({
     if(!billingData) { // billing not found, create billing with first top up
       await triggerService({
         service: definition.name,
-        type: 'billing_setOrUpdateUserOwnedBilling'
+        type: 'billing_setOrUpdateBilling'
       }, {
         user: client.user
       })
     }
     const topUp = app.generateUid()
     emit({
-      type: 'billingOwnedTopUpCreated',
+      type: 'TopUpCreated',
       topUp, data: { value, price, currency }, identifiers: { billing }
     })
     const triggerResult = (await trigger({
@@ -169,7 +169,7 @@ definition.trigger({
     })
     await triggerService({
       service: definition.name,
-      type: 'billing_updateBillingOwnedTopUp'
+      type: 'billing_updateTopUp'
     }, {
       billing: topUp.billing,
       topUp: topUp.id,
@@ -220,7 +220,7 @@ definition.trigger({
     })
     await triggerService({
       service: definition.name,
-      type: 'billing_updateBillingOwnedTopUp'
+      type: 'billing_updateTopUp'
     }, {
       topUp: topUp.id,
       state: 'refunded'
@@ -261,7 +261,7 @@ definition.trigger({
     if(topUp.state === 'paid') return // ignore, it's already paid
     await triggerService({
       service: definition.name,
-      type: 'billing_updateBillingOwnedTopUp'
+      type: 'billing_updateTopUp'
     }, {
       billing: topUp.billing,
       topUp: topUp.id,

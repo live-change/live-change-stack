@@ -142,7 +142,7 @@ definition.action({
       lastRefresh: new Date()
     })
     await service.triggerService({
-      type: 'linkedinAuthentication_setUserOwnedOfflineAccess', service: definition.name
+      type: 'linkedinAuthentication_setOfflineAccess', service: definition.name
     }, {
       user, scopes,
       accessToken: tokens.access_token,

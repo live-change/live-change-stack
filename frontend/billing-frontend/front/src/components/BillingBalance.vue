@@ -44,7 +44,7 @@
   }))
 
   const billingPath = computed(() =>
-    (user.value ? path.billing.userOwnedBilling({ user }) : path.billing.myUserBilling({}))
+    (user.value ? path.billing.billing({ user }) : path.billing.myUserBilling({}))
       .with(billing => path.balance.ownerOwnedBalance({
         ownerType: 'billing_Billing',
         owner: billing.id

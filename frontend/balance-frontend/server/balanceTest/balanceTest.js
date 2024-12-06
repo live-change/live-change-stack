@@ -20,7 +20,7 @@ definition.action({
   async execute({ name }, { service, client, triggerService }, emit) {
     await triggerService({
       service: 'accessControl',
-      type: 'accessControl_setOrUpdateObjectOwnedPublicAccess'
+      type: 'accessControl_setOrUpdatePublicAccess'
     }, {
       objectType: 'balanceTest_balance',
       object: name,
@@ -28,7 +28,7 @@ definition.action({
     })
     return await triggerService({
       service: 'balance',
-      type: 'balance_setOwnerOwnedBalance'
+      type: 'balance_setBalance'
     }, {
       ownerType: 'balanceTest_balance',
       owner: name
@@ -47,7 +47,7 @@ definition.action({
   async execute({ name }, { service, client, triggerService }, emit) {
     return await triggerService({
       service: 'balance',
-      type: 'balance_resetOwnerOwnedBalance'
+      type: 'balance_resetBalance'
     }, {
       ownerType: 'balanceTest_balance',
       owner: name

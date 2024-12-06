@@ -92,7 +92,7 @@
       const settingSource = computed(() => contact.settings.find(s => s.notificationType === notificationType))
       const setting = synchronized({
         source: settingSource,
-        update: notificationApi.setOrUpdateContactAndNotificationOwnedNotificationSetting,
+        update: notificationApi.setOrUpdateNotificationSetting,
         identifiers: {
           contact: contact[contactType], contactType: contactsData.contactTypeLong,
           notificationType, notification: notificationType

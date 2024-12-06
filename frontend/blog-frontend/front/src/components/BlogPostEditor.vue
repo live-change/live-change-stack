@@ -41,13 +41,13 @@
     () =>  p.blog.post({ post: object.value })
   )
   const liveCanonicalUrlPath = computed(
-    () =>  p.url.targetOwnedCanonical({ targetType: objectType, target: object.value })
+    () =>  p.url.canonical({ targetType: objectType, target: object.value })
   )
   const livePublicAccessPath = computed(
-    () =>  p.accessControl.objectOwnedPublicAccess({ objectType, object: object.value })
+    () =>  p.accessControl.publicAccess({ objectType, object: object.value })
   )
   const liveMetadataPath = computed(
-    () =>  p.content.objectOwnedMetadata({ objectType, object: object.value })
+    () =>  p.content.metadata({ objectType, object: object.value })
   )
 
   const [objectData, canonicalUrlData, publicAccessData, metadata] = await Promise.all([

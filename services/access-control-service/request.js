@@ -56,7 +56,7 @@ definition.action({
         autoAccept: true
       })
       emit({
-        type: 'objectOwnedPublicAccessUpdated',
+        type: 'PublicAccessUpdated',
         identifiers: {
           objectType, object
         },
@@ -66,7 +66,7 @@ definition.action({
       })
     } else {
       emit({
-        type: 'sessionOrUserAndObjectOwnedAccessRequestSet',
+        type: 'AccessRequestSet',
         data: {
           roles
         },

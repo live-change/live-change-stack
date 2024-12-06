@@ -6,7 +6,7 @@ function defineSetEvent(config, context, generateId) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Set'
+  const eventName = modelName + 'Set'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {
@@ -28,7 +28,7 @@ function defineUpdatedEvent(config, context, generateId) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Updated'
+  const eventName = modelName + 'Updated'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {
@@ -50,7 +50,7 @@ function defineTransferredEvent(config, context, generateId) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Transferred'
+  const eventName = modelName + 'Transferred'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {
@@ -80,7 +80,7 @@ function defineResetEvent(config, context, generateId) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Reset'
+  const eventName = modelName + 'Reset'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {

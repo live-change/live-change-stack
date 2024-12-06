@@ -88,11 +88,11 @@
 
   const [ accessRequests ] = await Promise.all([
     live(path().accessControl.objectOwnedAccessRequests({ object, objectType })
-        .with(access => path().userIdentification.sessionOrUserOwnedIdentification({
+        .with(access => path().userIdentification.identification({
           sessionOrUserType: access.sessionOrUserType, sessionOrUser: access.sessionOrUser
         }).bind('identification'))
         .action('delete', ({ sessionOrUserType, sessionOrUser, objectType, object }) =>
-          path().accessControl.resetSessionOrUserAndObjectOwnedAccessRequest(
+          path().accessControl.resetAccessRequest(
             { sessionOrUserType, sessionOrUser, objectType, object }
           )
         )
@@ -101,8 +101,8 @@
 
   const synchronizedAccessRequestsList = synchronizedList({
     source: accessRequests,
-    update: accessControlApi.updateSessionOrUserAndObjectOwnedAccessRequest,
-    delete: accessControlApi.resetSessionOrUserAndObjectOwnedAccessRequest,
+    update: accessControlApi.updateAccessRequest,
+    delete: accessControlApi.resetAccessRequest,
     identifiers: { object, objectType },
     objectIdentifiers: ({ to, sessionOrUser, sessionOrUserType }) =>
         ({ accessRequest: to, sessionOrUser, sessionOrUserType, object, objectType }),
