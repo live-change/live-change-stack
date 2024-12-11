@@ -156,7 +156,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
+  const eventName = modelName + 'Updated'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
@@ -272,7 +272,6 @@ function defineDeleteAction(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
   const actionName = 'delete' + modelName
   const accessControl = config.deleteAccessControl || config.writeAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
@@ -304,7 +303,6 @@ function defineDeleteTrigger(config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = modelName + 'Deleted'
   const actionName = 'delete' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
@@ -332,7 +330,7 @@ function getCopyFunction( validators, validationContext, config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
+  const eventName = modelName + 'Copied'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
@@ -388,7 +386,6 @@ function defineCopyAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
     identifiers
   } = context
-  const eventName = modelName + 'Copied'
   const actionName = 'copy' + modelName
   const accessControl = config.copyAccessControl
   prepareAccessControl(accessControl, otherPropertyNames, others)
@@ -425,7 +422,6 @@ function defineCopyTrigger(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
     identifiers
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
   const actionName = 'copy' + joinedOthersClassName + context.reverseRelationWord + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
