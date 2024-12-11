@@ -68,7 +68,7 @@ async function triggerDeleteOnParentDeleteTriggers(
         extractObjectData(writeableProperties, entity, {}), null)
   })
   if (found) {
-    const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
+    const eventName = modelName + 'DeleteByOwner'
     emit({
       type: eventName,
       ownerType: objectType,

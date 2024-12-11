@@ -5,7 +5,7 @@ import {
 } from "@live-change/framework"
 import { allCombinations } from "./combinations.js"
 import { fireChangeTriggers, registerParentDeleteTriggers } from "./changeTriggers.js"
-import { extractObjectData } from "./dataUtils.js"
+
 
 function extractTypeAndIdParts(otherPropertyNames, properties) {
   const typeAndIdParts = []
@@ -163,12 +163,12 @@ function prepareAccessControl(accessControl, names) {
   }
 }
 
-function defineDeleteByOwnerEvents(config, context, generateId) {
+function defineDeleteByOwnerEvents(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
   } = context
   for(const propertyName of otherPropertyNames) {
-    const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
+    const eventName = modelName + 'DeleteByOwner'
     service.events[eventName] = new EventDefinition({
       name: eventName,
       properties: {
@@ -196,7 +196,7 @@ function defineDeleteByOwnerEvents(config, context, generateId) {
           }])
           const deletePromises = bucket.map(({to}) => runtime.delete(to))
           await Promise.all(deletePromises)
-        } while (bucket.length == bucketSize)
+        } while (bucket.length === bucketSize)
       }
     })
   }

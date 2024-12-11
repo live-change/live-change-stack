@@ -164,7 +164,7 @@ export function defineDeleteByOwnerEvents(config, context, generateId) {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
   } = context
   for(const propertyName of otherPropertyNames) {
-    const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
+    const eventName = modelName + 'DeleteByOwner'
     service.events[eventName] = new EventDefinition({
       name: eventName,
       properties: {

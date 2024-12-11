@@ -81,7 +81,7 @@
 
   const [ accessInvitations ] = await Promise.all([
     live(path().accessControl.objectOwnedAccessInvitations({ object, objectType })
-        .with(access => path().userIdentification.Identification({
+        .with(access => path().userIdentification.identification({
           sessionOrUserType: access.contactOrUserType, sessionOrUser: access.contactOrUser
         }).bind('identification'))
     )
