@@ -74,14 +74,13 @@ class Api extends DaoProxy {
       if(!softwareVersion) return
       return version.value !== softwareVersion.value
     })
-    const client = computed(() => {
-      return api?.value?.client
-    })
+    const client = computed(() => api?.value?.client)
+    const config = computed(() => api?.value?.config)
     this.metadata = {
       api, version,
       softwareVersion,
       versionMismatch,
-      client
+      client, config
     }
     let lastApiJson = ''
     this.apiObservable.observe((signal, ...args) => {

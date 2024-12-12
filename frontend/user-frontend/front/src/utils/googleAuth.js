@@ -5,7 +5,7 @@ export function getAuthorizationUri(config) {
     approvalPrompt = 'force',
     scope,
     responseType = 'code',
-    clientId = ENV_GOOGLE_CLIENT_ID,
+    clientId,
     redirectUri = 'urn:ietf:wg:oauth:2.0:oob',
   } = config
 

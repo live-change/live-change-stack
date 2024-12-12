@@ -7,10 +7,10 @@ const debug = Debug('services:googleAuthentication')
 
 import axios from 'axios'
 
-const config = definition.config
+import config from './config.js'
 
-const googleClientId = config.clientId || process.env.GOOGLE_CLIENT_ID
-const googleClientSecret = config.clientId || process.env.GOOGLE_CLIENT_SECRET
+const googleClientId = config.clientId
+const googleClientSecret = config.clientSecret
 export { googleClientId, googleClientSecret }
 
 export async function getTokensWithCode(code, redirectUri) {

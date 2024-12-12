@@ -152,14 +152,16 @@ function prepareReactiveDaoDefinition(config, clientData) {
                 return new ReactiveDao.ObservablePromiseProxy(
                   definitionsPromise.then(services => new ReactiveDao.ObservableValue({
                     client: { ...clientData, sessionKey: undefined },
-                    services
+                    services,
+                    config: config.clientConfig
                   }))
                 )
               },
               async get(parameters) {
                 return definitionsPromise.then(services => ({
                   client: { ...clientData, sessionKey: undefined },
-                  services
+                  services,
+                  config: config.clientConfig
                 }))
               }
             }

@@ -60,6 +60,9 @@
   const state = ref('waiting')
   const error = ref(null)
 
+  import { useApi } from '@live-change/vue3-ssr'
+  const api = useApi()
+
   function googleAuth() {
     state.value = 'waiting'
 
@@ -76,7 +79,8 @@
       scope: (scopes?.value ?? []).join(' '),
       redirectUri: document.location.protocol + '//' + document.location.host
         + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href,
-      accessType: accessType.value
+      accessType: accessType.value,
+      clientId: api.services.googleAuthentication.config.clientId
     })
 
   }

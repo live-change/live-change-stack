@@ -85,17 +85,22 @@
         { sessionOrUserType: data.fromType, sessionOrUser: data.from }))
   ])
 
-  const brandName = ENV_BRAND_NAME
+  import { useApi } from '@live-change/vue3-ssr'
+  const api = useApi()
+
+  const {
+    brandName, brandDomain, baseHref
+  } = api.metadata.config.value
 
   const metadata = {
-    from: `${ENV_BRAND_NAME} <admin@${ENV_BRAND_DOMAIN}>`,
+    from: `${brandName} <admin@${brandDomain}>`,
     subject: `${from?.name ?? 'Our user'} invited you to ${data.objectType}`,
     to: contact
   }
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
-  const linkAddress = ENV_BASE_HREF + router.resolve({
+  const linkAddress = baseHref + router.resolve({
     name: 'user:link',
     params: {
       secretCode: secretLink.secret.secretCode

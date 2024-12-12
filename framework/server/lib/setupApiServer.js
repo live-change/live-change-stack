@@ -37,6 +37,7 @@ async function setupApiServer(settings) {
 
   const apiServerConfig = {
     services: services.services,
+    clientConfig: config.clientConfig,
     //local, remote, <-- everything from services
     local(credentials) {
       const local = {

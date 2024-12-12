@@ -7,10 +7,10 @@ const debug = Debug('services:linkedinAuthentication')
 
 import axios from 'axios'
 
-const config = definition.config
+import config from './config.js'
 
-const linkedinClientId = config.clientId || process.env.LINKEDIN_CLIENT_ID
-const linkedinClientSecret = config.clientId || process.env.LINKEDIN_CLIENT_SECRET
+const linkedinClientId = config.clientId
+const linkedinClientSecret = config.clientSecret
 export { linkedinClientId, linkedinClientSecret }
 
 

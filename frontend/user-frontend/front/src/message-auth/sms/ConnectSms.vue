@@ -29,19 +29,25 @@
   const data = JSON.parse(json)
   const secrets = data.secrets
 
-  const secretLink = secrets.find(secret => secret.type == 'link')
+  const secretLink = secrets.find(secret => secret.type === 'link')
 
-  const secretCode = secrets.find(secret => secret.type == 'code')
+  const secretCode = secrets.find(secret => secret.type === 'code')
 
-  const brandName = ENV_BRAND_NAME
+  import { useApi } from '@live-change/vue3-ssr'
+  const api = useApi()
+
+  const {
+    brandName, baseHref, brandSmsFrom
+  } = api.metadata.config.value
+
   const metadata = {
-    from: ENV_BRAND_SMS_FROM,
+    from: brandSmsFrom,
     to: contact
   }
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
-  const linkAddress = ENV_BASE_HREF + router.resolve({
+  const linkAddress = baseHref + router.resolve({
     name: 'user:link',
     params: {
       secretCode: secretLink.secret.secretCode
