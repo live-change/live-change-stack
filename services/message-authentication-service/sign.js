@@ -1,7 +1,7 @@
 import App from '@live-change/framework'
 const app = App.app()
 import definition from './definition.js'
-const config = definition.config
+import config from "./config.js"
 
 import { contactProperties } from './authentication.js'
 

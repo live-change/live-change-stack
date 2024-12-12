@@ -36,6 +36,16 @@ process.on('uncaughtException', function (err) {
   console.error(err.stack)
 })
 
+let argsDefaults = {
+  apiHost: process.env.API_SERVER_HOST || '0.0.0.0',
+  apiPort: process.env.API_SERVER_PORT || 8002,
+
+  ssrHost: process.env.SSR_SERVER_HOST || '0.0.0.0',
+  ssrPort: process.env.SSR_SERVER_PORT || 8001,
+
+  sessionCookieDomain: process.env.SESSION_COOKIE_DOMAIN
+}
+
 function startOptions(yargs) {
   yargs.option('withServices', {
     type: 'boolean',
@@ -77,12 +87,12 @@ function apiServerOptions(yargs) {
   yargs.option('apiPort', {
     describe: 'api server port',
     type: 'number',
-    default: process.env.API_SERVER_PORT || 8002
+    default: argsDefaults.apiPort
   })
   yargs.option('apiHost', {
     describe: 'api server bind host',
     type: 'string',
-    default: process.env.API_SERVER_HOST || '0.0.0.0'
+    default: argsDefaults.apiHost
   })
   yargs.option('services', {
     describe: 'services config',
@@ -104,12 +114,12 @@ function ssrServerOptions(yargs) {
   yargs.option('ssrPort', {
     describe: 'port to bind on',
     type: 'number',
-    default: process.env.SSR_SERVER_PORT || 8001
+    default: argsDefaults.ssrPort
   })
   yargs.option('ssrHost', {
     describe: 'bind host',
     type: 'string',
-    default: process.env.SSR_SERVER_HOST || '0.0.0.0'
+    default: argsDefaults.ssrHost
   })
   yargs.option('withApi', {
     describe: 'start internal api server',
@@ -146,13 +156,14 @@ function ssrServerOptions(yargs) {
   yargs.option('sessionCookieDomain', {
     describe: 'domain for session cookie',
     type: 'string',
-    default: process.env.SESSION_COOKIE_DOMAIN
+    default: argsDefaults.sessionCookieDomain
   })
 }
 
 let globalServicesConfig
 
-export default function starter(servicesConfig = null) {
+export default function starter(servicesConfig = null, args = {}) {
+  argsDefaults = { ...argsDefaults, ...args }
   globalServicesConfig = servicesConfig
   yargs(process.argv.slice(2))
     .command('apiServer', 'start server', (yargs) => {

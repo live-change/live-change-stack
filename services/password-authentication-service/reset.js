@@ -2,7 +2,7 @@ import App from '@live-change/framework'
 const app = App.app()
 import { randomString } from '@live-change/uid'
 import definition from './definition.js'
-const config = definition.config
+import config from "./config.js"
 import { secretProperties } from './model.js'
 
 const User = definition.foreignModel('user', 'User')
