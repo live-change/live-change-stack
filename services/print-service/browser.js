@@ -18,9 +18,11 @@ async function newBrowser() {
   } else if(config.browserUrl) {
     const browserInfo = await got.post(config.browserUrl + '/json/version').json()
     const browser = await chromium.connect({ wsEndpoint: browserInfo.webSocketDebuggerUrl })
+    return browser
   } else {
-    process.exit(1)
-    const browser = await chromium.launch()
+    const browser = await chromium.launch({
+      headless: true
+    })
     return browser
   }
 }
@@ -28,8 +30,11 @@ async function newBrowser() {
 export async function runWithBrowser(func) {
   return await browserQueue.add(async () => {
     const browser = await newBrowser()
-    const result = await func(browser)
-    await browser.close()
-    return result
+    try {
+      const result = await func(browser)
+      return result
+    } finally {
+      await browser.close()
+    }
   })
 }

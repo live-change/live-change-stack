@@ -4,6 +4,8 @@ const app = App.app()
 import definition from './definition.js'
 import config from './config.js'
 
+import fs from "fs/promises"
+
 import { task } from '@live-change/task-service'
 
 import { runWithBrowser } from './browser.js'
@@ -35,11 +37,15 @@ export const printToPdfFileTask = task({
     waitForSelector: {
       type: String
     },
+    clipSelector: {
+      type: String
+    },
     outputPath: {
       type: String
     }
   },
-  async execute({ path, data, timeout, media, options, waitForSelector, outputPath }, { task, trigger, triggerService }, emit) {
+  async execute({ path, data, timeout, media, options, waitForSelector, clipSelector, outputPath },
+                { task, trigger, triggerService }, emit) {
     const all = 10
     let at = 0
     const url = await getAuthenticatedUrl(path, data)
@@ -58,7 +64,9 @@ export const printToPdfFileTask = task({
       }
       if(waitForSelector) {
         task.progress(at++, all, 'waitingForSelector')
-        await page.waitForSelector(waitForSelector)
+        console.log("WAITING FOR SELECTOR", waitForSelector, "AT URL", url)
+        const locator = page.locator(waitForSelector)
+        await locator.waitFor({ state: 'attached', timeout })
       } else {
         task.progress(at++, all, 'waitingForNetworkIdle')
         await page.waitForLoadState('networkidle')
@@ -66,12 +74,27 @@ export const printToPdfFileTask = task({
       task.progress(at++, all, 'waitingForRendering')
       await sleep(100) // wait for some time to give browser time to render
       task.progress(at++, all, 'printing')
-      page.emulateMedia(media ?? { media: 'print' })
-      pdf = await page.pdf( options ?? { format: 'A4', printBackground: true })
+      await page.emulateMedia(media ?? { media: 'print' })
+
+      const pdfOptions = options ?? { format: 'A4', printBackground: true }
+      if(clipSelector) {
+        const clip = await page.evaluate(selector => {
+          const element = document.querySelector(selector)
+          if(!element) return null
+          const { x, y, width, height } = element.getBoundingClientRect()
+          return { x, y, width, height }
+        }, clipSelector)
+        if(clip) {
+          pdfOptions.width = clip.width
+          pdfOptions.height = clip.height
+        }
+      }
+
+      pdf = await page.pdf(pdfOptions)
       task.progress(at++, all, 'closingPage')
     })
     task.progress(at++, all, 'writingPdfToFile')
-    await fs.promises.writeFile(outputPath, pdf)
+    await fs.writeFile(outputPath, pdf)
     task.progress(at++, all, 'done')
     return outputPath
   }
