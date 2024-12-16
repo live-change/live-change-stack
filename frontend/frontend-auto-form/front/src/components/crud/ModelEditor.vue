@@ -6,9 +6,7 @@
           v-model="editor.value.value"
           :rootValue="editor.value.value"
           :i18n="i18n" />
-      <div v-if="draft">
-        save buttons
-      </div>
+      <EditorButtons :editor="editor" discard-draft />
     </div>
   </div>
 </template>
@@ -16,6 +14,7 @@
 <script setup>
 
   import AutoEditor from '../form/AutoEditor.vue'
+  import EditorButtons from './EditorButtons.vue'
 
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
 
@@ -61,22 +60,32 @@
   import { computedAsync } from "@vueuse/core"
 
   const editor = computedAsync(async () => {
-    const ed = await editorData({
-      service: service.value,
-      model: model.value,
-      identifiers: identifiers.value,
-      draft: draft.value,
-      autoSave: true,
-      ...options.value,
-      onSaved: (...args) => emit('saved', ...args),
-      onDraftSaved: (...args) => emit('draftSaved', ...args),
-      onDraftDiscarded: (...args) => emit('draftDiscarded', ...args),
-      onSaveError: (...args) => emit('saveError', ...args),
-      onCreated: (...args) => emit('created', ...args),
-    })
-    //console.log("ED", ed)
-    return ed
+    try {
+      const ed = await editorData({
+        service: service.value,
+        model: model.value,
+        identifiers: identifiers.value,
+        draft: draft.value,
+        autoSave: true,
+        ...options.value,
+        onSaved: (...args) => emit('saved', ...args),
+        onDraftSaved: (...args) => emit('draftSaved', ...args),
+        onDraftDiscarded: (...args) => emit('draftDiscarded', ...args),
+        onSaveError: (...args) => emit('saveError', ...args),
+        onCreated: (...args) => emit('created', ...args),
+      })
+      //console.log("ED", ed)
+      return ed
+    } catch(e) {
+      console.error("EDITOR ERROR", e)
+      return null
+    }
   })
+
+  const isNew = computed(() => editor.value.saved.value)
+
+  /// TODO: detect when we should change identifiers
+  // const savedIdentifiers
 
 </script>
 

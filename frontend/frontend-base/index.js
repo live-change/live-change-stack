@@ -16,3 +16,7 @@ export { useResponse }
 
 import { now, realTime, currentTime } from "./time.js"
 export { now, realTime, currentTime }
+
+import en from "./locales/en.json"
+const locales = { en }
+export { locales }

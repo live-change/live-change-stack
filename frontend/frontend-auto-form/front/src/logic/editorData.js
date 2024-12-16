@@ -37,6 +37,7 @@ export default function editorData(options) {
     workingZone = inject('workingZone')
 
   } = options
+
   if(!identifiers) throw new Error('identifiers must be defined')
   if(!serviceName || !modelName) throw new Error('service and model must be defined')
 
@@ -45,10 +46,11 @@ export default function editorData(options) {
   const {
     crudMethods = model.crud,
     identifiersNames = model.identifiers,
-    editableProperties = model.editableProperties
+    editableProperties = model.editableProperties ?? Object.keys(model.properties)
   } = options
+
   if(!crudMethods) throw new Error('crud methods must be defined in model or options')
-  if(!identifiers) throw new Error('identifiers names must be defined in model or options')
+  if(!identifiersNames) throw new Error('identifiers names must be defined in model or options')
   if(!editableProperties) throw new Error('editableProperties must be defined in model or options')
 
   let idKey = null
@@ -65,14 +67,14 @@ export default function editorData(options) {
       draftIdParts.push(identifier)
     }
   }
-  const draftId = idKey ? identifiers[idKey]
-    : draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_')
-
+  const isNew = (idKey ? (!identifiers[idKey]) : (!draftIdParts.some(key => !identifiers[key])))
+  const draftId = (idKey ? identifiers[idKey]
+    : draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_')) ?? 'new'
   const draftIdentifiers = {
     actionType: serviceName, action: crudMethods.read, targetType: modelName, target: draftId
   }
 
-  const savedDataPath = path[serviceName][crudMethods.read](identifiers)
+  const savedDataPath = isNew ? null : path[serviceName][crudMethods.read](identifiers)
   const draftDataPath = (draft && path.draft.myDraft(draftIdentifiers)) || null
 
   const updateAction = api.actions[serviceName][crudMethods.update]
@@ -84,6 +86,7 @@ export default function editorData(options) {
   return Promise.all([
     live(savedDataPath), live(draftDataPath)
   ]).then(([savedData, draftData]) => {
+
     const editableSavedData = computed(() => savedData.value && Object.fromEntries(
       editableProperties.map(prop => [prop, savedData.value[prop]])
         .concat([[timeField, savedData.value[timeField]]])
@@ -179,6 +182,8 @@ export default function editorData(options) {
         draftChanged: synchronizedData.changed,
         saveDraft: synchronizedData.save,
         savingDraft: synchronizedData.saving,
+        saved: savedData,
+        draft: draftData,
         sourceChanged /// needed for draft discard on concurrent save
       }
     } else {
@@ -207,6 +212,7 @@ export default function editorData(options) {
         changed: synchronizedData.changed,
         save: synchronizedData.save,
         saving: synchronizedData.saving,
+        saved: savedData,
         model,
       }
 
