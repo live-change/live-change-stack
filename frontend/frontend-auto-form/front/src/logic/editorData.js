@@ -24,10 +24,12 @@ export default function editorData(options) {
     discardedDraftToast = "Draft discarded",
     saveDraftErrorToast = "Error saving draft",
     saveErrorToast = "Error saving",
+    resetToast = "Reset done",
 
     onSaved = () => {},
     onDraftSaved = () => {},
     onDraftDiscarded = () => {},
+    onReset = () => {},
     onSaveError = () => {},
     onCreated = (createResult) => {},
 
@@ -151,7 +153,7 @@ export default function editorData(options) {
       })
 
       const changed = computed(() =>
-        JSON.stringify(editableSavedData.value) !== JSON.stringify(synchronizedData.value.value))
+        JSON.stringify(editableSavedData.value ?? {}) !== JSON.stringify(synchronizedData.value.value))
       const sourceChanged = computed(() =>
         JSON.stringify(draftData.value.from) !== JSON.stringify(editableSavedData.value))
 
@@ -171,11 +173,22 @@ export default function editorData(options) {
         if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: discardedDraftToast, life: 1500 })
       }
 
+      async function reset() {
+        const discardPromise = removeDraftAction(draftIdentifiers)
+        if(workingZone)
+          workingZone.addPromise('discardDraft:'+serviceName+':'+modelName, discardPromise)
+        await discardPromise
+        synchronizedData.value.value = editableSavedData.value || defaultData(model)
+        if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: resetToast, life: 1500 })
+        onReset()
+      }
+
       return {
         value: synchronizedData.value,
         changed,
         save,
         saving,
+        reset,
         discardDraft,
         model,
         resetOnError: false,
@@ -207,12 +220,19 @@ export default function editorData(options) {
         }
       })
 
+      async function reset() {
+        synchronizedData.value.value = editableSavedData.value || defaultData(model)
+        if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: resetToast, life: 1500 })
+        onReset()
+      }
+
       return {
         value: synchronizedData.value,
         changed: synchronizedData.changed,
         save: synchronizedData.save,
         saving: synchronizedData.saving,
         saved: savedData,
+        reset,
         model,
       }
 

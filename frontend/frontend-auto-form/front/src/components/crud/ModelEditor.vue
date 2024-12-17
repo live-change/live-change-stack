@@ -6,7 +6,7 @@
           v-model="editor.value.value"
           :rootValue="editor.value.value"
           :i18n="i18n" />
-      <EditorButtons :editor="editor" discard-draft />
+      <EditorButtons :editor="editor" reset-button />
     </div>
   </div>
 </template>

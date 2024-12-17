@@ -321,7 +321,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         /*console.log("RETRIES", taskObject.retries?.length, maxRetries)*/
         if((taskObject.retries?.length || 0) >= taskObject.maxRetries - 1) {
           await updateTask({
-            state: 'failed',
+            state: definition.fallback ? 'fallback' : 'failed',
             doneAt: new Date(),
             error: /*error.stack ??*/ error.message ?? error,
             retries: [...(taskObject.retries || []), {
@@ -333,9 +333,19 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
           console.error("TASK", taskObject.id, "OF TYPE", definition.name,
             "WITH PARAMETERS", props, "FAILED WITH ERROR", error.stack ?? error.message ?? error)
           if(definition.fallback) {
-            if(typeof definition.fallback !== 'function') return definition.fallback
-            return await definition.fallback(props, runContext, error.message ?? error)
+            await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
+            let result
+            if(typeof definition.fallback !== 'function') {
+              result = definition.fallback
+            } else {
+              result = definition.fallback(props, runContext, error.message ?? error)
+            }
+            await updateTask({
+              state: 'fallbackDone',
+              result
+            })
           } else {
+            await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
             throw error
           }
         } else {
@@ -361,6 +371,10 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     while(taskObject.state !== 'done' && taskObject.state !== 'failed') {
       await runTask()
      // console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
+    }
+
+    if(taskObject.state === 'failed') {
+      throw new Error(taskObject.retries[taskObject.retries.length - 1].error)
     }
 
     return taskObject.result
