@@ -46,7 +46,7 @@ let argsDefaults = {
   sessionCookieDomain: process.env.SESSION_COOKIE_DOMAIN
 }
 
-function startOptions(yargs) {
+export function startOptions(yargs) {
   yargs.option('withServices', {
     type: 'boolean',
     description: 'start all services'
@@ -83,7 +83,7 @@ function startOptions(yargs) {
   })
 }
 
-function apiServerOptions(yargs) {
+export function apiServerOptions(yargs) {
   yargs.option('apiPort', {
     describe: 'api server port',
     type: 'number',
@@ -105,7 +105,7 @@ function apiServerOptions(yargs) {
   })
 }
 
-function ssrServerOptions(yargs) {
+export function ssrServerOptions(yargs) {
   yargs.option('ssrRoot', {
     describe: 'frontend root directory',
     type: 'string',
@@ -289,7 +289,7 @@ export default function starter(servicesConfig = null, args = {}) {
   /// TODO api.gen.js generation command
 }
 
-async function changes(argv) {
+export async function changes(argv) {
   if(globalServicesConfig) argv.services = globalServicesConfig
   const services = new Services(argv.services)
   await services.loadServices()
@@ -317,7 +317,7 @@ async function changes(argv) {
   process.exit(0)
 }
 
-async function describe(argv) {
+export async function describe(argv) {
   if(globalServicesConfig) argv.services = globalServicesConfig
   const services = new Services(argv.services)
   await services.loadServices()
@@ -386,7 +386,7 @@ async function describe(argv) {
   process.exit(0)
 }
 
-async function apiServer(argv) {
+export async function apiServer(argv) {
   if(globalServicesConfig) argv.services = globalServicesConfig
 
   const { apiPort, apiHost } = argv
@@ -406,7 +406,7 @@ async function apiServer(argv) {
   console.log('Listening on port ' + apiPort)
 }
 
-async function server(argv, dev) {
+export async function server(argv, dev) {
 
   if(globalServicesConfig) argv.services = globalServicesConfig
 

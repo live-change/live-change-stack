@@ -9,6 +9,8 @@ import { chromium } from 'playwright'
 import PQueue from 'p-queue'
 import got from "got"
 
+import dns from "dns/promises"
+
 const browserQueue = new PQueue({ concurrency: config.concurrency })
 
 async function newBrowser() {
@@ -19,6 +21,17 @@ async function newBrowser() {
     const browserInfo = await got.post(config.browserUrl + '/json/version').json()
     const browser = await chromium.connect({ wsEndpoint: browserInfo.webSocketDebuggerUrl })
     return browser
+  } if(config.browserHost) {
+    const ip = await dns.resolve4(config.browserHost)
+    const browserInfo = await got.post(`http://${ip}:${config.browserPort}/json/version`).json()
+    console.log("Browser info", browserInfo)
+    try {
+      const browser = await chromium.connectOverCDP(browserInfo.webSocketDebuggerUrl)
+      return browser
+    } catch (error) {
+      console.error("Failed to connect to browser", error)
+      throw error
+    }
   } else {
     const browser = await chromium.launch({
       headless: true

@@ -10,14 +10,16 @@
           <div class="text-xl flex flex-row align-items-center mr-4">
             <strong>{{ model.name }}</strong>
             <span class="mx-1">model</span>
-            <div v-for="relation of model.relations" class="">
+            <div v-for="relation of model.relations">
               <span class="mr-1">-</span>
               <span>{{ relation.name }}</span>
   <!--            <span v-if="relation.config.what"></span>-->
             </div>
           </div>
-          <div>
-            <Button icon="pi pi-list" severity="primary" label="List" class="mr-2" />
+          <div class="mt-2 md:mt-0">
+            <router-link :to="listRoute(serviceWithModels.name, model)" class="no-underline">
+              <Button icon="pi pi-list" severity="primary" label="List" class="mr-2" />
+            </router-link>
             <router-link :to="createRoute(serviceWithModels.name, model)" class="no-underline">
               <Button icon="pi pi-plus" severity="warning" :label="'Create new '+model.name" />
             </router-link>
@@ -75,6 +77,16 @@
       params: {
         serviceName,
         modelName: model.name
+      }
+    }
+  }
+
+  function listRoute(serviceName, model) {
+    return {
+      name: 'auto-form:list',
+      params: {
+        serviceName,
+        modelName: model.name,
       }
     }
   }

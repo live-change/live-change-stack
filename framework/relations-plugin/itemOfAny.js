@@ -22,7 +22,7 @@ export default function(service, app) {
     context.reverseRelationWord = 'Owned'
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
-    context.model.identifiers = [...Object.keys(context.identifiers), { [context.modelPropertyName]: 'id' }]
+    context.model.identifiers = [...Object.keys(context.identifiers), { name: context.modelPropertyName, field: 'id' }]
 
     addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames)

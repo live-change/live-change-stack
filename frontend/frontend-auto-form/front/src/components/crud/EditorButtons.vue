@@ -1,32 +1,30 @@
 <template>
-  <div class="flex flex-row justify-content-between align-items-center mt-3">
-    <div class="flex flex-column">
-      <div v-if="draftChanged" class="text-sm text-500 mr-2">
-        Draft changed
-      </div>
-      <div v-if="savingDraft" class="text-500 mr-2">
-        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+  <div class="flex flex-column-reverse md:flex-row justify-content-between align-items-center mt-3">
+    <div class="flex flex-column mt-2 md:mt-0">
+      <div v-if="savingDraft" class="text-500 mr-2 flex flex-row align-items-center">
+        <i class="pi pi-spin pi-spinner mr-2" style="font-size: 1.23rem"></i>
         <span>Saving draft...</span>
       </div>
-      <div v-if="validationResult" class="font-semibold p-error mr-2">
+      <div v-else-if="draftChanged" class="text-sm text-500 mr-2">
+        Draft changed
+      </div>
+      <div v-else-if="validationResult" class="font-semibold p-error mr-2">
         Before saving, please correct the errors above.
+      </div>
+      <div v-else-if="!changed" class="">
+        No changes to save.
       </div>
     </div>
     <div class="flex flex-row">
       <slot name="submit" v-if="!validationResult">
-        <div v-if="changed" class="ml-2">
-          <Button type="submit" label="Save" class="" icon="pi pi-save" />
-        </div>
-        <div v-else class="flex flex-row align-items-center ml-2">
-          <div class="mr-2">
-            No changes to save.
-          </div>
-          <Button type="submit" label="Save" class="" icon="pi pi-save" disabled />
+        <div class="ml-2">
+          <Button v-if="exists" type="submit" :label="'Save '+model.name" :disabled="!changed" icon="pi pi-save" />
+          <Button v-else type="submit" :label="'Create '+model.name" :disabled="!changed" icon="pi pi-sparkles" />
         </div>
       </slot>
       <slot name="reset" v-if="resetButton">
-        <div v-if="changed">
-          <Button label="Reset" class="ml-2" icon="pi pi-eraser" @click="editor.reset" />
+        <div>
+          <Button type="reset" label="Reset" class="ml-2" :disabled="!changed" icon="pi pi-eraser"/>
         </div>
       </slot>
     </div>
@@ -61,7 +59,7 @@
   const model = computed(() => editor.value.model)
 
   const changed = computed(() => editor.value.changed.value)
-
+  const exists = computed(() => !!editor.value.saved.value)
   const draftChanged = computed(() => editor.value.draftChanged?.value)
   const savingDraft = computed(() => editor.value.savingDraft?.value)
   const sourceChanged = computed(() => editor.value.sourceChanged?.value)

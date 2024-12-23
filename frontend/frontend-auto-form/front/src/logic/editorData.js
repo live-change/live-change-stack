@@ -59,12 +59,8 @@ export default function editorData(options) {
   let draftIdParts = []
   for(const identifier of identifiersNames) {
     if(typeof identifier === 'object') {
-      for(const [key, value] of Object.entries(identifier)) {
-        if(value === 'id') {
-          idKey = key
-        }
-        draftIdParts.push(value)
-      }
+      if(identifier.field === 'id') idKey = identifier.name
+      draftIdParts.push('id')
     } else {
       draftIdParts.push(identifier)
     }
@@ -110,6 +106,9 @@ export default function editorData(options) {
       saving.value = true
       savePromise = (async () => {
         try {
+          if(createOrUpdateAction) {
+            return createOrUpdateAction(requestData)
+          }
           if(savedData.value) {
             return updateAction(requestData)
           } else {
@@ -124,7 +123,7 @@ export default function editorData(options) {
       })()
       if(!autoSave && workingZone)
         workingZone.addPromise('save:'+serviceName+':'+modelName, savePromise.catch(() => {}))
-      await savePromise
+      return await savePromise
     }
 
     if(draft) {
@@ -140,6 +139,7 @@ export default function editorData(options) {
         autoSave: true,
         debounce,
         timeField,
+        isNew,
         resetOnError: false,
         onSave: () => {
           onDraftSaved()
@@ -158,9 +158,9 @@ export default function editorData(options) {
         JSON.stringify(draftData.value.from) !== JSON.stringify(editableSavedData.value))
 
       async function save() {
-        await saveData(synchronizedData.value.value)
+        const saveResult = await saveData(synchronizedData.value.value)
         if(draftData.value) await removeDraftAction(draftIdentifiers)
-        onSaved()
+        onSaved(saveResult)
         if(toast && savedToast) toast.add({ severity: 'success', summary: savedToast, life: 1500 })
       }
 
@@ -191,6 +191,7 @@ export default function editorData(options) {
         reset,
         discardDraft,
         model,
+        isNew,
         resetOnError: false,
         draftChanged: synchronizedData.changed,
         saveDraft: synchronizedData.save,
@@ -202,14 +203,14 @@ export default function editorData(options) {
     } else {
       const synchronizedData = synchronized({
         source,
-        update: createOrUpdateAction ?? saveData,
+        update: saveData,
         updateDataProperty,
         identifiers,
         recursive,
         autoSave,
         debounce,
-        onSave: () => {
-          onSaved()
+        onSave: (result) => {
+          onSaved(result)
           if(toast && savedToast) toast.add({ severity: 'success', summary: savedToast, life: 1500 })
         },
         onSaveError(e) {

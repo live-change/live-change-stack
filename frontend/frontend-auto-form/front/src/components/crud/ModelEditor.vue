@@ -1,13 +1,29 @@
 <template>
   <div>
-    <div v-if="editor">
+    <!--
+      <h4>identifiers as object</h4>
+      <pre>{{ identifiersObject }}</pre>
+
+      <h4>definition</h4>
+      <pre>{{ modelDefinition }}</pre>-->
+
+    <div class="">
+      Service <strong>{{ service }}</strong>
+    </div>
+    <div class="text-2xl mb-4">
+      <span v-if="isNew">Create </span>
+      <span v-else>Edit </span>
+      <strong>{{ model }}</strong>
+    </div>
+
+    <form v-if="editor" @submit="handleSave" @reset="handleReset">
       <auto-editor
           :definition="modelDefinition"
           v-model="editor.value.value"
           :rootValue="editor.value.value"
           :i18n="i18n" />
       <EditorButtons :editor="editor" reset-button />
-    </div>
+    </form>
   </div>
 </template>
 
@@ -68,7 +84,7 @@
         draft: draft.value,
         autoSave: true,
         ...options.value,
-        onSaved: (...args) => emit('saved', ...args),
+        onSaved: (...args) => handleSaved(...args),
         onDraftSaved: (...args) => emit('draftSaved', ...args),
         onDraftDiscarded: (...args) => emit('draftDiscarded', ...args),
         onSaveError: (...args) => emit('saveError', ...args),
@@ -82,10 +98,25 @@
     }
   })
 
-  const isNew = computed(() => editor.value.saved.value)
+  const isNew = computed(() => !editor?.value?.saved?.value)
 
-  /// TODO: detect when we should change identifiers
-  // const savedIdentifiers
+  function handleSave(ev) {
+    ev.preventDefault()
+    editor.value.save()
+  }
+
+  function handleReset(ev) {
+    ev.preventDefault()
+    editor.value.reset()
+  }
+
+  function handleSaved(saveResult) {
+    console.log("SAVED", saveResult, isNew.value, editor.value.isNew)
+    if(saveResult && isNew.value && editor.value.isNew) {
+      emit('created', saveResult)
+    }
+    emit('saved', saveResult)
+  }
 
 </script>
 

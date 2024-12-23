@@ -113,15 +113,16 @@ function synchronized(options) {
       saving.value = true
       const data = JSON.parse(JSON.stringify(local.value))
       try {
+        let updateResult
         if(updateDataProperty) {
-          await update({
+          updateResult = await update({
             [updateDataProperty]: { ...data, [timeField]: lastLocalUpdate.value },
             ...unref(identifiers)
           })
         } else {
-          await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+          updateResult = await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
         }
-        try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
+        try { onSave(updateResult) } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
       } catch(e) {
         if(resetOnError) synchronizedValue.value = source.value
         console.error("SAVE ERROR", e)

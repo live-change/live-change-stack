@@ -14,6 +14,13 @@ export function autoFormRoutes(config = {}) {
       props: true
     }),
 
+    route({
+      name: 'auto-form:list', path: prefix + '/models/:serviceName/:modelName', meta: { },
+      component: () => import("./pages/List.vue"),
+      props: true
+    }),
+
+
   ]
 }
 

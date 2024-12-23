@@ -2,17 +2,8 @@
   <div class="w-full lg:w-8 md:w-11">
     <div class="surface-card p-3 shadow-1 border-round">
 
-      <div class="text-xl mb-2">
-        Service <strong>{{ serviceName }} model {{ modelName }}</strong>
-      </div>
-
-      <h4>identifiers as object</h4>
-      <pre>{{ identifiersObject }}</pre>
-
-      <h4>definition</h4>
-      <pre>{{ modelDefinition }}</pre>
-
-      <ModelEditor :service="serviceName" :model="modelName" :identifiers="identifiersObject" draft />
+      <ModelEditor :service="serviceName" :model="modelName" :identifiers="identifiersObject" draft
+                   @created="handleCreated"/>
 
     </div>
   </div>
@@ -21,6 +12,8 @@
 <script setup>
 
   import ModelEditor from "../components/crud/ModelEditor.vue"
+
+
 
   import { ref, computed, onMounted, defineProps, toRefs } from 'vue'
 
@@ -59,15 +52,34 @@
       if(typeof identifierDefinition === 'string') {
         result[identifierDefinition] = identifier
       } else {
-        result[Object.keys(identifierDefinition)[0]] = identifier
+        result[identifierDefinition.name] = identifier
       }
     }
     return result
   })
 
-  function handleCreated() {
-    console.log("CREATED")
-    // TODO: change route - add identifiers
+  import { useRouter } from 'vue-router'
+  const router = useRouter()
+
+  function handleCreated(id) {
+    const newIdentifiers = modelDefinition.value.identifiers.map((identifier, i) => {
+      if(typeof identifier === 'object' && identifier.field === 'id') {
+        return id
+      }
+      return identifiers.value[i]
+    })
+
+    //console.log("newIdentifiers", newIdentifiers)
+    if(JSON.stringify(identifiers.value) !== JSON.stringify(newIdentifiers)) {
+      router.push({
+        name: 'auto-form:editor',
+        params: {
+          serviceName: serviceName.value,
+          modelName: modelName.value,
+          identifiers: newIdentifiers
+        }
+      })
+    }
   }
 
 </script>

@@ -166,7 +166,11 @@ class Renderer {
   }
 
   fixStackTrace(e) {
-    this.vite && this.vite.ssrFixStacktrace(e)
+    try {
+      this.vite && this.vite.ssrFixStacktrace(e)
+    } catch(e) {
+      console.error("Error fixing stack trace!")
+    }
   }
 
   async close() {

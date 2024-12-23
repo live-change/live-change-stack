@@ -1,12 +1,13 @@
 import {
   defineProperties, defineIndex,
-  processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData
+  processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } from "@live-change/framework"
+import pluralize from 'pluralize'
 
 const annotation = 'entity'
 
@@ -39,6 +40,32 @@ function defineView(config, context, external) {
     daoPath(properties, { client, context }) {
       const id = properties[modelPropertyName]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
+      return path
+    }
+  })
+}
+
+function defineRangeView(config, context, external = true) {
+  const { service, modelRuntime, modelPropertyName, modelName, model } = context
+  const viewName = (config.prefix || '' ) + pluralize(config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
+  if(external) model.crud.range = viewName
+  service.views[viewName] = new ViewDefinition({
+    name: viewName,
+    properties: {
+      ...App.utils.rangeProperties
+    },
+    returns: {
+      type: Array,
+      of: {
+        type: model
+      }
+    },
+    internal: !external,
+    global: config.globalView,
+    access: external && config.readAllAccess,
+    daoPath(properties, { client, context }) {
+      const range = App.extractRange(properties)
+      const path = modelRuntime().rangePath(range)
       return path
     }
   })
@@ -338,7 +365,7 @@ export default function(service, app) {
     const modelProperties = Object.keys(model.properties)
     const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
 
-    model.identifiers = [{ [modelPropertyName]: 'id' }]
+    model.identifiers = [{ name: modelPropertyName, field: 'id' }]
     model.crud = {}
 
     function modelRuntime() {
@@ -359,6 +386,7 @@ export default function(service, app) {
     }
 
     defineView(config, context, config.readAccess || config.readAccessControl || config.writeAccessControl)
+    defineRangeView(config, context, config.readAllAccess)
     /// TODO: multiple views with limited fields
 
     defineCreatedEvent(config, context)
