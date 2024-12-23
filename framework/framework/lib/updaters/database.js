@@ -28,8 +28,8 @@ async function update(changes, service, app, force) {
       dao.request(['database', 'createIndex'], database, 'commands_byTimestamp', `${
         async (input, output) => {
           await input.table('commands').onChange((obj, oldObj) => {
-            if(obj) output.change({ id: obj.timestamp, to: obj.id })
-            if(oldObj) output.change(null, { id: oldObj.timestamp, to: oldObj.id })
+            if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
+            if(!obj && oldObj) output.change(null, { id: oldObj.timestamp+'_'+oldObj.id, to: oldObj.id })
           })
         }
       }`, {}).catch(e => 'ok')
@@ -44,8 +44,8 @@ async function update(changes, service, app, force) {
       dao.request(['database', 'createIndex'], database, 'triggers_byTimestamp', `${
         async (input, output) => {
           await input.table('triggers').onChange((obj, oldObj) => {
-            if(obj) output.change({ id: obj.timestamp, to: obj.id })
-            if(oldObj) output.change(null, { id: oldObj.timestamp, to: oldObj.id })
+            if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
+            if(!obj && oldObj) output.change(null, { id: oldObj.timestamp+'_'+oldObj.id, to: oldObj.id })
           })
         }
       }`, {}).catch(e => 'ok')

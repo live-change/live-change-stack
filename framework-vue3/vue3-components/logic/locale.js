@@ -96,7 +96,8 @@ export class Locale {
   }
 
   async captureLocale() {
-    if(typeof navigator === 'undefined') return
+    if(typeof window === 'undefined') return // capture only on client
+    if(typeof navigator === 'undefined') return // capture only on client
     return (async () => {
       const localeSettings = await this.getLocale()
       //console.log("LOCALE SETTINGS", JSON.stringify(localeSettings, null, '  '))

@@ -40,7 +40,7 @@ export async function getLastTriggerTimestamp() {
   const lastTriggers = await app.dao.get(
     ['database', 'indexRange', app.databaseName, 'triggers_byTimestamp', { reverse: true, limit: 1 }])
   const lastTrigger = lastTriggers[0]?.id
-  return lastTrigger ?? null
+  return lastTrigger ? lastTrigger.split('_')[0] : null
 }
 
 export async function getLastCommandTimestamp() {
@@ -50,7 +50,7 @@ export async function getLastCommandTimestamp() {
   const lastCommands = await app.dao.get(
     ['database', 'indexRange', app.databaseName, 'commands_byTimestamp', { reverse: true, limit: 1 }])
   const lastCommand = lastCommands[0]?.id
-  return lastCommand ?? null
+  return lastCommand ? lastCommand.split('_')[0] : null
 }
 
 const clearQuery = `${async (input, output, { tableName, bucket, before }) => {
