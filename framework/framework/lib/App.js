@@ -578,6 +578,9 @@ class App {
 
   serviceViewObservable(serviceName, viewName, params) {
     const service = this.startedServices[serviceName]
+    if(!service) throw new Error(
+      `Service ${serviceName} not found, available services: ${Object.keys(this.startedServices).join(', ')}`
+    )
     const view = service.views[viewName]
     if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
     const result = view.observable(params, { internal: true, roles: ['admin'] })
@@ -586,6 +589,9 @@ class App {
 
   async serviceViewGet(serviceName, viewName, params) {
     const service = this.startedServices[serviceName]
+    if(!service) throw new Error(
+      `Service ${serviceName} not found, available services: ${Object.keys(this.startedServices).join(', ')}`
+    )
     const view = service.views[viewName]
     if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
     return await view.get(params, { internal: true, roles: ['admin'] })

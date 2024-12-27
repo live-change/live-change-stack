@@ -498,7 +498,7 @@ definition.event({
   }
 })
 
-definition.beforeStart(async () => {
+definition.afterStart(async () => {
   await startTimers()
 })
 

@@ -37,9 +37,4 @@ const Event = definition.model({
   }
 })
 
-
-definition.beforeStart(async () => {
-
-})
-
 export default definition

@@ -380,7 +380,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     return taskObject.result
   }
 
-  serviceDefinition.beforeStart(async () => {
+  serviceDefinition.afterStart(async () => {
     setTimeout(async () => {
       let gt = undefined
       let tasksToRestart = await app.viewGet('runningTaskRootsByName', {

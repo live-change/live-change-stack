@@ -185,7 +185,7 @@ expressApp.post('/restore/:fileName', async (req, res) => {
   return 'ok'
 })
 
-definition.beforeStart(() => {
+definition.afterStart(() => {
 
   expressApp.listen(backupServerPort, () => {
     console.log(`backup port listening on ${backupServerPort}`)
