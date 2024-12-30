@@ -6,7 +6,6 @@ import "./account.js"
 import "./connect.js"
 import "./sign.js"
 import "./offlineAccess.js"
-
-
+import "./userDeleted.js"
 
 export default definition

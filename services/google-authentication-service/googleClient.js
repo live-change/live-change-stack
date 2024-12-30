@@ -35,7 +35,9 @@ export async function getTokensWithCode(code, redirectUri) {
   } catch(error) {
     console.error("OAUTH ERROR", error?.stack || error?.message || JSON.stringify(error))
     console.error("OAUTH ERROR RESPONSE", error?.response?.data)
-    throw error?.response?.data  ? new Error(error?.response?.data) : error
+    throw error?.response?.data
+      ? new Error(error?.response?.data?.error || error?.response?.data)
+      : new Error(error.message || error.toString())
   }
 }
 

@@ -76,7 +76,7 @@ definition.event({
       validation: ['nonEmpty']
     }
   },
-  async execute({ account }) {
+  async execute({ account, user }) {
     await Account.delete(account)
   }
 })

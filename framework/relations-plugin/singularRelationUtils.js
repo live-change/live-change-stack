@@ -278,22 +278,26 @@ function getResetFunction( validators, validationContext, config, context) {
   const eventName = modelName + 'Reset'
   return async function execute(properties, { client, service }, emit) {
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
-    const id = generateId(otherPropertyNames, properties)
+    const id = properties[modelPropertyName] ?? generateId(otherPropertyNames, properties)
     const entity = await modelRuntime().get(id)
     if (!entity) throw new Error('not_found')
     await fireChangeTriggers(context, objectType, identifiers, id,
         entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
     emit({
       type: eventName,
-      identifiers
+      identifiers: {
+        ...identifiers,
+        [modelPropertyName]: id
+      }
     })
   }
 }
 
 function defineResetAction(config, context) {
   const {
-    service, modelRuntime, modelPropertyName, objectType,
-    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
+    service, modelRuntime, modelPropertyName, objectType, identifiers,
+    otherPropertyNames, joinedOthersPropertyName, modelName,
+    joinedOthersClassName, model, others, writeableProperties
   } = context
   const actionName = 'reset' + modelName
   model.crud.delete = actionName

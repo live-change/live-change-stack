@@ -48,7 +48,7 @@
     },
     accessType: {
       type: String,
-      default: 'offline', //'online'
+      default: 'online', //'offline'
     },
     scopes: {
       type: Array,
@@ -75,8 +75,12 @@
       }, 4000)
     }))
 
+    let allScopes = new Set(scopes.value ?? [])
+    allScopes.add('profile') // it will be needed if account is not connected
+    allScopes.add('email') // it will be needed if account is not connected
+
     googleAuthRedirect({
-      scope: (scopes?.value ?? []).join(' '),
+      scope: Array.from(allScopes).join(' '),
       redirectUri: document.location.protocol + '//' + document.location.host
         + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href,
       accessType: accessType.value,

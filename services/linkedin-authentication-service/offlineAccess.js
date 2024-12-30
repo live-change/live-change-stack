@@ -40,6 +40,9 @@ export const OfflineAccess = definition.model({
     byUserAndScope: {
       multi: true,
       property: ['user', 'scopes']
+    },
+    byUser: {
+      property: 'user'
     }
   }
 })

@@ -1,6 +1,7 @@
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
 } from '@live-change/framework'
+import { generateId } from './utils.js'
 
 function defineSetEvent(config, context, generateId) {
   const {
@@ -78,7 +79,8 @@ function defineTransferredEvent(config, context, generateId) {
 
 function defineResetEvent(config, context, generateId) {
   const {
-    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord
+    service, modelRuntime, joinedOthersPropertyName, modelName, otherPropertyNames, reverseRelationWord,
+    modelPropertyName
   } = context
   const eventName = modelName + 'Reset'
   service.events[eventName] = new EventDefinition({
@@ -89,7 +91,7 @@ function defineResetEvent(config, context, generateId) {
       }
     },
     execute({ identifiers }) {
-      const id = generateId(otherPropertyNames, identifiers)
+      const id = identifiers[modelPropertyName] ?? generateId(otherPropertyNames, identifiers)
       return modelRuntime().delete(id)
     }
   })

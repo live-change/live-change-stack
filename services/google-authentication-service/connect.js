@@ -9,6 +9,7 @@ import { User, googleProperties, Account } from './account.js'
 import { getTokensWithCode, getUserInfo } from './googleClient.js'
 
 import { downloadData } from './downloadData.js'
+import { OfflineAccess } from './offlineAccess.js'
 
 definition.trigger({
   name: "connectGoogle",
@@ -68,10 +69,23 @@ definition.trigger({
       validation: ['nonEmpty']
     }
   },
-  async execute({ account }, { client, service }, emit) {
+  async execute({ account }, { client, service, triggerService }, emit) {
     const accountData = await Account.get(account)
     if(!accountData) throw 'notFound'
     const { user } = accountData
+
+    console.log("GET OFFLINE ACCESS!", account, user)
+    const offlineAccess = await OfflineAccess.indexObjectGet('byUserAccount', [user, account])
+    console.log("OFFLINE ACCESS", offlineAccess)
+    if(offlineAccess) {
+      await triggerService({
+        type: 'googleAuthentication_resetOfflineAccess',
+        service: definition.name
+      }, {
+        offlineAccess: offlineAccess.to ?? offlineAccess.id
+      })
+    }
+
     emit({
       type: 'accountDisconnected',
       account, user

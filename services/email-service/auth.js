@@ -82,7 +82,7 @@ definition.event({
   },
   async execute({ user }) {
     const emails = await Email.indexRangeGet('byUser', user)
-    await Promise.all(emails.map(email => Email.delete(email)))
+    await Promise.all(emails.map(email => Email.delete(email.to ?? email.id)))
   }
 })
 
