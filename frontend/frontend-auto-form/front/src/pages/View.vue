@@ -2,8 +2,7 @@
   <div class="w-full lg:w-8 md:w-11">
     <div class="surface-card p-3 shadow-1 border-round">
 
-      <ModelEditor :service="serviceName" :model="modelName" :identifiers="identifiersObject" draft
-                   @created="handleCreated"/>
+      <ModelView :service="serviceName" :model="modelName" :identifiers="identifiersObject" />
 
     </div>
   </div>
@@ -11,7 +10,7 @@
 
 <script setup>
 
-  import ModelEditor from "../components/crud/ModelEditor.vue"
+  import ModelView from "../components/crud/ModelView.vue"
 
   import { ref, computed, onMounted, defineProps, toRefs } from 'vue'
 
@@ -55,30 +54,6 @@
     }
     return result
   })
-
-  import { useRouter } from 'vue-router'
-  const router = useRouter()
-
-  function handleCreated(id) {
-    const newIdentifiers = modelDefinition.value.identifiers.map((identifier, i) => {
-      if(typeof identifier === 'object' && identifier.field === 'id') {
-        return id
-      }
-      return identifiers.value[i]
-    })
-
-    //console.log("newIdentifiers", newIdentifiers)
-    if(JSON.stringify(identifiers.value) !== JSON.stringify(newIdentifiers)) {
-      router.push({
-        name: 'auto-form:editor',
-        params: {
-          serviceName: serviceName.value,
-          modelName: modelName.value,
-          identifiers: newIdentifiers
-        }
-      })
-    }
-  }
 
 </script>
 

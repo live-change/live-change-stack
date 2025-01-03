@@ -15,11 +15,16 @@ export function autoFormRoutes(config = {}) {
     }),
 
     route({
+      name: 'auto-form:view', path: prefix + '/view/:serviceName/:modelName/:identifiers*', meta: { },
+      component: () => import("./pages/View.vue"),
+      props: true
+    }),
+
+    route({
       name: 'auto-form:list', path: prefix + '/models/:serviceName/:modelName', meta: { },
       component: () => import("./pages/List.vue"),
       props: true
     }),
-
 
   ]
 }

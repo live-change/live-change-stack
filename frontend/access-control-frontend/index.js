@@ -3,6 +3,8 @@ export { LimitedAccess }
 import InsufficientAccess from "./front/src/components/InsufficientAccess.vue"
 export { InsufficientAccess }
 
+import "./front/src/notifications/index.js"
+
 import AccessControl from "./front/src/configuration/AccessControl.vue"
 import AccessInvitations from "./front/src/configuration/AccessInvitations.vue"
 import AccessList from "./front/src/configuration/AccessList.vue"
@@ -16,7 +18,5 @@ export { accessControlRoutes }
 import inviteRoutes from "./front/src/invite/routes.js"
 import configurationRoutes from "./front/src/configuration/routes.js"
 export { inviteRoutes, configurationRoutes }
-
-import "./front/src/notifications/index.js"
 
 
