@@ -61,6 +61,8 @@
     if(definition.value?.if) {
       if(definition.value?.if.function) {
         return eval(`(${definition.value.if.function})`)
+      } else {
+        throw new Error('Unknown if type' + JSON.stringify(definition.value.if))
       }
     }
     return false

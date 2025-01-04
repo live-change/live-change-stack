@@ -19,10 +19,15 @@
       />
     </div>
 
+    <AutoView :value="object" :root-value="object" :i18n="i18n" :attributes="attributes"
+              :definition="modelDefinition" />
+
   </div>
 </template>
 
 <script setup>
+
+  import AutoView from '../view/AutoView.vue'
 
 
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
@@ -45,7 +50,7 @@
       type: Boolean,
       default: false
     },
-    options: {
+    attributes: {
       type: Object,
       default: () => ({})
     },
@@ -54,7 +59,7 @@
       default: ''
     }
   })
-  const { service, model, identifiers, draft, options, i18n } = toRefs(props)
+  const { service, model, identifiers, draft, attributes, i18n } = toRefs(props)
 
   const emit = defineEmits(['saved', 'draftSaved', 'draftDiscarded', 'saveError', 'created' ])
 

@@ -1,14 +1,20 @@
 <template>
-  <component v-if="viewComponent && visible" :is="viewComponent" v-bind="attributes" :i18n="i18n" />
+  <component v-if="fieldComponent && visible" :is="fieldComponent" v-bind="attributes" :i18n="i18n" />
 </template>
 
 <script setup>
   import { injectComponent } from '@live-change/vue3-components'
 
   import { computed, inject, getCurrentInstance, toRefs } from 'vue'
-  import ObjectView from './ObjectView.vue'
+  import DefaultFieldView from './DefaultFieldView.vue'
 
   const props = defineProps({
+    name: {
+      type: String
+    },
+    label: {
+      type: String
+    },
     value: {},
     definition: {
       type: Object
@@ -65,8 +71,8 @@
     return true
   })
 
-  const viewFilter = computed(() => {
-    const filter = definition?.view?.componentFilter
+  const fieldFilter = computed(() => {
+    const filter = definition?.view?.fieldComponentFilter
     if(filter) {
       if(filter.function) {
         return eval(`(${filter.function})`)
@@ -77,26 +83,30 @@
     return undefined
   })
 
-  const viewComponent = computed(() => injectComponent(definition.value?.view?.componentRequest ?? {
-    ...(definition.value?.view?.componentRequestProperties),
-    name: 'AutoView',
+  const fieldComponent = computed(() => injectComponent(definition.value?.view?.fieldComponentRequest ?? {
+    ...(definition.value?.view?.fieldComponentRequestProperties),
+    name: 'AutoFieldView',
     type: definition.type ?? 'Object',
     view: definition?.view?.name ?? definition?.view,
-    filter: viewFilter.value
-  }, ObjectView))
+    filter: fieldFilter.value
+  }, DefaultFieldView))
 
-  const viewClass = computed(() => [definition.value?.view?.class, props.class])
-  const viewStyle = computed(() => [definition.value?.view?.style, props.style])
+  const fieldClass = computed(() => [definition.value?.view?.fieldClass, props.class])
+  const fieldStyle = computed(() => [definition.value?.view?.fieldStyle, props.style])
+
+  const viewClass = computed(() => [definition.value?.view?.class, props.viewClass])
+  const viewStyle = computed(() => [definition.value?.view?.style, props.viewStyle])
 
   const attributes = computed(() => ({
-    visibleProperties: visibleProperties.value,
     i18n: i18n.value,
     ...(definition.value?.view?.attributes),
     ...(props.attributes),
     value: value.value,
     definition: definition.value,
-    class: viewClass.value,
-    style: viewStyle.value,
+    class: fieldClass.value,
+    style: fieldStyle.value,
+    viewClass: viewClass.value,
+    viewStyle: viewStyle.value,
     rootValue: rootValue.value,
     propName: propName.value,
   }))

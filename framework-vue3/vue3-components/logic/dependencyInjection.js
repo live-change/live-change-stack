@@ -40,7 +40,7 @@ export function injectComponent(request, defaultComponent, factory) {
         if(!value.includes(component.description[key])) isValid = false
       } else if(value !== component.description[key]) isValid = false
     }
-    console.log("RESLVED COMPONENT VALID", isValid)
+    console.log("RESOLVED COMPONENT VALID", isValid)
     if(isValid && filter(component)) return component.component
   }
   return factory ? defaultComponent() : defaultComponent

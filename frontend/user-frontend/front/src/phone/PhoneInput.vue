@@ -122,11 +122,9 @@
     selectedCountry.value = countries.find(c => c.code.toLowerCase() === myCountry.value.toLowerCase())
   }
 
-
-
 </script>
 
 
 <style scoped lang="scss">
-  @import "../utils/flags.scss";
+  @use "../utils/flags.scss";
 </style>

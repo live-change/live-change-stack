@@ -42,7 +42,7 @@
   import AutoInput from "./AutoInput.vue"
 
   import { inputs, types } from '../../config.js'
-  import { computed, getCurrentInstance, inject, toRefs, onMounted, ref } from 'vue'
+  import { computed, getCurrentInstance, inject, toRefs, onMounted, ref, useId } from 'vue'
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
@@ -94,8 +94,7 @@
     }
   })
 
-  const instanceUid = getCurrentInstance().uid
-  const uid = computed(() => isMounted.value ? 'field_'+instanceUid.toFixed().padStart(6, '0') : undefined)
+  const uid = useId()
 
   const emit = defineEmits(['update:modelValue'])
 
@@ -105,6 +104,8 @@
     if(definition.value?.if) {
       if(definition.value?.if.function) {
         return eval(`(${definition.value.if.function})`)
+      } else {
+        throw new Error('Unknown if type' + JSON.stringify(definition.value.if))
       }
     }
     return false
