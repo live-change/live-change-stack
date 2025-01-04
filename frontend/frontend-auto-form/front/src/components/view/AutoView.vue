@@ -5,8 +5,7 @@
 <script setup>
   import { injectComponent } from '@live-change/vue3-components'
 
-  import { computed, inject, getCurrentInstance, toRefs } from 'vue'
-  import ObjectView from './ObjectView.vue'
+  import { computed, inject, getCurrentInstance, toRefs, defineAsyncComponent } from 'vue'
 
   const props = defineProps({
     value: {},
@@ -77,13 +76,19 @@
     return undefined
   })
 
-  const viewComponent = computed(() => injectComponent(definition.value?.view?.componentRequest ?? {
-    ...(definition.value?.view?.componentRequestProperties),
-    name: 'AutoView',
-    type: definition.type ?? 'Object',
-    view: definition?.view?.name ?? definition?.view,
-    filter: viewFilter.value
-  }, ObjectView))
+  const viewComponent = computed(() => {
+    const type = definition.value.type ?? 'Object'
+    const defaultComponent = (type === 'Object')
+      ? defineAsyncComponent(() => import('./ObjectView.vue'))
+      : defineAsyncComponent(() => import('./JsonView.vue'))
+    return injectComponent(definition.value?.view?.componentRequest ?? {
+      ...(definition.value?.view?.componentRequestProperties),
+      name: 'AutoView',
+      type,
+      view: definition?.view?.name ?? definition?.view,
+      filter: viewFilter.value
+    }, defaultComponent)
+  })
 
   const viewClass = computed(() => [definition.value?.view?.class, props.class])
   const viewStyle = computed(() => [definition.value?.view?.style, props.style])

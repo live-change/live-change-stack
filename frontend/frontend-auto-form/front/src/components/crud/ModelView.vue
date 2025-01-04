@@ -1,10 +1,14 @@
 <template>
   <div>
-      <h4>identifiers</h4>
-      <pre>{{ identifiers }}</pre>
 
-      <h4>definition</h4>
-      <pre>{{ modelDefinition }}</pre>
+<!--    <h4>identifiers</h4>
+    <pre>{{ identifiers }}</pre>
+
+    <h4>definition</h4>
+    <pre>{{ modelDefinition }}</pre>
+
+    <h4>object</h4>
+    <pre>{{ object }}</pre>-->
 
     <div class="">
       Service <strong>{{ service }}</strong>
@@ -28,7 +32,6 @@
 <script setup>
 
   import AutoView from '../view/AutoView.vue'
-
 
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
   import { RangeViewer, injectComponent } from "@live-change/vue3-components"
@@ -94,7 +97,6 @@
   const [object] = await Promise.all([
     viewDataPromise
   ])
-
 
 </script>
 

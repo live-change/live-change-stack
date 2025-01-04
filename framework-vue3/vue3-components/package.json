@@ -24,7 +24,7 @@
     "@live-change/vue3-ssr": "0.9.12",
     "debug": "^4.3.4",
     "mitt": "3.0.1",
-    "vue": "^3.4.29"
+    "vue": "^3.5.12"
   },
   "gitHead": "2aa34c0589d115aeaa573bd2cae09bb43a66d162"
 }

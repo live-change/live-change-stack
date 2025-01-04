@@ -45,7 +45,7 @@
     }
   })
 
-  const { value, definition, propName, rootValue, visibleProperties } = toRefs(props)
+  const { value, definition, propName, rootValue, label, name } = toRefs(props)
 
   const definitionIf = computed(() => {
     if(definition.value?.if) {
@@ -99,6 +99,8 @@
 
   const attributes = computed(() => ({
     i18n: i18n.value,
+    name: name.value,
+    label: label.value,
     ...(definition.value?.view?.attributes),
     ...(props.attributes),
     value: value.value,
