@@ -69,7 +69,10 @@
 
   import { validateData } from "@live-change/vue3-components"
   const validationResult = computed(() => {
-    const currentValue = editor.value.value.value
+    const currentValue = {
+      ...(editor.value.identifiers),
+      ...(editor.value.value.value),
+    }
     const validationResult = validateData(model.value, currentValue, 'validation', appContext,
       props.propName, props.rootValue, true)
     const softValidationResult = validateData(model.value, currentValue, 'softValidation', appContext,

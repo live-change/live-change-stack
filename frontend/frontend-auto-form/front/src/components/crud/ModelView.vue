@@ -10,21 +10,56 @@
     <h4>object</h4>
     <pre>{{ object }}</pre>-->
 
-    <div class="">
-      Service <strong>{{ service }}</strong>
-    </div>
-    <div class="text-2xl mb-4">
-      <strong>{{ model }}</strong>
-      <ObjectIdentification
-        :objectType="service + '_' + model"
-        :object="object.to ?? object.id"
-        :data="object"
-        class="ml-2"
-      />
+    <div class="surface-card p-3 shadow-1 border-round mb-4">
+
+      <div class="">
+        Service <strong>{{ service }}</strong>
+      </div>
+      <div class="text-2xl mb-4">
+        <strong>{{ model }}</strong>
+        <ObjectIdentification
+          :objectType="service + '_' + model"
+          :object="object.to ?? object.id"
+          :data="object"
+          class="ml-2"
+        />
+      </div>
+
+      <AutoView :value="object" :root-value="object" :i18n="i18n" :attributes="attributes"
+                :definition="modelDefinition" />
+
     </div>
 
-    <AutoView :value="object" :root-value="object" :i18n="i18n" :attributes="attributes"
-              :definition="modelDefinition" />
+    <div v-for="itemRelation of itemRelations">
+      <ModelList :service="itemRelation.from.serviceName" :model="itemRelation.from.name"
+                 :identifiers="relatedIdentifiers">
+        <template #header>
+          <div class="text-xl">
+            <ObjectIdentification
+              :objectType="service + '_' + model"
+              :object="object.to ?? object.id"
+              :data="object"
+              class="mr-2"
+            />
+            <span class="mr-2 font-medium">{{ model }}'s</span>
+            <span class="font-bold">{{ pluralize(itemRelation.from.name) }}</span>:
+          </div>
+        </template>
+
+      </ModelList>
+
+      <pre>{{ relatedIdentifiers }}</pre>
+
+      <pre>{{ itemRelation }}</pre>
+
+    </div>
+
+<!--    <div class="surface-card p-3 shadow-1 border-round">
+
+      <h4>Backward relations</h4>
+      <pre>{{ backwardRelations }}</pre>
+
+    </div>-->
 
   </div>
 </template>
@@ -32,7 +67,9 @@
 <script setup>
 
   import AutoView from '../view/AutoView.vue'
+  import ModelList from './ModelList.vue'
 
+  import pluralize from 'pluralize'
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
   import { RangeViewer, injectComponent } from "@live-change/vue3-components"
 
@@ -47,11 +84,7 @@
     },
     identifiers: {
       type: Object,
-      default: []
-    },
-    draft: {
-      type: Boolean,
-      default: false
+      default: () => ({})
     },
     attributes: {
       type: Object,
@@ -62,7 +95,7 @@
       default: ''
     }
   })
-  const { service, model, identifiers, draft, attributes, i18n } = toRefs(props)
+  const { service, model, identifiers, attributes, i18n } = toRefs(props)
 
   const emit = defineEmits(['saved', 'draftSaved', 'draftDiscarded', 'saveError', 'created' ])
 
@@ -85,6 +118,14 @@
     return api.services?.[service.value]?.models?.[model.value]
   })
 
+  import { getForwardRelations, getBackwardRelations } from '../../logic/relations.js'
+  const forwardRelations = computed(() => getForwardRelations(modelDefinition.value, () => true, api))
+  const backwardRelations = computed(() => getBackwardRelations(modelDefinition.value, api))
+
+  const itemRelations = computed(
+    () => backwardRelations.value.filter(relation => relation.relation === 'itemOf')
+  )
+
   import viewData from '../../logic/viewData.js'
 
   const viewDataPromise = viewData({
@@ -97,6 +138,10 @@
   const [object] = await Promise.all([
     viewDataPromise
   ])
+
+  const relatedIdentifiers = computed(() => ({
+    [model.value[0].toLowerCase() + model.value.slice(1)]: object.value.to ?? object.value.id
+  }))
 
 </script>
 

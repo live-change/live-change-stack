@@ -1,4 +1,5 @@
 <template>
+<!--  <pre>{{ viewComponentRequest }}</pre>-->
   <component v-if="viewComponent && visible" :is="viewComponent" v-bind="attributes" :i18n="i18n" />
 </template>
 
@@ -76,18 +77,20 @@
     return undefined
   })
 
+  const viewComponentRequest = computed(() => (definition.value?.view?.componentRequest ?? {
+    ...(definition.value?.view?.componentRequestProperties),
+    name: 'AutoView',
+    type: definition.value.type ?? 'Object',
+    view: definition?.view?.name ?? definition?.view,
+    filter: viewFilter.value
+  }))
+
   const viewComponent = computed(() => {
     const type = definition.value.type ?? 'Object'
     const defaultComponent = (type === 'Object')
       ? defineAsyncComponent(() => import('./ObjectView.vue'))
       : defineAsyncComponent(() => import('./JsonView.vue'))
-    return injectComponent(definition.value?.view?.componentRequest ?? {
-      ...(definition.value?.view?.componentRequestProperties),
-      name: 'AutoView',
-      type,
-      view: definition?.view?.name ?? definition?.view,
-      filter: viewFilter.value
-    }, defaultComponent)
+    return injectComponent(viewComponentRequest.value, defineAsyncComponent(() => import('./JsonView.vue')))
   })
 
   const viewClass = computed(() => [definition.value?.view?.class, props.class])

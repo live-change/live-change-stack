@@ -9,7 +9,20 @@ export { inputConfig }
 
 import editorData from './front/src/logic/editorData.js'
 export { editorData }
+
+
+import AutoView from './front/src/components/view/AutoView.vue'
+import AutoViewField from './front/src/components/view/AutoViewField.vue'
+import DefaultFieldView from './front/src/components/view/DefaultFieldView.vue'
+import JsonView from './front/src/components/view/JsonView.vue'
+import ObjectView from './front/src/components/view/ObjectView.vue'
+export { AutoView, AutoViewField, DefaultFieldView, JsonView, ObjectView }
+
+import provideAutoViewComponents from './front/src/components/view/provideAutoViewComponents.js'
+export { provideAutoViewComponents }
+
 import viewData from './front/src/logic/viewData.js'
+export { viewData }
 
 export * from './front/src/logic/relations.js'
 

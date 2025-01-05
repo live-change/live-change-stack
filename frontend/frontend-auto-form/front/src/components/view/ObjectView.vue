@@ -29,8 +29,6 @@
       type: String,
       default: ''
     },
-    class: {},
-    style: {},
     i18n: {
       type: String,
       default: ''

@@ -77,7 +77,11 @@ export default function editorData(options) {
 
   const updateAction = api.actions[serviceName][crudMethods.update]
   const createOrUpdateAction = api.actions[serviceName][crudMethods.createOrUpdate]
+  if(!updateAction && !createOrUpdateAction)
+    throw new Error('update or createOrUpdate action must be defined in model or options')
   const createAction = api.actions[serviceName][crudMethods.create]
+  if(isNew && !createAction && !createOrUpdateAction)
+    throw new Error('create action must be defined in model or options')
   const createOrUpdateDraftAction = draft && api.actions.draft.setOrUpdateMyDraft
   const removeDraftAction = draft && api.actions.draft.resetMyDraft
 
@@ -184,6 +188,7 @@ export default function editorData(options) {
       }
 
       return {
+        identifiers,
         value: synchronizedData.value,
         changed,
         save,
@@ -228,6 +233,7 @@ export default function editorData(options) {
       }
 
       return {
+        identifiers,
         value: synchronizedData.value,
         changed: synchronizedData.changed,
         save: synchronizedData.save,

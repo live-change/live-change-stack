@@ -1,16 +1,18 @@
 <template>
-  <div class="w-full lg:w-8 md:w-11">
+  <div>
 <!--    <h4>definition</h4>
     <pre>{{ modelDefinition }}</pre>-->
 
     <div class="surface-card w-full p-3 shadow-1 border-round mb-2">
-      <div class="">
-        Service <strong>{{ service }}</strong>
-      </div>
-      <div class="text-2xl">
-        <strong>{{ pluralize(model) }}</strong>
-        <span class="ml-1">list</span>
-      </div>
+      <slot name="header">
+        <div class="">
+          Service <strong>{{ service }}</strong>
+        </div>
+        <div class="text-2xl">
+          <strong>{{ pluralize(model) }}</strong>
+          <span class="ml-1">list</span>
+        </div>
+      </slot>
     </div>
 
     <div class="surface-card p-3 shadow-1 border-round" v-if="modelsPathRangeFunction">
@@ -58,7 +60,7 @@
       </div>
     </div>
 
-    <div class="mt-3 flex flex-row justify-content-end mr-2">
+    <div v-if="modelDefinition.value?.crud?.create" class="mt-3 flex flex-row justify-content-end mr-2">
       <router-link :to="createRoute" class="no-underline2">
         <Button icon="pi pi-plus" :label="'Create new '+model" />
       </router-link>
@@ -68,6 +70,8 @@
 </template>
 
 <script setup>
+
+  import Button from "primevue/button"
 
   import { ref, computed, onMounted, defineProps, toRefs } from 'vue'
   import { RangeViewer, injectComponent } from "@live-change/vue3-components"
@@ -81,9 +85,13 @@
     model: {
       type: String,
       required: true,
-    }
+    },
+    identifiers: {
+      type: Object,
+      default: () => ({})
+    },
   })
-  const { service, model } = toRefs(props)
+  const { service, model, identifiers } = toRefs(props)
 
   import AutoObjectIdentification from './AutoObjectIdentification.vue'
 
@@ -118,6 +126,7 @@
     if(!path[config.service]) return null
     if(!path[config.service][rangeView]) return null
     return (range) =>  path[config.service][rangeView]({
+      ...identifiers.value,
       ...(config.reverse ? reverseRange(range) : range),
     })
   })
@@ -164,7 +173,8 @@
     name: 'auto-form:editor',
     params: {
       serviceName: service.value,
-      modelName: model.name
+      modelName: model.value,
+      identifiers: Object.values(identifiers.value)
     }
   }))
 

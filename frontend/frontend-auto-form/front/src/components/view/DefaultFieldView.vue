@@ -2,7 +2,7 @@
   <div class="field" :class="fieldClass" :style="fieldStyle">
     <slot name="label"
           v-bind="{ uid, value, definition, viewClass, viewStyle, attributes, propName, rootValue, i18n }">
-      <label :for="uid">{{ t( label ) }}</label>
+      <label :for="uid" class="font-medium text-lg">{{ t( label ) }}</label>
     </slot>
     <slot v-bind="{ uid, value, definition, viewClass, viewStyle, attributes, propName, rootValue, i18n }">
       <AutoView :value="value" :definition="definition"
@@ -70,7 +70,7 @@
 
   const label = computed(() => props.i18n + (props.label || definition.value.label || props.name))
 
-  const viewClass = computed(() => [definition.value?.view?.class, props.viewClass])
+  const viewClass = computed(() => [definition.value?.view?.class, props.viewClass, 'ml-1'])
   const viewStyle = computed(() => [definition.value?.view?.style, props.viewStyle])
   const fieldClass = computed(() => [definition.value?.view?.class, props.class])
   const fieldStyle = computed(() => [definition.value?.view?.style, props.style])

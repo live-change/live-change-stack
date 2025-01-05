@@ -1,10 +1,8 @@
 <template>
   <div class="w-full lg:w-8 md:w-11">
-    <div class="surface-card p-3 shadow-1 border-round">
 
-      <ModelView :service="serviceName" :model="modelName" :identifiers="identifiersObject" />
+    <ModelView :service="serviceName" :model="modelName" :identifiers="identifiersObject" />
 
-    </div>
   </div>
 </template>
 

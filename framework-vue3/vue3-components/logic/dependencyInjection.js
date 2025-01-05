@@ -9,6 +9,7 @@ export function provideComponent(description, component) {
   for(let key in description) {
     for(let value of (description[key] instanceof Array ? description[key] : [description[key]])) {
       const provideKey = `component:${description.name}:${key}=${value}`
+      //console.log("PROVIDE COMPONENT", provideKey)
       provide(provideKey, {
         component,
         description
@@ -22,16 +23,16 @@ export function injectComponent(request, defaultComponent, factory) {
   if(!request) throw new Error("injectComponent: request is required")
   if(typeof request === 'string') request = { name: request }
 
-  console.log("INJECT COMPONENT", request)
+  //console.log("INJECT COMPONENT", request)
 
   const filter = request.filter || (() => true)
   delete request.filter
 
   for(let key in request) {
     const provideKey = `component:${request.name}:${key}=${request[key]}`
-    console.log("INJECT COMPONENT PROVIDE KEY", provideKey)
+    //console.log("INJECT COMPONENT PROVIDE KEY", provideKey)
     const component = inject(provideKey, null)
-    console.log("RESOLVED COMPONENT", component)
+    //console.log("RESOLVED COMPONENT", component)
     if(!component) continue
     let isValid = true
     for(let key in component.description) {
@@ -40,7 +41,7 @@ export function injectComponent(request, defaultComponent, factory) {
         if(!value.includes(component.description[key])) isValid = false
       } else if(value !== component.description[key]) isValid = false
     }
-    console.log("RESOLVED COMPONENT VALID", isValid)
+    //console.log("RESOLVED COMPONENT VALID", isValid)
     if(isValid && filter(component)) return component.component
   }
   return factory ? defaultComponent() : defaultComponent
