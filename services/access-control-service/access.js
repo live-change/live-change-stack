@@ -117,6 +117,8 @@ export default (definition) => {
       client, parentsSourcesMap, output
     }) {
     async function treeNode(objectType, object) {
+      if(!objectType) throw new Error('No objectType for accessControl treeNode')
+      if(!object) throw new Error('No object for accessControl treeNode')
       const node = {
         objectType, object,
         data: null,
@@ -202,6 +204,10 @@ export default (definition) => {
   }
 
   function accessPath(client, objects) {
+    for(const obj of objects) {
+      if(!obj.objectType) throw new Error('No objectType for accessControl accessPath')
+      if(!obj.object) throw new Error('No object for accessControl accessPath')
+    }
     return ['database', 'queryObject', app.databaseName, `(${
       async (input, output, {
         objects, parentsSourcesMap, client,
@@ -216,7 +222,7 @@ export default (definition) => {
             input, publicAccessTable, accessTable, updateRoles, isLoaded: () => loaded,
             client, parentsSourcesMap, output
           })
-
+        
         let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object, client))
 
         const outputObjectId = `${JSON.stringify(client.session)}:${JSON.stringify(client.user)}:` +
@@ -253,6 +259,10 @@ export default (definition) => {
   }
 
   function accessesPath(client, objects) {
+    for(const obj of objects) {
+      if(!obj.objectType) throw new Error('No objectType for accessControl accessesPath')
+      if(!obj.object) throw new Error('No object for accessControl accessesPath')
+    }
     return ['database', 'query', app.databaseName, `(${
       async (input, output, {
         objects, parentsSourcesMap, client,

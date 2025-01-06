@@ -31,6 +31,14 @@ async function fetch(api, path) {
   debug("PRE FETCH DATA", preFetchPaths)
   /*console.log("PATHS", paths)
   return null*/
+  for(const path of preFetchPaths) {
+    if(path.error) {
+      throw new Error(''
+        + (path.error.stack ?? path.error.message ?? (typeof path.error === 'object' ? JSON.stringify(path.error) : path.error))
+        + '\n when fetching '+JSON.stringify(path.what)
+      )
+    }
+  }
   const preFetchMap = new Map(preFetchPaths.map((res) => [JSON.stringify(res.what), res] ))
   function createObject(what, more) {
     const res = preFetchMap.get(JSON.stringify(what))

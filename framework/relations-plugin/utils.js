@@ -156,7 +156,18 @@ export function prepareAccessControl(accessControl, names, types) {
       objectType: types[index],
       object: params[name]
     })))
+    accessControl.objParams = { names, types }
   }
+}
+
+export function cloneAndPrepareAccessControl(accessControl, names, types) {
+  if(!accessControl) return accessControl
+  if(Array.isArray(accessControl)) {
+    accessControl = { roles: accessControl}
+  }
+  const newAccessControl = { ...accessControl }
+  prepareAccessControl(newAccessControl, names, types)
+  return newAccessControl
 }
 
 export function defineDeleteByOwnerEvents(config, context, generateId) {

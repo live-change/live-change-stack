@@ -3,8 +3,16 @@ const { extractRange } = App
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
 } from "@live-change/framework"
-import { extractTypeAndIdParts, extractIdentifiersWithTypes, prepareAccessControl } from "./utilsAny.js"
-import { extractObjectData, extractIdentifiers, extractIdParts } from './utils.js'
+import {
+  extractTypeAndIdParts,
+  extractIdentifiersWithTypes,
+  prepareAccessControl,
+  cloneAndPrepareAccessControl
+} from './utilsAny.js'
+import {
+  extractObjectData, extractIdentifiers, extractIdParts,
+  cloneAndPrepareAccessControl as cloneAndPrepareSingleAccessControl
+} from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 
 import pluralize from 'pluralize'
@@ -24,8 +32,8 @@ function defineRangeView(config, context, external = true) {
       validation: ['nonEmpty']
     })
   }
-  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
   model.crud.range = viewName
   service.view({
@@ -55,14 +63,16 @@ function defineRangeView(config, context, external = true) {
 
 function defineSingleView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
-    modelName, others, model, modelPropertyName } = context
+    modelName, others, model, modelPropertyName, objectType } = context
   const viewProperties = {}
   viewProperties[modelPropertyName] = new PropertyDefinition({
     type: model,
     validation: ['nonEmpty']
   })
-  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareSingleAccessControl(
+    sourceAccessControl, [objectType], [modelPropertyName]
+  )
   const viewName = modelName[0].toLowerCase() + modelName.slice(1)
   model.crud.read = viewName
   service.view({

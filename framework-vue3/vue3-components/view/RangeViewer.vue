@@ -19,7 +19,9 @@
 
     <slot v-if="itemsCount === 0" name="empty"></slot>
 
-    <template v-for="(bucket, bucketIndex) in buckets.buckets" :key="bucket.id">
+    <pre>{{ buckets }}</pre>
+
+    <template v-for="(bucket, bucketIndex) in buckets?.buckets ?? []" :key="bucket.id">
 
       <slot v-for="(item, itemIndex) in bucket.data" v-bind="{ item, bucket, itemIndex, bucketIndex }">
         <h4>{{bucketIndex}}.{{itemIndex}}</h4>
@@ -144,14 +146,19 @@
   const loadingBottom = ref(false)
 
   async function createBuckets() {
-    return rangeBuckets(
-        (range, p) => pathFunction.value(range, p),
-        {
-          bucketSize: bucketSize.value,
-          initialPosition: initialPosition.value,
-          softClose: softClose.value
-        }
-    )
+    try {
+      return await rangeBuckets(
+          (range, p) => pathFunction.value(range, p),
+          {
+            bucketSize: bucketSize.value,
+            initialPosition: initialPosition.value,
+            softClose: softClose.value
+          }
+      )
+    } catch(e) {
+      console.error("Error creating buckets", e)
+      throw e
+    }
   }
 
   const buckets = ref()

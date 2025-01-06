@@ -2,7 +2,13 @@ import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
 } from "@live-change/framework"
-import { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl } from "./utils.js"
+import {
+  extractIdParts,
+  extractIdentifiers,
+  extractObjectData,
+  prepareAccessControl,
+  cloneAndPrepareAccessControl
+} from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import pluralize from 'pluralize'
 
@@ -19,8 +25,12 @@ function defineRangeView(config, context, external = true) {
   }
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
   model.crud.range = viewName
-  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
+  if(viewName === 'companyOwnedProducts') {
+    console.error("ACCESS CONTROL", viewName, accessControl, otherPropertyNames, others)
+    if(accessControl) accessControl.kutas = 1
+  }
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -36,7 +46,7 @@ function defineRangeView(config, context, external = true) {
     internal: !external,
     global: config.globalView,
     access: external && (config.readAccess || config.writeAccess),
-    accessControl: config.readAccessControl || config.writeAccessControl,
+    accessControl,
     daoPath(properties, { client, context }) {
       const idParts = extractIdParts(otherPropertyNames, properties)
       const range = App.extractRange(properties)
@@ -47,7 +57,7 @@ function defineRangeView(config, context, external = true) {
 }
 
 function defineSingleView(config, context, external = true) {
-  const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
+  const { service, modelRuntime, objectType, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model, modelPropertyName } = context
   const viewProperties = {}
   viewProperties[modelPropertyName] = new PropertyDefinition({
@@ -56,8 +66,10 @@ function defineSingleView(config, context, external = true) {
   })
   const viewName = modelName[0].toLowerCase() + modelName.slice(1)
   model.crud.read = viewName
-  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [objectType], [modelPropertyName]
+  )
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -69,7 +81,7 @@ function defineSingleView(config, context, external = true) {
     internal: !external,
     global: config.globalView,
     access: external && (config.readAccess || config.writeAccess),
-    accessControl: config.readAccessControl || config.writeAccessControl,
+    accessControl,
     async daoPath(properties, { client, context }) {
       return modelRuntime().path(properties[modelPropertyName])
     }

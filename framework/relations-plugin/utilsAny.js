@@ -163,6 +163,16 @@ function prepareAccessControl(accessControl, names) {
   }
 }
 
+export function cloneAndPrepareAccessControl(accessControl, names) {
+  if(!accessControl) return accessControl
+  if(Array.isArray(accessControl)) {
+    accessControl = { roles: accessControl}
+  }
+  const newAccessControl = { ...accessControl }
+  prepareAccessControl(newAccessControl, names)
+  return newAccessControl
+}
+
 function defineDeleteByOwnerEvents(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
