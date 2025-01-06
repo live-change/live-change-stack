@@ -69,7 +69,7 @@ function hashCode(str) {
   return Math.abs(hash)
 }
 
-function uidGenerator(fingerprint = randomString(4), numberLength = 0, borders = '{}') {
+function uidGenerator(fingerprint = randomString(4), numberLength = 0, borders = '{}', idSuffix = '') {
   let lastMillisecond = Date.now(), lastId = 0
   function next() {
     const date = new Date()
@@ -81,9 +81,8 @@ function uidGenerator(fingerprint = randomString(4), numberLength = 0, borders =
       lastMillisecond = now
     }
     const idPart = encodeNumber(lastId).padStart(numberLength, '0')
-    return borders[0] + encodeDate(date) + '.' + idPart + '@' + fingerprint + borders[1]
+    return borders[0] + encodeDate(date) + '.' + idPart + idSuffix + '@' + fingerprint + borders[1]
   }
-
   return next
 }
 

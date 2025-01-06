@@ -117,6 +117,10 @@ class Api extends DaoProxy {
         apiInfo = this.prerenderCache.cache.get(cachePath)
       }
     }
+
+    api.windowId = this.settings.windowId || api.uid()
+    api.shortWindowId = api.windowId.split('@')[0].slice(-5).replace('.', '')
+
     //console.trace("GENERATE API SERVICES!")
     //console.log("GENERATE SERVICES API", apiInfo)
     const definitions = [...(apiInfo?.services ?? []), ...(this.settings.localDefinitions ?? [])]
@@ -124,7 +128,7 @@ class Api extends DaoProxy {
     if(!definitions) throw new Error("API DEFINITIONS NOT FOUND! UNABLE TO GENERATE API!")
     api.uidGenerator = uidGenerator(
       apiInfo.client.user || (apiInfo.client.session ? apiInfo.client.session.slice(0, 16) : randomString(10) )
-      , 1, '[]')
+      , 1, '[]', api.shortWindowId)
     //console.log("GENERATE API DEFINITIONS", definitions)
     api.servicesApiDefinitions = definitions
     api.servicesDefinitions.value = definitions
@@ -188,8 +192,6 @@ class Api extends DaoProxy {
     api.globals.$actions = this.actions
     api.globals.$fetch = this.fetch
     api.globals.$services = this.services
-
-    api.windowId = this.settings.windowId || api.uid()
 
     for(const glob of this.globalInstances) {
       this.installInstanceProperties(glob)

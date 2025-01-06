@@ -82,7 +82,7 @@ class ImageUpload {
       } else {
         const nameSplit = this.fileName.split('.')
         const currentExtension = nameSplit[nameSplit.length - 1]
-        if(currentExtension != extension) {
+        if(currentExtension !== extension) {
           this.fileName = nameSplit.slice(0, -1).concat([extension]).join('.')
         }
       }
