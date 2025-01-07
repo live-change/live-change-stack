@@ -3,8 +3,8 @@ import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
 } from "@live-change/framework"
 import {
-  extractIdentifiers, extractObjectData, generateId, extractIdParts, prepareAccessControl
-} from "./utils.js"
+  extractIdentifiers, extractObjectData, generateId, extractIdParts, prepareAccessControl, cloneAndPrepareAccessControl
+} from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 
 function defineView(config, context, external = true) {
@@ -20,8 +20,8 @@ function defineView(config, context, external = true) {
   const viewName = config.name
     || ((config.prefix ? config.prefix + modelName : modelName[0].toLowerCase() + modelName.slice(1)) + (config.suffix || ''))
   model.crud.read = viewName
-  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   service.view({
     name: viewName,
     properties: {
@@ -73,8 +73,8 @@ function defineSetAction(config, context) {
   } = context
   const actionName = 'set' + modelName
   model.crud.create = actionName
-  const accessControl = config.setAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = config.setAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
     name: actionName,
     properties: { ...(model.properties) },
@@ -148,8 +148,8 @@ function defineUpdateAction(config, context) {
   } = context
   const actionName = 'update' + modelName
   model.crud.update = actionName
-  const accessControl = config.updateAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -225,15 +225,15 @@ function defineSetOrUpdateAction(config, context) {
   } = context
   const actionName = 'setOrUpdate' + modelName
   model.crud.createOrUpdate = actionName
-  const accessControl = config.updateAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
     name: actionName,
     properties: {
       ...(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
-    accessControl: config.updateAccessControl || config.writeAccessControl,
+    accessControl,
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
@@ -293,16 +293,18 @@ function getResetFunction( validators, validationContext, config, context) {
   }
 }
 
-function defineResetAction(config, context) {
+function defineDeleteAction(config, context) {
   const {
     service, modelRuntime, modelPropertyName, objectType, identifiers,
     otherPropertyNames, joinedOthersPropertyName, modelName,
     joinedOthersClassName, model, others, writeableProperties
   } = context
-  const actionName = 'reset' + modelName
+  const actionName = 'delete' + modelName
   model.crud.delete = actionName
-  const accessControl = config.resetAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = config.resetAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -324,12 +326,12 @@ function defineResetAction(config, context) {
   service.actions[actionName] = action
 }
 
-function defineResetTrigger(config, context) {
+function defineDeleteTrigger(config, context) {
   const {
     service, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
   } = context
-  const actionName = 'reset' + modelName
+  const actionName = 'delete' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -350,8 +352,74 @@ function defineResetTrigger(config, context) {
   service.triggers[triggerName] = [trigger]
 }
 
+
+function defineResetAction(config, context) {
+  const {
+    service, modelRuntime, modelPropertyName, objectType, identifiers,
+    otherPropertyNames, joinedOthersPropertyName, modelName,
+    joinedOthersClassName, model, others, writeableProperties
+  } = context
+  const actionName = 'reset' + modelName
+  const properties = {}
+  for (let i = 0; i < others.length; i++) {
+    properties[otherPropertyNames[i]] = new PropertyDefinition({
+      type: others[i],
+      validation: ['nonEmpty']
+    })
+  }
+  const sourceAccessControl = config.resetAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
+  const action = new ActionDefinition({
+    name: actionName,
+    properties,
+    access: config.resetAccess || config.writeAccess,
+    accessControl,
+    queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(action, service, action)
+  const validationContext = { source: action, action }
+  action.execute = getResetFunction( validators, validationContext, config, context)
+  if(service.actions[actionName]) throw new Error('Action ' + actionName + ' already defined')
+  service.actions[actionName] = action
+}
+
+function defineResetTrigger(config, context) {
+  const {
+    service, modelRuntime, modelPropertyName, objectType,
+    otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model,
+    others, writeableProperties
+  } = context
+  const actionName = 'reset' + modelName
+  const properties = {}
+  for (let i = 0; i < others.length; i++) {
+    properties[otherPropertyNames[i]] = new PropertyDefinition({
+      type: others[i],
+      validation: ['nonEmpty']
+    })
+  }
+  const triggerName = `${service.name}_${actionName}`
+  const trigger = new TriggerDefinition({
+    name: triggerName,
+    properties,
+    queuedBy: otherPropertyNames,
+    waitForEvents: true,
+    execute: () => { throw new Error('not generated yet') }
+  })
+  const validators = App.validation.getValidators(trigger, service, trigger)
+  const validationContext = { source: trigger, trigger }
+  trigger.execute = getResetFunction( validators, validationContext, config, context)
+  if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
+  service.triggers[triggerName] = [trigger]
+}
+
+
+
 export {
   defineView,
-  defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction,
-  defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
+  defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction, defineDeleteAction,
+  defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineDeleteTrigger, defineResetTrigger
 }

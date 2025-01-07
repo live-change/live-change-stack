@@ -19,8 +19,6 @@
 
     <slot v-if="itemsCount === 0" name="empty"></slot>
 
-    <pre>{{ buckets }}</pre>
-
     <template v-for="(bucket, bucketIndex) in buckets?.buckets ?? []" :key="bucket.id">
 
       <slot v-for="(item, itemIndex) in bucket.data" v-bind="{ item, bucket, itemIndex, bucketIndex }">

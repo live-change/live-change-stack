@@ -71,7 +71,7 @@ function defineSingleView(config, context, external = true) {
   })
   const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
   const accessControl = cloneAndPrepareSingleAccessControl(
-    sourceAccessControl, [objectType], [modelPropertyName]
+    sourceAccessControl, [modelPropertyName], [objectType]
   )
   const viewName = modelName[0].toLowerCase() + modelName.slice(1)
   model.crud.read = viewName
@@ -125,8 +125,8 @@ function defineCreateAction(config, context) {
   } = context
   const actionName = 'create' + modelName
   model.crud.create = actionName
-  const accessControl = config.createAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const sourceAccessControl = config.createAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -214,8 +214,10 @@ function defineUpdateAction(config, context) {
   } = context
   const actionName = 'update' + modelName
   model.crud.update = actionName
-  const accessControl = config.updateAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareSingleAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -299,8 +301,10 @@ function defineDeleteAction(config, context) {
   } = context
   const actionName = 'delete' + modelName
   model.crud.delete = actionName
-  const accessControl = config.deleteAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const sourceAccessControl = config.deleteAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareSingleAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {

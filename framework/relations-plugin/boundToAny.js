@@ -10,6 +10,7 @@ import {
   defineSetAction, defineUpdateAction, defineResetAction, defineSetOrUpdateAction,
   defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
 } from './singularRelationUtils.js'
+import { defineDeleteAction, defineDeleteTrigger } from './singularRelationAnyUtils.js'
 
 export default function(service, app) {
   processModelsAnyAnnotation(service, app, 'boundToAny', false, (config, context) => {
@@ -37,6 +38,7 @@ export default function(service, app) {
     defineUpdateTrigger(config, context)
     defineSetOrUpdateTrigger(config, context)
     defineResetTrigger(config, context)
+    defineDeleteTrigger(config, context)
 
     if(config.setAccess || config.writeAccess || config.setAccessControl || config.writeAccessControl) {
       defineSetAction(config, context)
@@ -52,7 +54,8 @@ export default function(service, app) {
     }
 
     if(config.resetAccess || config.writeAccess || config.resetAccessControl || config.writeAccessControl) {
-      defineResetAction(config, context);
+      defineResetAction(config, context)
+      defineDeleteAction(config, context)
     }
 
   })

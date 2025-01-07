@@ -68,7 +68,7 @@ function defineSingleView(config, context, external = true) {
   model.crud.read = viewName
   const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
   const accessControl = cloneAndPrepareAccessControl(
-    sourceAccessControl, [objectType], [modelPropertyName]
+    sourceAccessControl, [modelPropertyName], [objectType]
   )
   service.views[viewName] = new ViewDefinition({
     name: viewName,
@@ -120,8 +120,8 @@ function defineCreateAction(config, context) {
   } = context
   const actionName = 'create' + modelName
   model.crud.create = actionName
-  const accessControl = config.createAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = config.createAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -203,8 +203,10 @@ function defineUpdateAction(config, context) {
   } = context
   const actionName = 'update' + modelName
   model.crud.update = actionName
-  const accessControl = config.updateAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -285,8 +287,11 @@ function defineDeleteAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'delete' + modelName
-  const accessControl = config.deleteAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  model.crud.delete = actionName
+  const sourceAccessControl = config.deleteAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -399,8 +404,10 @@ function defineCopyAction(config, context) {
     identifiers
   } = context
   const actionName = 'copy' + modelName
-  const accessControl = config.copyAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const sourceAccessControl = config.copyAccessControl
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {

@@ -9,9 +9,18 @@ import {
 } from './propertyEvents.js'
 
 import {
-  defineObjectView, defineRangeViews,
-  defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction,
-  defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
+  defineObjectView,
+  defineRangeViews,
+  defineSetAction,
+  defineUpdateAction,
+  defineSetOrUpdateAction,
+  defineResetAction,
+  defineSetTrigger,
+  defineUpdateTrigger,
+  defineSetOrUpdateTrigger,
+  defineResetTrigger,
+  defineDeleteTrigger,
+  defineDeleteAction
 } from './singularRelationAnyUtils.js'
 
 export default function(service, app) {
@@ -51,6 +60,7 @@ export default function(service, app) {
     defineUpdateTrigger(config, context)
     defineSetOrUpdateTrigger(config, context)
     defineResetTrigger(config, context)
+    defineDeleteTrigger(config, context)
 
     if(config.setAccess || config.writeAccess || config.setAccessControl || config.writeAccessControl) {
       defineSetAction(config, context)
@@ -66,7 +76,8 @@ export default function(service, app) {
     }
 
     if(config.resetAccess || config.writeAccess || config.resetAccessControl || config.writeAccessControl) {
-      defineResetAction(config, context);
+      defineResetAction(config, context)
+      defineDeleteAction(config, context)
     }
 
     if(!config.customDeleteTrigger) defineParentDeleteTrigger(config, context)

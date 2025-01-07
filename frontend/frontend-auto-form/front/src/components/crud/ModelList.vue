@@ -21,8 +21,8 @@
                     :canLoadTop="false" canDropBottom
                     loadBottomSensorSize="4000px" dropBottomSensorSize="3000px">
         <template #empty>
-          <div class="text-xl text-800 my-3 mx-3">
-            No {{ pluralize(model) }} found
+          <div class="text-xl text-800 my-1 mx-3">
+            No <strong>{{ pluralize(model[0].toLowerCase() +  model.slice(1)) }}</strong> found.
           </div>
         </template>
         <template #default="{ item: object }">
@@ -44,7 +44,8 @@
                 <Button icon="pi pi-pencil" severity="primary" label="Edit" class="mr-2" />
               </router-link>
 
-              <Button icon="pi pi-eraser" severity="primary" label="Delete" class="mr-2" />
+              <Button v-if="modelDefinition.crud?.delete" @click="ev => deleteObject(ev, object)"
+                      icon="pi pi-eraser" severity="primary" label="Delete" class="mr-2" />
             </div>
           </div>
         </template>
@@ -60,18 +61,41 @@
       </div>
     </div>
 
-    <div v-if="modelDefinition.value?.crud?.create" class="mt-3 flex flex-row justify-content-end mr-2">
+    <div v-if="modelDefinition.crud?.create" class="mt-2 flex flex-row justify-content-end mr-2">
       <router-link :to="createRoute" class="no-underline2">
         <Button icon="pi pi-plus" :label="'Create new '+model" />
       </router-link>
     </div>
+
+    <ConfirmPopup group="delete">
+      <template #message="slotProps">
+        <div class="flex flex-row align-items-center w-full gap-3 border-bottom-1 surface-border px-3 pt-1 pb-1">
+          <i class="pi pi-trash text-3xl text-primary-500"></i>
+          <p>
+            Do you want to delete {{ model[0].toLowerCase() + model.slice(1) }}
+            <ObjectIdentification
+              :objectType="service + '_' + model"
+              :object="slotProps.message.object.to ?? slotProps.message.object.id"
+              :data="slotProps.message.object"
+            />
+            ?
+          </p>
+        </div>
+      </template>
+    </ConfirmPopup>
 
   </div>
 </template>
 
 <script setup>
 
+  import ConfirmPopup from "primevue/confirmpopup"
   import Button from "primevue/button"
+
+  import { useToast } from 'primevue/usetoast'
+  const toast = useToast()
+  import { useConfirm } from 'primevue/useconfirm'
+  const confirm = useConfirm()
 
   import { ref, computed, onMounted, defineProps, toRefs } from 'vue'
   import { RangeViewer, injectComponent } from "@live-change/vue3-components"
@@ -177,6 +201,24 @@
       identifiers: Object.values(identifiers.value)
     }
   }))
+
+  function deleteObject(event, object) {
+    confirm.require({
+      group: 'delete',
+      target: event.currentTarget,
+      object,
+      acceptClass: "p-button-danger",
+      accept: async () => {
+        await api.actions[service.value][modelDefinition.value.crud.delete]({
+          ...objectIdentifiers(object)
+        });
+        toast.add({ severity: "info", summary: model.value + " deleted", life: 1500 });
+      },
+      reject: () => {
+        toast.add({ severity: "error", summary: "Rejected", detail: "You have rejected", life: 3e3 });
+      }
+    });
+  }
 
 </script>
 
