@@ -1,6 +1,6 @@
 {
   "name": "@live-change/content-frontend",
-  "version": "0.9.16",
+  "version": "0.9.17",
   "scripts": {
     "memDev": "node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --enableSessions --initScript ./init.js",
@@ -22,16 +22,16 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
-    "@live-change/cli": "0.9.16",
-    "@live-change/dao": "0.9.16",
-    "@live-change/dao-vue3": "0.9.16",
-    "@live-change/dao-websocket": "0.9.16",
-    "@live-change/framework": "0.9.16",
-    "@live-change/image-service": "0.9.16",
-    "@live-change/session-service": "0.9.16",
-    "@live-change/url-frontend": "0.9.16",
-    "@live-change/vue3-components": "0.9.16",
-    "@live-change/vue3-ssr": "0.9.16",
+    "@live-change/cli": "^0.9.17",
+    "@live-change/dao": "^0.9.17",
+    "@live-change/dao-vue3": "^0.9.17",
+    "@live-change/dao-websocket": "^0.9.17",
+    "@live-change/framework": "^0.9.17",
+    "@live-change/image-service": "^0.9.17",
+    "@live-change/session-service": "^0.9.17",
+    "@live-change/url-frontend": "^0.9.17",
+    "@live-change/vue3-components": "^0.9.17",
+    "@live-change/vue3-ssr": "^0.9.17",
     "@vueuse/core": "^12.3.0",
     "codeceptjs-assert": "^0.0.5",
     "compression": "^1.7.5",
@@ -52,7 +52,7 @@
     "vue3-scroll-border": "0.1.6"
   },
   "devDependencies": {
-    "@live-change/codeceptjs-helper": "0.9.16",
+    "@live-change/codeceptjs-helper": "^0.9.17",
     "codeceptjs": "^3.6.10",
     "generate-password": "1.7.1",
     "playwright": "1.49.1",
