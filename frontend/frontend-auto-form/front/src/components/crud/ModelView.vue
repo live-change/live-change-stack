@@ -30,7 +30,7 @@
 
     </div>
 
-    <div v-for="itemRelation of itemRelations">
+    <div v-for="itemRelation of itemRelations" class="mb-4">
       <ModelList :service="itemRelation.from.serviceName" :model="itemRelation.from.name"
                  :identifiers="relatedIdentifiers">
         <template #header>
@@ -47,19 +47,23 @@
         </template>
 
       </ModelList>
-
+<!--
       <pre>{{ relatedIdentifiers }}</pre>
 
-      <pre>{{ itemRelation }}</pre>
+      <pre>{{ itemRelation }}</pre>-->
 
     </div>
 
-<!--    <div class="surface-card p-3 shadow-1 border-round">
+    <div class="surface-card p-3 shadow-1 border-round">
 
       <h4>Backward relations</h4>
-      <pre>{{ backwardRelations }}</pre>
+      <pre>{{
+          backwardRelations.map(
+            ({ from, relation, what }) => ({ from: from.serviceName + '_' + from.name, relation, what })
+          )
+      }}</pre>
 
-    </div>-->
+    </div>
 
   </div>
 </template>
@@ -120,7 +124,7 @@
 
   import { getForwardRelations, getBackwardRelations } from '../../logic/relations.js'
   const forwardRelations = computed(() => getForwardRelations(modelDefinition.value, () => true, api))
-  const backwardRelations = computed(() => getBackwardRelations(modelDefinition.value, api))
+  const backwardRelations = computed(() => getBackwardRelations(modelDefinition.value, false, api))
 
   const itemRelations = computed(
     () => backwardRelations.value.filter(relation => relation.relation === 'itemOf')

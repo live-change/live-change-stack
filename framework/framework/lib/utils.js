@@ -37,7 +37,9 @@ export function definitionToJSON(definition, ignoreRoot = false) {
       return definition.toJSON()
   }
   if(typeof definition !== 'object') return definition
-  if(Array.isArray(definition)) return definition.map(definitionToJSON)
+  if(Array.isArray(definition)) {
+    return definition.map(d => definitionToJSON(d))
+  }
   return Object.fromEntries(Object.entries(definition).map(
     ([key, value]) => [key, definitionToJSON(value)])
   )

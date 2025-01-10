@@ -1,12 +1,17 @@
 import { useApi } from '@live-change/vue3-ssr'
 
+function ensureArray(value) {
+  if(!Array.isArray(value)) return [value]
+  return value
+}
+
 function getWhat(relation) {
   if(typeof relation === 'string') return relation
   return relation.what
 }
 function getWhats(relations) {
   if(!Array.isArray(relations)) relations = [relations]
-  return relations.map(getWhat)
+  return relations.map(x => ensureArray(getWhat(x)))
 }
 
 export const typedRelationsTypes = ['propertyOf', 'itemOf', 'boundTo', 'relatedTo']
@@ -38,7 +43,34 @@ export function getForwardRelations(model, filter = () => true, api = useApi()) 
       const result = {
         from: model,
         relation: type,
-        what: getWhat(relation),
+        what: ensureArray(getWhat(relation)),
+      }
+      if(filter(result)) results.push(result)
+    }
+  }
+  for(const type of anyRelationsTypes) {
+    let relations = model[type]
+    if(!relations) continue
+    if(!Array.isArray(relations)) relations = [relations]
+    for(const relation of relations) {
+      const to = (Array.isArray(relation.to) ? relation.to : [relation.to ?? 'owner'])
+      const possibleTypes = to.map(other => {
+        const name = other.name ? other.name : other
+        const typesConfig = relation[name + 'Types'] || []
+        const otherTypes = other.types || []
+        return Array.from(new Set(
+          typesConfig.concat(otherTypes)
+        ))
+      })
+      const allTypes = Array.from(new Set(
+        (relation.parentsTypes || [])
+          .concat(possibleTypes.filter(x => !!x).flat()
+      )))
+      const result = {
+        from: model,
+        relation: type,
+        what: allTypes,
+        any: allTypes.length === 0
       }
       if(filter(result)) results.push(result)
     }
@@ -46,13 +78,13 @@ export function getForwardRelations(model, filter = () => true, api = useApi()) 
   return results
 }
 
-export function getBackwardRelations(model, api = useApi()) {
+export function getBackwardRelations(model, includeAny, api = useApi()) {
   model = getModelByTypeName(model, api)
   const key = `${model.serviceName}_${model.name}`
-  console.log("KEY", key)
+  //console.log("KEY", key)
   return Object.values(api.services).map(
     service => Object.values(service.models).map(
-      model => getForwardRelations(model, ({ what }) => what === key, api)
+      model => getForwardRelations(model, ({ what, any }) => (any && includeAny) || what.includes(key), api)
     ).flat()
   ).flat()
 }

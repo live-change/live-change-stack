@@ -32,6 +32,8 @@
 </template>
 
 <script setup>
+  import ProgressSpinner from "primevue/progressspinner"
+
   import { CurrencyDisplay } from '@live-change/balance-frontend'
 
   import { defineProps, toRefs, computed, inject, onMounted } from 'vue'

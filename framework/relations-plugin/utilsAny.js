@@ -111,8 +111,18 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
 
         console.log("MODEL " + modelName + " IS " + annotation + " " + config.what)
 
-        const otherPropertyNames = (Array.isArray(config.to) ? config.to : [config.to ?? 'owner'])
-            .map(other => other.name ? other.name : other)
+        const to = (Array.isArray(config.to) ? config.to : [config.to ?? 'owner'])
+
+        const otherPropertyNames = to.map(other => other.name ? other.name : other)
+
+        const otherPossibleTypes = to.map(other => {
+          const name = other.name ? other.name : other
+          const typesConfig = config[name + 'Types'] || []
+          const otherTypes = other.types || []
+          return Array.from(new Set(
+            typesConfig.concat(otherTypes).map(t => t.getTypeName ? t.getTypeName() : t)
+          ))
+        })
 
         const writeableProperties = modelProperties || config.writeableProperties
         const others = otherPropertyNames.map(other => other.slice(0, 1).toUpperCase() + other.slice(1))
@@ -121,12 +131,15 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
         const joinedOthersClassName = others.join('And')
         const objectType = service.name + '_' + modelName
 
-        const { parentsTypes } = config
+        const parentsTypes = Array.from(new Set(
+          (config.parentsTypes || [])
+            .concat(otherPossibleTypes.filter(x => !!x).flat()
+        )))
 
         const context = {
           service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
-          objectType, parentsTypes
+          objectType, parentsTypes, otherPossibleTypes
         }
 
         cb(config, context)
