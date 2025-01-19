@@ -41,11 +41,11 @@ function generateAnyId(otherPropertyNames, properties) {
 function defineAnyProperties(model, names) {
   const identifiers = {}
   for (let i = 0; i < names.length; i++) {
-    identifiers[names[i]] = new PropertyDefinition({
+    identifiers[names[i]+'Type'] = new PropertyDefinition({
       type: String,
       validation: ['nonEmpty']
     })
-    identifiers[names[i]+'Type'] = new PropertyDefinition({
+    identifiers[names[i]] = new PropertyDefinition({
       type: String,
       validation: ['nonEmpty']
     })

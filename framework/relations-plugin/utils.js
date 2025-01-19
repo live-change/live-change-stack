@@ -41,10 +41,11 @@ export function defineProperties(model, types, names) {
   return identifiers
 }
 
-export function defineIndex(model, what, props) {
+export function defineIndex(model, what, props, multi = undefined) {
   console.log("DEFINE INDEX", model.name, what, props)
   model.indexes['by' + what] = new IndexDefinition({
-    property: props
+    property: props,
+    multi
   })
 }
 export function defineIndexes(model, props, types) {
@@ -57,6 +58,22 @@ export function defineIndexes(model, props, types) {
     })
     const indexProps = propCombination.map(id => props[id])
     defineIndex(model, upperCaseProps.join('And'), indexProps)
+  }
+  const propsByType = {}
+  for(const prop in props) {
+    const type = types[prop]
+    if(!propsByType[type]) propsByType[type] = []
+    propsByType[type].push(prop)
+  }
+  const multiPropsTypes = Object.keys(propsByType).filter(type => propsByType[type].length > 1)
+  const typeCombinations = allCombinations(multiPropsTypes)
+  for(const typeCombination of typeCombinations) {
+    const typeNames = typeCombination.map(t => {
+      const type = t.split('_')[1]
+      return type[0].toUpperCase() + type.slice(1)
+    })
+    const typeProps = typeCombination.map(type => propsByType[type])
+    defineIndex(model, typeNames.join('And'), typeProps, true)
   }
 }
 

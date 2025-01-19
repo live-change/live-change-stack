@@ -65,7 +65,7 @@ export default function editorData(options) {
       draftIdParts.push(identifier)
     }
   }
-  const isNew = (idKey ? (!identifiers[idKey]) : (!draftIdParts.some(key => !identifiers[key])))
+  const isNew = (idKey ? (!identifiers[idKey]) : (!draftIdParts.some(key => identifiers[key])))
   const draftId = (idKey ? identifiers[idKey]
     : draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_')) ?? 'new'
   const draftIdentifiers = {
@@ -202,6 +202,7 @@ export default function editorData(options) {
         saveDraft: synchronizedData.save,
         savingDraft: synchronizedData.saving,
         saved: savedData,
+        savedPath: savedDataPath,
         draft: draftData,
         sourceChanged /// needed for draft discard on concurrent save
       }
@@ -239,6 +240,7 @@ export default function editorData(options) {
         save: synchronizedData.save,
         saving: synchronizedData.saving,
         saved: savedData,
+        savedPath: savedDataPath,
         reset,
         model,
       }

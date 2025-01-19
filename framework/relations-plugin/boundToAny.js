@@ -6,10 +6,10 @@ import {
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
 
 import {
-  defineView,
+  defineObjectView, defineRangeViews,
   defineSetAction, defineUpdateAction, defineResetAction, defineSetOrUpdateAction,
   defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
-} from './singularRelationUtils.js'
+} from './singularRelationAnyUtils.js'
 import { defineDeleteAction, defineDeleteTrigger } from './singularRelationAnyUtils.js'
 
 export default function(service, app) {
@@ -17,15 +17,25 @@ export default function(service, app) {
 
     context.relationWord = 'Friend'
     context.reverseRelationWord = 'Bound'
+    context.partialReverseRelationWord = 'Bound'
 
     defineAnyProperties(context.model, context.otherPropertyNames)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
-    defineView({ ...config, access: config.readAccess }, context,
-      config.readAccess || config.readAccessControl || config.writeAccessControl)
+    defineObjectView(config, context,
+      config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl
+    )
+    defineRangeViews(config, context,
+      config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl
+    )
+
     if(config.views) {
       for(const view of config.views) {
-        defineView({ ...config, ...view }, context, !view.internal)
+        if(view.type !== 'range') {
+          defineObjectView({ ...config, ...view }, context, !view.internal)
+        } else {
+          defineRangeViews({ ...config, ...view }, context, !view.internal)
+        }
       }
     }
 

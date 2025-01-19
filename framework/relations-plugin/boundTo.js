@@ -6,7 +6,8 @@ import {
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
 
 import {
-  defineView,
+  defineObjectView,
+  defineRangeViews,
   defineSetAction,
   defineUpdateAction,
   defineSetOrUpdateAction,
@@ -24,16 +25,25 @@ export default function(service, app) {
 
     context.relationWord = 'Friend'
     context.reverseRelationWord = 'Bound'
+    context.partialReverseRelationWord = 'Bound'
 
     defineProperties(context.model, context.others, context.otherPropertyNames)
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
-    defineView({ ...config, access: config.readAccess }, context,
+    defineObjectView({ ...config, access: config.readAccess }, context,
       config.readAccess || config.readAccessControl || config.writeAccessControl
     )
+    defineRangeViews(config, context,
+      config.listAccess || config.readAccess || config.listAccessControl
+    )
+
     if(config.views) {
       for(const view of config.views) {
-        defineView({ ...config, ...view }, context, !view.internal)
+        if(view.type !== 'range') {
+          defineObjectView({ ...config, ...view }, context, !view.internal)
+        } else {
+          defineRangeViews({ ...config, ...view }, context, !view.internal)
+        }
       }
     }
 

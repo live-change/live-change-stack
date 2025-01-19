@@ -44,9 +44,14 @@ export default function(service, app) {
     defineRangeViews(config, context,
       config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl
     )
+
     if(config.views) {
       for(const view of config.views) {
-        defineObjectView({ ...config, ...view }, context, !view.internal)
+        if(view.type !== 'range') {
+          defineObjectView({ ...config, ...view }, context, !view.internal)
+        } else {
+          defineRangeViews({ ...config, ...view }, context, !view.internal)
+        }
       }
     }
 

@@ -3,8 +3,6 @@
 <!--    <h4>definition</h4>
     <pre>{{ modelDefinition }}</pre>-->
 
-    <pre>{{ modelsPathRangeConfig.view }}</pre>
-    <pre>{{ identifiers }}</pre>
 
     <div class="surface-card w-full p-3 shadow-1 border-round mb-2">
       <slot name="header">
@@ -12,48 +10,41 @@
           Service <strong>{{ service }}</strong>
         </div>
         <div class="text-2xl">
-          <strong>{{ pluralize(model) }}</strong>
-          <span class="ml-1">list</span>
+          <strong>{{ model }}</strong>
         </div>
       </slot>
     </div>
 
-    <div class="surface-card p-3 shadow-1 border-round" v-if="modelsPathRangeFunctions">
-      <range-viewer v-for="(modelsPathRangeFunction, index) in modelsPathRangeFunctions"
-                    :key="JSON.stringify(modelsPathRangeConfig)+index"
-                    :pathFunction="modelsPathRangeFunction"
-                    :canLoadTop="false" canDropBottom
-                    loadBottomSensorSize="4000px" dropBottomSensorSize="3000px">
-        <template #empty>
-          <div class="text-xl text-800 my-1 mx-3">
-            No <strong>{{ pluralize(model[0].toLowerCase() +  model.slice(1)) }}</strong> found.
-          </div>
-        </template>
-        <template #default="{ item: object }">
-          <div class="flex flex-row align-items-center justify-content-between my-3">
-            <router-link :to="viewRoute(object)" class="no-underline text-color">
-              <ObjectIdentification
-                :objectType="service + '_' + model"
-                :object="object.to ?? object.id"
-                :data="object"
-                class="text-xl"
-              />
+    <div class="surface-card p-3 shadow-1 border-round" v-if="modelsPaths">
+      <div v-for="({ value: object }, index) in (modelsData ?? [])">
+        <div v-if="!object" class="text-xl text-800 my-1 mx-3">
+          <strong>{{ model }}</strong> not found.
+        </div>
+        <div v-else
+             :key="JSON.stringify(modelsPaths[index])+index"
+             class="flex flex-row align-items-center justify-content-between my-3">
+          <router-link :to="viewRoute(object)" class="no-underline text-color">
+            <ObjectIdentification
+              :objectType="service + '_' + model"
+              :object="object.to ?? object.id"
+              :data="object"
+              class="text-xl"
+            />
+          </router-link>
+          <div class="flex flex-row">
+            <router-link :to="viewRoute(object)" class="no-underline">
+              <Button icon="pi pi-eye" severity="primary" label="View" class="mr-2" />
             </router-link>
-            <div class="flex flex-row">
-              <router-link :to="viewRoute(object)" class="no-underline">
-                <Button icon="pi pi-eye" severity="primary" label="View" class="mr-2" />
-              </router-link>
 
-              <router-link :to="editRoute(object)" class="no-underline">
-                <Button icon="pi pi-pencil" severity="primary" label="Edit" class="mr-2" />
-              </router-link>
+            <router-link :to="editRoute(object)" class="no-underline">
+              <Button icon="pi pi-pencil" severity="primary" label="Edit" class="mr-2" />
+            </router-link>
 
-              <Button v-if="modelDefinition.crud?.delete" @click="ev => deleteObject(ev, object)"
-                      icon="pi pi-eraser" severity="primary" label="Delete" class="mr-2" />
-            </div>
+            <Button v-if="modelDefinition.crud?.delete" @click="ev => deleteObject(ev, object)"
+                    icon="pi pi-eraser" severity="primary" label="Delete" class="mr-2" />
           </div>
-        </template>
-      </range-viewer>
+        </div>
+      </div>
     </div>
     <div v-else class="flex align-items-start p-4 bg-pink-100 border-round border-1 border-pink-300 mb-4">
       <i class="pi pi-times-circle text-pink-900 text-2xl mr-3" />
@@ -65,9 +56,10 @@
       </div>
     </div>
 
-    <div v-if="modelDefinition.crud?.create" class="mt-2 flex flex-row justify-content-end mr-2">
+    <div v-if="modelDefinition.crud?.create && !modelsData.find(x => x?.value)"
+         class="mt-2 flex flex-row justify-content-end mr-2">
       <router-link :to="createRoute" class="no-underline2">
-        <Button icon="pi pi-plus" :label="'Create new '+model" />
+        <Button icon="pi pi-plus" :label="'Set '+model" />
       </router-link>
     </div>
 
@@ -87,6 +79,7 @@
         </div>
       </template>
     </ConfirmPopup>
+
   </div>
 </template>
 
@@ -102,7 +95,6 @@
 
   import { ref, computed, onMounted, defineProps, toRefs } from 'vue'
   import { RangeViewer, injectComponent } from "@live-change/vue3-components"
-  import pluralize from 'pluralize'
 
   const props = defineProps({
     service: {
@@ -117,12 +109,8 @@
       type: Object,
       default: () => ({})
     },
-    view: {
-      type: String,
-      default: undefined
-    }
   })
-  const { service, model, identifiers, view } = toRefs(props)
+  const { service, model, identifiers } = toRefs(props)
 
   import AutoObjectIdentification from './AutoObjectIdentification.vue'
 
@@ -135,7 +123,7 @@
     }, AutoObjectIdentification)
   )
 
-  import { useApi, usePath, live, reverseRange } from '@live-change/vue3-ssr'
+  import { useApi, usePath, live } from '@live-change/vue3-ssr'
   const api = useApi()
   const path = usePath()
 
@@ -143,27 +131,28 @@
     return api.services?.[service.value]?.models?.[model.value]
   })
 
-  const modelsPathRangeConfig = computed(() => {
+  const modelsPathConfig = computed(() => {
     return {
       service: service.value,
       model: model.value,
       definition: modelDefinition.value,
-      reverse: true,
-      view: modelDefinition.value?.crud?.[view.value ?? 'range']
     }
   })
-  const modelsPathRangeFunctions = computed(() => {
-    const config = modelsPathRangeConfig.value
-    const rangeView = config.view
+  const modelsPaths = computed(() => {
+    const config = modelsPathConfig.value
+    const readView = config.definition?.crud?.read
     if(!path[config.service]) return null
-    if(!path[config.service][rangeView]) return null
+    if(!path[config.service][readView]) return null
     let idents = identifiers.value
     if(!Array.isArray(idents)) idents = [idents]
-    return idents.map(ident => (range) =>  path[config.service][rangeView]({
-      ...ident,
-      ...(config.reverse ? reverseRange(range) : range),
+    return idents.map(ident => path[config.service][readView]({
+      ...ident
     }))
   })
+
+  const modelsData = await Promise.all(
+    modelsPaths.value.map(path => live(path))
+  )
 
   function objectIdentifiers(object) {
     const identifiers = {}
@@ -208,7 +197,7 @@
     params: {
       serviceName: service.value,
       modelName: model.value,
-      identifiers: Object.values(identifiers.value[0])
+      identifiers: Object.values(objectIdentifiers(identifiers.value[0]))
     }
   }))
 

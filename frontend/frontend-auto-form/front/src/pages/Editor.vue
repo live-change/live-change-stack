@@ -1,5 +1,10 @@
 <template>
   <div class="w-full lg:w-8 md:w-11">
+
+<!--    <pre>{{ identifiers }}</pre>
+    <pre>{{ modelDefinition.identifiers }}</pre>
+    <pre>{{identifiersObject}}</pre>-->
+
     <div class="surface-card p-3 shadow-1 border-round">
 
       <ModelEditor :service="serviceName" :model="modelName" :identifiers="identifiersObject" draft
@@ -26,7 +31,15 @@
     },
     identifiers: {
       type: Array,
-      default: []
+      default: () => []
+    },
+    identifiersTypes: {
+      type: Array,
+      default: () => undefined
+    },
+    identifiersProperties: {
+      type: Array,
+      default: () => undefined
     }
   })
   const { serviceName, modelName, identifiers } = toRefs(props)

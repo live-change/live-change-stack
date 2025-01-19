@@ -1,11 +1,10 @@
 <template>
   <div>
-    <!--
-      <h4>identifiers as object</h4>
-      <pre>{{ identifiersObject }}</pre>
+<!--
 
       <h4>definition</h4>
-      <pre>{{ modelDefinition }}</pre>-->
+      <pre>{{ modelDefinition }}</pre>
+-->
 
     <div class="">
       Service <strong>{{ service }}</strong>

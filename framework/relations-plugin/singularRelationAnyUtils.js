@@ -15,14 +15,14 @@ import { fireChangeTriggers } from "./changeTriggers.js"
 
 import pluralize from 'pluralize'
 
-function createIdentifiersProperties(keys) {
+export function createIdentifiersProperties(keys) {
   const identifiers = {}
   if(keys) for(const key of keys) {
-    identifiers[key] = {
+    identifiers[key + 'Type'] = {
       type: String,
       validation: ['nonEmpty']
     }
-    identifiers[key + 'Type'] = {
+    identifiers[key] = {
       type: String,
       validation: ['nonEmpty']
     }
@@ -33,17 +33,7 @@ function createIdentifiersProperties(keys) {
 function defineObjectView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
-  const viewProperties = {}
-  for (let i = 0; i < others.length; i++) {
-    viewProperties[otherPropertyNames[i]] = new PropertyDefinition({
-      type: 'String',
-      validation: ['nonEmpty']
-    })
-    viewProperties[otherPropertyNames[i] + 'Type'] = new PropertyDefinition({
-      type: 'String',
-      validation: ['nonEmpty']
-    })
-  }
+  const viewProperties = createIdentifiersProperties(otherPropertyNames)
   const sourceAccessControl = external
     && (config.singleAccessControl || config.readAccessControl || config.writeAccessControl)
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)

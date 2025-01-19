@@ -7,7 +7,8 @@ import {
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
 
 import {
-  defineView,
+  defineObjectView,
+  defineRangeViews,
   defineSetAction,
   defineUpdateAction,
   defineSetOrUpdateAction,
@@ -25,6 +26,7 @@ export default function(service, app) {
 
     context.relationWord = 'Property'
     context.reverseRelationWord = 'Owned'
+    context.partialReverseRelationWord = 'Owned'
 
     context.sameIdAsParent = true
 
@@ -34,11 +36,19 @@ export default function(service, app) {
     addAccessControlParents(context)
     defineIndexes(context.model, context.otherPropertyNames, context.others)
 
-    defineView({ ...config }, context,
+    defineObjectView({ ...config }, context,
       config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
+    defineRangeViews(config, context,
+      config.listAccess || config.readAccess || config.listAccessControl
+    )
+
     if(config.views) {
       for(const view of config.views) {
-        defineView({ ...config, ...view }, context, !view.internal)
+        if(view.type !== 'range') {
+          defineObjectView({ ...config, ...view }, context, !view.internal)
+        } else {
+          defineRangeViews({ ...config, ...view }, context, !view.internal)
+        }
       }
     }
 

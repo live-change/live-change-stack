@@ -30,9 +30,9 @@
 
     </div>
 
-    <div v-for="itemRelation of itemRelations" class="mb-4">
-      <ModelList :service="itemRelation.from.serviceName" :model="itemRelation.from.name"
-                 :identifiers="relatedIdentifiers">
+    <div v-for="preparedRelation of visibleObjectRelations" class="mb-4">
+      <ModelSingle :service="preparedRelation.service" :model="preparedRelation.model"
+                 :identifiers="preparedRelation.identifiers">
         <template #header>
           <div class="text-xl">
             <ObjectIdentification
@@ -42,19 +42,33 @@
               class="mr-2"
             />
             <span class="mr-2 font-medium">{{ model }}'s</span>
-            <span class="font-bold">{{ pluralize(itemRelation.from.name) }}</span>:
+            <span class="font-bold">{{ preparedRelation.model }}</span>:
           </div>
         </template>
+      </ModelSingle>
+    </div>
 
+    <div v-for="preparedRelation of visibleRangeRelations" class="mb-4">
+      <ModelList :service="preparedRelation.service" :model="preparedRelation.model"
+                 :identifiers="preparedRelation.identifiers" :view="preparedRelation.view">
+        <template #header>
+          <div class="text-xl">
+            <ObjectIdentification
+              :objectType="service + '_' + model"
+              :object="object.to ?? object.id"
+              :data="object"
+              class="mr-2"
+            />
+            <span class="mr-2 font-medium">{{ model }}'s</span>
+            <span class="font-bold">{{ pluralize(preparedRelation.model) }}</span>:
+          </div>
+        </template>
       </ModelList>
-<!--
-      <pre>{{ relatedIdentifiers }}</pre>
-
-      <pre>{{ itemRelation }}</pre>-->
-
     </div>
 
     <div class="surface-card p-3 shadow-1 border-round">
+
+      <pre>{{ preparedRelations }}</pre>
 
       <h4>Backward relations</h4>
       <pre>{{
@@ -72,10 +86,11 @@
 
   import AutoView from '../view/AutoView.vue'
   import ModelList from './ModelList.vue'
+  import ModelSingle from './ModelSingle.vue'
 
   import pluralize from 'pluralize'
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
-  import { RangeViewer, injectComponent } from "@live-change/vue3-components"
+  import { RangeViewer, injectComponent, InjectComponent } from "@live-change/vue3-components"
 
   const props = defineProps({
     service: {
@@ -122,9 +137,9 @@
     return api.services?.[service.value]?.models?.[model.value]
   })
 
-  import { getForwardRelations, getBackwardRelations } from '../../logic/relations.js'
+  import { getForwardRelations, getBackwardRelations, anyRelationsTypes, prepareObjectRelations } from '../../logic/relations.js'
   const forwardRelations = computed(() => getForwardRelations(modelDefinition.value, () => true, api))
-  const backwardRelations = computed(() => getBackwardRelations(modelDefinition.value, false, api))
+  const backwardRelations = computed(() => getBackwardRelations(modelDefinition.value,  api))
 
   const itemRelations = computed(
     () => backwardRelations.value.filter(relation => relation.relation === 'itemOf')
@@ -146,6 +161,25 @@
   const relatedIdentifiers = computed(() => ({
     [model.value[0].toLowerCase() + model.value.slice(1)]: object.value.to ?? object.value.id
   }))
+
+
+  const preparedRelations = computed(() => {
+    const objectType = service.value + '_' + model.value
+    return prepareObjectRelations(objectType, object.value.to ?? object.value.id, api)
+  })
+
+  const visibleRangeRelations = computed(() => preparedRelations.value.filter(preparedRelation => {
+    if(preparedRelation.view && preparedRelation.access.value[preparedRelation.view]) return true
+    if(preparedRelation.access.value.range) return true
+    return false
+  }))
+
+  const visibleObjectRelations = computed(() => preparedRelations.value.filter(preparedRelation => {
+    if(!preparedRelation.singular) return false
+    if(!preparedRelation.access.value.read) return false
+    return true
+  }))
+
 
 </script>
 

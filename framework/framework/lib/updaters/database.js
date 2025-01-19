@@ -81,7 +81,8 @@ async function update(changes, service, app, force) {
       if(!table) throw new Error("only function indexes are possible without table")
       if(index.multi) {
        // if(Array.isArray(index.property)) throw new Error("multi indexes on multiple properties are not supported!")
-        const properties = (Array.isArray(index.property) ? index.property : [index.property]).map(p => p.split('.'))
+        const properties = (Array.isArray(index.property) ? index.property : [index.property])
+          .map(propSet => (Array.isArray(propSet) ? propSet : [propSet]).map(p => p.split('.')))
         const func = async function(input, output, { table, properties }) {
           const value = (obj, property) => {
             let at = obj
@@ -91,7 +92,7 @@ async function update(changes, service, app, force) {
             return [JSON.stringify(at)]
           }
           const keys = (obj, id = 0) => {
-            const values = value(obj, properties[id])
+            const values = properties[id].map(property => value(obj, property)).flat()
             if(id === properties.length - 1) return values
             return values.flatMap(v => keys(obj, id + 1).map(k => v + ':' + k))
           }
