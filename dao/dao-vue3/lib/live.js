@@ -49,7 +49,7 @@ async function fetch(api, path) {
         + '\n when fetching '+JSON.stringify(what) + ' with more=('+JSON.stringify(more)+')'
       )
     }
-    const data = res.data
+    const data = JSON.parse(JSON.stringify(res.data))
     if(data && more) {
       if(Array.isArray(data)) {
         for(let i = 0; i < data.length; i ++) {

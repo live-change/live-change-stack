@@ -17,7 +17,12 @@
       </div>
     </template>
   </suspense>
-  <slot v-else v-bind="{ isLoading: !!loading.length, loading, errors }"></slot>
+  <div v-else>
+    <slot v-bind="{ isLoading: !!loading.length, loading, errors }"></slot>
+    <slot name="loading" v-if="loading.length && !errors.length">
+      Loading...
+    </slot>
+  </div>
 
   <slot name="error" v-if="errors.length" v-bind="{ errors }">
     <h1>Loading errors!</h1>
