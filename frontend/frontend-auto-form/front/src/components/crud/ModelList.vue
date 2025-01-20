@@ -3,8 +3,8 @@
 <!--    <h4>definition</h4>
     <pre>{{ modelDefinition }}</pre>-->
 
-    <pre>{{ modelsPathRangeConfig.view }}</pre>
-    <pre>{{ identifiers }}</pre>
+<!--    <pre>{{ modelsPathRangeConfig.view }}</pre>
+    <pre>{{ identifiers }}</pre>-->
 
     <div class="surface-card w-full p-3 shadow-1 border-round mb-2">
       <slot name="header">

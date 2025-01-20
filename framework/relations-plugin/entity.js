@@ -1,6 +1,7 @@
 import {
   defineProperties, defineIndex,
-  processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl
+  processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl,
+  includeAccessRoles
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import App from '@live-change/framework'
@@ -13,6 +14,7 @@ const annotation = 'entity'
 
 function entityAccessControl({service, modelName, modelPropertyName}, accessControl) {
   if(!accessControl) return undefined
+  if(Array.isArray(accessControl)) accessControl = { roles: accessControl }
   return {
     objects: p => [{ objectType: service.name + '_' + modelName, object: p[modelPropertyName]}],
     ...accessControl
@@ -367,6 +369,10 @@ export default function(service, app) {
 
     model.identifiers = [{ name: modelPropertyName, field: 'id' }]
     model.crud = {}
+    includeAccessRoles(model, [
+      config.readAccessControl, config.writeAccessControl,
+      config.createAccessControl, config.updateAccessControl, config.deleteAccessControl
+    ])
 
     function modelRuntime() {
       return service._runtime.models[modelName]

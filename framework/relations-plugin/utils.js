@@ -229,3 +229,19 @@ export function defineParentDeleteTriggers(config, context) {
 export function defineParentCopyTriggers(config, context) {
   registerParentCopyTriggers(context, config)
 }
+
+export function includeAccessRoles(model, access) {
+  if(!access) return
+  if(!model.accessRoles) model.accessRoles = []
+  if(typeof access === 'string' && !model.accessRoles.find(role => role === access)) {
+    model.accessRoles.push(access)
+  }
+  if(Array.isArray(access)) {
+    for(const element of access) {
+      includeAccessRoles(model, element)
+    }
+  }
+  if(access.roles) {
+    includeAccessRoles(model, access.roles)
+  }
+}

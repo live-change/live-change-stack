@@ -1,6 +1,7 @@
 import { usePath, live, useApi } from '@live-change/vue3-ssr'
+import { computed } from 'vue'
 
-export default function viewData(options) {
+export default async function viewData(options) {
   if(!options) throw new Error('options must be provided')
 
   const {
@@ -29,6 +30,17 @@ export default function viewData(options) {
 
   const savedDataPath = path[serviceName][crudMethods.read](identifiers)
 
-  return live(savedDataPath)
+  let data
+  let error
+
+  try {
+    data = await live(savedDataPath)
+  } catch(e) {
+    console.log("VIEW DATA CATCH ERROR", e)
+    error = computed(() => e) /// TODO: realtime error handling for access errors
+    data = computed(() => null)
+  }
+
+  return { data, error }
 
 }

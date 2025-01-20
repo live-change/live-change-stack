@@ -277,27 +277,34 @@ async function live(api, path, onUnmountedCb) {
     }
   }
   const resultRef = ref()
+  let error = null
   await new Promise((resolve, reject) => {
-    let error = null
-    const onError = (msg) => {
-      console.error("LIVE ERROR", msg, 'WHILE FETCHING', path)
-      if(error) return
+    const onBindError = (msg) => {
+      console.error("LIVE BIND ERROR", msg, 'WHILE FETCHING', path)
       error = msg
-      reject(error)
+      //reject(error)
     }
-    const bound = bindResult(path.what, path.more, path.actions, resultRef, 'value', onError)
+    const onResolveError = (msg) => {
+      console.error("LIVE RESOLVE ERROR", msg, 'WHILE FETCHING', path)
+      error = msg
+      //reject(error)
+    }
+    const bound = bindResult(path.what, path.more, path.actions, resultRef, 'value', onBindError)
     const pathsObserver = (signal, value) => {}
     preFetchPaths.observe(pathsObserver)
     onUnmountedCb(() => {
       preFetchPaths.unobserve(pathsObserver)
       bound.dispose()
     })
-    preFetchPaths.wait().then(resolve).catch(onError)
+    preFetchPaths.wait().then((v) => {
+      resolve(v)
+    }).catch(onResolveError)
   })
   while(fetchPromises.length > 0) { // wait for all fetch promises, including ones added by bindResult
     await fetchPromises.shift()
   }
   while(unref(resultRef) === undefined) { // wait for next tick
+    if(error) throw new Error(error)
     await new Promise((resolve) => setTimeout(resolve, 0))
   }
   return resultRef

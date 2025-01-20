@@ -74,8 +74,14 @@ definition.trigger({
     if(!accountData) throw 'notFound'
     const { user } = accountData
 
+    let offlineAccess
+    const userAccounts = await Account.indexRangeGet('byUser', user)
     console.log("GET OFFLINE ACCESS!", account, user)
-    const offlineAccess = await OfflineAccess.indexObjectGet('byUserAccount', [user, account])
+    if(userAccounts.length === 1) {
+      offlineAccess = await OfflineAccess.indexObjectGet('byUser', [user])
+    } else {
+      offlineAccess = await OfflineAccess.indexObjectGet('byUserAccount', [user, account])
+    }
     console.log("OFFLINE ACCESS", offlineAccess)
     if(offlineAccess) {
       await triggerService({

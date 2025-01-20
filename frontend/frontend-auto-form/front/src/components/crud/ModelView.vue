@@ -10,74 +10,101 @@
     <h4>object</h4>
     <pre>{{ object }}</pre>-->
 
-    <div class="surface-card p-3 shadow-1 border-round mb-4">
+    <div v-if="object">
+      <div class="surface-card p-3 shadow-1 border-round mb-4">
 
-      <div class="">
-        Service <strong>{{ service }}</strong>
+        <div class="">
+          Service <strong>{{ service }}</strong>
+        </div>
+        <div class="flex flex-row flex-wrap justify-content-between align-items-top">
+          <div class="text-2xl mb-4">
+            <strong>{{ model }}</strong>
+            <ObjectIdentification
+              :objectType="service + '_' + model"
+              :object="object.to ?? object.id"
+              :data="object"
+              class="ml-2"
+            />
+          </div>
+          <Button label="Access" icon="pi pi-key" class="p-button mb-4" @click="showAccessControl" />
+        </div>
+
+        <AutoView :value="object" :root-value="object" :i18n="i18n" :attributes="attributes"
+                  :definition="modelDefinition" />
+
       </div>
-      <div class="text-2xl mb-4">
-        <strong>{{ model }}</strong>
-        <ObjectIdentification
-          :objectType="service + '_' + model"
-          :object="object.to ?? object.id"
-          :data="object"
-          class="ml-2"
+
+      <div v-for="preparedRelation of visibleObjectRelations" class="mb-4">
+        <ModelSingle :service="preparedRelation.service" :model="preparedRelation.model"
+                   :identifiers="preparedRelation.identifiers">
+          <template #header>
+            <div class="text-xl">
+              <ObjectIdentification
+                :objectType="service + '_' + model"
+                :object="object.to ?? object.id"
+                :data="object"
+                class="mr-2"
+              />
+              <span class="mr-2 font-medium">{{ model }}'s</span>
+              <span class="font-bold">{{ preparedRelation.model }}</span>:
+            </div>
+          </template>
+        </ModelSingle>
+      </div>
+
+      <div v-for="preparedRelation of visibleRangeRelations" class="mb-4">
+        <ModelList :service="preparedRelation.service" :model="preparedRelation.model"
+                   :identifiers="preparedRelation.identifiers" :view="preparedRelation.view">
+          <template #header>
+            <div class="text-xl">
+              <ObjectIdentification
+                :objectType="service + '_' + model"
+                :object="object.to ?? object.id"
+                :data="object"
+                class="mr-2"
+              />
+              <span class="mr-2 font-medium">{{ model }}'s</span>
+              <span class="font-bold">{{ pluralize(preparedRelation.model) }}</span>:
+            </div>
+          </template>
+        </ModelList>
+      </div>
+
+      <Dialog v-model:visible="accessControlDialog"
+              :modal="true">
+        <template #header>
+          <div class="text-900 text-3xl font-medium">
+            Access Control
+          </div>
+        </template>
+        <AccessControl
+          :objectType="objectType" :object="object.to ?? object.id"
+          :availableRoles="accessControlRoles"
+          :availablePublicRoles="accessControlRoles"
+          :defaultInviteRoles="accessControlRoles.slice(0, 1)"
+          :adminRoles="['admin', 'owner']"
         />
-      </div>
-
-      <AutoView :value="object" :root-value="object" :i18n="i18n" :attributes="attributes"
-                :definition="modelDefinition" />
+      </Dialog>
 
     </div>
-
-    <div v-for="preparedRelation of visibleObjectRelations" class="mb-4">
-      <ModelSingle :service="preparedRelation.service" :model="preparedRelation.model"
-                 :identifiers="preparedRelation.identifiers">
-        <template #header>
-          <div class="text-xl">
-            <ObjectIdentification
-              :objectType="service + '_' + model"
-              :object="object.to ?? object.id"
-              :data="object"
-              class="mr-2"
-            />
-            <span class="mr-2 font-medium">{{ model }}'s</span>
-            <span class="font-bold">{{ preparedRelation.model }}</span>:
-          </div>
-        </template>
-      </ModelSingle>
-    </div>
-
-    <div v-for="preparedRelation of visibleRangeRelations" class="mb-4">
-      <ModelList :service="preparedRelation.service" :model="preparedRelation.model"
-                 :identifiers="preparedRelation.identifiers" :view="preparedRelation.view">
-        <template #header>
-          <div class="text-xl">
-            <ObjectIdentification
-              :objectType="service + '_' + model"
-              :object="object.to ?? object.id"
-              :data="object"
-              class="mr-2"
-            />
-            <span class="mr-2 font-medium">{{ model }}'s</span>
-            <span class="font-bold">{{ pluralize(preparedRelation.model) }}</span>:
-          </div>
-        </template>
-      </ModelList>
-    </div>
+    <NotFound v-else />
 
     <div class="surface-card p-3 shadow-1 border-round">
 
       <pre>{{ preparedRelations }}</pre>
 
-      <h4>Backward relations</h4>
-      <pre>{{
-          backwardRelations.map(
-            ({ from, relation, what }) => ({ from: from.serviceName + '_' + from.name, relation, what })
-          )
-      }}</pre>
+      <div v-if="backwardRelations">
+        <h4>Backward relations</h4>
+        <pre>{{
+            backwardRelations.map(
+              ({ from, relation, what }) => ({ from: from.serviceName + '_' + from.name, relation, what })
+            )
+        }}</pre>
+      </div>
 
     </div>
+
+    <pre>{{ accessControlRoles }}</pre>
 
   </div>
 </template>
@@ -87,6 +114,9 @@
   import AutoView from '../view/AutoView.vue'
   import ModelList from './ModelList.vue'
   import ModelSingle from './ModelSingle.vue'
+
+  import { NotFound } from "@live-change/url-frontend"
+  import { AccessControl } from "@live-change/access-control-frontend"
 
   import pluralize from 'pluralize'
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
@@ -118,7 +148,6 @@
 
   const emit = defineEmits(['saved', 'draftSaved', 'draftDiscarded', 'saveError', 'created' ])
 
-
   import AutoObjectIdentification from './AutoObjectIdentification.vue'
   const ObjectIdentification = computed(() =>
     injectComponent({
@@ -141,10 +170,6 @@
   const forwardRelations = computed(() => getForwardRelations(modelDefinition.value, () => true, api))
   const backwardRelations = computed(() => getBackwardRelations(modelDefinition.value,  api))
 
-  const itemRelations = computed(
-    () => backwardRelations.value.filter(relation => relation.relation === 'itemOf')
-  )
-
   import viewData from '../../logic/viewData.js'
 
   const viewDataPromise = viewData({
@@ -154,18 +179,17 @@
     path, api
   })
 
-  const [object] = await Promise.all([
+  const [{ data: object, error }] = await Promise.all([
     viewDataPromise
   ])
 
-  const relatedIdentifiers = computed(() => ({
-    [model.value[0].toLowerCase() + model.value.slice(1)]: object.value.to ?? object.value.id
-  }))
+  console.log("GOT OBJECT", object, "ERROR", error)
 
+  const objectType = computed(() => service.value + '_' + model.value)
 
   const preparedRelations = computed(() => {
-    const objectType = service.value + '_' + model.value
-    return prepareObjectRelations(objectType, object.value.to ?? object.value.id, api)
+    if(!object.value) return []
+    return prepareObjectRelations(objectType.value, object.value.to ?? object.value.id, api)
   })
 
   const visibleRangeRelations = computed(() => preparedRelations.value.filter(preparedRelation => {
@@ -180,6 +204,12 @@
     return true
   }))
 
+  const accessControlConfig = computed(() => modelDefinition.value?.autoCrud?.accessControl)
+  const accessControlDialog = ref(false)
+  function showAccessControl() {
+    accessControlDialog.value = true
+  }
+  const accessControlRoles = computed(() => modelDefinition.value?.accessRoles ?? [])
 
 </script>
 
