@@ -50,7 +50,6 @@
   onMounted(() => {
     if(localStorage.redirectAfterSignIn) {
       const route = JSON.parse(localStorage.redirectAfterSignIn)
-      console.error("ROUTE!", route)
       localStorage.removeItem('redirectAfterSignIn')
       const delay = route?.meta?.afterSignInRedirectDelay ?? userClientConfig?.afterSignInRedirectDelay ?? 10
       delete route.meta

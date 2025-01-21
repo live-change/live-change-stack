@@ -123,8 +123,8 @@
   let timeout
   onMounted(() => {
     if(localStorage.redirectAfterSignIn) {
+      const route = JSON.parse(localStorage.redirectAfterSignIn)
       localStorage.removeItem('redirectAfterSignIn')
-      const route = JSON.parse(afterSignIn.value)
       const delay = route?.meta?.afterSignInRedirectDelay ?? userClientConfig?.afterSignInRedirectDelay ?? 10
       delete route.meta
       if(delay) {
