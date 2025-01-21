@@ -1,6 +1,6 @@
 import {
   defineAnyProperties, defineAnyIndex,
-  processModelsAnyAnnotation, generateAnyId
+  processModelsAnyAnnotation, generateAnyId, defineAnyTypeIndexes
 } from './utilsAny.js'
 
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
@@ -21,6 +21,7 @@ export default function(service, app) {
 
     defineAnyProperties(context.model, context.otherPropertyNames)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
+    defineAnyTypeIndexes(config, context, context.otherPropertyNames.length === 1)
 
     defineObjectView(config, context,
       config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl

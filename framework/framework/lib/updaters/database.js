@@ -83,7 +83,7 @@ async function update(changes, service, app, force) {
        // if(Array.isArray(index.property)) throw new Error("multi indexes on multiple properties are not supported!")
         const properties = (Array.isArray(index.property) ? index.property : [index.property])
           .map(propSet => (Array.isArray(propSet) ? propSet : [propSet]).map(p => p.split('.')))
-        const func = async function(input, output, { table, properties }) {
+        const func = async function(input, output, { table, properties, hash }) {
           const value = (obj, property) => {
             let at = obj
             for(const p of property) at = at && at[p]
@@ -101,32 +101,36 @@ async function update(changes, service, app, force) {
               let pointers = obj && new Set(keys(obj))
               let oldPointers = oldObj && new Set(keys(oldObj))
               for(let pointer of pointers) if(!oldPointers.has(pointer)) {
-                output.change({ id: pointer+'_'+obj.id, to: obj.id }, null)
+                output.change({ id: pointer+'_'+(hash ? sha1(obj.id, 'base64') : obj.id), to: obj.id }, null)
               }
               for(let pointer of oldPointers) if(!pointers.has(pointer)) {
-                output.change(null, { id: pointer+'_'+obj.id, to: obj.id })
+                output.change(null, { id: pointer+'_'+(hash ? sha1(obj.id, 'base64') : obj.id), to: obj.id })
               }
             } else if(obj) {
-              keys(obj).forEach(k => output.change({ id: k+'_'+obj.id, to: obj.id }, null))
+              keys(obj).forEach(k => output.change({
+                id: k+'_'+(hash ? sha1(obj.id, 'base64') : obj.id),
+                to: obj.id }, null))
             } else if(oldObj) {
-              keys(oldObj).forEach(k => output.change(null, { id: k+'_'+oldObj.id, to: oldObj.id }))
+              keys(oldObj).forEach(k => output.change(null, {
+                id: k+'_'+(hash ? sha1(obj.id, 'base64') : obj.id),
+                to: oldObj.id }))
             }
           })
         }
         const functionCode = `(${func})`
         ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[functionCode] = func
         await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
-          functionCode, { properties, table }, index.storage ?? {})
+          functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
       } else {
         if(!table) throw new Error("only function indexes are possible without table")
         const properties = (Array.isArray(index.property) ? index.property : [index.property]).map(p => p.split('.'))
-        const func = async function(input, output, { table,  properties }) {
+        const func = async function(input, output, { table, properties, hash }) {
           const mapper = (obj) => ({
             id: properties.map(path => {
               let at = obj
               for(const p of path) at = at && at[p]
               return at === undefined ? '' : JSON.stringify(at)
-            }).join(':')+'_'+obj.id,
+            }).join(':')+'_'+(hash ? sha1(obj.id, 'base64') : obj.id),
             to: obj.id
           })
           await input.table(table).onChange((obj, oldObj) =>
@@ -135,7 +139,7 @@ async function update(changes, service, app, force) {
         const functionCode = `(${func})`
         ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[functionCode] = func
         await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
-          functionCode, { properties, table }, index.storage ?? {})
+          functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
       }
     }
 

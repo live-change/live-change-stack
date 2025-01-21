@@ -1,5 +1,5 @@
 import {
-  defineAnyProperties, defineAnyIndex, processModelsAnyAnnotation
+  defineAnyProperties, defineAnyIndex, processModelsAnyAnnotation, defineAnyTypeIndexes
 } from './utilsAny.js'
 
 import {
@@ -21,6 +21,7 @@ export default function(service, app) {
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
+    defineAnyTypeIndexes(config, context, false)
 
     if(config.sortBy) {
       for(const sortFields of config.sortBy) {

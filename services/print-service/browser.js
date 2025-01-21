@@ -23,7 +23,9 @@ async function newBrowser() {
     return browser
   } if(config.browserHost) {
     const ip = await dns.resolve4(config.browserHost)
-    const browserInfo = await got.post(`http://${ip}:${config.browserPort}/json/version`).json()
+    const browserInfoUrl = `http://${ip}:${config.browserPort}/json/version`
+    console.log("Browser info url", browserInfoUrl)
+    const browserInfo = await got.post(browserInfoUrl).json()
     console.log("Browser info", browserInfo)
     try {
       const browser = await chromium.connectOverCDP(browserInfo.webSocketDebuggerUrl)

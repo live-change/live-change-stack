@@ -44,11 +44,11 @@ async function iterateChildren(context, propertyName, path, cb) {
         limit: bucketSize
       })
       //console.log("BUCKET", bucket)
-      if(bucket.length == 0) break
+      if(bucket.length === 0) break
       gt = bucket[bucket.length - 1].id
       const copyTriggerPromises = bucket.map(entity => cb({ ...entity, id: entity.to }))
       await Promise.all(copyTriggerPromises)
-    } while (bucket.length == bucketSize)
+    } while (bucket.length === bucketSize)
   }
 }
 
@@ -135,7 +135,7 @@ async function copyObject(context, objectType, object, parentType, parent, ident
   }
   for(let i = 0; i < others.length; i++) {
     const other = others[i]
-    if(other == parentType) {
+    if(other === parentType) {
       newIdentifiers[otherPropertyNames[i]] = parent
     }
   }

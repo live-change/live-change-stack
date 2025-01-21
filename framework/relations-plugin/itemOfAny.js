@@ -1,7 +1,7 @@
 import {
   defineAnyProperties, defineAnyIndexes,
   processModelsAnyAnnotation, addAccessControlAnyParents, generateAnyId, defineDeleteByOwnerEvents,
-  defineParentDeleteTrigger
+  defineParentDeleteTrigger, defineAnyTypeIndexes
 } from './utilsAny.js'
 
 import {
@@ -26,6 +26,7 @@ export default function(service, app) {
 
     addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames)
+    defineAnyTypeIndexes(config, context, false)
 
     if(config.sortBy) {
       for(const sortFields of config.sortBy) {

@@ -1,7 +1,7 @@
 import {
   defineAnyProperties, defineAnyIndexes,
   processModelsAnyAnnotation, generateAnyId, addAccessControlAnyParents,
-  defineDeleteByOwnerEvents, defineParentDeleteTrigger
+  defineDeleteByOwnerEvents, defineParentDeleteTrigger, defineAnyTypeIndexes,
 } from './utilsAny.js'
 
 import {
@@ -37,6 +37,7 @@ export default function(service, app) {
 
     addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames, false)
+    defineAnyTypeIndexes(config, context, context.otherPropertyNames.length === 1)
 
     defineObjectView(config, context,
       config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl
