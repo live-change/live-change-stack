@@ -11,7 +11,8 @@ const definition = app.createServiceDefinition({
 const config = definition.config
 
 definition.clientConfig = {
-  remoteAccountTypes: config.remoteAccountTypes
+  remoteAccountTypes: config.remoteAccountTypes,
+  afterSignInRedirectDelay: config.afterSignInRedirectDelay,
 }
 
 export default definition

@@ -3,7 +3,7 @@ export { LimitedAccess }
 import InsufficientAccess from "./front/src/components/InsufficientAccess.vue"
 export { InsufficientAccess }
 
-import "./front/src/notifications/index.js"
+export * from "./front/src/notifications/index.js"
 
 import AccessControl from "./front/src/configuration/AccessControl.vue"
 import AccessInvitations from "./front/src/configuration/AccessInvitations.vue"

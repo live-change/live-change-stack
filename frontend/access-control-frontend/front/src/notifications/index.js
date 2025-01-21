@@ -6,3 +6,5 @@ notificationTypes.accessControl_Invitation = {
   component: InviteNotification
 }
 */
+
+export { InviteNotification }

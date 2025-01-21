@@ -105,6 +105,13 @@
 
   const masked = ref(true)
 
+  import { useToast } from 'primevue/usetoast'
+  const toast = useToast()
+  import { useConfirm } from 'primevue/useconfirm'
+  const confirm = useConfirm()
+
+  const userClientConfig = api.getServiceDefinition('user')?.clientConfig
+
   const [passwordExists, emails, phones] = await Promise.all([
     live(path().passwordAuthentication.myUserPasswordAuthenticationExists()),
     live(path().email?.myUserEmails()),
@@ -115,13 +122,27 @@
   const redirectTime = ref()
   let timeout
   onMounted(() => {
-    redirectTime.value = new Date(Date.now() + 10 * 1000)
-    timeout = setTimeout(() => {
-      if (afterSignIn.value) {
-        localStorage.removeItem('redirectAfterSignIn')
-        router.push(JSON.parse(afterSignIn.value))
+    if(localStorage.redirectAfterSignIn) {
+      localStorage.removeItem('redirectAfterSignIn')
+      const route = JSON.parse(afterSignIn.value)
+      const delay = route?.meta?.afterSignInRedirectDelay ?? userClientConfig?.afterSignInRedirectDelay ?? 10
+      delete route.meta
+      if(delay) {
+        redirectTime.value = new Date(Date.now() + delay * 1000)
+        timeout = setTimeout(() => {
+          if(afterSignIn.value) {
+            router.push(route)
+          }
+        }, redirectTime.value - currentTime.value)
+      } else {
+        toast.add({
+          severity: 'info', life: 6000,
+          summary: 'Signed up',
+          detail: 'Congratulations! You have successfully created your account.'
+        })
+        router.push(route)
       }
-    }, redirectTime.value - currentTime.value)
+    }
   })
   onUnmounted(() => {
     clearTimeout(timeout)

@@ -34,17 +34,42 @@
 
   import pluralize from 'pluralize'
 
+  import { useApi } from "@live-change/vue3-ssr"
+  const api = useApi()
+
+  import { useToast } from 'primevue/usetoast'
+  const toast = useToast()
+  import { useConfirm } from 'primevue/useconfirm'
+  const confirm = useConfirm()
+
+  const userClientConfig = api.getServiceDefinition('user')?.clientConfig
+
   const afterSignIn = computed( () => isMounted.value && localStorage.redirectAfterSignIn )
   const redirectTime = ref()
   let timeout
   onMounted(() => {
-    redirectTime.value = new Date(Date.now() + 10 * 1000)
-    timeout = setTimeout(() => {
-      if (afterSignIn.value) {
-        localStorage.removeItem('redirectAfterSignIn')
-        router.push(JSON.parse(afterSignIn.value))
+    if(localStorage.redirectAfterSignIn) {
+      const route = JSON.parse(localStorage.redirectAfterSignIn)
+      console.error("ROUTE!", route)
+      localStorage.removeItem('redirectAfterSignIn')
+      const delay = route?.meta?.afterSignInRedirectDelay ?? userClientConfig?.afterSignInRedirectDelay ?? 10
+      delete route.meta
+      if(delay) {
+        redirectTime.value = new Date(Date.now() + delay * 1000)
+        timeout = setTimeout(() => {
+          if(afterSignIn.value) {
+            router.push(route)
+          }
+        }, redirectTime.value - currentTime.value)
+      } else {
+        toast.add({
+          severity: 'info', life: 6000,
+          summary: 'Signed in',
+          detail: 'Congratulations! You have successfully logged in to your account.'
+        })
+        router.push(route)
       }
-    }, redirectTime.value - currentTime.value)
+    }
   })
   onUnmounted(() => {
     clearTimeout(timeout)
