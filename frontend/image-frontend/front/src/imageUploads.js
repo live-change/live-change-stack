@@ -15,8 +15,8 @@ async function handleUpload(upload, options) {
 export function uploadImage(purpose, uploadable, options = {}) {
   const upload = new ImageUpload(purpose, uploadable, options)
   if(options.id) {
-    const existingIndex = imageUploads.value.findIndex(u => u.id == options.id)
-    if( existingIndex != -1 ) {
+    const existingIndex = imageUploads.value.findIndex(u => u.id === options.id)
+    if( existingIndex !== -1 ) {
       imageUploads.value[existingIndex].cancel()
       imageUploads.value[existingIndex] = upload
       handleUpload(upload, options)

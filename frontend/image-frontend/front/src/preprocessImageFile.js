@@ -1,5 +1,5 @@
 import {
-  imageToCanvas, loadImageUpload, cancelOrientation, hasAlpha, isExifOrientationSupported
+  imageToCanvas, loadImageUpload, cancelOrientation, hasAlpha, isExifOrientationSupported, loadImage
 } from "./imageUtils.js"
 import imageResizer from "./imageResizer"
 
@@ -83,20 +83,26 @@ async function preProcessImageFile({ file, image, canvas }, config) {
 
     console.log(`RESIZING ${image.width}x${image.height} => ${targetWidth}x${targetHeight}`)
 
+    let [destWidth, destHeight] =
+      image.orientation > 4 && !(await isExifOrientationSupported())
+      ? [targetHeight, targetWidth]
+      : [targetWidth, targetHeight]
     let destCanvas = document.createElement('canvas')
-    if(image.orientation > 4 && !(await isExifOrientationSupported())) { // Swap dimmensions
-      destCanvas.width = targetHeight
-      destCanvas.height = targetWidth
-    } else {
-      destCanvas.width = targetWidth
-      destCanvas.height = targetHeight
+    destCanvas.width = destWidth
+    destCanvas.height = destHeight
+    try {
+      await imageResizer.resize(canvas, destCanvas, {
+        unsharpAmount: 80,
+        unsharpRadius: 0.6,
+        unsharpThreshold: 2,
+        alpha: hasAlpha(canvas)
+      })
+    } catch (e) {
+      const context = destCanvas.getContext('2d')
+      context.imageSmoothingEnabled = true
+      context.imageSmoothingQuality = 'high'
+      context.drawImage(canvas, 0, 0, destCanvas.width, destCanvas.height)
     }
-    await imageResizer.resize(canvas, destCanvas, {
-      unsharpAmount: 80,
-      unsharpRadius: 0.6,
-      unsharpThreshold: 2,
-      alpha: hasAlpha(canvas)
-    })
     canvas = destCanvas
   }
 

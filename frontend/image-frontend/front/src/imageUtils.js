@@ -13,22 +13,22 @@ function getOrientation(jpegData) {
   if(window.forceOrientation) return window.forceOrientation
 
   let view = new DataView(jpegData)
-  if (view.getUint16(0, false) != 0xFFD8) return undefined
+  if (view.getUint16(0, false) !== 0xFFD8) return undefined
   let length = view.byteLength, offset = 2
   while (offset < length) {
     let marker = view.getUint16(offset, false)
     offset += 2
-    if (marker == 0xFFE1) {
-      if (view.getUint32(offset += 2, false) != 0x45786966) return undefined
-      let little = view.getUint16(offset += 6, false) == 0x4949
+    if (marker === 0xFFE1) {
+      if (view.getUint32(offset += 2, false) !== 0x45786966) return undefined
+      let little = view.getUint16(offset += 6, false) === 0x4949
       offset += view.getUint32(offset + 4, little)
       let tags = view.getUint16(offset, little)
       offset += 2
       for (let i = 0; i < tags; i++)
-        if (view.getUint16(offset + (i * 12), little) == 0x0112)
+        if (view.getUint16(offset + (i * 12), little) === 0x0112)
           return (view.getUint16(offset + (i * 12) + 8, little))
     }
-    else if ((marker & 0xFF00) != 0xFF00) break;
+    else if ((marker & 0xFF00) !== 0xFF00) break;
     else offset += view.getUint16(offset, false)
   }
   return undefined
@@ -52,36 +52,45 @@ function loadImageUpload(file) {
     let img = document.createElement("img")
     let reader = new FileReader()
     reader.onload = async function(e) {
-      if(file.type == "image/jpeg") {
-        let headerReader = new FileReader()
-        headerReader.onload=function(he) {
-          let orientation = getOrientation(he.target.result)
+      try {
+       /* const arrayBuffer = event.target.result
+        const blob = new Blob([arrayBuffer], { type: file.type })
+        const objectURL = URL.createObjectURL(blob)
+        throw new Error("F"+file.type)*/
+        const objectURL = e.target.result
+        if(file.type === "image/jpeg") {
+          let headerReader = new FileReader()
+          headerReader.onload = function(he) {
+            let orientation = getOrientation(he.target.result)
+            img.onload = function(e) {
+              resolve({
+                image: img,
+                type: file.type,
+                orientation: orientation,
+                sizeSwap: orientation > 4,
+                width: orientation > 4 ? img.height : img.width,
+                height: orientation > 4 ? img.width : img.height
+              })
+            }
+            img.src = objectURL
+          }
+          headerReader.onerror = function(e) {
+            reject(e.target.error)
+          }
+          headerReader.readAsArrayBuffer(file.slice(0, 64 * 1024))
+        } else {
           img.onload = function(e) {
             resolve({
               image: img,
               type: file.type,
-              orientation: orientation,
-              sizeSwap: orientation>4,
-              width: orientation>4 ? img.height : img.width,
-              height: orientation>4 ? img.width : img.height
+              width: img.width,
+              height: img.height
             })
           }
-          img.src = e.target.result
+          img.src = objectURL
         }
-        headerReader.onerror = function(e) {
-          reject(e.target.error)
-        }
-        headerReader.readAsArrayBuffer(file.slice(0, 64 * 1024))
-      } else {
-        img.onload = function(e) {
-          resolve({
-            image: img,
-            type: file.type,
-            width: img.width,
-            height: img.height
-          })
-        }
-        img.src = e.target.result
+      } catch(e) {
+        reject(e)
       }
     }
     reader.onerror = function(e) {
