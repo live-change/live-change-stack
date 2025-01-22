@@ -60,11 +60,18 @@ import { client as useClient } from '@live-change/vue3-ssr'
 
 export function installUserRedirects(router, app, config) {
   const client = useClient(app._context)
+  if(typeof window === 'undefined') return
   router.beforeEach(async (to, from) => {
     if(to?.matched.find(m => m?.meta.signedIn)) {
       if(!client.value.user) {
         console.log("REDIRECT TO LOGIN BECAUSE PAGE REQUIRES LOGIN!")
-        router.redirectAfterSignIn = JSON.stringify(to.fullPath)
+        console.log("SAVE FOR LOGIN", from)
+        localStorage.redirectAfterSignIn = JSON.stringify({
+          name: to.name,
+          params: to.params,
+          query: to.query,
+          hash: to.hash
+        })
         return { name: 'user:signInEmail' }
       }
     }
@@ -75,8 +82,13 @@ export function installUserRedirects(router, app, config) {
       }
     }
     if(to && to.name === 'user:signInEmail' && from?.matched.find(m => m?.meta.saveForSignIn)) {
-      console.log("SAVE FOR LOGIN", from.fullPath)
-      router.redirectAfterSignIn = JSON.stringify(to.fullPath)
+      console.log("SAVE FOR LOGIN", from)
+      localStorage.redirectAfterSignIn = JSON.stringify({
+        name: from.name,
+        params: from.params,
+        query: from.query,
+        hash: from.hash
+      })
     }
   })
 }

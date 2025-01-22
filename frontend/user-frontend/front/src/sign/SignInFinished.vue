@@ -4,7 +4,7 @@
       <div class="text-900 font-medium mb-3 text-xl mb-4">Signed In</div>
       <p class="mt-0 p-0 line-height-3">Congratulations! You have successfully logged in to your account.</p>
       <div v-if="afterSignIn" class="flex flex-row justify-content-center align-items-center">
-        <router-link :to="JSON.parse(afterSignIn)" class="no-underline">
+        <router-link :to="afterSignIn" class="no-underline">
           <Button label="Next" v-ripple />
         </router-link>
         <p class="ml-4" v-if="isMounted && redirectTime">
@@ -44,7 +44,7 @@
 
   const userClientConfig = api.getServiceDefinition('user')?.clientConfig
 
-  const afterSignIn = computed( () => isMounted.value && localStorage.redirectAfterSignIn )
+  const afterSignIn = ref()
   const redirectTime = ref()
   let timeout
   onMounted(() => {
@@ -53,6 +53,7 @@
       localStorage.removeItem('redirectAfterSignIn')
       const delay = route?.meta?.afterSignInRedirectDelay ?? userClientConfig?.afterSignInRedirectDelay ?? 10
       delete route.meta
+      afterSignIn.value = route
       if(delay) {
         redirectTime.value = new Date(Date.now() + delay * 1000)
         timeout = setTimeout(() => {

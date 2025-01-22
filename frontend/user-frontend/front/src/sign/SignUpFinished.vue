@@ -118,7 +118,7 @@
     live(path().phone?.myUserPhones())
   ])
 
-  const afterSignIn = computed( () => isMounted.value && localStorage.redirectAfterSignIn )
+  const afterSignIn = ref()
   const redirectTime = ref()
   let timeout
   onMounted(() => {
@@ -127,6 +127,7 @@
       localStorage.removeItem('redirectAfterSignIn')
       const delay = route?.meta?.afterSignInRedirectDelay ?? userClientConfig?.afterSignInRedirectDelay ?? 10
       delete route.meta
+      afterSignIn.value = route
       if(delay) {
         redirectTime.value = new Date(Date.now() + delay * 1000)
         timeout = setTimeout(() => {
