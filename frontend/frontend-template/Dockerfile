@@ -37,28 +37,8 @@ COPY package.json package.json
 COPY tsconfig.json tsconfig.json
 
 ARG VERSION='unknown'
-ARG BASE_HREF='http://localhost:8001/'
-ARG BRAND_DOMAIN='example.com'
-ARG BRAND_NAME='Example App'
-ARG BRAND_SMS_FROM='Example App'
-ARG GOOGLE_CLIENT_ID='unknown'
-ARG LINKEDIN_CLIENT_ID='unknown'
-
 ENV VERSION=$VERSION
-ENV BASE_HREF=$BASE_HREF
-ENV BRAND_DOMANIN=$BRAND_DOMANIN
-ENV BRAND_NAME=$BRAND_NAME
-ENV BRAND_SMS_FROM=$BRAND_SMS_FROM
-ENV GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
-ENV LINKEDIN_CLIENT_ID=$LINKEDIN_CLIENT_ID
-
 RUN echo "VERSION=$VERSION" >> /etc/environment
-RUN echo "BASE_HREF=$BASE_HREF" >> /etc/environment
-RUN echo "BRAND_DOMAIN=$BRAND_DOMAIN" >> /etc/environment
-RUN echo "BRAND_NAME=$BRAND_NAME" >> /etc/environment
-RUN echo "BRAND_SMS_FROM=$BRAND_SMS_FROM" >> /etc/environment
-RUN echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> /etc/environment
-RUN echo "LINKEDIN_CLIENT_ID=$LINKEDIN_CLIENT_ID" >> /etc/environment
 
 RUN npm run build
 

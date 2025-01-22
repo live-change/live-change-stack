@@ -118,7 +118,7 @@ class Api extends DaoProxy {
       }
     }
 
-    api.windowId = this.settings.windowId || api.uid()
+    api.windowId = this.settings.windowId || randomString(10)
     api.shortWindowId = api.windowId.split('@')[0].slice(-5).replace('.', '')
 
     //console.trace("GENERATE API SERVICES!")

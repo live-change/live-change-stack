@@ -5,7 +5,7 @@ pushd "$DIR/.."
 
   source ./docker/parse-args-and-config.sh
 
-  POD_NAME="${POD_NAME="$DEPLOYMENT-$PROJECT_NAME"}"
+  POD_NAME="${POD_NAME="$DEPLOYMENT-$NAME"}"
   echo POD_NAME=$POD_NAME
 
   echo Compiling

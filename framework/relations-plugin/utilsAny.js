@@ -242,12 +242,13 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
         const table = await input.table(tableName)
         await table.onChange(async (obj, oldObj) => {
           const id = obj?.id ?? oldObj?.id
-          const type = id.slice(0, id.indexOf(':'))
-          const count = await table.count({ gte: type+':', lte: type+'_\xFF\xFF\xFF\xFF', limit: 1 })
+          const typeJson = id.slice(0, id.indexOf(':'))
+          const type = JSON.parse(typeJson)
+          const count = await table.count({ gte: typeJson+':', lte: type+'_\xFF\xFF\xFF\xFF', limit: 1 })
           if(count > 0) {
-            await output.put({ id: JSON.parse(type) })
+            await output.put({ id: type })
           } else {
-            await output.delete({ id: JSON.parse(type) })
+            await output.delete({ id: type })
           }
         })
       },
