@@ -46,8 +46,8 @@
 
   const afterSignIn = ref()
   const redirectTime = ref()
-  let timeout
-  onMounted(() => {
+  let redirectTimeout
+  function doRedirect() {
     if(localStorage.redirectAfterSignIn) {
       const route = JSON.parse(localStorage.redirectAfterSignIn)
       localStorage.removeItem('redirectAfterSignIn')
@@ -56,7 +56,7 @@
       afterSignIn.value = route
       if(delay) {
         redirectTime.value = new Date(Date.now() + delay * 1000)
-        timeout = setTimeout(() => {
+        redirectTimeout = setTimeout(() => {
           if(afterSignIn.value) {
             router.push(route)
           }
@@ -70,9 +70,18 @@
         router.push(route)
       }
     }
+  }
+  let finished = false
+  onMounted(async () => {
+    while(!finished && !api.client.value.user) {
+      console.log("WAITING FOR USER...")
+      await new Promise(resolve => setTimeout(resolve, 200))
+    }
+    if(!finished) doRedirect()
   })
   onUnmounted(() => {
-    clearTimeout(timeout)
+    finished = true
+    if(redirectTime.value) clearTimeout(redirectTimeout)
   })
 
 </script>

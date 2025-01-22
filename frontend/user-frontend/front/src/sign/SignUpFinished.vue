@@ -12,7 +12,7 @@
           You can now set password to secure your account.
         </span>
         <div v-else-if="afterSignIn" class="flex flex-row justify-content-center align-items-center">
-          <router-link :to="JSON.parse(afterSignIn)" class="no-underline">
+          <router-link :to="afterSignIn" class="no-underline">
             <Button label="Next" v-ripple />
           </router-link>
           <p class="ml-4" v-if="isMounted && redirectTime">
@@ -87,7 +87,8 @@
   import Divider from "primevue/divider"
   import Password from "../password/Password.vue"
 
-  import { live, path } from '@live-change/vue3-ssr'
+  import { live, path, useApi } from '@live-change/vue3-ssr'
+  const api = useApi()
   import { computed, ref, onMounted, onUnmounted } from 'vue'
 
   import { currentTime } from "@live-change/frontend-base"
@@ -120,8 +121,8 @@
 
   const afterSignIn = ref()
   const redirectTime = ref()
-  let timeout
-  onMounted(() => {
+  let redirectTimeout
+  function doRedirect() {
     if(localStorage.redirectAfterSignIn) {
       const route = JSON.parse(localStorage.redirectAfterSignIn)
       localStorage.removeItem('redirectAfterSignIn')
@@ -130,7 +131,7 @@
       afterSignIn.value = route
       if(delay) {
         redirectTime.value = new Date(Date.now() + delay * 1000)
-        timeout = setTimeout(() => {
+        redirectTimeout = setTimeout(() => {
           if(afterSignIn.value) {
             router.push(route)
           }
@@ -144,9 +145,18 @@
         router.push(route)
       }
     }
+  }
+  let finished = false
+  onMounted(async () => {
+    while(!finished && !api.client.value.user) {
+      console.log("WAITING FOR USER...")
+      await new Promise(resolve => setTimeout(resolve, 200))
+    }
+    if(!finished) doRedirect()
   })
   onUnmounted(() => {
-    clearTimeout(timeout)
+    finished = true
+    if(redirectTime.value) clearTimeout(redirectTimeout)
   })
 
   const needPassword = computed(() => (!passwordExists.value
