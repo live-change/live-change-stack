@@ -129,15 +129,16 @@
       const delay = route?.meta?.afterSignInRedirectDelay ?? userClientConfig?.afterSignInRedirectDelay ?? 10
       delete route.meta
       afterSignIn.value = route
+      console.log("DO REDIRECT START", route, delay)
       if(delay) {
         redirectTime.value = new Date(Date.now() + delay * 1000)
         redirectTimeout = setTimeout(() => {
-          if(afterSignIn.value) {
-            router.push(route)
-          }
+          console.log("DO DELAYED REDIRECT AFTER SIGN UP!", route)
+          router.push(route)
         }, redirectTime.value - currentTime.value)
       } else {
         setTimeout(() => { // it could be next tick
+          console.log("DO REDIRECT AFTER SIGN UP!", route)
           toast.add({
             severity: 'info', life: 6000,
             summary: 'Signed up',
@@ -155,6 +156,7 @@
       console.log("WAITING FOR USER...")
       await new Promise(resolve => setTimeout(resolve, 200))
     }
+    console.log("DONE WAITING FOR USER!")
     if(!finished) doRedirect()
   })
   onUnmounted(() => {
