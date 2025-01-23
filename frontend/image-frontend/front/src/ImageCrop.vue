@@ -299,7 +299,7 @@
   function handleEditorTouchMove(ev) {
     ev.preventDefault()
     ev.stopPropagation()
-    if($refs.editor && $refs.content) updateTouches(
+    if(dragArea.value && cropArea.value) updateTouches(
       Array.prototype.slice.call(ev.targetTouches).map(t => preProcessTouch(t, t.identifier))
     )
   }
