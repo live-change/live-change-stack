@@ -137,17 +137,20 @@
           }
         }, redirectTime.value - currentTime.value)
       } else {
-        toast.add({
-          severity: 'info', life: 6000,
-          summary: 'Signed up',
-          detail: 'Congratulations! You have successfully created your account.'
-        })
-        router.push(route)
+        setTimeout(() => { // it could be next tick
+          toast.add({
+            severity: 'info', life: 6000,
+            summary: 'Signed up',
+            detail: 'Congratulations! You have successfully created your account.'
+          })
+          router.push(route)
+        }, 100)
       }
     }
   }
   let finished = false
   onMounted(async () => {
+    console.log("WAIT FOR USER?", !finished, !api.client.value.user, !finished && !api.client.value.user)
     while(!finished && !api.client.value.user) {
       console.log("WAITING FOR USER...")
       await new Promise(resolve => setTimeout(resolve, 200))
