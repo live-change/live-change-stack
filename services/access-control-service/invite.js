@@ -73,7 +73,7 @@ definition.event({
 })
 
 definition.trigger({
-  name: 'contactOrUserOwnedAccessInvitationMoved',
+  name: 'AccessInvitationMoved',
   properties: {
     ...contactProperties,
     from: {

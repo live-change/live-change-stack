@@ -11,7 +11,7 @@ import { ChangeStream } from './ChangeStream.js'
 import Debug from 'debug'
 const debug = Debug('db')
 
-const opLogBatchSize = 128 /// TODO: incrase after testing
+const opLogBatchSize = 128 /// TODO: increase after testing
 
 class ObjectReader extends ChangeStream {
   constructor(tableReader, id) {

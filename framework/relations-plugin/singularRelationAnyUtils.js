@@ -327,7 +327,7 @@ function getResetFunction(config, context) {
     service, app, model, modelRuntime, objectType, modelPropertyName,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Reset'
+  const eventName = modelName + 'Reset'
   return async function execute(properties, {client, service}, emit) {
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
     const id = properties[modelPropertyName] ?? generateAnyId(otherPropertyNames, properties)

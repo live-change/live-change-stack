@@ -163,8 +163,9 @@ export function addAccessControlAnyParents(context) {
     }).filter(parent => parent.object && parent.objectType)
   }
   context.model.accessControlParentsSource = context.otherPropertyNames.map(
-    otherPropertyName => ({
-      property: otherPropertyName
+    (otherPropertyName, index) => ({
+      property: otherPropertyName,
+      possibleTypes: context.otherPossibleTypes[index]
     })
   )
 }

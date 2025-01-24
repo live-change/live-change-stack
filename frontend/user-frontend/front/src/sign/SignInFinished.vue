@@ -57,9 +57,7 @@
       if(delay) {
         redirectTime.value = new Date(Date.now() + delay * 1000)
         redirectTimeout = setTimeout(() => {
-          if(afterSignIn.value) {
-            router.push(route)
-          }
+          if(!finished) router.push(route)
         }, redirectTime.value - currentTime.value)
       } else {
         setTimeout(() => { // it could be next tick
