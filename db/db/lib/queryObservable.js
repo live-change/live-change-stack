@@ -180,6 +180,9 @@ class TableReader extends Reader {
     return this._queryReader.getExistingReaderOrCreate(this.#prefix+'#'+id,
         () => new ObjectReader(this._queryReader, this.#table, id))
   }
+  objectGet(id) {
+    return this.#table.objectGet(id)
+  }
   async get(range = {}) {
     return await (await this.#table).rangeGet(range)
   }

@@ -223,6 +223,8 @@ class ServiceDefinition {
     let changes = []
     changes.push(...crudChanges(oldModule.models || {}, this.models || {},
         "Model", "model", { }))
+    changes.push(...crudChanges(oldModule.indexes || {}, this.indexes || {},
+      "Index", "index", { }))
     return changes
   }
 }

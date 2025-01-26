@@ -228,6 +228,9 @@ class TableReader extends ChangeStream {
     this.opLogBuffer.push(object)
     this.opLogReader.handleSignal()
   }
+  async objectGet(id) {
+    return await (await this.table).objectGet(id)
+  }
   async get(range = {}) {
     return await (await this.table).rangeGet(range)
   }
@@ -452,8 +455,11 @@ class IndexWriter {
       throw error
     }
   }
-  get(id) {
-    return this.index.get(id)
+  objectGet(id) {
+    return this.index.objectGet(id)
+  }
+  rangeGet(range) {
+    return this.index.rangeGet(range)
   }
   synchronized(key, code) {
     return this.index.synchronized(key, code)

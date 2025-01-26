@@ -30,7 +30,7 @@ class ChangeStream {
       const oldIndList = oldObj && func(oldObj)
       const ind = indList && indList.map(v => JSON.stringify(v)).join(':')+'_'+id
       const oldInd = oldIndList && oldIndList.map(v => JSON.stringify(v)).join(':')+'_'+id
-      if(ind == oldInd) return // no index change, ignore
+      if(ind === oldInd) return // no index change, ignore
       if(ind) {
         pipe.change({ id: ind, to: id }, null, ind, timestamp)
       }
@@ -55,8 +55,8 @@ class ChangeStreamPipe extends ChangeStream {
   }
   async unobserve(cb) {
     const cbIndex = this.callbacks.indexOf(cb)
-    if(cbIndex == -1) throw new Error("observer not found")
-    if(this.callbacks.length == 0) {
+    if(cbIndex === -1) throw new Error("observer not found")
+    if(this.callbacks.length === 0) {
       this.master.unobservePromise = await this.observerPromise
     }
   }

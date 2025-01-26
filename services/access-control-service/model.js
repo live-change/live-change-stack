@@ -30,6 +30,29 @@ const Access = definition.model({
     byOwnerRoleAndObject: {
       property: ['sessionOrUserType', 'sessionOrUser', 'roles', 'objectType', 'object'],
       multi: true
+    },
+    byObjectExtended: {
+      function: async function(input, output, { tableName }) {
+        function mapper(access) {
+          return access && {
+            id: JSON.stringify(access.objectType) + ':' + JSON.stringify(access.object)
+              + '_' + sha1(access.id, 'base64'),
+            objectType: access.objectType,
+            object: access.object,
+            sessionOrUserType: access.sessionOrUserType,
+            sessionOrUser: access.sessionOrUser,
+            roles: access.roles,
+            lastUpdate: access.lastUpdate
+          }
+        }
+        const table = await input.table(tableName)
+        await table.onChange(
+          async (access, oldAccess) => output.change(mapper(access), mapper(oldAccess))
+        )
+      },
+      parameters: {
+        tableName: definition.name + '_Access'
+      }
     }
   },
   properties: {
