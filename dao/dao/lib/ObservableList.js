@@ -21,7 +21,7 @@ class ObservableList extends Observable {
     this.handleError(null)
     if(list === this.list) return
     try {
-      if (JSON.stringify(list) == JSON.stringify(this.list)) return
+      if (JSON.stringify(list) === JSON.stringify(this.list)) return
     } catch(e) {}
     this.list = this.valueActivator ? this.valueActivator(list) : list
     this.fireObservers('set', list)
@@ -167,7 +167,7 @@ class ObservableList extends Observable {
   unbindProperty(object, property) {
     for(let i = 0; i < this.properties.length; i++) {
       const prop = this.properties[i]
-      if(prop[0] == object && prop[1] == property) {
+      if(prop[0] === object && prop[1] === property) {
         this.properties.splice(i, 1)
         i--
         if(this.isUseless()) this.dispose()
@@ -185,7 +185,7 @@ class ObservableList extends Observable {
   unbindErrorProperty(object, property) {
     for(let i = 0; i < this.errorProperties.length; i++) {
       const prop = this.errorProperties[i]
-      if(prop[0] == object && prop[1] == property) {
+      if(prop[0] === object && prop[1] === property) {
         this.errorProperties.splice(i, 1)
         i--
         if(this.isUseless()) this.dispose()
@@ -206,8 +206,8 @@ class ObservableList extends Observable {
   }
 
   isUseless() {
-    return (this.observers.length == 0) && (this.properties.length == 0)
-        && (this.errorProperties.length == 0)
+    return (this.observers.length === 0) && (this.properties.length === 0)
+        && (this.errorProperties.length === 0)
   }
 
   save() {
@@ -298,6 +298,13 @@ class ObservableList extends Observable {
   getError() {
     return this.savedError
   }
+
+  dispose() {
+    this.savedError = null
+    this.list = undefined
+    super.dispose()
+  }
+
 }
 
 export default ObservableList
