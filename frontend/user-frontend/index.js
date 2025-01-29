@@ -19,7 +19,8 @@ export { GoogleAccess }
 
 export * from "./front/src/phone/phoneNumber.js"
 import PhoneInput from "./front/src/phone/PhoneInput.vue"
-export { PhoneInput }
+import CountryInput from './front/src/phone/CountryInput.vue'
+export { PhoneInput, CountryInput }
 
 export * from './front/src/connected/connected.js'
 

@@ -292,7 +292,7 @@ class PushObservable extends ObservableList {
     if(observationInfo.uses === 0) {
       this.observations.delete(whatId)
       observationInfo.observation.unpush()
-      this.remove(what)
+      if(!this.disposed) this.remove(what)
     }
   }
   dispose() {

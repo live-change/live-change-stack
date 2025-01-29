@@ -60,7 +60,7 @@ class ObservableList extends Observable {
     if(!reverse) {
       let i, l
       for(i = 0, l = this.list.length; i < l; i++) {
-        if(this.list[i][field] == value) {
+        if(this.list[i][field] === value) {
           oldElement = this.list[i]
           this.list.splice(i, 1, element)
           break
@@ -69,11 +69,11 @@ class ObservableList extends Observable {
           break
         }
       }
-      if(i == l) this.list.push(element)
+      if(i === l) this.list.push(element)
     } else {
       let i
       for(i = this.list.length - 1; i >= 0; i--) {
-        if(this.list[i][field] == value) {
+        if(this.list[i][field] === value) {
           oldElement = this.list[i]
           this.list.splice(i, 1, element)
           break
@@ -90,7 +90,7 @@ class ObservableList extends Observable {
     this.handleError(null)
     let json = JSON.stringify(exact)
     for(let i = 0, l = this.list.length; i < l; i++) {
-      if(JSON.stringify(this.list[i]) == json) this.list.splice(i, 1)
+      if(JSON.stringify(this.list[i]) === json) this.list.splice(i, 1)
     }
     this.fireObservers('remove', exact)
   }
@@ -98,7 +98,7 @@ class ObservableList extends Observable {
     this.handleError(null)
     let json = JSON.stringify(value)
     for(let i = 0, l = this.list.length; i < l; i++) {
-      if(JSON.stringify(this.list[i][field]) == json) {
+      if(JSON.stringify(this.list[i][field]) === json) {
         oldElement = this.list[i]
         this.list.splice(i, 1)
         i--
@@ -116,7 +116,7 @@ class ObservableList extends Observable {
     for(let i = 0, l = this.list.length; i < l; i++) {
       let found = true
       for(let [key, json] of jsonf) {
-        found = found && (JSON.stringify(this.list[i][key]) == json)
+        found = found && (JSON.stringify(this.list[i][key]) === json)
       }
       if(found) {
         this.list.splice(i, 1)
@@ -131,7 +131,7 @@ class ObservableList extends Observable {
     this.handleError(null)
     let json = JSON.stringify(exact)
     for(let i = 0, l = this.list.length; i < l; i++) {
-      if(JSON.stringify(this.list[i]) == json) this.list.splice(i, 1, element)
+      if(JSON.stringify(this.list[i]) === json) this.list.splice(i, 1, element)
     }
     this.fireObservers('update', exact, element)
   }
@@ -139,7 +139,7 @@ class ObservableList extends Observable {
     this.handleError(null)
     let json = JSON.stringify(value)
     for(let i = 0, l = this.list.length; i < l; i++) {
-      if(JSON.stringify(this.list[i][field]) == json) this.list.splice(i, 1, element)
+      if(JSON.stringify(this.list[i][field]) === json) this.list.splice(i, 1, element)
     }
     this.fireObservers('updateByField', field, value, element)
   }
@@ -152,7 +152,7 @@ class ObservableList extends Observable {
     for(let i = 0, l = this.list.length; i < l; i++) {
       let found = true
       for(let [key, json] of jsonf) {
-        found = found && (JSON.stringify(this.list[i][key]) == json)
+        found = found && (JSON.stringify(this.list[i][key]) === json)
       }
       if(found) this.list.splice(i, 1, element)
     }
