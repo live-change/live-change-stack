@@ -1,6 +1,6 @@
 import definition from './definition.js'
 import { Account, User } from './account.js'
-import { OfflineAccess } from './offlineAccessjs'
+import { OfflineAccess } from './offlineAccess.js'
 
 definition.event({
   name: "userDeleted",
