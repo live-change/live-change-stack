@@ -53,10 +53,13 @@ export function createRouter(app, config) {
   })
   installRouterAnalytics(router)
   router.beforeEach(async (to, from) => {
+    if(typeof window === 'undefined') { // don't do redirects on server-side, because we can't save redirect
+      return
+    }
     if(to?.matched.find(m => m?.meta.signedIn)) {
       if(!client.value.user) {
         console.log("REDIRECT TO LOGIN BECAUSE PAGE REQUIRES LOGIN!")
-        router.redirectAfterSignIn = JSON.stringify(to.fullPath)
+        localStorage.redirectAfterSignIn = JSON.stringify(to.fullPath)
         return { name: 'user:signInEmail' }
       }
     }
@@ -68,7 +71,7 @@ export function createRouter(app, config) {
     }
     if(to && to.name === 'user:signInEmail' && from?.matched.find(m => m?.meta.saveForSignIn)) {
       console.log("SAVE FOR LOGIN", from.fullPath)
-      router.redirectAfterSignIn = JSON.stringify(to.fullPath)
+      localStorage.redirectAfterSignIn = JSON.stringify(to.fullPath)
     }
   })
   return router

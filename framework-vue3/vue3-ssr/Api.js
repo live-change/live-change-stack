@@ -94,16 +94,17 @@ class Api extends DaoProxy {
       }
       if(lastApiJson) console.log("API CHANGED", lastApiJson, JSON.stringify(newApi))
       lastApiJson = JSON.stringify(newApi)
-      api.value = JSON.parse(lastApiJson)
+      /// First, generate the API for microservices, then set api.value – otherwise, a race condition is possible
+      /// if something reacts to the api value, either the client or the config, and uses the microservices API.
       this.generateServicesApi()
     })
     //console.log("SETUP API", api.value)
-    this.afterPreFetch.push(() => this.generateServicesApi())
+    // this.afterPreFetch.push(() => this.generateServicesApi()) - i think it's not needed
   }
 
   generateServicesApi() {
+    let apiInfo = this.apiObservable.getValue()
     const api = this
-    let apiInfo = api.metadata.api?.value
     if(!apiInfo) {
       const cachePath = '["metadata","api"]'
       if(typeof window != 'undefined') {
@@ -117,6 +118,7 @@ class Api extends DaoProxy {
         apiInfo = this.prerenderCache.cache.get(cachePath)
       }
     }
+    if(!apiInfo) throw new Error("API INFO NOT FOUND! UNABLE TO GENERATE SERVICES API!")
 
     api.windowId = this.settings.windowId || randomString(10)
     api.shortWindowId = api.windowId.split('@')[0].slice(-5).replace('.', '')
@@ -196,6 +198,8 @@ class Api extends DaoProxy {
     for(const glob of this.globalInstances) {
       this.installInstanceProperties(glob)
     }
+
+    api.metadata.api.value = apiInfo
 
     if(api.resolveReadyPromise) {
       api.resolveReadyPromise()
