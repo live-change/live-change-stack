@@ -12,7 +12,7 @@
 
         <SettingsMenuItem name="user:locale" icon="language" label="Language and Locale" class="hidden md:block" />
 
-<!--        <SettingsMenuItem name="user:notificationsSettings" icon="exclamation-circle" label="Notifications" />-->
+        <SettingsMenuItem name="user:notificationsSettings" icon="exclamation-circle" label="Notifications" />
 
       </ul>
 

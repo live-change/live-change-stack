@@ -9,11 +9,4 @@ const definition = app.createServiceDefinition({
   use: [ userService, relationsPlugin ]
 })
 
-const config = definition.config
-
-definition.clientConfig = {
-  contactTypes: config.contactTypes,
-  notificationTypes: config.notificationTypes
-}
-
 export default definition

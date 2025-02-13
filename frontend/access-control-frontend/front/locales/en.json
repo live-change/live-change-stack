@@ -1,0 +1,9 @@
+{
+  "notifications": {
+    "types": {
+      "accessControl_Invitation": {
+        "name": "Access Control Invitation"
+      }
+    }
+  }
+}

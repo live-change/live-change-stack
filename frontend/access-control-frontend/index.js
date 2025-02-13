@@ -19,4 +19,6 @@ import inviteRoutes from "./front/src/invite/routes.js"
 import configurationRoutes from "./front/src/configuration/routes.js"
 export { inviteRoutes, configurationRoutes }
 
-
+import en from "./front/locales/en.json"
+const locales = { en }
+export { locales }

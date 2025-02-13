@@ -5,5 +5,6 @@ import definition from './definition.js'
 
 import './notification.js'
 import './settings.js'
+import './config.js'
 
 export default definition

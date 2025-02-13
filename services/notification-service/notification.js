@@ -212,7 +212,7 @@ definition.trigger({
     },
     ...config.fields
   },
-  async execute(params , { service }, emit) {
+  async execute(params , { service, trigger }, emit) {
     const { sessionOrUserType, sessionOrUser, notificationType } = params
     if(!sessionOrUserType || !sessionOrUser) throw new Error("session or user required")
     const notification = app.generateUid()
@@ -224,8 +224,11 @@ definition.trigger({
       notification,
       data: { ...data, sessionOrUserType, sessionOrUser, time, readState: 'new' }
     })
-    await app.trigger({ type: 'notificationCreated' }, {
+    await trigger({ type: 'notificationCreated' }, {
       notification,
+      sessionOrUser,
+      sessionOrUserType,
+      time,
       ...data
     })
     return notification

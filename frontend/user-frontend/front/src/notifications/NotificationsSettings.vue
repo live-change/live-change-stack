@@ -4,9 +4,11 @@
       <div>
         <h1>Notifications settings</h1>
       </div>
+      <pre>{{ settings }}</pre>
+      <pre>{{ clientConfig }}</pre>
       <div v-for="notificationType in settings">
         <div>
-          <h2>{{ notificationType.type }}</h2>
+          <h2>{{ t(`notifications.types.${notificationType.type}.name`) }}</h2>
         </div>
         <div>
           <div v-for="contact in notificationType.contacts"
@@ -40,13 +42,16 @@
   import { api as useApi, live, path, actions } from '@live-change/vue3-ssr'
   const api = useApi()
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   const clientConfig = api.getServiceDefinition('notification')?.clientConfig
 
   const notificationApi = actions().notification
 
 
   const contactTypesIcons = {
-    email: 'pi-at',
+    email: 'pi-envelope',
     web: 'pi-globe',
     phone: 'pi-phone'
   }
@@ -89,7 +94,11 @@
   const settings = computed(() => clientConfig.notificationTypes.map(notificationType => {
     const contacts = allContacts.map(contactsData => contactsData.list.value.map(contact => {
       const contactType = contactsData.type
-      const settingSource = computed(() => contact.settings.find(s => s.notificationType === notificationType))
+      const settingSource = computed(() => {
+        const userSetting = contact.settings.find(s => s.notificationType === notificationType)
+        //const defaultSetting = clientConfig.defaultSettings.find(s => s.notificationType === notificationType)
+        return userSetting
+      })
       const setting = synchronized({
         source: settingSource,
         update: notificationApi.setOrUpdateNotificationSetting,
@@ -104,7 +113,8 @@
         contactType,
         contact: contact[contactType],
         settingSource,
-        setting
+        setting,
+
       }
     })).flat()
     return {
