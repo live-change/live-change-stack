@@ -49,6 +49,7 @@
 </script>
 
 <style>
+
   :root { font-family: 'Verdana', sans-serif; }
   @supports (font-variation-settings: normal) {
     :root { font-family: 'Verdana var', sans-serif; }
