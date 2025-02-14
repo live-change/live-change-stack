@@ -12,9 +12,13 @@ export default {
     theme: {
       preset: Aura,
       options: {
-        prefix: 'p',
+        //prefix: 'p',
         darkModeSelector: 'body',
-        cssLayer: false
+        //cssLayer: false
+        cssLayer: {
+          name: "primevue",
+          order: "base, primevue",
+        },
       }
     },
     ripple: true

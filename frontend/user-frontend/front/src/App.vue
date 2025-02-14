@@ -49,6 +49,8 @@
 </script>
 
 <style>
+  @import "tailwindcss";
+  @plugin "tailwindcss-primeui";
 
   :root { font-family: 'Verdana', sans-serif; }
   @supports (font-variation-settings: normal) {
@@ -62,4 +64,6 @@
   .p-component, .p-component * {
     font-family: 'Verdana var', 'Verdana', sans-serif;
   }
+
+
 </style>

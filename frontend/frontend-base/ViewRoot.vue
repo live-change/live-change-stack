@@ -41,7 +41,7 @@
 
   import Toast from 'primevue/toast'
 
-  import 'primeflex/primeflex.css'
+ // import 'primeflex/primeflex.css'
   import 'primeicons/primeicons.css'
 
   import ProgressSpinner from 'primevue/progressspinner'

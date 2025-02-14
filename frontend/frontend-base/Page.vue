@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-column surface-ground">
+  <div class="min-h-screen flex flex-col surface-ground">
     <slot name="navbar"></slot>
 
     <ConfirmPopup v-if="isMounted" />
