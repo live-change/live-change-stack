@@ -1,23 +1,23 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card border-round shadow-2 p-4" v-if="isUnknown">
-      <div class="text-900 font-medium mb-3 text-xl">Unknown link</div>
-      <p class="mt-0 mb-2 p-0 line-height-3">We can't find your secret link. Check if you copied the address correctly.</p>
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUnknown">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Unknown link</div>
+      <p class="mt-0 mb-2 p-0 leading-normal">We can't find your secret link. Check if you copied the address correctly.</p>
     </div>
 
-    <div class="surface-card border-round shadow-2 p-4" v-if="isUsed">
-      <div class="text-900 font-medium mb-3 text-xl">Link used</div>
-      <p class="mt-0 mb-2 p-0 line-height-3">This link was already used.</p>
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUsed">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Link used</div>
+      <p class="mt-0 mb-2 p-0 leading-normal">This link was already used.</p>
     </div>
 
-    <div class="surface-card border-round shadow-2 p-4" v-if="isExpired && !isUsed">
-      <div class="text-900 font-medium mb-3 text-xl">Link expired</div>
-      <p class="mt-0 mb-4 p-0 line-height-3">Your password reset authentication already expired.</p>
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isExpired && !isUsed">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Link expired</div>
+      <p class="mt-0 mb-6 p-0 leading-normal">Your password reset authentication already expired.</p>
     </div>
 
-    <div class="surface-card p-4 shadow-2 border-round" v-if="isReady">
-      <div class="text-center mb-5">
-        <div class="text-900 text-3xl font-medium mb-3">Reset password</div>
+    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border" v-if="isReady">
+      <div class="text-center mb-8">
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Reset password</div>
       </div>
 
       <command-form service="passwordAuthentication" action="finishResetPassword" v-slot="{ data }"
@@ -25,8 +25,8 @@
                     @done="handleDone" keepOnDone>
 
         <template v-if="isMounted">
-          <div class="p-field mb-3">
-            <label for="newPassword" class="block text-900 font-medium mb-2">New password</label>
+          <div class="p-field mb-4">
+            <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">New password</label>
             <Password id="newPassword" class="w-full" inputClass="w-full" toggleMask
                       :class="{ 'p-invalid': data.passwordHashError }"
                       v-model="data.passwordHash">
@@ -44,8 +44,8 @@
             <small id="newPassword-help" class="p-error">{{ data.passwordHashError }}</small>
           </div>
 
-          <div class="p-field mb-3">
-            <label for="reenterPassword" class="block text-900 font-medium mb-2">Re-enter password</label>
+          <div class="p-field mb-4">
+            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Re-enter password</label>
             <Password id="reenterPassword" class="w-full" inputClass="w-full"
                       v-model="secondPassword"
                       :feedback="false" toggleMask />

@@ -3,7 +3,7 @@
                 :suggestions="filteredCountries" @complete="searchCountry"
                 class="mr-2">
     <template #option="slotProps">
-      <div class="flex align-items-center">
+      <div class="flex items-center">
         <img :alt="slotProps.option.name"
              src="../../public/images/flag_placeholder.png"
              :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`"

@@ -3,7 +3,7 @@
     <div v-if="myRoles.length > 0">
 
       <div class="text-center">
-        <Button label="Invite with email" icon="pi pi-envelope" class="p-button mb-4"
+        <Button label="Invite with email" icon="pi pi-envelope" class="p-button mb-6"
                 @click="inviteDialog = true" :disabled="!canInvite"  />
       </div>
 

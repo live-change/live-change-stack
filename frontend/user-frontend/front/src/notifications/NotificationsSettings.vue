@@ -1,6 +1,6 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card p-4 shadow-2 border-round">
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div>
         <h1>Notifications settings</h1>
       </div>
@@ -12,8 +12,8 @@
         </div>
         <div>
           <div v-for="contact in notificationType.contacts"
-               class="flex flex-row align-items-center mb-3">
-            <div class="flex-grow-1 md:mb-2">
+               class="flex flex-row items-center mb-4">
+            <div class="grow md:mb-2">
               <i class="pi" :class="contactTypesIcons[contact.contactType]"></i>
               <span class="ml-2">{{ contactText(contact.contact, contact.contactType) }}</span>
             </div>

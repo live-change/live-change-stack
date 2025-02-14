@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-row w-full justify-content-evenly">
-    <div class="surface-card shadow-1 border-round px-3 py-1">
+  <div class="flex flex-row w-full justify-evenly">
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border px-4 py-1">
 
       <div>
         <h2>Built shelters</h2>
@@ -16,23 +16,23 @@
           Size:
         </div>
         <div class="pl-2">
-          <div class="flex flex-row align-items-center">
-            <label for="role" class="mr-2 w-5rem text-right">Width:</label>
+          <div class="flex flex-row items-center">
+            <label for="role" class="mr-2 w-20 text-right">Width:</label>
             <InputNumber v-model="data.size.width" mode="decimal"
                          showButtons :min="3" :max="9" />
           </div>
-          <div class="flex flex-row align-items-center">
-            <label for="role" class="mr-2 w-5rem text-right">Height:</label>
+          <div class="flex flex-row items-center">
+            <label for="role" class="mr-2 w-20 text-right">Height:</label>
             <InputNumber v-model="data.size.height" mode="decimal" showButtons :min="3" :max="9" />
           </div>
-          <div class="flex flex-row align-items-center">
-            <label for="role" class="mr-2 w-5rem text-right">Length:</label>
+          <div class="flex flex-row items-center">
+            <label for="role" class="mr-2 w-20 text-right">Length:</label>
             <InputNumber v-model="data.size.length" mode="decimal" showButtons :min="3" :max="9" />
           </div>
 
-          <div class="flex flex-row align-items-center">
-            <label for="role" class="mr-2 w-5rem">Wood type:</label>
-            <Dropdown id="role" class="w-14rem" v-model="data.woodType" placeholder="Select a Wood type"
+          <div class="flex flex-row items-center">
+            <label for="role" class="mr-2 w-20">Wood type:</label>
+            <Dropdown id="role" class="w-56" v-model="data.woodType" placeholder="Select a Wood type"
                       :options="definition.properties.woodType.options" />
           </div>
 
@@ -43,7 +43,7 @@
 
       </command-form>
     </div>
-<!--    <div class="surface-card shadow-1 border-round px-3 py-1">
+<!--    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border px-4 py-1">
       <h2>Root</h2>
       <pre>{{ tasksRoot }}</pre>
       <h2>Tasks</h2>

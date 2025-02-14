@@ -11,13 +11,13 @@
     <pre>{{ object }}</pre>-->
 
     <div v-if="object">
-      <div class="surface-card p-3 shadow-1 border-round mb-4">
+      <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6">
 
         <div class="">
           Service <strong>{{ service }}</strong>
         </div>
-        <div class="flex flex-row flex-wrap justify-content-between align-items-top">
-          <div class="text-2xl mb-4">
+        <div class="flex flex-row flex-wrap justify-between align-items-top">
+          <div class="text-2xl mb-6">
             <strong>{{ model }}</strong>
             <ObjectIdentification
               :objectType="service + '_' + model"
@@ -26,7 +26,7 @@
               class="ml-2"
             />
           </div>
-          <Button label="Access" icon="pi pi-key" class="p-button mb-4" @click="showAccessControl" />
+          <Button label="Access" icon="pi pi-key" class="p-button mb-6" @click="showAccessControl" />
         </div>
 
         <AutoView :value="object" :root-value="object" :i18n="i18n" :attributes="attributes"
@@ -34,7 +34,7 @@
 
       </div>
 
-      <div v-for="preparedRelation of visibleObjectRelations" class="mb-4">
+      <div v-for="preparedRelation of visibleObjectRelations" class="mb-6">
         <ModelSingle :service="preparedRelation.service" :model="preparedRelation.model"
                    :identifiers="preparedRelation.identifiers">
           <template #header>
@@ -52,7 +52,7 @@
         </ModelSingle>
       </div>
 
-      <div v-for="preparedRelation of visibleRangeRelations" class="mb-4">
+      <div v-for="preparedRelation of visibleRangeRelations" class="mb-6">
         <ModelList :service="preparedRelation.service" :model="preparedRelation.model"
                    :identifiers="preparedRelation.identifiers" :view="preparedRelation.view">
           <template #header>
@@ -73,7 +73,7 @@
       <Dialog v-model:visible="accessControlDialog"
               :modal="true">
         <template #header>
-          <div class="text-900 text-3xl font-medium">
+          <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium">
             Access Control
           </div>
         </template>
@@ -89,7 +89,7 @@
     </div>
     <NotFound v-else />
 
-    <div class="surface-card p-3 shadow-1 border-round">
+    <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border">
 
       <pre>{{ preparedRelations }}</pre>
 

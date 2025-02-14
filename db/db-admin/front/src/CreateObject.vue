@@ -1,11 +1,11 @@
 <template>
   <div class="w-full">
-    <div class="w-full flex flex-row justify-content-center">
+    <div class="w-full flex flex-row justify-center">
       <Button v-if="!editorVisible" @click="showNewObjectEditor"
               icon="pi pi-plus-circle" label="Create new object" class="p-button-rounded p-button-primary" />
     </div>
 
-    <div class="surface-0 shadow-1 w-full">
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm w-full">
       <object-editor v-if="editorVisible"
                      :dbApi="props.dbApi"
                      :currentData="JSON.stringify(newObjectData)"

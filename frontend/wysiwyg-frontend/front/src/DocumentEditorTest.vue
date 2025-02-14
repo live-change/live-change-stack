@@ -59,7 +59,7 @@
         "attrs": {
           "is": "card",
           "attrs": {
-            "class": "surface-card px-3 shadow-2 w-full f p-2"
+            "class": "bg-surface-0 dark:bg-surface-900 px-4 shadow w-full f p-2"
           }
         },
         "content": [
@@ -97,7 +97,7 @@
         "attrs": {
           "is": "card",
           "attrs": {
-            "class": "surface-card py-1 px-3 shadow-2 w-full"
+            "class": "bg-surface-0 dark:bg-surface-900 py-1 px-4 shadow w-full"
           }
         },
         "content": [

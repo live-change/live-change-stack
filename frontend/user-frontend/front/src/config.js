@@ -12,8 +12,8 @@ export default {
     theme: {
       preset: Aura,
       options: {
-        //prefix: 'p',
-        darkModeSelector: 'body',
+        prefix: 'p',
+        darkModeSelector: '.app-dark-mode, .app-dark-mode *',
         //cssLayer: false
         cssLayer: {
           name: "primevue",

@@ -1,11 +1,11 @@
 <template>
   <div class="notification-buttons">
     <Button v-if="notification.readState === 'new'" @click="markRead()"
-            icon="pi pi-eye" class="p-button-rounded p-button-outlined surface-0 " />
+            icon="pi pi-eye" class="p-button-rounded p-button-outlined bg-surface-0 dark:bg-surface-900 " />
     <Button v-if="notification.readState === 'read'" @click="markUnread()"
-            icon="pi pi-eye-slash" class="p-button-rounded p-button-outlined surface-0" />
+            icon="pi pi-eye-slash" class="p-button-rounded p-button-outlined bg-surface-0 dark:bg-surface-900" />
     <Button @click="deleteNotification()"
-            icon="pi pi-trash" class="p-button-rounded p-button-outlined ml-1 surface-0" />
+            icon="pi pi-trash" class="p-button-rounded p-button-outlined ml-1 bg-surface-0 dark:bg-surface-900" />
   </div>
 </template>
 

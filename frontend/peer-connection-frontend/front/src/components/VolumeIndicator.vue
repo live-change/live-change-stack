@@ -1,9 +1,9 @@
 <template>
   <div class="flex flex-row border-circle w-2rem h-2rem bg-primary-800
               align-items-center justify-content-center">
-    <div class="volume-indicator-bar bg-white border-round" ref="low"></div>
-    <div class="volume-indicator-bar bg-white border-round" ref="mid"></div>
-    <div class="volume-indicator-bar bg-white border-round" ref="high"></div>
+    <div class="volume-indicator-bar bg-white rounded-border" ref="low"></div>
+    <div class="volume-indicator-bar bg-white rounded-border" ref="mid"></div>
+    <div class="volume-indicator-bar bg-white rounded-border" ref="high"></div>
   </div>
 </template>
 

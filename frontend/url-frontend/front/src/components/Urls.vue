@@ -1,23 +1,23 @@
 <template>
-  <div class="mb-4">
+  <div class="mb-6">
     <div v-if="isAccessible">
-      <div  class="mb-4">
-        <div class="text-900 text-xl font-medium mb-2">
+      <div  class="mb-6">
+        <div class="text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
           Canonical Url
         </div>
         <div v-if="canonical">
-          <div class="w-full flex flex-wrap flex-row align-items-center">
-            <span class="text-right overflow-hidden text-overflow-ellipsis mr-1">
+          <div class="w-full flex flex-wrap flex-row items-center">
+            <span class="text-right overflow-hidden text-ellipsis mr-1">
               {{ canonical.domain || '*' }}
             </span>
-            <span class="flex-grow-1">
+            <span class="grow">
               /{{ canonical.path }}
             </span>
             <Button icon="pi pi-pencil" label="Edit" class="p-button-warning mr-1" @click="editCanonical" />
             <Button icon="pi pi-trash" label="Delete" class="p-button-danger" @click="deleteCanonical"/>
 
             <Dialog :visible="editCanonicalDialogVisible" @update:visible="v => editCanonicalDialogVisible = v"
-                    :modal="true" class="w-full sm:w-9 md:w-8 lg:w-6">
+                    :modal="true" class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12">
               <template #header>
                 <h3>Edit canonical url</h3>
               </template>
@@ -33,14 +33,14 @@
       </div>
 
       <div v-if="redirects.length > 0">
-        <div class="text-900 text-xl font-medium mb-2">
+        <div class="text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">
           Redirects
         </div>
-        <div class="w-full flex flex-wrap flex-row align-items-center mb-1" v-for="url of redirects" :key="url.to">
-          <span class="text-right overflow-hidden text-overflow-ellipsis mr-1">
+        <div class="w-full flex flex-wrap flex-row items-center mb-1" v-for="url of redirects" :key="url.to">
+          <span class="text-right overflow-hidden text-ellipsis mr-1">
             {{ url.domain || '*' }}
           </span>
-          <span class="flex-grow-1">
+          <span class="grow">
             /{{ url.path }}
           </span>
           <Button icon="pi pi-trash" label="Delete" class="p-button-danger" @click="() => deleteRedirect(url)"/>
@@ -53,7 +53,7 @@
       </div>
 
       <Dialog :visible="createRedirectDialogVisible" @update:visible="v => createRedirectDialogVisible = v"
-              :modal="true" class="w-full sm:w-9 md:w-8 lg:w-6">
+              :modal="true" class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12">
         <template #header>
           <h3>Add redirect</h3>
         </template>

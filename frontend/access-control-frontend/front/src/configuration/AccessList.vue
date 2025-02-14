@@ -1,13 +1,13 @@
 <template>
-  <div v-if="synchronizedAccesses.length > 0" class="mb-4">
-    <div class="text-900 font-medium text-xl mb-2">Authorized</div>
+  <div v-if="synchronizedAccesses.length > 0" class="mb-6">
+    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Authorized</div>
     <div v-for="access of synchronizedAccesses" :key="access.to"
-         class="flex flex-row flex-wrap align-items-center">
-      <div class="col-12 md:col-6 py-1">
+         class="flex flex-row flex-wrap items-center">
+      <div class="col-span-12 md:col-span-6 py-1">
         <UserIdentification :ownerType="access.sessionOrUserType" :owner="access.sessionOrUser"
                             :data="access.identification" />
       </div>
-      <div class="col-12 md:col-6 flex flex-row pr-0" v-if="isMounted">
+      <div class="col-span-12 md:col-span-6 flex flex-row pr-0" v-if="isMounted">
         <Dropdown v-if="!multiRole && (access.roles?.length ?? 0) <= 1"
                   id="userPublicAccess" class="w-14em"
                   style="width: calc(100% - 2.357rem) !important"
@@ -25,7 +25,7 @@
                      :feedback="false" toggleMask
                      :disabled="disabled" />
         <Button @click="deleteAccess(access)" icon="pi pi-times"
-                class="p-button-rounded p-button-text p-button-plain ml-2 px-3"
+                class="p-button-rounded p-button-text p-button-plain ml-2 px-4"
                 style="padding-top: 0.77rem" :disabled="disabled" />
       </div>
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex flex-column align-items-center">
+  <div class="w-full flex flex-col items-center">
     <div v-if="topUp" class="w-full lg:w-6 md:w-9 surface-card border-round shadow-1 p-3
                              flex flex-column align-items-center text-center">
       <div class="text-2xl font-semibold my-2">
@@ -10,13 +10,13 @@
         <CurrencyDisplay :value="topUp?.price" :currency="topUp.currency" :denomination="priceDenomination" />
       </div>
 
-      <div class="mt-4 text-lg">
+      <div class="mt-6 text-lg">
         You have canceled the top-up.
       </div>
 
-      <div class="mt-3">Your current balance is <BillingBalance /></div>
+      <div class="mt-4">Your current balance is <BillingBalance /></div>
 
-      <div class="flex flex-row justify-content-center align-items-center mt-4 mb-1 flex-wrap">
+      <div class="flex flex-row justify-center items-center mt-6 mb-1 flex-wrap">
         <router-link :to="{ name: 'billing:topUp', params: {
                                   value: topUp.value, price: topUp.price, currency: topUp.currency
                               } }" class="mx-2">
@@ -27,8 +27,8 @@
         </router-link>
       </div>
 
-      <Divider align="center" class="mt-4 mb-2">
-        <span class="text-600 font-normal text-sm">OR</span>
+      <Divider align="center" class="mt-6 mb-2">
+        <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">OR</span>
       </Divider>
 
       <div v-for="offer of billingClientConfig.topUpOffers" :key="'offer'+JSON.stringify(offer)">

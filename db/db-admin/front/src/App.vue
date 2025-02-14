@@ -7,7 +7,7 @@
     </template>
     <loading-zone v-else suspense @isLoading="l => loading = l">
       <template v-slot:loading>
-        <div class="fixed w-full h-full flex align-items-center justify-content-center top-0 left-0">
+        <div class="fixed w-full h-full flex items-center justify-center top-0 left-0">
           <ProgressSpinner animationDuration=".5s"/>
         </div>
       </template>
@@ -15,7 +15,7 @@
         <page :loading="loading" :working="working">
           <working-zone @isWorking="w => working = w">
             <template v-slot:working>
-              <div class="fixed w-full h-full flex align-items-center justify-content-center top-0 left-0">
+              <div class="fixed w-full h-full flex items-center justify-center top-0 left-0">
                 <ProgressSpinner animationDuration=".5s"/>
               </div>
             </template>

@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
-    <div class="w-full surface-0">
-      <h2 class="p-4">Editor:</h2>
+    <div class="w-full bg-surface-0 dark:bg-surface-900">
+      <h2 class="p-6">Editor:</h2>
       <ImageEditor v-model="image" />
 <!--      :source-image="'[Wc6P55MDs.0@1V6ZJBwyF_1I98X_]'"-->
     </div>

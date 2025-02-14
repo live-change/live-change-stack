@@ -4,7 +4,7 @@
     <pre>{{ modelDefinition }}</pre>-->
 
 
-    <div class="surface-card w-full p-3 shadow-1 border-round mb-2">
+    <div class="bg-surface-0 dark:bg-surface-900 w-full p-4 shadow-sm rounded-border mb-2">
       <slot name="header">
         <div class="">
           Service <strong>{{ service }}</strong>
@@ -15,14 +15,14 @@
       </slot>
     </div>
 
-    <div class="surface-card p-3 shadow-1 border-round" v-if="modelsPaths">
+    <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border" v-if="modelsPaths">
       <div v-for="({ value: object }, index) in (modelsData ?? [])">
-        <div v-if="!object" class="text-xl text-800 my-1 mx-3">
+        <div v-if="!object" class="text-xl text-surface-800 dark:text-surface-50 my-1 mx-4">
           <strong>{{ model }}</strong> not found.
         </div>
         <div v-else
              :key="JSON.stringify(modelsPaths[index])+index"
-             class="flex flex-row align-items-center justify-content-between my-3">
+             class="flex flex-row items-center justify-between my-4">
           <router-link :to="viewRoute(object)" class="no-underline text-color">
             <ObjectIdentification
               :objectType="service + '_' + model"
@@ -46,10 +46,10 @@
         </div>
       </div>
     </div>
-    <div v-else class="flex align-items-start p-4 bg-pink-100 border-round border-1 border-pink-300 mb-4">
-      <i class="pi pi-times-circle text-pink-900 text-2xl mr-3" />
-      <div class="mr-3">
-        <div class="text-pink-900 font-medium text-xl mb-3 line-height-1">Not authorized</div>
+    <div v-else class="flex items-start p-6 bg-pink-100 rounded-border border border-pink-300 mb-6">
+      <i class="pi pi-times-circle text-pink-900 text-2xl mr-4" />
+      <div class="mr-4">
+        <div class="text-pink-900 font-medium text-xl mb-4 leading-none">Not authorized</div>
         <p class="m-0 p-0 text-pink-700">
           You do not have sufficient privileges to use this feature of this object.
         </p>
@@ -57,7 +57,7 @@
     </div>
 
     <div v-if="modelDefinition.crud?.create && !modelsData.find(x => x?.value)"
-         class="mt-2 flex flex-row justify-content-end mr-2">
+         class="mt-2 flex flex-row justify-end mr-2">
       <router-link :to="createRoute" class="no-underline2">
         <Button icon="pi pi-plus" :label="'Set '+model" />
       </router-link>
@@ -65,7 +65,7 @@
 
     <ConfirmPopup group="delete">
       <template #message="slotProps">
-        <div class="flex flex-row align-items-center w-full gap-3 border-bottom-1 surface-border px-3 pt-1 pb-1">
+        <div class="flex flex-row items-center w-full gap-4 border-b border-surface px-4 pt-1 pb-1">
           <i class="pi pi-trash text-3xl text-primary-500"></i>
           <p>
             Do you want to delete {{ model[0].toLowerCase() + model.slice(1) }}

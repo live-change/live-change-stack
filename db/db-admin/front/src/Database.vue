@@ -1,13 +1,13 @@
 <template>
-  <div class="surface-card p-4 shadow-2 border-round w-full">
+  <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border w-full">
     <ConfirmPopup v-if="isMounted"></ConfirmPopup>
     <Toast v-if="isMounted"></Toast>
-    <div class="text-center mb-3">
-      <div class="text-900 text-3xl font-medium mb-3">Database "{{ dbName }}" @ {{ dbApi }}</div>
+    <div class="text-center mb-4">
+      <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Database "{{ dbName }}" @ {{ dbApi }}</div>
     </div>
-    <div class="text-center mb-3">
-      <div v-if="tables.length > 0" class="text-900 text-2xl font-medium mb-3">Tables</div>
-      <div v-else class="text-600 text-xl font-medium mb-3">
+    <div class="text-center mb-4">
+      <div v-if="tables.length > 0" class="text-surface-900 dark:text-surface-0 text-2xl font-medium mb-4">Tables</div>
+      <div v-else class="text-surface-600 dark:text-surface-200 text-xl font-medium mb-4">
         There are no tables. Create first one.
       </div>
     </div>
@@ -39,15 +39,15 @@
       </Column>
     </DataTable>
 
-    <form class="mt-4 flex flex-row justify-content-center" @submit="handleNewTableSubmit">
+    <form class="mt-6 flex flex-row justify-center" @submit="handleNewTableSubmit">
       <InputText v-model="newTableName" class="mr-2" placeholder="Table Name" />
       <Button type="submit" class="p-button-primary" icon="pi pi-plus" label="Create Table" />
     </form>
 
 
-    <div class="text-center mb-3 mt-5">
-      <div v-if="logs.length > 0" class="text-900 text-2xl font-medium mb-3">Logs</div>
-      <div v-else class="text-600 text-xl font-medium mb-3">
+    <div class="text-center mb-4 mt-8">
+      <div v-if="logs.length > 0" class="text-surface-900 dark:text-surface-0 text-2xl font-medium mb-4">Logs</div>
+      <div v-else class="text-surface-600 dark:text-surface-200 text-xl font-medium mb-4">
         There are no logs. Create first one.
       </div>
     </div>
@@ -78,15 +78,15 @@
       </Column>
     </DataTable>
 
-    <form class="mt-4 flex flex-row justify-content-center" @submit="handleNewLogSubmit">
+    <form class="mt-6 flex flex-row justify-center" @submit="handleNewLogSubmit">
       <InputText v-model="newLogName" class="mr-2" placeholder="Log Name" />
       <Button type="submit" class="p-button-primary" icon="pi pi-plus" label="Create Log" />
     </form>
 
 
-    <div class="text-center mb-3 mt-5">
-      <div v-if="indexes.length > 0" class="text-900 text-2xl font-medium mb-3">Indexes</div>
-      <div v-else class="text-600 text-xl font-medium mb-3">
+    <div class="text-center mb-4 mt-8">
+      <div v-if="indexes.length > 0" class="text-surface-900 dark:text-surface-0 text-2xl font-medium mb-4">Indexes</div>
+      <div v-else class="text-surface-600 dark:text-surface-200 text-xl font-medium mb-4">
         There are no indexes.
       </div>
     </div>

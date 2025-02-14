@@ -3,8 +3,8 @@
     <command-form service="url" action="takeUrl" v-slot="{ data }" :parameters="{ target, targetType, redirect }"
                   :initialValues="initialValues" @done="handleTaken" keepOnDone>
 
-      <div class="p-field mb-3">
-        <label for="path" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="path" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Path
         </label>
         <InputText id="path" type="text" class="w-full"
@@ -13,8 +13,8 @@
                    v-model="data.path" />
         <small v-if="data.pathError" id="path-help" class="p-error">{{ t(`errors.${data.pathError}`) }}</small>
       </div>
-      <div class="p-field mb-3">
-        <label for="domain" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="domain" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Domain (optional)
         </label>
         <InputText id="domain" type="text" class="w-full"
@@ -32,7 +32,7 @@
     </command-form>
 
     <Dialog :visible="generateDialogVisible" @update:visible="v => generateDialogVisible = v"
-            :modal="true" class="w-full sm:w-9 md:w-8 lg:w-6">
+            :modal="true" class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12">
       <template #header>
         <h3>Generate url</h3>
       </template>

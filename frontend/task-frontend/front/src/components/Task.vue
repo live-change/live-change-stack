@@ -1,27 +1,27 @@
 <template>
   <div>
-    <div class="text-lg flex flex-row justify-content-between flex-wrap" :class="taskColor">
-      <div class="flex flex-row align-items-center mr-3">
+    <div class="text-lg flex flex-row justify-between flex-wrap" :class="taskColor">
+      <div class="flex flex-row items-center mr-4">
         <i :class="['pi', icon, taskColor]" style="font-size: 1rem" />
         <div :class="['ml-2']">{{ label }}</div>
       </div>
-      <div v-if="task?.progress && task?.state !== 'done'" class="w-8rem mr-3 flex-grow-1" style="max-width: 50vw">
+      <div v-if="task?.progress && task?.state !== 'done'" class="w-32 mr-4 grow" style="max-width: 50vw">
         <ProgressBar :value="Math.floor((100 * taskData.progress.current / taskData.progress.total))" />
       </div>
-      <div v-if="task?.retries?.length && taskData.retries.length < taskData.maxRetries" class="mr-3">
+      <div v-if="task?.retries?.length && taskData.retries.length < taskData.maxRetries" class="mr-4">
         <i class="pi pi-replay" />
         {{ taskData.retries.length }} / {{ taskData.maxRetries }}
       </div>
       <div>{{ task?.state !== 'done' ? (task?.progress?.action || task?.state) : 'done' }}</div>
     </div>
-    <div v-for="retry in task?.retries" class="ml-4 flex flex-row justify-content-between text-red-800">
+    <div v-for="retry in task?.retries" class="ml-6 flex flex-row justify-between text-red-800">
       {{ retry.error }} at {{ d(retry.failedAt, 'shortestTime')}}
     </div>
 <!--    <pre>{{ taskData.progress }}</pre>-->
     <div v-if="taskResultComponent && taskData.result" class="m-2">
       <component :is="taskResultComponent" :task="task" :result="taskData.result" :taskType="taskType" />
     </div>
-    <div class="ml-4">
+    <div class="ml-6">
       <Task v-for="task in childTasks" :key="taskData.id" :task="task" :tasks="allTasks" :taskTypes="taskTypes" />
     </div>
   </div>

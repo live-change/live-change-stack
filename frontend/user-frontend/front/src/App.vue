@@ -52,6 +52,8 @@
   @import "tailwindcss";
   @plugin "tailwindcss-primeui";
 
+  @custom-variant dark (&:where(.app-dark-mode, .app-dark-mode *));
+
   :root { font-family: 'Verdana', sans-serif; }
   @supports (font-variation-settings: normal) {
     :root { font-family: 'Verdana var', sans-serif; }
@@ -59,9 +61,6 @@
   html,body
   {
     min-height:100%;
-    font-family: 'Verdana var', 'Verdana', sans-serif;
-  }
-  .p-component, .p-component * {
     font-family: 'Verdana var', 'Verdana', sans-serif;
   }
 

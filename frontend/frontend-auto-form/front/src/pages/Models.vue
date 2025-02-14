@@ -1,13 +1,13 @@
 <template>
-  <div class="w-full lg:w-8 md:w-11">
+  <div class="w-full lg:w-8/12 md:w-11/12">
     <div v-for="serviceWithModels of editableModelsByService"
-         class="surface-card p-3 shadow-1 border-round">
+         class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border">
       <div class="text-xl mb-2">
         Service <strong>{{ serviceWithModels.name }}</strong>
       </div>
-      <div v-for="model of serviceWithModels.models" class="mb-2 ml-3">
-        <div class="mb-1 flex flex-row flex-wrap align-items-center justify-content-between">
-          <div class="text-xl flex flex-row align-items-center mr-4">
+      <div v-for="model of serviceWithModels.models" class="mb-2 ml-4">
+        <div class="mb-1 flex flex-row flex-wrap items-center justify-between">
+          <div class="text-xl flex flex-row items-center mr-6">
             <strong>{{ model.name }}</strong>
             <span class="mx-1">model</span>
             <div v-for="relation of model.relations">

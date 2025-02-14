@@ -1,10 +1,10 @@
 <template>
 <!--  <pre>{{ JSON.stringify(uploadProgress, null, '  ') }}</pre>-->
-  <div class="surface-card" v-if="uploadProgress">
+  <div class="bg-surface-0 dark:bg-surface-900" v-if="uploadProgress">
     <ProgressBar :value="uploadProgress.percentage.toFixed()" />
     <div v-if="uploadProgress.state != 'done'" class="flex mt-2">
       {{ uploadProgress.state}}
-      <div class="flex-grow-1">
+      <div class="grow">
         {{ prettyBytes(uploadProgress.transferred) }}
         /
         {{ prettyBytes(uploadProgress.length) }}
@@ -13,7 +13,7 @@
         eta: {{ Duration.fromMillis(uploadProgress.eta).toHuman({  unitDisplay: "short" }) }}
       </div>
     </div>
-    <div v-else class="flex flex-row justify-content-center">
+    <div v-else class="flex flex-row justify-center">
       <div class="mr-1">Uploaded</div>
       <div v-if="upload.serverUpload" class="mr-1 font-semibold">{{ upload.serverUpload.fileName }}</div>
       <div>{{ prettyBytes(uploadProgress.length) }}</div>

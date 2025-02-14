@@ -6,7 +6,7 @@
     <div v-for="(bucket, bucketIndex) in dataBuckets.buckets" :key="bucket.id"
          class="w-full">
       <div v-for="(row, index) in bucket.data" :key="row.id" :ref="el => bucket.domElements[index] = el"
-           class="surface-0 shadow-1 w-full">
+           class="bg-surface-0 dark:bg-surface-900 shadow-sm w-full">
 <!--        {{ JSON.stringify(row) }}-->
         <object-editor :currentData="JSON.stringify(row)"
                        :write="props.write" :remove="props.remove"

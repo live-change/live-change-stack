@@ -1,6 +1,6 @@
 <template>
   <Dialog v-model:visible="visible"
-          :modal="true" class="w-full sm:w-9 md:w-8 lg:w-6">
+          :modal="true" class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12">
     <template #header>
       <div class="flex flex-wrap w-full">
         <div class="text-xl">Invite user with email</div>
@@ -21,10 +21,10 @@
                           :initialValues="{ roles: availableRoles }"
                           @done="handleInvited" keepOnDone>
 
-              <div class="flex flex-row flex-wrap align-items-center" style="margin-left: -0.5rem; margin-right: -0.5rem;">
-                <div class="col-12 md:col-6 py-1">
-                  <div class="p-field mb-3">
-                    <label for="email" class="block text-900 font-medium mb-2">
+              <div class="flex flex-row flex-wrap items-center" style="margin-left: -0.5rem; margin-right: -0.5rem;">
+                <div class="col-span-12 md:col-span-6 py-1">
+                  <div class="p-field mb-4">
+                    <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                       Email address
                     </label>
                     <InputText id="email" type="text" class="w-full"
@@ -33,9 +33,9 @@
                     <small v-if="data.emailError" id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
                   </div>
                 </div>
-                <div class="col-12 md:col-6">
-                  <div class="p-field mb-3">
-                    <label for="inviteAccess" class="block text-900 font-medium mb-2">
+                <div class="col-span-12 md:col-span-6">
+                  <div class="p-field mb-4">
+                    <label for="inviteAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                       Roles
                     </label>
                     <Dropdown v-if="!multiRole" id="inviteAccess" class="w-14em w-full"
@@ -54,7 +54,7 @@
                 </div>
               </div>
               <div class="p-field mb-1">
-                <label for="inviteMessage" class="block text-900 font-medium mb-2">
+                <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                   Message ( optional )
                 </label>
                 <Textarea id="inviteMessage" v-model="data.message" :autoResize="true" rows="3" class="w-full" />
@@ -72,8 +72,8 @@
                           :initialValues="{ roles: availableRoles }"
                           @done="handleInvitedMany" keepOnDone>
 
-                <div class="p-field mb-3">
-                  <label for="email" class="block text-900 font-medium mb-2">
+                <div class="p-field mb-4">
+                  <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                     Email addresses (newline or comma separated)
                   </label>
                   <Textarea id="emailsText" type="text" class="w-full"
@@ -84,8 +84,8 @@
                     {{ t(`errors.${data.emailsTextError}`) }}
                   </small>
                 </div>
-                <div class="p-field mb-3">
-                  <label for="inviteAccess" class="block text-900 font-medium mb-2">
+                <div class="p-field mb-4">
+                  <label for="inviteAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                     Roles
                   </label>
                   <Dropdown v-if="!multiRole" id="inviteAccess" class="w-14em w-full"
@@ -102,7 +102,7 @@
                   <small v-if="data.rolesError" id="roles-help" class="p-error">{{ t(`errors.${data.rolesError}`) }}</small>
                 </div>
               <div class="p-field mb-1">
-                <label for="inviteMessage" class="block text-900 font-medium mb-2">
+                <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                   Message ( optional )
                 </label>
                 <Textarea id="inviteMessage" v-model="data.message" :autoResize="true" rows="3" class="w-full" />

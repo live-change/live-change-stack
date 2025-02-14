@@ -1,6 +1,6 @@
 <template>
   <pre data-headers>{{ JSON.stringify(metadata, null, '  ') }}</pre>
-  <div data-html class="message m-6">
+  <div data-html class="message m-12">
     <p class="text-lg">
       Hello!
     </p>
@@ -14,7 +14,7 @@
     </p>
     <div v-if="data.message.trim().length > 0">
       <p>He left message for you:</p>
-      <blockquote class="font-italic">{{ data.message }}</blockquote>
+      <blockquote class="italic">{{ data.message }}</blockquote>
     </div>
     <p>
       if you already have an account, you can add this email to your account

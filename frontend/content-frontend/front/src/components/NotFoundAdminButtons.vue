@@ -1,5 +1,5 @@
 <template>
-  <div class="absolute top-0 right-0 pr-4 max-h-0 flex align-items-center z-5">
+  <div class="absolute top-0 right-0 pr-6 max-h-0 flex items-center z-50">
     <Button icon="pi pi-plus"
             class="p-button p-button-icon-only p-button-rounded p-button-danger"
             @click="createContent" />

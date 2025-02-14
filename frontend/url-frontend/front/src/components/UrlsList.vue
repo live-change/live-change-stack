@@ -6,19 +6,19 @@
            :ref="el => bucket.domElements[index] = el"
            class="mb-1">
 <!--        <pre>{{ JSON.stringify(url, null, '  ') }}</pre>-->
-        <div class="flex flex-row align-items-center">
-          <div class="flex-shrink-0 mr-2">
+        <div class="flex flex-row items-center">
+          <div class="shrink-0 mr-2">
             <i class="pi pi-globe text-2xl" />
           </div>
-          <div class="flex flex-row flex-grow-1 flex-wrap">
-            <div class="py-1 flex-grow-0">
+          <div class="flex flex-row grow flex-wrap">
+            <div class="py-1 grow-0">
               <router-link :to="urlLink(url)">{{ urlLink(url) }}</router-link>
             </div>
-            <div v-if="url.type == 'redirect'" class="flex flex-row align-items-center">
-              <div class="flex-shrink-0 mr-2 ml-5">
+            <div v-if="url.type == 'redirect'" class="flex flex-row items-center">
+              <div class="shrink-0 mr-2 ml-8">
                 <i class="pi pi-arrow-right text-2xl" />
               </div>
-              <div class="py-1 flex-grow-0">
+              <div class="py-1 grow-0">
                 <router-link :to="urlLink(url.canonical)">{{ urlLink(url.canonical) }}</router-link>
               </div>
             </div>

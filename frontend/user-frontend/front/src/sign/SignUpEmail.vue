@@ -1,9 +1,9 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card p-4 shadow-2 border-round">
-      <div class="text-center mb-5">
-        <div class="text-900 text-3xl font-medium mb-3">Sign Up</div>
-        <span class="text-600 font-medium line-height-3">Already have an account?</span>
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
+      <div class="text-center mb-8">
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Sign Up</div>
+        <span class="text-surface-600 dark:text-surface-200 font-medium leading-normal">Already have an account?</span>
         <router-link :to="{ name: 'user:signInEmail' }"
                      class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
           Sign in</router-link>
@@ -12,8 +12,8 @@
       <command-form service="messageAuthentication" action="signUpEmail" v-slot="{ data, submit }"
                     @done="handleSent" keepOnDone>
 
-        <div class="p-field mb-3">
-          <label for="email" class="block text-900 font-medium mb-2">
+        <div class="p-field mb-4">
+          <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
             Email address
           </label>
           <InputText id="email" type="text" class="w-full"
@@ -27,8 +27,8 @@
         <Button label="Sign Up with email" icon="pi pi-user" class="w-full" type="submit" />
       </command-form>
 
-      <Divider v-if="accountTypes.length > 0" align="center" class="my-4">
-        <span class="text-600 font-normal text-sm">OR</span>
+      <Divider v-if="accountTypes.length > 0" align="center" class="my-6">
+        <b>OR</b>
       </Divider>
 
       <router-link v-for="accountType in accountTypes"
@@ -41,7 +41,7 @@
         />
       </router-link>
 
-      <div class="mt-3">
+      <div class="mt-4">
         By providing your email address or google account, you consent to its processing solely
         for registration and account verification purposes, in accordance with our
         <router-link to="/privacy-policy">Privacy Policy</router-link>.

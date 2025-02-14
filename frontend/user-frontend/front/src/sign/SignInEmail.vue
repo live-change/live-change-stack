@@ -1,10 +1,10 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card p-4 shadow-2 border-round">
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
 
-      <div class="text-center mb-5">
-        <div class="text-900 text-3xl font-medium mb-3">Welcome Back</div>
-        <span class="text-600 font-medium line-height-3">Don't have an account?</span>
+      <div class="text-center mb-8">
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Welcome Back</div>
+        <span class="text-surface-600 dark:text-surface-200 font-medium leading-normal">Don't have an account?</span>
         <router-link :to="{ name: 'user:signUpEmail' }"
                      class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
           Create today!</router-link>
@@ -13,8 +13,8 @@
       <command-form service="passwordAuthentication" action="signInEmail" v-slot="{ data }"
                     @done="handleDone" keepOnDone v-if="isMounted">
 
-        <div class="p-field mb-3">
-          <label for="email" class="block text-900 font-medium mb-2">
+        <div class="p-field mb-4">
+          <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
             Email address
           </label>
           <InputText id="email" type="text" class="w-full"
@@ -25,8 +25,8 @@
           </small>
         </div>
 
-        <div class="p-field mb-3">
-          <label for="password" class="block text-900 font-medium mb-2">Password (optional)</label>
+        <div class="p-field mb-4">
+          <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Password (optional)</label>
           <Password id="password" class="w-full" inputClass="w-full" toggleMask :feedback="false"
                     aria-describedby="password-help" :class="{ 'p-invalid': data.passwordHashError }"
                     v-model="data.passwordHash" />
@@ -35,9 +35,9 @@
           </small>
         </div>
 
-        <div class="flex align-items-center justify-content-between mb-6">
+        <div class="flex items-center justify-between mb-12">
           <div></div>
-<!--          <div class="flex align-items-center">
+<!--          <div class="flex items-center">
             <Checkbox id="rememberme" :binary="true" class="mr-2" />
             <label for="rememberme">Remember me</label>
           </div>-->
@@ -51,8 +51,8 @@
 
       </command-form>
 
-      <Divider v-if="accountTypes.length > 0" align="center" class="my-4">
-        <span class="text-600 font-normal text-sm">OR</span>
+      <Divider v-if="accountTypes.length > 0" align="center" class="my-6">
+        <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">OR</span>
       </Divider>
 
       <router-link v-for="accountType in accountTypes"

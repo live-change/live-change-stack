@@ -1,5 +1,5 @@
 <template>
-  <div v-if="definition" class="grid formgrid p-fluid mt-2 mb-2">
+  <div v-if="definition" class="grid grid-cols-12 gap-4 formgrid p-fluid mt-2 mb-2">
     <AutoViewField v-for="property in propertiesList" :key="property"
                 :value="value?.[property]"
                 :definition="definition.properties[property]"
@@ -7,7 +7,7 @@
                 :name="property"
                 :rootValue="props.rootValue" :propName="(propName ? propName + '.' : '') + property"
                 :i18n="i18n"
-                class="col-12" />
+                class="col-span-12" />
   </div>
 </template>
 

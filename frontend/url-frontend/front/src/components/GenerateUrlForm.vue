@@ -4,8 +4,8 @@
                   :initialValues="{ maxLength: 125, charset: 'all', ...initialValues }"
                   @done="handleTaken" keepOnDone>
 
-      <div class="p-field mb-3">
-        <label for="title" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="title" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Title (optional)
         </label>
         <InputText id="title" type="text" class="w-full"
@@ -14,8 +14,8 @@
                    v-model="data.title" />
         <small v-if="data.titleError" id="title-help" class="p-error">{{ t(`errors.${data.titleError}`) }}</small>
       </div>
-      <div class="p-field mb-3">
-        <label for="path" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="path" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Path (optional)
         </label>
         <InputText id="path" type="text" class="w-full"
@@ -24,8 +24,8 @@
                    v-model="data.path" />
         <small v-if="data.pathError" id="path-help" class="p-error">{{ t(`errors.${data.pathError}`) }}</small>
       </div>
-      <div class="p-field mb-3">
-        <label for="maxLength" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="maxLength" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Max length
         </label>
         <InputNumber inputId="maxLength" v-model="data.maxLength" showButtons buttonLayout="horizontal"
@@ -36,8 +36,8 @@
         <small v-if="data.maxLengthError" id="maxLength-help" class="p-error">{{ t(`errors.${data.maxLengthError}`) }}</small>
       </div>
 
-      <div class="p-field mb-3">
-        <label for="charset" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="charset" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Charset
         </label>
         <Dropdown id="charset" type="text" class="w-full"
@@ -47,8 +47,8 @@
         <small v-if="data.charsetError" id="charset-help" class="p-error">{{ t(`errors.${data.charsetError}`) }}</small>
       </div>
 
-      <div class="p-field mb-3">
-        <label for="domain" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="domain" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Domain (optional)
         </label>
         <InputText id="domain" type="text" class="w-full"
@@ -58,8 +58,8 @@
         <small v-if="data.domainError" id="domain-help" class="p-error">{{ t(`errors.${data.domainError}`) }}</small>
       </div>
 
-      <div class="p-field mb-3">
-        <label for="prefix" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="prefix" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Prefix (optional)
         </label>
         <InputText id="prefix" type="text" class="w-full"
@@ -69,8 +69,8 @@
         <small v-if="data.prefixError" id="prefix-help" class="p-error">{{ t(`errors.${data.prefixError}`) }}</small>
       </div>
 
-      <div class="p-field mb-3">
-        <label for="suffix" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="suffix" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Suffix (optional)
         </label>
         <InputText id="suffix" type="text" class="w-full"

@@ -1,7 +1,7 @@
 <template>
   <div class="rows w-full mt-2">
     <div v-for="(row, index) in dataRows" :key="row.id"
-         class="surface-0 shadow-1 w-full">
+         class="bg-surface-0 dark:bg-surface-900 shadow-sm w-full">
       <!--        {{ JSON.stringify(row) }}-->
       <object-editor :currentData="JSON.stringify(row)"
                      :write="props.write" :remove="props.remove"

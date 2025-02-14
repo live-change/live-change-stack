@@ -1,11 +1,11 @@
 <template>
   <div v-if="updateAvailable && !updateBannerHidden" class="bg-yellow-400 text-gray-900 p-3 flex
         justify-content-between lg:justify-content-center align-items-center flex-wrap">
-    <div class="font-bold mr-8">{{ t('app.updateAvailable') }}</div>
-    <div class="align-items-center hidden md:flex">
-      <span class="line-height-3">{{ t("app.newVersions") }}</span>
+    <div class="font-bold mr-20">{{ t('app.updateAvailable') }}</div>
+    <div class="items-center hidden md:flex">
+      <span class="leading-normal">{{ t("app.newVersions") }}</span>
     </div>
-    <a class="flex align-items-center ml-2 mr-8">
+    <a class="flex items-center ml-2 mr-20">
       <a class="text-gray-900" href="#" @click="update">
         <span class="underline font-bold">{{ t("app.reload") }}</span>
       </a>

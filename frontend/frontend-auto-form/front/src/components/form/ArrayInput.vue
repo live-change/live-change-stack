@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="mb-4 border-bottom-1" v-for="(value, index) in modelValue">
-      <div class="flex flex-row align-items-center justify-content-between">
+    <div class="mb-6 border-b" v-for="(value, index) in modelValue">
+      <div class="flex flex-row items-center justify-between">
 
         <div class="text-2xl">
           {{ te(i18n.slice(0,-1)+':itemTitle')

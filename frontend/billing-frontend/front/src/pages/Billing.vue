@@ -1,13 +1,13 @@
 <template>
   <div class="w-full" style="max-width: 800px">
-    <div class="surface-card border-round shadow-1 p-3">
-      <div class="flex flex-row flex-wrap align-items-center">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow-sm p-4">
+      <div class="flex flex-row flex-wrap items-center">
         <div class="flex-1">
           <div>
             <div class="text-lg">
               Available Funds:
             </div>
-            <div class="text-2xl text-800 font-semibold">
+            <div class="text-2xl text-surface-800 dark:text-surface-50 font-semibold">
               <BillingBalance />
             </div>
           </div>

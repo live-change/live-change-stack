@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card border-round shadow-2 p-4">
-      <div class="text-900 font-medium mb-3 text-xl mb-4">Signed Out</div>
-      <p class="mt-0 p-0 line-height-3">You have successfully signed from your account.</p>
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">Signed Out</div>
+      <p class="mt-0 p-0 leading-normal">You have successfully signed from your account.</p>
     </div>
   </div>
 </template>

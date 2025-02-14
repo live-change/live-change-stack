@@ -14,7 +14,7 @@
     :topVideos="testData.topVideos"
     :otherVideos="testData.otherVideos"
     :myVideos="testData.myVideos"
-    class="absolute surface-900 w-full h-full"
+    class="absolute bg-surface-900 dark:bg-surface-0 w-full h-full"
   />
 
 </template>

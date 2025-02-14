@@ -1,10 +1,10 @@
 <template>
-  <div class="surface-card p-4 shadow-2 border-round w-full">
+  <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border w-full">
     <ConfirmPopup v-if="isMounted"></ConfirmPopup>
     <Toast v-if="isMounted"></Toast>
 
-    <div class="text-center mb-5">
-      <div class="text-900 text-3xl font-medium mb-3">Databases @ {{ dbApi }}</div>
+    <div class="text-center mb-8">
+      <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Databases @ {{ dbApi }}</div>
     </div>
 
     <DataTable :value="databases" responsiveLayout="scroll">
@@ -28,7 +28,7 @@
 
 <!--    <pre>{{ JSON.stringify(databases, null, '  ') }}</pre>-->
 
-    <form class="mt-4 flex flex-row" @submit="handleNewDatabaseSubmit">
+    <form class="mt-6 flex flex-row" @submit="handleNewDatabaseSubmit">
       <InputText v-model="newDatabaseName" class="mr-2" placeholder="Database Name" />
       <Button type="submit" class="p-button-primary" icon="pi pi-plus" label="Create Database" />
     </form>

@@ -174,7 +174,7 @@
 
   const fieldClass = computed(() => [inputConfig.value?.fieldClass, definition.value?.fieldClass, props.class, {
     'p-invalid': !!error.value
-  }, 'flex flex-column'])
+  }, 'flex flex-col'])
   const fieldStyle = computed(() => [inputConfig.value?.fieldStyle, definition.value?.fieldStyle, props.style])
 
   const configAttributes = computed(() => {

@@ -1,51 +1,64 @@
-<template></template>
-
-<!--
 <template>
-  <div :class="containerClass">
-    <PInputText
+  <div :class="cx('root')" :style="sx('root')" v-bind="ptmi('root')">
+    <InputText
       ref="input"
       :id="inputId"
       :type="inputType"
-      :class="inputFieldClass"
+      :class="[cx('pcInputText'), inputClass]"
       :style="inputStyle"
-      :value="modelValue"
+      :defaultValue="d_value"
+      :name="$formName"
       :aria-labelledby="ariaLabelledby"
       :aria-label="ariaLabel"
-      :aria-controls="(panelProps && panelProps.id) || panelId || panelUniqueId"
+      :aria-controls="(overlayProps && overlayProps.id) || overlayId || (panelProps && panelProps.id) || panelId || overlayUniqueId"
       :aria-expanded="overlayVisible"
       :aria-haspopup="true"
       :placeholder="placeholder"
       :required="required"
+      :fluid="fluid"
+      :disabled="disabled"
+      :variant="variant"
+      :invalid="invalid"
+      :size="size"
+      :autofocus="autofocus"
       @input="onInput"
       @focus="onFocus"
       @blur="onBlur"
       @keyup="onKeyUp"
       @invalid="onInvalid"
       v-bind="inputProps"
+      :pt="ptm('pcInputText')"
+      :unstyled="unstyled"
     />
-    <i v-if="toggleMask" :class="toggleIconClass" @click="onMaskToggle" />
-    <span class="p-hidden-accessible" aria-live="polite">
+    <!-- TODO: hideicon and showicon slots are deprecated since v4.0-->
+    <slot v-if="toggleMask && unmasked" :name="$slots.maskicon ? 'maskicon' : 'hideicon'" :toggleCallback="onMaskToggle">
+      <component :is="maskIcon ? 'i' : 'EyeSlashIcon'" :class="[cx('maskIcon'), maskIcon]" @click="onMaskToggle" v-bind="ptm('maskIcon')" />
+    </slot>
+    <slot v-if="toggleMask && !unmasked" :name="$slots.unmaskicon ? 'unmaskicon' : 'showicon'" :toggleCallback="onMaskToggle">
+      <component :is="unmaskIcon ? 'i' : 'EyeIcon'" :class="[cx('unmaskIcon'), unmaskIcon]" @click="onMaskToggle" v-bind="ptm('unmaskIcon')" />
+    </slot>
+    <span class="p-hidden-accessible" aria-live="polite" v-bind="ptm('hiddenAccesible')" :data-p-hidden-accessible="true">
             {{ infoText }}
         </span>
     <Portal :appendTo="appendTo">
-      <transition name="p-connected-overlay"
-                  @enter="onOverlayEnter"
-                  @leave="onOverlayLeave"
-                  @after-leave="onOverlayAfterLeave">
-        <div v-if="overlayVisible"
-             :ref="overlayRef"
-             :id="panelId || panelUniqueId"
-             :class="panelStyleClass"
-             :style="panelStyle"
-             @click="onOverlayClick"
-             v-bind="panelProps">
+      <transition name="p-connected-overlay" @enter="onOverlayEnter" @leave="onOverlayLeave" @after-leave="onOverlayAfterLeave" v-bind="ptm('transition')">
+        <div
+          v-if="overlayVisible"
+          :ref="overlayRef"
+          :id="overlayId || panelId || overlayUniqueId"
+          :class="[cx('overlay'), panelClass, overlayClass]"
+          :style="[overlayStyle, panelStyle]"
+          @click="onOverlayClick"
+          v-bind="{ ...panelProps, ...overlayProps, ...ptm('overlay') }"
+        >
           <slot name="header"></slot>
           <slot name="content">
-            <div class="p-password-meter">
-              <div :class="strengthClass" :style="{ width: meter ? meter.width : '' }"></div>
+            <div :class="cx('content')" v-bind="ptm('content')">
+              <div :class="cx('meter')" v-bind="ptm('meter')">
+                <div :class="cx('meterLabel')" :style="{ width: meter ? meter.width : '' }" v-bind="ptm('meterLabel')"></div>
+              </div>
+              <div :class="cx('meterText')" v-bind="ptm('meterText')">{{ infoText }}</div>
             </div>
-            <div class="p-password-info">{{ infoText }}</div>
           </slot>
           <slot name="footer"></slot>
         </div>
@@ -55,464 +68,404 @@
 </template>
 
 <script>
-import InputText from 'primevue/inputtext';
-import OverlayEventBus from 'primevue/overlayeventbus';
-import Portal from 'primevue/portal';
-import { ConnectedOverlayScrollHandler, DomHandler, UniqueComponentId, ZIndexUtils } from 'primevue/utils';
+  import { absolutePosition, addStyle, getOuterWidth, isTouchDevice, relativePosition } from '@primeuix/utils/dom';
+  import { ZIndex } from '@primeuix/utils/zindex';
+  import { ConnectedOverlayScrollHandler } from '@primevue/core/utils';
+  import EyeIcon from '@primevue/icons/eye';
+  import EyeSlashIcon from '@primevue/icons/eyeslash';
+  import InputText from 'primevue/inputtext';
+  import OverlayEventBus from 'primevue/overlayeventbus';
+  import Portal from 'primevue/portal';
+  import BaseInput from '@primevue/core/baseinput';
+  import PasswordStyle from 'primevue/password/style';
 
-function absolutePosition(element, target) {
-  if (element) {
-    const elementDimensions = element.offsetParent ? { width: element.offsetWidth, height: element.offsetHeight } : this.getHiddenElementDimensions(element);
-    const elementOuterHeight = elementDimensions.height;
-    const elementOuterWidth = elementDimensions.width;
-    const targetOuterHeight = target.offsetHeight;
-    const targetOuterWidth = target.offsetWidth;
-    const targetOffset = target.getBoundingClientRect();
-    const windowScrollTop = DomHandler.getWindowScrollTop();
-    const windowScrollLeft = DomHandler.getWindowScrollLeft();
-    const viewport = DomHandler.getViewport();
-    let top, left;
-
-    //if (targetOffset.top + targetOuterHeight + elementOuterHeight > viewport.height) {
-      top = targetOffset.top + windowScrollTop - elementOuterHeight;
-      element.style.transformOrigin = 'bottom';
-
-      if (top < 0) {
-        top = windowScrollTop;
+  export default {
+    name: 'Password',
+    extends: BaseInput,
+    props: {
+      promptLabel: {
+        type: String,
+        default: null
+      },
+      mediumRegex: {
+        type: [String, RegExp],
+        default: '^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})' // eslint-disable-line
+      },
+      strongRegex: {
+        type: [String, RegExp],
+        default: '^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})' // eslint-disable-line
+      },
+      weakLabel: {
+        type: String,
+        default: null
+      },
+      mediumLabel: {
+        type: String,
+        default: null
+      },
+      strongLabel: {
+        type: String,
+        default: null
+      },
+      feedback: {
+        type: Boolean,
+        default: true
+      },
+      appendTo: {
+        type: [String, Object],
+        default: 'body'
+      },
+      toggleMask: {
+        type: Boolean,
+        default: false
+      },
+      hideIcon: {
+        type: String,
+        default: undefined
+      },
+      maskIcon: {
+        type: String,
+        default: undefined
+      },
+      showIcon: {
+        type: String,
+        default: undefined
+      },
+      unmaskIcon: {
+        type: String,
+        default: undefined
+      },
+      disabled: {
+        type: Boolean,
+        default: false
+      },
+      placeholder: {
+        type: String,
+        default: null
+      },
+      required: {
+        type: Boolean,
+        default: false
+      },
+      inputId: {
+        type: String,
+        default: null
+      },
+      inputClass: {
+        type: [String, Object],
+        default: null
+      },
+      inputStyle: {
+        type: Object,
+        default: null
+      },
+      inputProps: {
+        type: null,
+        default: null
+      },
+      panelId: {
+        type: String,
+        default: null
+      },
+      panelClass: {
+        type: [String, Object],
+        default: null
+      },
+      panelStyle: {
+        type: Object,
+        default: null
+      },
+      panelProps: {
+        type: null,
+        default: null
+      },
+      overlayId: {
+        type: String,
+        default: null
+      },
+      overlayClass: {
+        type: [String, Object],
+        default: null
+      },
+      overlayStyle: {
+        type: Object,
+        default: null
+      },
+      overlayProps: {
+        type: null,
+        default: null
+      },
+      ariaLabelledby: {
+        type: String,
+        default: null
+      },
+      ariaLabel: {
+        type: String,
+        default: null
+      },
+      autofocus: {
+        type: Boolean,
+        default: null
+      },
+      masked: {
+        type: Boolean,
+        default: false
       }
-  /*  } else {
-      top = targetOuterHeight + targetOffset.top + windowScrollTop;
-      element.style.transformOrigin = 'top';
-    }*/
-
-    if (targetOffset.left + elementOuterWidth > viewport.width) left = Math.max(0, targetOffset.left + windowScrollLeft + targetOuterWidth - elementOuterWidth);
-    else left = targetOffset.left + windowScrollLeft;
-
-    element.style.top = top + 'px';
-    element.style.left = left + 'px';
-  }
-}
-
-export default {
-  name: 'Password',
-  emits: ['update:modelValue', 'change', 'focus', 'blur', 'invalid', 'update:masked'],
-  props: {
-    modelValue: String,
-    promptLabel: {
-      type: String,
-      default: null
     },
-    mediumRegex: {
-      type: String,
-      default: '^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})' // eslint-disable-line
+    style: PasswordStyle,
+    provide() {
+      return {
+        $pcPassword: this,
+        $parentInstance: this
+      };
     },
-    strongRegex: {
-      type: String,
-      default: '^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})' // eslint-disable-line
+    inheritAttrs: false,
+    emits: ['change', 'focus', 'blur', 'invalid', 'update:masked'],
+    inject: {
+      $pcFluid: { default: null }
     },
-    weakLabel: {
-      type: String,
-      default: null
+    data() {
+      return {
+        overlayVisible: false,
+        meter: null,
+        infoText: null,
+        focused: false,
+        unmasked: false
+      };
     },
-    mediumLabel: {
-      type: String,
-      default: null
+    mediumCheckRegExp: null,
+    strongCheckRegExp: null,
+    resizeListener: null,
+    scrollHandler: null,
+    overlay: null,
+    mounted() {
+      this.infoText = this.promptText;
+      this.mediumCheckRegExp = new RegExp(this.mediumRegex);
+      this.strongCheckRegExp = new RegExp(this.strongRegex);
     },
-    strongLabel: {
-      type: String,
-      default: null
-    },
-    feedback: {
-      type: Boolean,
-      default: true
-    },
-    appendTo: {
-      type: String,
-      default: 'body'
-    },
-    toggleMask: {
-      type: Boolean,
-      default: false
-    },
-    hideIcon: {
-      type: String,
-      default: 'pi pi-eye-slash'
-    },
-    showIcon: {
-      type: String,
-      default: 'pi pi-eye'
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    placeholder: {
-      type: String,
-      default: null
-    },
-    required: {
-      type: Boolean,
-      default: false
-    },
-    inputId: {
-      type: String,
-      default: null
-    },
-    inputClass: {
-      type: [String, Object],
-      default: null
-    },
-    inputStyle: {
-      type: Object,
-      default: null
-    },
-    inputProps: {
-      type: null,
-      default: null
-    },
-    panelId: {
-      type: String,
-      default: null
-    },
-    panelClass: {
-      type: [String, Object],
-      default: null
-    },
-    panelStyle: {
-      type: Object,
-      default: null
-    },
-    panelProps: {
-      type: null,
-      default: null
-    },
-    'aria-labelledby': {
-      type: String,
-      default: null
-    },
-    'aria-label': {
-      type: String,
-      default: null
-    },
-    masked: {
-      type: Boolean,
-      default: true
-    }
-  },
-  data() {
-    return {
-      overlayVisible: false,
-      meter: null,
-      infoText: null,
-      focused: false,
-      unmasked: !this.masked
-    };
-  },
-  mediumCheckRegExp: null,
-  strongCheckRegExp: null,
-  resizeListener: null,
-  scrollHandler: null,
-  overlay: null,
-  mounted() {
-    this.infoText = this.promptText;
-    this.mediumCheckRegExp = new RegExp(this.mediumRegex);
-    this.strongCheckRegExp = new RegExp(this.strongRegex);
-  },
-  beforeUnmount() {
-    this.unbindResizeListener();
-
-    if (this.scrollHandler) {
-      this.scrollHandler.destroy();
-      this.scrollHandler = null;
-    }
-
-    if (this.overlay) {
-      ZIndexUtils.clear(this.overlay);
-      this.overlay = null;
-    }
-  },
-  methods: {
-    onOverlayEnter(el) {
-      ZIndexUtils.set('overlay', el, this.$primevue.config.zIndex.overlay);
-      this.alignOverlay();
-      this.bindScrollListener();
-      this.bindResizeListener();
-    },
-    onOverlayLeave() {
-      this.unbindScrollListener();
+    beforeUnmount() {
       this.unbindResizeListener();
-      this.overlay = null;
-    },
-    onOverlayAfterLeave(el) {
-      ZIndexUtils.clear(el);
-    },
-    alignOverlay() {
-      if (this.appendTo === 'self') {
-        DomHandler.relativePosition(this.overlay, this.$refs.input.$el);
-      } else {
-        this.overlay.style.minWidth = DomHandler.getOuterWidth(this.$refs.input.$el) + 'px';
-        absolutePosition(this.overlay, this.$refs.input.$el);
-      }
-    },
-    testStrength(str) {
-      let level = 0;
 
-      if (this.strongCheckRegExp.test(str)) level = 3;
-      else if (this.mediumCheckRegExp.test(str)) level = 2;
-      else if (str.length) level = 1;
-
-      return level;
-    },
-    onInput(event) {
-      this.$emit('update:modelValue', event.target.value);
-    },
-    onFocus(event) {
-      this.focused = true;
-
-      if (this.feedback) {
-        this.setPasswordMeter(this.modelValue);
-        this.overlayVisible = true;
+      if (this.scrollHandler) {
+        this.scrollHandler.destroy();
+        this.scrollHandler = null;
       }
 
-      this.$emit('focus', event);
-    },
-    onBlur(event) {
-      this.focused = false;
-
-      if (this.feedback) {
-        this.overlayVisible = false;
+      if (this.overlay) {
+        ZIndex.clear(this.overlay);
+        this.overlay = null;
       }
-
-      this.$emit('blur', event);
     },
-    onKeyUp(event) {
-      if (this.feedback) {
-        const value = event.target.value;
-        const { meter, label } = this.checkPasswordStrength(value);
+    methods: {
+      onOverlayEnter(el) {
+        ZIndex.set('overlay', el, this.$primevue.config.zIndex.overlay);
 
-        this.meter = meter;
-        this.infoText = label;
+        addStyle(el, { position: 'absolute', top: '0', left: '0' });
+        this.alignOverlay();
+        this.bindScrollListener();
+        this.bindResizeListener();
+      },
+      onOverlayLeave() {
+        this.unbindScrollListener();
+        this.unbindResizeListener();
+        this.overlay = null;
+      },
+      onOverlayAfterLeave(el) {
+        ZIndex.clear(el);
+      },
+      alignOverlay() {
+        if (this.appendTo === 'self') {
+          relativePosition(this.overlay, this.$refs.input.$el);
+        } else {
+          this.overlay.style.minWidth = getOuterWidth(this.$refs.input.$el) + 'px';
+          absolutePosition(this.overlay, this.$refs.input.$el);
+        }
+      },
+      testStrength(str) {
+        let level = 0;
 
-        if (event.code === 'Escape') {
-          this.overlayVisible && (this.overlayVisible = false);
+        if (this.strongCheckRegExp.test(str)) level = 3;
+        else if (this.mediumCheckRegExp.test(str)) level = 2;
+        else if (str.length) level = 1;
+
+        return level;
+      },
+      onInput(event) {
+        this.writeValue(event.target.value, event);
+        this.$emit('change', event);
+      },
+      onFocus(event) {
+        this.focused = true;
+
+        if (this.feedback) {
+          this.setPasswordMeter(this.d_value);
+          this.overlayVisible = true;
+        }
+
+        this.$emit('focus', event);
+      },
+      onBlur(event) {
+        this.focused = false;
+
+        if (this.feedback) {
+          this.overlayVisible = false;
+        }
+
+        this.$emit('blur', event);
+      },
+      onKeyUp(event) {
+        if (this.feedback) {
+          const value = event.target.value;
+          const { meter, label } = this.checkPasswordStrength(value);
+
+          this.meter = meter;
+          this.infoText = label;
+
+          if (event.code === 'Escape') {
+            this.overlayVisible && (this.overlayVisible = false);
+
+            return;
+          }
+
+          if (!this.overlayVisible) {
+            this.overlayVisible = true;
+          }
+        }
+      },
+      setPasswordMeter() {
+        if (!this.d_value) {
+          this.meter = null;
+          this.infoText = this.promptText;
 
           return;
         }
 
+        const { meter, label } = this.checkPasswordStrength(this.d_value);
+
+        this.meter = meter;
+        this.infoText = label;
+
         if (!this.overlayVisible) {
           this.overlayVisible = true;
         }
-      }
-    },
-    setPasswordMeter() {
-      if (!this.modelValue) return;
+      },
+      checkPasswordStrength(value) {
+        let label = null;
+        let meter = null;
 
-      const { meter, label } = this.checkPasswordStrength(this.modelValue);
+        switch (this.testStrength(value)) {
+          case 1:
+            label = this.weakText;
+            meter = {
+              strength: 'weak',
+              width: '33.33%'
+            };
+            break;
 
-      this.meter = meter;
-      this.infoText = label;
+          case 2:
+            label = this.mediumText;
+            meter = {
+              strength: 'medium',
+              width: '66.66%'
+            };
+            break;
 
-      if (!this.overlayVisible) {
-        this.overlayVisible = true;
-      }
-    },
-    checkPasswordStrength(value) {
-      let label = null;
-      let meter = null;
+          case 3:
+            label = this.strongText;
+            meter = {
+              strength: 'strong',
+              width: '100%'
+            };
+            break;
 
-      switch (this.testStrength(value)) {
-        case 1:
-          label = this.weakText;
-          meter = {
-            strength: 'weak',
-            width: '33.33%'
+          default:
+            label = this.promptText;
+            meter = null;
+            break;
+        }
+
+        return { label, meter };
+      },
+      onInvalid(event) {
+        this.$emit('invalid', event);
+      },
+      bindScrollListener() {
+        if (!this.scrollHandler) {
+          this.scrollHandler = new ConnectedOverlayScrollHandler(this.$refs.input.$el, () => {
+            if (this.overlayVisible) {
+              this.overlayVisible = false;
+            }
+          });
+        }
+
+        this.scrollHandler.bindScrollListener();
+      },
+      unbindScrollListener() {
+        if (this.scrollHandler) {
+          this.scrollHandler.unbindScrollListener();
+        }
+      },
+      bindResizeListener() {
+        if (!this.resizeListener) {
+          this.resizeListener = () => {
+            if (this.overlayVisible && !isTouchDevice()) {
+              this.overlayVisible = false;
+            }
           };
-          break;
 
-        case 2:
-          label = this.mediumText;
-          meter = {
-            strength: 'medium',
-            width: '66.66%'
-          };
-          break;
-
-        case 3:
-          label = this.strongText;
-          meter = {
-            strength: 'strong',
-            width: '100%'
-          };
-          break;
-
-        default:
-          label = this.promptText;
-          meter = null;
-          break;
-      }
-
-      return { label, meter };
-    },
-    onInvalid(event) {
-      this.$emit('invalid', event);
-    },
-    bindScrollListener() {
-      if (!this.scrollHandler) {
-        this.scrollHandler = new ConnectedOverlayScrollHandler(this.$refs.input.$el, () => {
-          if (this.overlayVisible) {
-            this.overlayVisible = false;
-          }
+          window.addEventListener('resize', this.resizeListener);
+        }
+      },
+      unbindResizeListener() {
+        if (this.resizeListener) {
+          window.removeEventListener('resize', this.resizeListener);
+          this.resizeListener = null;
+        }
+      },
+      overlayRef(el) {
+        this.overlay = el;
+      },
+      onMaskToggle() {
+        this.unmasked = !this.unmasked;
+        this.$emit('update:masked', !this.unmasked);
+      },
+      onOverlayClick(event) {
+        OverlayEventBus.emit('overlay-click', {
+          originalEvent: event,
+          target: this.$el
         });
       }
-
-      this.scrollHandler.bindScrollListener();
     },
-    unbindScrollListener() {
-      if (this.scrollHandler) {
-        this.scrollHandler.unbindScrollListener();
+    computed: {
+      inputType() {
+        return this.unmasked ? 'text' : 'password';
+      },
+      weakText() {
+        return this.weakLabel || this.$primevue.config.locale.weak;
+      },
+      mediumText() {
+        return this.mediumLabel || this.$primevue.config.locale.medium;
+      },
+      strongText() {
+        return this.strongLabel || this.$primevue.config.locale.strong;
+      },
+      promptText() {
+        return this.promptLabel || this.$primevue.config.locale.passwordPrompt;
+      },
+      overlayUniqueId() {
+        return this.$id + '_overlay';
       }
     },
-    bindResizeListener() {
-      if (!this.resizeListener) {
-        this.resizeListener = () => {
-          if (this.overlayVisible && !DomHandler.isTouchDevice()) {
-            this.overlayVisible = false;
-          }
-        };
-
-        window.addEventListener('resize', this.resizeListener);
+    watch: {
+      masked(value) {
+        this.unmasked = !value
       }
     },
-    unbindResizeListener() {
-      if (this.resizeListener) {
-        window.removeEventListener('resize', this.resizeListener);
-        this.resizeListener = null;
-      }
-    },
-    overlayRef(el) {
-      this.overlay = el;
-    },
-    onMaskToggle() {
-      this.unmasked = !this.unmasked;
-      this.$emit('update:masked', !this.unmasked);
-    },
-    onOverlayClick(event) {
-      OverlayEventBus.emit('overlay-click', {
-        originalEvent: event,
-        target: this.$el
-      });
+    components: {
+      InputText,
+      Portal,
+      EyeSlashIcon,
+      EyeIcon
     }
-  },
-  computed: {
-    containerClass() {
-      return [
-        'p-password p-component p-inputwrapper',
-        {
-          'p-inputwrapper-filled': this.filled,
-          'p-inputwrapper-focus': this.focused,
-          'p-input-icon-right': this.toggleMask
-        }
-      ];
-    },
-    inputFieldClass() {
-      return [
-        'p-password-input',
-        this.inputClass,
-        {
-          'p-disabled': this.disabled
-        }
-      ];
-    },
-    panelStyleClass() {
-      return [
-        'p-password-panel p-component',
-        this.panelClass,
-        {
-          'p-input-filled': this.$primevue.config.inputStyle === 'filled',
-          'p-ripple-disabled': this.$primevue.config.ripple === false
-        }
-      ];
-    },
-    toggleIconClass() {
-      return this.unmasked ? this.hideIcon : this.showIcon;
-    },
-    strengthClass() {
-      return `p-password-strength ${this.meter ? this.meter.strength : ''}`;
-    },
-    inputType() {
-      return this.unmasked ? 'text' : 'password';
-    },
-    filled() {
-      return this.modelValue != null && this.modelValue.toString().length > 0;
-    },
-    weakText() {
-      return this.weakLabel || this.$primevue.config.locale.weak;
-    },
-    mediumText() {
-      return this.mediumLabel || this.$primevue.config.locale.medium;
-    },
-    strongText() {
-      return this.strongLabel || this.$primevue.config.locale.strong;
-    },
-    promptText() {
-      return this.promptLabel || this.$primevue.config.locale.passwordPrompt;
-    },
-    panelUniqueId() {
-      return UniqueComponentId() + '_panel';
-    }
-  },
-  watch: {
-    masked(value) {
-      this.unmasked = !value;
-    },
-  },
-  components: {
-    PInputText: InputText,
-    Portal: Portal
-  }
-};
+  };
 </script>
-
-<style>
-.p-password {
-  position: relative;
-  display: inline-flex;
-}
-
-.p-password-panel {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.p-password .p-password-panel {
-  min-width: 100%;
-}
-
-.p-password-meter {
-  height: 10px;
-}
-
-.p-password-strength {
-  height: 100%;
-  width: 0;
-  transition: width 1s ease-in-out;
-}
-
-.p-fluid .p-password {
-  display: flex;
-}
-
-.p-password-input::-ms-reveal,
-.p-password-input::-ms-clear {
-  display: none;
-}
-
-.p-password i {
-  position: absolute;
-  top: 0.69em;
-  top: calc(50% - 0.5em);
-  right: 1em
-}
-</style>
--->

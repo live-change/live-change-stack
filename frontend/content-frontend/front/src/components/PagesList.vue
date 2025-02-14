@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full sm:w-12 md:w-9 lg:w-7 surface-card p-4 shadow-2 border-round">
-    <div class="text-center mb-5">
-      <div class="text-900 text-3xl font-medium mb-3">
+  <div class="w-full sm:w-full md:w-9/12 lg:w-7/12 bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
+    <div class="text-center mb-8">
+      <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
         Pages list
       </div>
     </div>

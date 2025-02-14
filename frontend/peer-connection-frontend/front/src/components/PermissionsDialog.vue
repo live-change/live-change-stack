@@ -1,7 +1,7 @@
 <template>
   <Dialog header="Permissions" v-model:visible="model.visible" modal>
     <template #header>
-      <div class="flex flex-row align-items-center">
+      <div class="flex flex-row items-center">
         <i class="pi pi-unlock mr-2" />
         <h3>{{ title }}</h3>
       </div>
@@ -10,7 +10,7 @@
       <slot name="introduction" />
       <div class="mt-2">
         <div v-for="permission in Object.entries(model.permissions ?? {})"
-             class="flex flex-row align-items-center mb-2">
+             class="flex flex-row items-center mb-2">
           <i :class="permissionIcons[permission[0]]" />
           <div class="ml-2">{{ permission[0] }}: </div>
           <div v-if="permission[1] === 'granted'" class="ml-1 font-semibold text-green-400">

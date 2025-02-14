@@ -4,14 +4,14 @@
     <template v-if="canonical">
       <span class="font-bold mr-2">Url:</span>
       <span class="mr-1 font-normal">{{ canonical.domain || '*' }}</span>
-      <span class="text-overflow-ellipsis overflow-hidden font-normal flex-grow-1">
+      <span class="text-ellipsis overflow-hidden font-normal grow">
         {{props.prefix}}{{ canonical.path }}
       </span>
 
     </template>
     <span v-else>No Url</span>
     <template v-if="redirects.length">
-      <i class="pi pi-arrow-up-right mr-1 ml-3"></i>
+      <i class="pi pi-arrow-up-right mr-1 ml-4"></i>
       <span class="font-bold">{{ redirects.length }}</span>
     </template>
   </div>

@@ -1,7 +1,7 @@
 <template>
-  <div class="grid formgrid p-fluid mb-2">
-    <div class="p-field field mb-4 col-12 md:col-6" v-if="isMounted && sessionRolesVisible">
-      <label for="publicAccess" class="block text-900 font-medium mb-2">Public access:</label>
+  <div class="grid grid-cols-12 gap-4 formgrid p-fluid mb-2">
+    <div class="p-field field mb-6 col-span-12 md:col-span-6" v-if="isMounted && sessionRolesVisible">
+      <label for="publicAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Public access:</label>
       <Dropdown v-if="!multiRole && (synchronizedPublicAccess.sessionRoles?.length ?? 0) <= 1"
                 id="publicAccess" class="w-full" inputClass="w-full"
                 :options="['none'].concat(availableSessionRoles)"
@@ -16,8 +16,8 @@
                    v-model="synchronizedPublicAccess.sessionRoles"
                    :feedback="false" toggleMask :disabled="disabled" />
     </div>
-    <div class="p-field field mb-4 col-12 md:col-6" v-if="isMounted && userRolesVisible">
-      <label for="userPublicAccess" class="block text-900 font-medium mb-2">Public access for users:</label>
+    <div class="p-field field mb-6 col-span-12 md:col-span-6" v-if="isMounted && userRolesVisible">
+      <label for="userPublicAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Public access for users:</label>
       <Dropdown v-if="!multiRole && (synchronizedPublicAccess.userRoles?.length ?? 0) <= 1"
                 id="userPublicAccess" class="w-full" inputClass="w-full"
                 :options="['none'].concat(availableUserRoles)"
@@ -31,17 +31,17 @@
                    v-model="synchronizedPublicAccess.userRoles"
                    :feedback="false" toggleMask :disabled="disabled" />
     </div>
-    <div class="p-field field mb-4" v-if="isMounted && requestedRolesVisible"
+    <div class="p-field field mb-6" v-if="isMounted && requestedRolesVisible"
          :class="autoGrantRequestsVisible ? 'col-6' : 'col-12'">
-      <label for="availablePublicAccess" class="block text-900 font-medium mb-2">Roles available to request:</label>
+      <label for="availablePublicAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Roles available to request:</label>
       <MultiSelect id="userPublicAccess" class="w-full" inputClass="w-full"
                    :options="availableRequestedRoles"
                    :optionLabel="optionLabel"
                    v-model="synchronizedPublicAccess.availableRoles"
                    :feedback="false" toggleMask :disabled="disabled" />
     </div>
-    <div class="p-field field mb-4 col-6" v-if="isMounted && autoGrantRequestsVisible">
-      <label for="autoGrantRequests" class="block text-900 font-medium mb-2">
+    <div class="p-field field mb-6 col-span-6" v-if="isMounted && autoGrantRequestsVisible">
+      <label for="autoGrantRequests" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
         Automatically grant number of requests:
       </label>
       <InputNumber id="autoGrantRequests" class="w-full" inputClass="w-full"

@@ -1,14 +1,14 @@
 <template>
-  <div class="flex flex-column w-14rem">
+  <div class="flex flex-col w-56">
     <div class="mb-2">
       <InputText type="text" v-model="linkData.href" placeholder="Href" class="w-full" />
     </div>
-    <div class="flex flex-row flex-grow-1">
-      <InputText type="text" v-model="linkData.target" placeholder="target" class="w-full flex-grow-1" />
+    <div class="flex flex-row grow">
+      <InputText type="text" v-model="linkData.target" placeholder="target" class="w-full grow" />
       <Button v-if="!editor.isActive('link')" @click="addLink"
-              icon="pi pi-plus" class="ml-1 flex-shrink-0" label="Add" />
+              icon="pi pi-plus" class="ml-1 shrink-0" label="Add" />
       <Button v-else @click="removeLink"
-              icon="pi pi-trash" class="ml-1 flex-shrink-0 p-button-danger" label="Remove" />
+              icon="pi pi-trash" class="ml-1 shrink-0 p-button-danger" label="Remove" />
     </div>
   </div>
 </template>

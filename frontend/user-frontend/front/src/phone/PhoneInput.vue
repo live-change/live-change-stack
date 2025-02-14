@@ -1,10 +1,10 @@
 <template>
-  <div class="flex flex-row align-items-center">
+  <div class="flex flex-row items-center">
     <AutoComplete v-model="selectedCountry" dropdown optionLabel="dial_code" placeholder="+XX"
                   :suggestions="filteredCountries" @complete="searchCountry"
-                  class="mr-2 w-14rem">
+                  class="mr-2 w-56">
       <template #option="slotProps">
-        <div class="flex align-items-center">
+        <div class="flex items-center">
           <img :alt="slotProps.option.name"
                src="../../public/images/flag_placeholder.png"
                :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`"

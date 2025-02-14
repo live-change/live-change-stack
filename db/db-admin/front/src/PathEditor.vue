@@ -1,49 +1,49 @@
 <template>
-  <div class="surface-0 shadow-1 w-full p-2">
+  <div class="bg-surface-0 dark:bg-surface-900 shadow-sm w-full p-2">
     <div class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right p-1">read:</div>
-      <div class="col-10 p-1">
+      <div class="col-span-2 text-right p-1">read:</div>
+      <div class="col-span-10 p-1">
         <CodeEditor :initialCode="path.read"
                     @result="result => handleReadChange(result)" :env="env" :dbSugar="dbViewSugar" />
       </div>
     </div>
     <div class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right p-1">write:</div>
-      <div class="col-10 p-1">
+      <div class="col-span-2 text-right p-1">write:</div>
+      <div class="col-span-10 p-1">
         <CodeEditor :initialCode="path.write"
                     @result="result => handleWriteChange(result)" :env="env" :dbSugar="dbRequestSugar" />
       </div>
     </div>
     <div class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right p-1">remove:</div>
-      <div class="col-10 p-1">
+      <div class="col-span-2 text-right p-1">remove:</div>
+      <div class="col-span-10 p-1">
         <CodeEditor :initialCode="path.remove"
                     @result="result => handleRemoveChange(result)" :env="env" :dbSugar="dbRequestSugar" />
       </div>
     </div>
     <div v-for="field in path.params" class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right p-1">{{ field[0] }} = </div>
-      <div class="col-10 p-1">
+      <div class="col-span-2 text-right p-1">{{ field[0] }} = </div>
+      <div class="col-span-10 p-1">
         <CodeEditor :initialCode="field[1]"
                     @result="result => handleParamChange(field[0], result)" />
       </div>
     </div>
   </div>
-  <div v-if="false" class="surface-0 shadow-1 w-full">
+  <div v-if="false" class="bg-surface-0 dark:bg-surface-900 shadow-sm w-full">
     <div class="flex flex-row flex-wrap w-full" >
-      <div class="col-2 text-right">Compiled:</div>
-      <div class="col-10" v-if="!readCompiled.error" v-html="highlightedObject(readCompiled.example)" />
-      <div class="col-10 p-error" v-else>{{ readCompiled.error }}</div>
+      <div class="col-span-2 text-right">Compiled:</div>
+      <div class="col-span-10" v-if="!readCompiled.error" v-html="highlightedObject(readCompiled.example)" />
+      <div class="col-span-10 p-error" v-else>{{ readCompiled.error }}</div>
     </div>
     <div class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right"></div>
-      <div class="col-10" v-if="!writeCompiled.error" v-html="highlightedObject(writeCompiled.example)" />
-      <div class="col-10 p-error" v-else>{{ writeCompiled.error }}</div>
+      <div class="col-span-2 text-right"></div>
+      <div class="col-span-10" v-if="!writeCompiled.error" v-html="highlightedObject(writeCompiled.example)" />
+      <div class="col-span-10 p-error" v-else>{{ writeCompiled.error }}</div>
     </div>
     <div class="flex flex-row flex-wrap w-full">
-      <div class="col-2 text-right"></div>
-      <div class="col-10" v-if="!removeCompiled.error" v-html="highlightedObject(removeCompiled.example)" />
-      <div class="col-10 p-error" v-else>{{ removeCompiled.error }}</div>
+      <div class="col-span-2 text-right"></div>
+      <div class="col-span-10" v-if="!removeCompiled.error" v-html="highlightedObject(removeCompiled.example)" />
+      <div class="col-span-10 p-error" v-else>{{ removeCompiled.error }}</div>
     </div>
   </div>
 </template>

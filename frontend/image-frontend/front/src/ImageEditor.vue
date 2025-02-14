@@ -9,12 +9,12 @@
                :type="type"
                v-model:ready="cropReady"
                ref="imageCrop" style="max-height: 60vh" />
-    <div class="flex p-3 pb-2 flex-wrap">
-      <div class="flex-grow-1 flex justify-content-center">
+    <div class="flex p-4 pb-2 flex-wrap">
+      <div class="grow flex justify-center">
         <Button type="button" label="Upload" icon="pi pi-upload" class="p-button-primary mb-2"
                 @click="() => state = 'upload' "/>
       </div>
-      <div class="flex flex-grow-1 justify-content-center">
+      <div class="flex grow justify-center">
         <Button type="button" label="Save" icon="pi pi-save" class="p-button-warning ml-2 mb-2"
                 :disabled="!cropReady" @click="saveImage" />
         <Button type="button" label="Remove" icon="pi pi-times" class="p-button-danger ml-2 mb-2"
@@ -22,17 +22,17 @@
       </div>
     </div>
   </div>
-  <div v-else-if="state === 'upload'" class="flex flex-column align-items-center">
-    <DropZone class="flex-grow-1 w-full relative p-4 md:p-5 lg:p-6 pt-2 md:pt-3 lg:pt-4 surface-section"
+  <div v-else-if="state === 'upload'" class="flex flex-col items-center">
+    <DropZone class="grow w-full relative p-6 md:p-8 lg:p-12 pt-2 md:pt-4 lg:pt-6 bg-surface-0 dark:bg-surface-950"
               :accept="acceptList" @input="handleFile">
-      <div class="w-auto flex flex-row align-items-center justify-content-center">
-        <div class="w-full border-dashed border-primary-500 flex align-items-center justify-content-center"
+      <div class="w-auto flex flex-row items-center justify-center">
+        <div class="w-full border-2 border-dashed border-primary-500 flex items-center justify-center"
              :style="`aspect-ratio: ${aspectRatio}; max-width: 50vh`">
           <p class="text-primary text-xl">Drop image here!</p>
         </div>
       </div>
     </DropZone>
-    <div class="w-full flex justify-content-center px-4 pt-3 pb-3 flex-grow-0">
+    <div class="w-full flex justify-center px-6 pt-4 pb-4 grow-0">
       <FileInput :accept="acceptList" @input="handleFile" class="block">
         <Button type="button" label="Upload Image" icon="pi pi-upload" class="p-button-primary" />
       </FileInput>
