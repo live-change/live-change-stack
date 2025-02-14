@@ -191,9 +191,9 @@
       )
       const originalImage = imageData.value.originalImage
       console.log("IM DATA", imageData, originalImage)
-      imageName.value = originalImage.name
-      const splitName = originalImage.name.split('.')
-      const extension = splitName[splitName.length - 1].toLowerCase()
+      imageName.value = originalImage?.name ?? imageData.value.name
+      const extension = (imageData.value.extension ?? originalImage?.extension) ||
+        (originalImage?.name && originalImage.name.split('.').pop())
       switch(extension) {
         case 'jpg':
         case 'jpeg':
@@ -208,7 +208,7 @@
           break
       }
       cropData.value = imageData.value.crop
-      sourceImage.value = originalImage.id
+      sourceImage.value = originalImage?.id ?? imageData.value.id
       console.log("IMAGE", imageName.value, imageType.value)
     })())
   }
