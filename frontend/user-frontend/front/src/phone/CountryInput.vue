@@ -1,19 +1,17 @@
 <template>
-  <div class="flex flex-row align-items-center">
-    <AutoComplete v-model="selectedCountry" dropdown optionLabel="name"
-                  :suggestions="filteredCountries" @complete="searchCountry"
-                  class="mr-2 w-14rem">
-      <template #option="slotProps">
-        <div class="flex align-items-center">
-          <img :alt="slotProps.option.name"
-               src="../../public/images/flag_placeholder.png"
-               :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`"
-               style="width: 18px; height: 12.27px" />
-          <div>{{ slotProps.option.name }}</div>
-        </div>
-      </template>
-    </AutoComplete>
-  </div>
+  <AutoComplete v-model="selectedCountry" dropdown optionLabel="name"
+                :suggestions="filteredCountries" @complete="searchCountry"
+                class="mr-2">
+    <template #option="slotProps">
+      <div class="flex align-items-center">
+        <img :alt="slotProps.option.name"
+             src="../../public/images/flag_placeholder.png"
+             :class="`flag flag-${slotProps.option.code.toLowerCase()} mr-2`"
+             style="width: 18px; height: 12.27px" />
+        <div>{{ slotProps.option.name }}</div>
+      </div>
+    </template>
+  </AutoComplete>
 </template>
 
 <script setup>
