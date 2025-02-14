@@ -1,8 +1,11 @@
 import App from "@live-change/framework"
 const app = App.app()
 
+import dotenv from 'dotenv'
+dotenv.config()
+
 const contactTypes = ['email', 'phone']
-const remoteAccountTypes = ['google']
+const remoteAccountTypes = ['google', 'linkedin']
 
 import securityConfig from './security.config.js'
 
@@ -57,6 +60,9 @@ app.config = {
       path: '@live-change/google-authentication-service',
     },
     {
+      name: 'linkedinAuthentication',
+    },
+    {
       name: 'security',
       path: '@live-change/security-service',
       ...securityConfig
@@ -81,6 +87,11 @@ app.config = {
     {
       name: 'upload',
       path: '@live-change/upload-service'
+    },
+    {
+      name: 'geoIp',
+      geoIpCountryPath: 'geoip/GeoLite2-Country.mmdb',
+      geoIpDefaultCountry: 'PL'
     },
     {
       name: 'image',

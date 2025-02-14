@@ -38,10 +38,10 @@
   import { path, live } from '@live-change/vue3-ssr'
   const p = path()
   const canonicalLivePath = computed(
-    () => p.url.targetOwnedCanonical({ targetType: props.targetType, target: props.target })
+    () => p.url.canonical({ targetType: props.targetType, target: props.target })
   )
   const redirectsLivePath = computed(
-    () => p.url.targetOwnedRedirects({ targetType: props.targetType, target: props.target })
+    () => p.url.redirects({ targetType: props.targetType, target: props.target })
   )
   const [canonical, redirects] = await Promise.all([
     live(canonicalLivePath),

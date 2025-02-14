@@ -6,7 +6,7 @@ import userService from '@live-change/user-service'
 
 const definition = app.createServiceDefinition({
   name: "localeSettings",
-  use: [ relationsPlugin, userService ]
+  use: [ userService, relationsPlugin ]
 })
 
 export default definition

@@ -49,6 +49,7 @@ class Bucket {
 
   createPromise() {
     const promise = new Promise((r1, r2) => { this.resolve = r1; this.reject = r2 })
+    return promise
   }
 
   async load() {

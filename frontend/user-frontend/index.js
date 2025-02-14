@@ -14,4 +14,19 @@ export { UserIcon }
 import Password from "./front/src/password/Password.vue"
 export { Password }
 
+import GoogleAccess from './front/src/google-access/GoogleAccess.vue'
+export { GoogleAccess }
+
+export * from "./front/src/phone/phoneNumber.js"
+import PhoneInput from "./front/src/phone/PhoneInput.vue"
+import CountryInput from './front/src/phone/CountryInput.vue'
+export { PhoneInput, CountryInput }
+
+export * from './front/src/connected/connected.js'
+
 export * from "./front/src/router.js"
+
+import en from "./front/locales/en.json"
+const locales = { en }
+export { locales }
+

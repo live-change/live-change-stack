@@ -18,7 +18,7 @@
   const props = defineProps({
     image: {
       type: String,
-      required: true
+      default: null
     },
     imageData: {
       type: Object
@@ -43,7 +43,7 @@
   })
 
   const upload = computed(() => {
-    return imageUploads.value.find(upload => upload.id == props.image)
+    return imageUploads.value.find(upload => upload.id === props.image)
   })
 
   const imageData = ref(props.imageData)
@@ -52,6 +52,7 @@
 
   let loadImagePromise = null
   async function loadImageData() {
+    if(!props.image) return
     if(!loadImagePromise) loadImagePromise = (async () => {
       const loaded = await api.get(['image', 'image', { image: props.image }])
       //console.log("IM", props.image, "DATA", loaded)
@@ -74,7 +75,7 @@
   const url = ref("/images/empty-photo.svg")
   const size = ref()
 
-  const emit = defineEmits(['size'])
+  const emit = defineEmits(['size', 'load'])
   watch(() => size.value, () => emit('size', size.value))
 
   const dpr = (typeof window == 'undefined') ? 1.0 : window.devicePixelRatio
@@ -104,9 +105,9 @@
         width = Math.min(width, imageData.value.width)
         height = Math.min(height, imageData.value.height)
       }
-      if(props.domResize == 'width') {
+      if(props.domResize === 'width') {
         return `/width-${width}`
-      } else if(props.domResize == 'height') {
+      } else if(props.domResize === 'height') {
         return `/height-${height}`
       } else {
         return `/rect-${width}-${height}`
@@ -136,8 +137,11 @@
   }
 
   if(!imageData.value) updateUrl()
-
+  watch(() => props.image, () => updateUrl())
   watch(() => upload.value && upload.value.url, () => updateUrl())
-  watch(() => imageData.value, () => updateUrl())
+  watch(() => imageData.value, (v) => updateUrl())
+  watch(() => props.imageData, (v) => {
+    imageData.value = v
+  })
 
 </script>

@@ -1,26 +1,12 @@
-import {
-  createMemoryHistory,
-  createRouter as _createRouter,
-  createWebHistory
-} from 'vue-router'
-
-
-export function routes(config = {}) {
+export function peerConnectionRoutes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
+
     route({
-      name: 'debugger', path: prefix + '/debugger/:channelType/:channel', meta: { },
+      name: 'peer-connection:debugger', path: prefix + '/debugger/:channelType/:channel/', meta: { },
       component: () => import("./components/Debugger.vue"),
       props: true
     }),
-    route({
-      name: 'testDebugger', path: prefix + '', meta: { },
-      component: () => import("./components/Debugger.vue"),
-      props: {
-        channelType: 'example_Example',
-        channel: 'one'
-      }
-    })
 
   ]
 }
@@ -29,6 +15,12 @@ export async function sitemap(route, api) {
 
 }
 
+import {
+  createMemoryHistory,
+  createRouter as _createRouter,
+  createWebHistory
+} from 'vue-router'
+import { dbAdminRoutes } from "@live-change/db-admin"
 import { client as useClient } from '@live-change/vue3-ssr'
 
 export function createRouter(app, config) {
@@ -38,13 +30,24 @@ export function createRouter(app, config) {
     // use appropriate history implementation for server/client
     // import.meta.env.SSR is injected by Vite.
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
-    routes: routes(config)
+    routes: [
+      ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
+      ...peerConnectionRoutes({ ...config, prefix: '/peer-connection' }),
+      {
+        name: 'peer-connection:test-debugger', path: '/', meta: { },
+        component: () => import("./components/Debugger.vue"),
+        props: {
+          channelType: 'example_Example',
+          channel: 'one'
+        }
+      }
+    ]
   })
   router.beforeEach(async (to, from) => {
     if(to?.matched.find(m => m?.meta.signedIn)) {
       if(!client.value.user) {
         console.log("REDIRECT TO LOGIN BECAUSE PAGE REQUIRES LOGIN!")
-        router.redirectAfterSignIn = to.fullPath
+        router.redirectAfterSignIn = JSON.stringify(to.fullPath)
         return { name: 'user:signInEmail' }
       }
     }
@@ -56,7 +59,7 @@ export function createRouter(app, config) {
     }
     if(to && to.name === 'user:signInEmail' && from?.matched.find(m => m?.meta.saveForSignIn)) {
       console.log("SAVE FOR LOGIN", from.fullPath)
-      localStorage.redirectAfterLogin = from.fullPath
+      router.redirectAfterSignIn = JSON.stringify(to.fullPath)
     }
   })
   return router

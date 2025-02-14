@@ -13,10 +13,7 @@ import SessionDao from "./runtime/SessionDao.js"
 import LiveDao from "./runtime/LiveDao.js"
 import ApiServer from "./runtime/ApiServer.js"
 
-import reverseRelationProcessor from "./processors/reverseRelation.js"
 import indexListProcessor from "./processors/indexList.js"
-import crudGenerator from "./processors/crudGenerator.js"
-import draftGenerator from "./processors/draftGenerator.js"
 import daoPathView from "./processors/daoPathView.js"
 import fetchView from "./processors/fetchView.js"
 import accessControl from "./processors/accessControl.js"
@@ -51,9 +48,6 @@ class App {
     this.requestTimeout = config?.db?.requestTimeout || 10*1000
 
     this.defaultProcessors = [
-      crudGenerator,
-      draftGenerator,
-      reverseRelationProcessor,
       indexListProcessor,
       daoPathView,
       fetchView,
@@ -102,7 +96,8 @@ class App {
     processors = processors.slice()
     function processUse(service) {
       if(service && service.use) {
-        for(const plugin of service.use) {
+        for(let i = service.use.length - 1; i >= 0; i --) { // apply in reverse order
+          const plugin = service.use[i]
           processUse(plugin)
         }
       }
@@ -290,9 +285,11 @@ class App {
         ['database', 'tableObject', this.databaseName, triggersTable, trigger.id],
         ReactiveDao.ObservableValue
     )
-    await this.dao.request(['database', 'update', this.databaseName, triggersTable, trigger.id, [
-      { op: 'reverseMerge', value: trigger }
-    ]])
+    await this.dao.request(['database', 'update', this.databaseName, triggersTable, trigger.id, [{
+      op: 'conditional',
+      conditions: [{ test: 'notExist', property: 'type' }],
+      operations: [{ op: 'reverseMerge', value: trigger }],
+    }]])
     let observer
     const promise = new Promise((resolve, reject) => {
       observer = (signal, value) => {
@@ -323,7 +320,7 @@ class App {
       const command = data
       const service = this.startedServices[data.service]
       const action = service.actions[data.type]
-      const reportFinished = action.definition.waitForEvents ? 'command_' + command.id : undefined
+      const reportFinished = action.definition.waitForEvents ? command.id : undefined
       const flags = {commandId: command.id, reportFinished}
       const emit = (!this.splitEvents || this.shortEvents)
         ? new SingleEmitQueue(service, flags)
@@ -395,9 +392,11 @@ class App {
         ['database', 'tableObject', this.databaseName, commandsTable, data.id],
         ReactiveDao.ObservableValue
       )
-      await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [
-        {op: 'reverseMerge', value: data}
-      ]])
+      await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [{
+        op: 'conditional',
+        conditions: [{ test: 'notExist', property: 'type' }],
+        operations: [{ op: 'reverseMerge', value: data }],
+      }]])
       let observer
       const promise = new Promise((resolve, reject) => {
         observer = (signal, value) => {
@@ -458,10 +457,9 @@ class App {
       return
     }
     const [action, id] = reportId.split('_')
-    const triggerId = action === 'trigger' ? id : undefined
-    const commandId = action === 'command' ? id : undefined
+    const commandId = id
     const profileOp = await this.profileLog.begin({
-      operation: "waitForEvents", action: action, commandId, triggerId, reportId, events, timeout
+      operation: "waitForEvents", action: action, commandId, reportId, events, timeout
     })
     const promise = new Promise((resolve, reject) => {
       let done = false
@@ -524,6 +522,12 @@ class App {
     return promise
   }
 
+  async emitEventsAndWait(service, events, flags = {}) {
+    const reportId = 'trigger_' + this.generateUid()
+    await this.emitEvents(service, events, { reportFinished: reportId, ...flags })
+    return await this.waitForEvents(reportId, events)
+  }
+
   async assertTime(taskName, duration, task, ...data) {
     const profileOp = await this.profileLog.begin({ operation: 'assertTime', taskName })
     const taskTimeout = setTimeout(() => {
@@ -574,24 +578,30 @@ class App {
 
   serviceViewObservable(serviceName, viewName, params) {
     const service = this.startedServices[serviceName]
+    if(!service) throw new Error(
+      `Service ${serviceName} not found, available services: ${Object.keys(this.startedServices).join(', ')}`
+    )
     const view = service.views[viewName]
     if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
-    const result = view.observable(params)
-    return result.then ? new LcDao.ObservablePromiseProxy(result) : result
+    const result = view.observable(params, { internal: true, roles: ['admin'] })
+    return result.then ? new ReactiveDao.ObservablePromiseProxy(result) : result
   }
 
   async serviceViewGet(serviceName, viewName, params) {
     const service = this.startedServices[serviceName]
+    if(!service) throw new Error(
+      `Service ${serviceName} not found, available services: ${Object.keys(this.startedServices).join(', ')}`
+    )
     const view = service.views[viewName]
     if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
-    return await view.get(params)
+    return await view.get(params, { internal: true, roles: ['admin'] })
   }
 
   viewObservable(viewName, params) {
     const view = this.globalViews[viewName]
     if(!view) throw new Error(`Global view ${viewName} not found`)
-    const result = view.observable(params)
-    return result.then ? new LcDao.ObservablePromiseProxy(result) : result
+    const result = view.observable(params, { internal: true, roles: ['admin'] })
+    return result.then ? new ReactiveDao.ObservablePromiseProxy(result) : result
   }
 
   async viewGet(viewName, params) {

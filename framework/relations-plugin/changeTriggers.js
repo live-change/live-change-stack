@@ -6,25 +6,22 @@ import {
 async function fireChangeTriggers(context, objectType, identifiers, object, oldData, data) {
   const { service, modelName, app } = context
   const changeType = data ? (oldData ? 'update' : 'create') : 'delete'
+  //console.log("FIRE CHANGE TRIGGERS", { context, objectType, identifiers, object, oldData, data })
+  //console.trace()
+  const triggerParameters = { objectType, object, identifiers, data, oldData, changeType }
   await Promise.all([
     app.trigger({
       type: changeType + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
-    }, {
-      objectType,
-      object,
-      identifiers,
-      data,
-      oldData
-    }),
+    }, triggerParameters),
     app.trigger({
       type: changeType + 'Object',
-    }, {
-      objectType,
-      object,
-      identifiers,
-      data,
-      oldData
-    })
+    }, triggerParameters),
+    app.trigger({
+      type: 'change' + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
+    }, triggerParameters),
+    app.trigger({
+      type: 'changeObject',
+    }, triggerParameters)
   ])
 }
 
@@ -47,11 +44,11 @@ async function iterateChildren(context, propertyName, path, cb) {
         limit: bucketSize
       })
       //console.log("BUCKET", bucket)
-      if(bucket.length == 0) break
+      if(bucket.length === 0) break
       gt = bucket[bucket.length - 1].id
       const copyTriggerPromises = bucket.map(entity => cb({ ...entity, id: entity.to }))
       await Promise.all(copyTriggerPromises)
-    } while (bucket.length == bucketSize)
+    } while (bucket.length === bucketSize)
   }
 }
 
@@ -71,7 +68,7 @@ async function triggerDeleteOnParentDeleteTriggers(
         extractObjectData(writeableProperties, entity, {}), null)
   })
   if (found) {
-    const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
+    const eventName = modelName + 'DeleteByOwner'
     emit({
       type: eventName,
       ownerType: objectType,
@@ -138,7 +135,7 @@ async function copyObject(context, objectType, object, parentType, parent, ident
   }
   for(let i = 0; i < others.length; i++) {
     const other = others[i]
-    if(other == parentType) {
+    if(other === parentType) {
       newIdentifiers[otherPropertyNames[i]] = parent
     }
   }
@@ -201,7 +198,7 @@ async function triggerCopyOnParentCopyTriggers(
       data
     })
     //console.log("COPY TRIGGER RESULTS", copyTriggerResults)
-    if(copyTriggerResults.length == 0) { // normal copy, without special logic
+    if(copyTriggerResults.length === 0) { // normal copy, without special logic
       await copyObject(context, myType, fromId, objectType, object, identifiers, data, emit)
     }
   })

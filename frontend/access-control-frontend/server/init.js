@@ -45,7 +45,7 @@ module.exports = async function(services) {
     id: App.encodeIdentifier(['user_User', user1.id, 'example_Example', 'one']),
     sessionOrUserType: 'user_User', sessionOrUser: user1.id,
     objectType: 'example_Example', object: 'one',
-    roles: ['administrator']
+    roles: ['admin']
   })
 
   await AccessRequest.create({

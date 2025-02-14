@@ -22,7 +22,7 @@
             <InputText type="text" v-model="data.name"
                        :class="{ 'p-invalid': data.nameError }"
                        class="p-inputtext-lg" placeholder="Your name" />
-            <small id="currentPassword-help" class="p-error">{{ data.nameError }}</small>
+            <small v-if="data.nameError" id="currentPassword-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
           </div>
           <Button type="submit" label="Save name" class="mt-3" icon="pi pi-save" />
         </command-form>
@@ -44,6 +44,9 @@
   import { shallowRef, ref, inject, computed } from 'vue'
   import { path, live, actions,  api as useApi } from '@live-change/vue3-ssr'
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   import { useToast } from 'primevue/usetoast'
   import { useConfirm } from 'primevue/useconfirm'
   const confirm = useConfirm()
@@ -54,7 +57,7 @@
       ? ['user_User', api.client.value.user]
       : ['session_Session', api.client.value.session]
 
-  const dataPromise = live(path().userIdentification.sessionOrUserOwnedIdentification({
+  const dataPromise = live(path().userIdentification.identification({
     sessionOrUserType: ownerType, sessionOrUser: owner
   }))
 

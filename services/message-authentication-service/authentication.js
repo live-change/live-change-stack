@@ -34,6 +34,18 @@ const targetProperties = {
         type: Object
       }
     }
+  },
+  fallbackPage: {
+    type: Object,
+    properties: {
+      name: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      params: {
+        type: Object
+      }
+    }
   }
 }
 
@@ -64,11 +76,12 @@ const Authentication = definition.model({
 
 definition.event({
   name: 'authenticationCreated',
-  execute({ authentication, contactType, contact, action, actionProperties, targetPage, messageData }) {
+  execute({ authentication, contactType, contact, action, actionProperties,
+            targetPage, fallbackPage, messageData }) {
     return Authentication.create({
       id: authentication,
       contactType, contact,
-      action, actionProperties, targetPage,
+      action, actionProperties, targetPage, fallbackPage,
       messageData,
       state: 'created'
      })
@@ -102,7 +115,7 @@ definition.trigger({
     ...targetProperties,
     ...messageProperties
   },
-  async execute({ contactType, contact, action, actionProperties, targetPage, messageData },
+  async execute({ contactType, contact, action, actionProperties, targetPage, fallbackPage, messageData },
       { client, service }, emit) {
     const authentication = app.generateUid()
     const secrets = await service.trigger({ type: 'authenticationSecret' }, {
@@ -127,6 +140,7 @@ definition.trigger({
       action,
       actionProperties,
       targetPage,
+      fallbackPage,
       messageData
     })
     return {

@@ -15,7 +15,7 @@
           <InputText id="email" type="text" class="w-full"
                      v-model="data.email" :class="{ 'p-invalid': data.emailError }"
                      aria-describedby="email-help" />
-          <small id="email-help" class="p-error">{{ data.emailError }}</small>
+          <small v-if="data.emailError" id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
         </div>
 
         <Button type="submit" label="Reset password" icon="pi pi-key" class="w-full"></Button>
@@ -35,6 +35,9 @@
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   function handleDone({ parameters, result }) {
     console.log("DONE RESULT", result)

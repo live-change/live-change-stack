@@ -1,15 +1,15 @@
 <template>
   <component v-if="tag" :is="tag" v-on:submit="ev => handleSubmitEvent(ev)" :class="class" :style="style">
-    <slot v-bind="{ data }"></slot>
+    <slot v-bind="{ data, definition }"></slot>
   </component>
-  <slot v-else v-bind="{ data }"></slot>
+  <slot v-else v-bind="{ data, definition }"></slot>
 </template>
 
 <script>
   import { computed, watch } from 'vue'
   import { getElementPositionInDocument } from '../utils/dom.mjs'
 
-  const errorSufix = 'Error'
+  const errorSuffix = 'Error'
 
   class FormValue {
     constructor(definition, component, data, property) {
@@ -22,8 +22,18 @@
       this.validators = []
       this.barriers = []
 
-      if(definition.validation) {
-        let validations = Array.isArray(definition.validation) ? definition.validation : [definition.validation]
+      const validations = [
+        ...(definition.validation ? (
+          Array.isArray(definition.validation) ? definition.validation : [definition.validation])
+            : []
+        ),
+        ...(definition.softValidation ? (
+          Array.isArray(definition.softValidation) ? definition.softValidation : [definition.softValidation])
+            : []
+        )
+      ]
+
+      if(validations.length > 0) {
         const context = {
           service: this.serviceDefinition,
           action: this.actionDefinition,
@@ -59,10 +69,10 @@
       return this.data[this.property]
     }
     setError(error) {
-      this.data[this.property+errorSufix] = error
+      this.data[this.property+errorSuffix] = error
     }
     getError() {
-      return this.data[this.property+errorSufix]
+      return this.data[this.property+errorSuffix]
     }
 
     setProperty(name) {
@@ -101,7 +111,7 @@
       return Promise.all(promises).then(results => {
         for(let error of results) {
           if(error) {
-            if(this.data[this.property+errorSufix] === error) return error
+            if(this.data[this.property + errorSuffix] === error) return error
             this.setError(error)
             return error
           }
@@ -116,7 +126,7 @@
     async waitForBarriers(context) {
       let promises = []
       for(let barrier of this.barriers) {
-        promises.push(barrier(this.value, context))
+        promises.push(barrier(this.getValue(), context))
       }
       await Promise.all(promises)
     }
@@ -180,13 +190,9 @@
         }
       }
       if(this.object) {
-        console.log("PROPS RESET START", this.property)
         for(let propName in this.properties) {
-          console.log("PROP RESET", propName, this.object[propName])
           this.properties[propName].reset(initialValue && initialValue[propName])
-          console.log("PROP RESET", propName, this.object[propName])
         }
-        console.log("PROPS RESET", this.object)
       }
     }
     afterError(initialValue) {
@@ -683,8 +689,11 @@
     unmounted() {
     },
     watch: {
-      rootValue(newValue) {
-        this.$emit('update', newValue)
+      data: {
+        deep: true,
+        handler(newValue) {
+          this.$emit('update', newValue)
+        }
       }
     }
   }

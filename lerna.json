@@ -53,6 +53,7 @@
     "services/blog-service",
     "services/backup-service",
     "services/google-authentication-service",
+    "services/linkedin-authentication-service",
     "services/phone-service",
     "services/slug-service",
     "services/vote-service",
@@ -60,6 +61,14 @@
     "services/geoip-service",
     "services/task-service",
     "services/comment-service",
+    "services/video-call-service",
+    "services/balance-service",
+    "services/billing-service",
+    "services/stripe-service",
+    "services/draft-service",
+    "services/print-service",
+    "services/agreement-service",
+    "services/survey-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
@@ -76,10 +85,14 @@
     "frontend/blog-frontend",
     "frontend/frontend-template",
     "frontend/flow-frontend",
-    "frontend/task-frontend"
+    "frontend/task-frontend",
+    "frontend/video-call-frontend",
+    "frontend/balance-frontend",
+    "frontend/billing-frontend",
+    "frontend/survey-frontend"
   ],
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.8.34"
+  "version": "0.9.32"
 }

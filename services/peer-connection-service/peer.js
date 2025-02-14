@@ -1,7 +1,10 @@
+import App from '@live-change/framework'
+const app = App.app()
+
 import definition from './definition.js'
 const config = definition.config
 const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'].
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner', 'member'].
   writerRoles = ['speaker', 'vip', 'moderator', 'owner']
 } = config
 
@@ -42,7 +45,7 @@ definition.view({
     return clientHasAccessRoles(client, { objectType: channelType, object: channel }, readerRoles)
   },
   async daoPath({ channelType, channel }, { client, service }, method) {
-    return Peer.indexRangePath('byChannel', [ channelType, channel.split('.')[0] ])
+    return Peer.indexRangePath('byChannel', [ channelType, channel.split(':')[0] ])
   }
 })
 

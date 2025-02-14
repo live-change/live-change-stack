@@ -3,6 +3,7 @@ import ObservableList from "./ObservableList.js"
 import * as utils from './utils.js'
 import collectPointers from './collectPointers.js'
 import Debug from 'debug'
+import { errorToJSON } from './utils.js'
 const debug = Debug("reactive-dao")
 const debugPot = Debug("reactive-dao:pot")
 
@@ -118,7 +119,7 @@ class PushObservableTrigger {
     added.filter(pointer => this.pointers.get(pointer))
     for(let [pointer, count] of this.pointers.entries()) {
       if(count < 0) throw new Error("deleted not existing pointer: "+ pointer)
-      if(count == 0) removed.push(pointer)
+      if(count === 0) removed.push(pointer)
     }
     for(let rm of removed) this.pointers.delete(rm)
     this.commitPointersUpdate(added, removed)
@@ -264,7 +265,7 @@ class PushObservable extends ObservableList {
     const trigger = this.triggers.get(key)
     if(!trigger) throw new Error("could not remove not existing trigger")
     trigger.uses --
-    if(trigger.uses == 0) {
+    if(trigger.uses === 0) {
       trigger.dispose()
       this.triggers.delete(key)
     }
@@ -288,10 +289,10 @@ class PushObservable extends ObservableList {
     let observationInfo = this.observations.get(whatId)
     if(!observationInfo) throw new Error("could not unpush not existing observation")
     observationInfo.uses--
-    if(observationInfo.uses == 0) {
+    if(observationInfo.uses === 0) {
       this.observations.delete(whatId)
       observationInfo.observation.unpush()
-      this.remove(what)
+      if(!this.disposed) this.remove(what)
     }
   }
   dispose() {
@@ -320,6 +321,9 @@ class Observation {
     if(!observed) this.push()
 
     this.observer = (signal, ...args) => {
+      if(signal === 'error' && args[0]) {
+        args[0] = utils.errorToJSON(args[0])
+      }
       this.connection.send({
         type: "notify",
         what, signal, args
@@ -343,7 +347,7 @@ class Observation {
     if(!this.observed) throw new Error("Unobserve of not observed "+JSON.stringify(this.what)+
         " pushed "+this.pushCount)
     this.observed = false
-    if(this.pushCount == 0) {
+    if(this.pushCount === 0) {
       this.dispose()
     } else if(!pushed) { // distributed race condition - client removed observation before received push
       /// Refresh observation - send fresh value
@@ -353,7 +357,7 @@ class Observation {
   }
   unpush() {
     this.pushCount--
-    if(this.pushCount == 0) {
+    if(this.pushCount === 0) {
       this.connection.send({
         type: "unpush",
         what: this.what
@@ -364,7 +368,7 @@ class Observation {
   }
   push() {
     this.pushCount++
-    if(this.pushCount == 1) {
+    if(this.pushCount === 1) {
       this.connection.send({
         type: "push",
         what: this.what
@@ -438,7 +442,7 @@ class ReactiveServerConnection extends EventEmitter {
     try {
       const serialized = JSON.stringify(message)
       this.connection.write(serialized)
-      if(message.signal == 'error') {
+      if(message.signal === 'error') {
         debug("sending error", JSON.stringify(message, null, 2))
       }
     } catch (error) {
@@ -564,25 +568,19 @@ class ReactiveServerConnection extends EventEmitter {
   }
 
 
-  handleGet(message) {
+  async handleGet(message) {
     const path = message.what
     if(typeof path == 'object' && !Array.isArray(path) && path.paths) {
       let paths = path.paths
       return this.handleGetMore(message.requestId, paths)
     }
     try {
-      Promise.resolve(this.dao.get(path)).then(
-          result => this.send({
-            type: "response",
-            responseId: message.requestId,
-            response: result
-          }),
-          error => this.send({
-            type: "error",
-            responseId: message.requestId,
-            error: utils.errorToJSON(error)
-          })
-      )
+      const result = await Promise.resolve(this.dao.get(path))
+      this.send({
+        type: "response",
+        responseId: message.requestId,
+        response: result
+      })
     } catch (error) {
       this.handleServerError(message, error)
       this.send({
@@ -608,7 +606,7 @@ class ReactiveServerConnection extends EventEmitter {
         moreDeps.push(dep)
         return undefined
       })
-      if(moreDeps.length == 0) return Promise.resolve(pointers)
+      if(moreDeps.length === 0) return Promise.resolve(pointers)
       return Promise.all(moreDeps.map(dep => {
         const result = fetch({ what: dep }).catch(error => {
           error.stack += `\nWhile fetching ${JSON.stringify(dep)} from source`
@@ -654,7 +652,7 @@ class ReactiveServerConnection extends EventEmitter {
           if(!resultsMap.has(key)) {
             const resultInfo = {
               what,
-              error: error
+              error: errorToJSON(error)
             }
             results.push(resultInfo)
             resultsMap.set(key, resultInfo)

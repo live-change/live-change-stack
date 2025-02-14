@@ -12,6 +12,9 @@ import documentTypePage from './page.documentType.js'
 app.config = {
   services: [
     {
+      name: 'timer',
+    },
+    {
       name: 'session',
       createSessionOnUpdate: true
     },
@@ -69,6 +72,12 @@ app.config = {
       connect: true
     },
     {
+      name: 'googleAuthentication',
+    },
+    {
+      name: 'linkedinAuthentication',
+    },
+    {
       name: 'url',
     },
     {
@@ -92,6 +101,13 @@ app.config = {
     },
     {
       name: 'task',
+    },
+    {
+      name: 'draft',
+    },
+    {
+      name: 'agreement',
+      agreements: ['privacyPolicy', 'termsOfService', 'marketing']
     },
     {
       name: 'backup',

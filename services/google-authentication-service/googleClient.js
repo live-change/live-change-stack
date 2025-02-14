@@ -7,10 +7,10 @@ const debug = Debug('services:googleAuthentication')
 
 import axios from 'axios'
 
-const config = definition.config
+import config from './config.js'
 
-const googleClientId = config.clientId || process.env.GOOGLE_CLIENT_ID
-const googleClientSecret = config.clientId || process.env.GOOGLE_CLIENT_SECRET
+const googleClientId = config.clientId
+const googleClientSecret = config.clientSecret
 export { googleClientId, googleClientSecret }
 
 export async function getTokensWithCode(code, redirectUri) {
@@ -33,8 +33,11 @@ export async function getTokensWithCode(code, redirectUri) {
     const response = await axios(options)
     return response.data
   } catch(error) {
-    console.error("OAUTH ERROR", error)
-    throw error?.response?.data  ? new Error(error?.response?.data) : error
+    console.error("OAUTH ERROR", error?.stack || error?.message || JSON.stringify(error))
+    console.error("OAUTH ERROR RESPONSE", error?.response?.data)
+    throw error?.response?.data
+      ? new Error(error?.response?.data?.error || error?.response?.data)
+      : new Error(error.message || error.toString())
   }
 }
 

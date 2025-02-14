@@ -32,6 +32,7 @@
       while(api.client.value.user) {
         await new Promise(resolve => setTimeout(resolve, 100))
       }
+      console.log("ROUTER", router)
       router.push({ name: 'user:signOutFinished' })
     })())
   }

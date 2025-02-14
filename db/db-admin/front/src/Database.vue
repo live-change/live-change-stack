@@ -1,5 +1,7 @@
 <template>
   <div class="surface-card p-4 shadow-2 border-round w-full">
+    <ConfirmPopup v-if="isMounted"></ConfirmPopup>
+    <Toast v-if="isMounted"></Toast>
     <div class="text-center mb-3">
       <div class="text-900 text-3xl font-medium mb-3">Database "{{ dbName }}" @ {{ dbApi }}</div>
     </div>
@@ -103,7 +105,7 @@
       <Column field="rows" header="Rows" :headerStyle="{ 'width': '60px' }"></Column>
       <Column :headerStyle="{ 'width': '140px' }">
         <template #body="slotProps">
-          <Button v-if="indexRename == slotProps.data.id"
+          <Button v-if="indexRename === slotProps.data.id"
                   @click="ev => finishIndexRename(ev, slotProps.data.id)" type="button"
                   icon="pi pi-save" class="p-button-rounded p-button-primary mr-2" />
           <Button v-else
@@ -157,6 +159,7 @@
   const workingZone = inject('workingZone')
 
   function deleteTable(event, id) {
+    console.log('deleteTable', id)
     confirm.require({
       target: event.currentTarget,
       message: `Do you really want to delete table ${id}?`,
@@ -185,7 +188,7 @@
     const oldTableName = tableRename.value
     const tableName = tableNewName.value
     tableRename.value = null
-    if(oldTableName == tableName) return
+    if(oldTableName === tableName) return
     workingZone.addPromise('renameTable', (async () => {
       try {
         await dao.request([dbApi, 'renameTable'], dbName, oldTableName, tableName)
@@ -201,7 +204,7 @@
   function handleNewTableSubmit(event) {
     event.preventDefault()
     const tableName = newTableName.value
-    if(tableName.length == 0) return
+    if(tableName.length === 0) return
     newTableName.value = ""
     workingZone.addPromise('createTable', (async () => {
       try {

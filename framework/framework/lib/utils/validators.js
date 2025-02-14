@@ -33,8 +33,8 @@ nonEmpty.isRequired = () => true
 const validators = {
   nonEmpty: (settings) => nonEmpty,
 
-  minLength: ({ length }) => (value) => value.length < length ? 'tooShort' : undefined,
-  maxLength: ({ length }) => (value) => value.length > length ? 'tooLong' : undefined,
+  minLength: ({ length }) => (value) => value && (value.length < length ? 'tooShort' : undefined),
+  maxLength: ({ length }) => (value) => value && (value.length > length ? 'tooLong' : undefined),
 
   number: () => (value) => isNaN(value) ? 'notANumber' : undefined,
   integer: () => (value) => !Number.isInteger(value) ? 'notAnInteger' : undefined,
@@ -61,7 +61,7 @@ const validators = {
   ifEq: ({ prop, to, then }, { getValidator }) => {
     let validators = then.map(getValidator)
     const validator = (value, context) => {
-      if(getField(context, prop) == to) {
+      if(getField(context, prop) === to) {
         for(let v of validators) {
           const err = v(value, context)
           if(err) return err
@@ -69,7 +69,7 @@ const validators = {
       }
     }
     validator.isRequired = (context) => {
-      if(getField(context, prop) == to) {
+      if(getField(context, prop) === to) {
         for(let v of validators) {
           if(v.isRequired && v.isRequired(context)) return true
         }
@@ -169,10 +169,22 @@ const validators = {
 
   httpUrl: (settings) => (value) => {
     if(!value) return false // ignore empty
-    const match = value.match(
-        /^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._%~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
-    )
-    if(!match) return 'wrongUrl'
+    try {
+      const url = new URL(value)
+      if(url.protocol !== 'http:' && url.protocol !== 'https:') return 'wrongUrl'
+    } catch(e) {
+      return 'wrongUrl'
+    }
+  },
+  httpUrlSoft: (settings) => (value) => {
+    if(!value) return false // ignore empty
+    try {
+      if(!value.match(/^https?:\/\//)) value = 'https://'+value
+      const url = new URL(value)
+      if(url.protocol !== 'http:' && url.protocol !== 'https:') return 'wrongUrl'
+    } catch(e) {
+      return 'wrongUrl'
+    }
   }
 }
 

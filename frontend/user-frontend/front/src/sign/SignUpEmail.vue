@@ -19,25 +19,33 @@
           <InputText id="email" type="text" class="w-full"
                      aria-describedby="email-help" :class="{ 'p-invalid': data.emailError}"
                      v-model="data.email" />
-          <small v-if="data.emailError" id="email-help" class="p-error">{{ data.emailError }}</small>
+          <small v-if="data.emailError" id="email-help" class="p-error">
+            {{ t(`errors.${data.emailError}`) }}
+          </small>
         </div>
 
         <Button label="Sign Up with email" icon="pi pi-user" class="w-full" type="submit" />
-
       </command-form>
 
-      <Divider align="center" class="my-4">
+      <Divider v-if="accountTypes.length > 0" align="center" class="my-4">
         <span class="text-600 font-normal text-sm">OR</span>
       </Divider>
 
-      <!--        <Button label="Sign In with GitHub" icon="pi pi-github" class="w-full p-button-secondary mb-2" />-->
-      <router-link :to="{ name: 'user:googleAuth', params: { action: 'signInOrSignUp' } }" class="no-underline">
+      <router-link v-for="accountType in accountTypes"
+                   :to="{ name: `user:${accountType.accountType}Auth`, params: { action: 'signInOrSignUp' } }"
+                   class="no-underline">
         <Button
-          label="Sign Up with Google"
-          icon="pi pi-google"
+          :label="`Sign Up with ${accountType.accountType[0].toUpperCase()}${accountType.accountType.slice(1)}`"
+          :icon="`pi pi-${accountType.accountType}`"
           class="w-full p-button-secondary mb-1"
         />
       </router-link>
+
+      <div class="mt-3">
+        By providing your email address or google account, you consent to its processing solely
+        for registration and account verification purposes, in accordance with our
+        <router-link to="/privacy-policy">Privacy Policy</router-link>.
+      </div>
 
     </div>
   </div>
@@ -50,6 +58,13 @@
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
+  import { getContactTypes, getAccountTypes} from '../connected/connected.js'
+  const contactsTypes = getContactTypes()
+  const accountTypes = getAccountTypes()
 
   function handleSent({ parameters, result }) {
     const { authentication } = result

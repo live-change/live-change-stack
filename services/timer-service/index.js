@@ -21,6 +21,9 @@ const Timer = definition.model({
     timestamp: {
       type: Number
     },
+    time: {
+      type: Date,
+    },
     loops: {
       type: Number
     },
@@ -53,6 +56,10 @@ const Timer = definition.model({
     },
     cause: {
       type: String
+    },
+    createdAt: {
+      type: Date,
+      default: () => new Date()
     }
   },
   indexes: {
@@ -126,6 +133,7 @@ async function timersLoop() {
   }
   let nextTs = timersQueue[0].timestamp
   let now = Date.now()
+  //console.log("NEXT TS", nextTs, '<', now, '-->', nextTs < now, "INQ", timersQueue)
   while(nextTs < now) {
     fireTimer(timersQueue.shift())
     if(timersQueue.length === 0) {
@@ -231,7 +239,8 @@ async function startTimers() {
 }
 
 function runTimerAction(timer) {
-  console.error("RUN ACTION", timer)
+/*  console.error("RUN ACTION", timer)
+  console.trace("RUN ACTION")*/
   if(timer.command) {
     if(!timer.command.service) timer.command.service = timer.service
     return app.command({
@@ -260,7 +269,8 @@ function runTimerAction(timer) {
 }
 
 function insertTimer(timer) {
-  console.log("INSERT TIMER", timer, "TO", timersQueue)
+  //console.log("INSERT TIMER", timer, "TO", timersQueue)
+  if(timersById.has(timer.id)) return //throw new Error("INSERT TIMER DUPLICATED!!!")
   timersById.set(timer.id, timer)
   for(let i = 0; i < timersQueue.length; i++) {
     if(timer.timestamp < timersQueue[i].timestamp) {
@@ -296,9 +306,15 @@ definition.trigger({
     }
   },
   async execute({ timer }, { client, service, trigger }, emit) {
-    console.log("CREATE TIMER", timer)
     if(!timer) throw new Error("timer is required")
-    let timestamp = new Date(timer.timestamp).getTime()
+    let timestamp = timer.timestamp && new Date(timer.timestamp).getTime()
+    let time = timer.time && new Date(timer.time)
+    if((!time) && (!timestamp)) {
+      console.log("TIMER", timer, "TIME", time, "TIMESTAMP", timestamp)
+      throw new Error("timestamp or time is required")
+    }
+    if(!timestamp) timestamp = time.getTime()
+    if(!time) time = new Date(timestamp)
     let loops = timer.loops || 0
     let timerId = timer.id || app.generateUid()
     let maxRetries = timer.maxRetries || 0
@@ -306,7 +322,7 @@ definition.trigger({
     let interval = timer.interval || 0
     if(loops > 0 && interval === 0) throw new Error("impossibleTimer")
     const props = {
-      ...timer, timestamp, loops, interval, timerId, maxRetries, retryDelay, retries: 0,
+      ...timer, timestamp, time, loops, interval, timerId, maxRetries, retryDelay, retries: 0,
       causeType: trigger.causeType,
       cause: trigger.cause
     }
@@ -362,6 +378,7 @@ definition.trigger({
 })
 
 
+/*
 definition.action({
   name: "create",
   properties: {
@@ -431,6 +448,7 @@ definition.action({
     return true
   }
 })
+*/
 
 definition.event({
   queuedBy: 'timer',
@@ -480,7 +498,7 @@ definition.event({
   }
 })
 
-definition.beforeStart(async () => {
+definition.afterStart(async () => {
   await startTimers()
 })
 

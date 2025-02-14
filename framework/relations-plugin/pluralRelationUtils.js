@@ -2,11 +2,17 @@ import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
 } from "@live-change/framework"
-import { extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl } from "./utils.js"
+import {
+  extractIdParts,
+  extractIdentifiers,
+  extractObjectData,
+  prepareAccessControl,
+  cloneAndPrepareAccessControl
+} from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import pluralize from 'pluralize'
 
-function defineView(config, context, external = true) {
+function defineRangeView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
   const indexName = 'by'+context.joinedOthersClassName
@@ -18,8 +24,13 @@ function defineView(config, context, external = true) {
     })
   }
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
-  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  model.crud.range = viewName
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
+  if(viewName === 'companyOwnedProducts') {
+    console.error("ACCESS CONTROL", viewName, accessControl, otherPropertyNames, others)
+    if(accessControl) accessControl.kutas = 1
+  }
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -33,8 +44,9 @@ function defineView(config, context, external = true) {
       }
     },
     internal: !external,
+    global: config.globalView,
     access: external && (config.readAccess || config.writeAccess),
-    accessControl: config.readAccessControl || config.writeAccessControl,
+    accessControl,
     daoPath(properties, { client, context }) {
       const idParts = extractIdParts(otherPropertyNames, properties)
       const range = App.extractRange(properties)
@@ -44,12 +56,44 @@ function defineView(config, context, external = true) {
   })
 }
 
+function defineSingleView(config, context, external = true) {
+  const { service, modelRuntime, objectType, joinedOthersPropertyName, joinedOthersClassName,
+    modelName, others, model, modelPropertyName } = context
+  const viewProperties = {}
+  viewProperties[modelPropertyName] = new PropertyDefinition({
+    type: model,
+    validation: ['nonEmpty']
+  })
+  const viewName = modelName[0].toLowerCase() + modelName.slice(1)
+  model.crud.read = viewName
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
+  service.views[viewName] = new ViewDefinition({
+    name: viewName,
+    properties: {
+      ...viewProperties,
+    },
+    returns: {
+      type: model
+    },
+    internal: !external,
+    global: config.globalView,
+    access: external && (config.readAccess || config.writeAccess),
+    accessControl,
+    async daoPath(properties, { client, context }) {
+      return modelRuntime().path(properties[modelPropertyName])
+    }
+  })
+}
+
 function getCreateFunction( validators, validationContext, config, context) {
   const {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
+  const eventName = modelName + 'Created'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName] || app.generateUid()
     const entity = await modelRuntime().get(id)
@@ -74,9 +118,10 @@ function defineCreateAction(config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
-  const accessControl = config.createAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const actionName = 'create' + modelName
+  model.crud.create = actionName
+  const sourceAccessControl = config.createAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -100,7 +145,7 @@ function defineCreateTrigger(config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const actionName = 'create' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -123,7 +168,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
+  const eventName = modelName + 'Updated'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
@@ -138,7 +183,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
       extractObjectData(writeableProperties, properties, entity),
       App.computeUpdates(model, { ...entity, ...properties }, { client, service })
     )
-    await App.validation.validate({ ...identifiers, ...data }, validators,
+    await App.validation.validate({ ...identifiers, ...data, [modelPropertyName]: id }, validators,
       validationContext)
     await fireChangeTriggers(context, objectType, identifiers, id,
       extractObjectData(writeableProperties, entity, {}), data)
@@ -156,10 +201,12 @@ function defineUpdateAction(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
-  const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
-  const accessControl = config.updateAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const actionName = 'update' + modelName
+  model.crud.update = actionName
+  const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -187,8 +234,7 @@ function defineUpdateTrigger(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
-  const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const actionName = 'update' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -215,7 +261,7 @@ function getDeleteFunction( validators, validationContext, config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
+  const eventName = modelName + 'Deleted'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
@@ -240,10 +286,12 @@ function defineDeleteAction(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
-  const actionName = 'delete' + joinedOthersClassName + context.reverseRelationWord + modelName
-  const accessControl = config.deleteAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const actionName = 'delete' + modelName
+  model.crud.delete = actionName
+  const sourceAccessControl = config.deleteAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -272,8 +320,7 @@ function defineDeleteTrigger(config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
-  const actionName = 'delete' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const actionName = 'delete' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -300,7 +347,7 @@ function getCopyFunction( validators, validationContext, config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
+  const eventName = modelName + 'Copied'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
@@ -356,10 +403,11 @@ function defineCopyAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
     identifiers
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
-  const actionName = 'copy' + joinedOthersClassName + context.reverseRelationWord + modelName
-  const accessControl = config.copyAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames, others)
+  const actionName = 'copy' + modelName
+  const sourceAccessControl = config.copyAccessControl
+  const accessControl = cloneAndPrepareAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -393,7 +441,6 @@ function defineCopyTrigger(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
     identifiers
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
   const actionName = 'copy' + joinedOthersClassName + context.reverseRelationWord + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
@@ -427,7 +474,7 @@ function defineCopyOnParentCopyTrigger(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, others, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName,
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Copied'
+  const eventName = modelName + 'Copied'
   const triggerName = 'copyOnParentCopy_' + service.name + '_' + modelName
   if(!service.triggers[triggerName]) service.triggers[triggerName] = []
   service.triggers[triggerName].push(new TriggerDefinition({
@@ -507,7 +554,7 @@ function defineSortIndex(context, sortFields) {
 }
 
 export {
-  defineView,
+  defineRangeView, defineSingleView,
   defineCreateAction, defineUpdateAction, defineDeleteAction, defineCopyAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger, defineCopyTrigger,
   defineCopyOnParentCopyTrigger,

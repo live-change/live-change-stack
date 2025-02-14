@@ -46,7 +46,11 @@ export function serverEntry(App, createRouter, config = {}) {
     await router.isReady()
 
     // prefetch data
-    await api.preFetchRoute(router.currentRoute, router)
+    await Promise.all([
+      ...(config.serverPrefetch ?? []).map(fn => fn(app, router, head)),
+      ...(config.prefetch ?? []).map(fn => fn(app, router, head)),
+      api.preFetchRoute(router.currentRoute, router)
+    ])
     // passing SSR context object which will be available via useSSRContext()
     // @vitejs/plugin-vue injects code into a component's setup() that registers
     // itself on ctx.modules. After the render, ctx.modules would contain all the

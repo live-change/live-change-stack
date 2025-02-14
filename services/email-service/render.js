@@ -13,7 +13,9 @@ const config = definition.config
 
 const publicDir = config.publicDir || 'front/public/'
 
-const authenticationKey = new ObservableValue(crypto.randomBytes(24).toString('hex'))
+const authenticationKey = new ObservableValue(
+  config.rendererAuthenticationKey ?? crypto.randomBytes(24).toString('hex')
+)
 definition.view({
   internal: true,
   global: true,
@@ -82,11 +84,20 @@ async function renderEmail(data) {
   const response = await got(url)
   let body = response.body
   console.log("BASE URL", baseUrl)
+
+  let dom = new JSDOM(body)
+  //console.log("RENDER EMAIL HEADERS HTML:", dom.window.document.querySelector('[data-headers]').innerHTML)
+  const headersJson = dom.window.document.querySelector('[data-headers]').textContent
+  //console.log("RENDER EMAIL HEADERS JSON:", headersJson)
+  const headers = JSON.parse(headersJson)
+  //console.log("PARSED HEADERS", headers)
+
   const juiceOptions = {
     webResources: {
       scripts: false,
       links: true,
       images: false,
+      resolveCSSVariables: true,
       relativeTo: url
     }
   }
@@ -97,9 +108,9 @@ async function renderEmail(data) {
       else resolve(html)
     })
   })
-  //console.log("HTML", body)
-  const dom = new JSDOM(body)
-  const headers = JSON.parse(dom.window.document.querySelector('[data-headers]').textContent)
+  //console.log("RENDER EMAIL HTML", body)
+  dom = new JSDOM(body)
+
   const messageElements = dom.window.document.querySelectorAll("[data-html],[data-text]")
   const email = { ...headers }
   const images = new Map()
@@ -124,6 +135,14 @@ async function renderEmail(data) {
     const imageUrl = new URL(imagePath, url)
     const file = path.resolve(publicDir, imageUrl.pathname.slice(1))
     const filename = path.basename(file)
+    if(imagePath.startsWith('http')) {
+      console.log("EXTERNAL IMAGE", imagePath)
+      return {
+        path: imagePath,
+        cid: contentId,
+        filename
+      }
+    }
     return {
       filename,
       path: file,

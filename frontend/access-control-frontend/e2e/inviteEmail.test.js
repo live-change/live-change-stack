@@ -7,7 +7,7 @@ Feature('access control invite')
 Scenario('invite user that will register from invitation link - path 2', async ({ I }) => {
 
   const adminUser = await I.haveUser()
-  await I.haveUserWithAccess(adminUser, 'example_Example', 'one', ['administrator'])
+  await I.haveUserWithAccess(adminUser, 'example_Example', 'one', ['admin'])
 
   const invitedName = randomProfile.profile().firstName
   const invitedEmail = invitedName.split(' ')[0].toLowerCase() + (Math.random()*100).toFixed() + '@test.com'

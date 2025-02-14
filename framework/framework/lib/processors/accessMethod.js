@@ -4,7 +4,6 @@ export default function getAccessMethod(access) {
   } else if(Array.isArray(access)) {
     return (params, { service, client }) => {
       if(client.internal) return true
-      if(client.roles.includes('administrator')) return true
       if(client.roles.includes('admin')) return true
       for(let role of access) if(client.roles.includes(role)) return true
       return false
@@ -12,7 +11,6 @@ export default function getAccessMethod(access) {
   } else if(access === 'internal') {
     return (params, { service, client }) => {
       if(client.internal) return true
-      if(client.roles.includes('administrator')) return true
       if(client.roles.includes('admin')) return true
       return false
     }

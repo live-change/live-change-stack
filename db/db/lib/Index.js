@@ -11,7 +11,7 @@ import { ChangeStream } from './ChangeStream.js'
 import Debug from 'debug'
 const debug = Debug('db')
 
-const opLogBatchSize = 128 /// TODO: incrase after testing
+const opLogBatchSize = 128 /// TODO: increase after testing
 
 class ObjectReader extends ChangeStream {
   constructor(tableReader, id) {
@@ -68,8 +68,6 @@ class RangeReader extends ChangeStream {
   }
 }
 
-let commandsReaderCreated = false
-
 class TableReader extends ChangeStream {
 
  /* set opLogPromise(promise) {
@@ -94,15 +92,6 @@ class TableReader extends ChangeStream {
     this.callbacks = []
 
     this.readOpLog(this.opLogReader.currentKey)
-
-    if(table.name === 'commands') {
-      console.trace("TABLE READER CREATED", prefix, table.name)
-      if(commandsReaderCreated) {
-        console.error("TABLE READER CREATED TWICE!!!", prefix, table.name)
-        process.exit(1)
-      }
-      commandsReaderCreated = true
-    }
 
     let firstFull = 0
     /*setInterval(() => {
@@ -238,6 +227,9 @@ class TableReader extends ChangeStream {
     if(this.disposed) return
     this.opLogBuffer.push(object)
     this.opLogReader.handleSignal()
+  }
+  async objectGet(id) {
+    return await (await this.table).objectGet(id)
   }
   async get(range = {}) {
     return await (await this.table).rangeGet(range)
@@ -463,8 +455,11 @@ class IndexWriter {
       throw error
     }
   }
-  get(id) {
-    return this.index.get(id)
+  objectGet(id) {
+    return this.index.objectGet(id)
+  }
+  rangeGet(range) {
+    return this.index.rangeGet(range)
   }
   synchronized(key, code) {
     return this.index.synchronized(key, code)

@@ -96,7 +96,8 @@ export class Locale {
   }
 
   async captureLocale() {
-    if(typeof navigator === 'undefined') return
+    if(typeof window === 'undefined') return // capture only on client
+    if(typeof navigator === 'undefined') return // capture only on client
     return (async () => {
       const localeSettings = await this.getLocale()
       //console.log("LOCALE SETTINGS", JSON.stringify(localeSettings, null, '  '))
@@ -149,7 +150,8 @@ export class Locale {
   }
 
   localTime(date) {
-    return new Date(new Date(date).getTime() + this.timezoneOffset?.value)
+    if(typeof window !== 'undefined') return date // convert to local time only on server
+    return new Date(new Date(date).getTime() - this.timezoneOffset?.value * 60 * 1000)
   }
 
 }
@@ -168,7 +170,6 @@ function nonEmptyObject(obj) { /// because command form can add empty objects on
   return obj
 }
 
-
 export function useLocale(context) {
   context = context ?? getCurrentInstance().appContext
   if(!context.config.globalProperties.$locale) {
@@ -176,4 +177,3 @@ export function useLocale(context) {
   }
   return context = context.config.globalProperties.$locale
 }
-

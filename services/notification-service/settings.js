@@ -10,7 +10,7 @@ async function clientOwnsContact({ user }, { contactType, contact }) {
   const [service, model] = contactType.split('_')
   if(!config.contactTypes.includes(service)) return false
   const contactData = await app.dao.get(['database', 'tableObject', app.databaseName, contactType, contact ])
-  return contactData.user == user
+  return contactData.user === user
 }
 
 const NotificationSetting = definition.model({

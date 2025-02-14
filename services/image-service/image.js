@@ -115,7 +115,7 @@ definition.action({
     const dir = `${imagesPath}${image}`
 
     emit({
-      type: "ownerOwnedImageCreated",
+      type: "ImageCreated",
       image,
       identifiers: {
         owner, ownerType
@@ -132,6 +132,75 @@ definition.action({
 
     await app.trigger({ type: 'uploadUsed' }, {
       upload: uploadRow.id
+    })
+
+    return image
+  }
+})
+
+
+definition.trigger({
+  name: "setupExistingImage",
+  properties: {
+    image: {
+      type: Image
+    },
+    name: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    width: {
+      type: Number
+    },
+    height: {
+      type: Number
+    },
+    purpose: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    ownerType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    owner: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    fileName: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    crop: cropInfo
+  },
+  waitForEvents: true,
+  async execute({ image, name, width, height, fileName, purpose, owner, ownerType, crop }, { client, service }, emit) {
+    if(!image) throw new Error("image_not_found")
+    const existing = await Image.get(image)
+    if (existing) throw 'already_exists'
+
+    let extension = fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
+    if(extension === 'jpg') throw new Error('jpg should have jpeg extension')
+
+    if(!width || !height) {
+      const path = `${imagesPath}/${image}/original.${extension}`
+      const data = await fs.promises.readFile(path)
+      const metadata = await sharp(data).metadata()
+      width = metadata.width
+      height = metadata.height
+    }
+
+    emit({
+      type: "ImageCreated",
+      image,
+      identifiers: {
+        owner, ownerType
+      },
+      data: {
+        name, purpose,
+        fileName,
+        width, height, extension, crop
+      }
     })
 
     return image
@@ -187,7 +256,7 @@ definition.trigger({
     //console.log("IMAGE METADATA", metadata)
 
     emit({
-      type: "ownerOwnedImageCreated",
+      type: "ImageCreated",
       image,
       identifiers: {
         owner, ownerType
@@ -211,19 +280,17 @@ definition.trigger({
   }
 })
 
-definition.view({
-  name: 'image',
+definition.trigger({
+  name: 'deleteImage_Image',
   properties: {
-    image: {
+    object: {
       type: Image,
       validation: ['nonEmpty']
     }
   },
-  returns: {
-    type: Image
-  },
-  daoPath({ image }, { client, context }) {
-    return Image.path( image )
+  async execute({ object: image }, { client, service }, emit) {
+    const imageDir = `${imagesPath}${image}`
+    await rmdir(imageDir)
   }
 })
 

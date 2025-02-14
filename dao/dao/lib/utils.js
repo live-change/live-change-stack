@@ -1,9 +1,14 @@
 export function errorToJSON(error) {
   if(typeof error == 'object') {
+    if(error instanceof Error && error.stack) return error.stack.toString()
+    if(error instanceof Error && error.message) return error.message.toString()
     let obj = {}
+    //obj.string = error.toString()
     Object.getOwnPropertyNames(error).forEach(function (key) {
       obj[key] = error[key]
     })
+    if(error.message) obj.message = error.message.toString()
+    if(error.stack) obj.stack = error.stack.toString()
     return obj
   }
   return error

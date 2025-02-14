@@ -2,8 +2,8 @@ import App from '@live-change/framework'
 const app = App.app()
 import { randomString } from '@live-change/uid'
 import definition from './definition.js'
-const config = definition.config
-import { PasswordAuthentication, secretProperties } from './model.js'
+import config from "./config.js"
+import { secretProperties } from './model.js'
 
 const User = definition.foreignModel('user', 'User')
 
@@ -48,7 +48,7 @@ definition.event({
 })
 
 definition.view({
-  name: "resetPasswordAuthentication",
+  name: "resetPasswordAuthenticationByKey",
   properties: {
     key: {
       type: String,
@@ -80,9 +80,8 @@ for(const contactType of config.contactTypes) {
       ...contactTypeProperties
     },
     async execute({ [contactTypeName]: contact }, { client, service }, emit) {
-      const contactData = (await service.trigger({ type: 'get' + contactTypeUName }, {
-        [contactTypeName]: contact,
-      }))[0]
+      const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
+      if(!contactData) throw { properties: { email: 'notFound' } }
       const { user } = contactData
       const messageData = { user }
       const actionProperties = { user }
@@ -142,7 +141,7 @@ definition.action({
     const resetPasswordAuthenticationData = await ResetPasswordAuthentication.indexObjectGet('byKey', key)
     console.log("RESET AUTH", resetPasswordAuthenticationData)
     if(!resetPasswordAuthenticationData) throw 'authenticationNotFound'
-    if(resetPasswordAuthenticationData.state == 'used') throw 'authenticationUsed'
+    if(resetPasswordAuthenticationData.state === 'used') throw 'authenticationUsed'
     if(resetPasswordAuthenticationData.expire < (new Date().toISOString())) throw 'authenticationExpired'
     const { user } = resetPasswordAuthenticationData
     emit([{

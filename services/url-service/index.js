@@ -131,7 +131,7 @@ async function generateUrl(props, emit) {
   let path = ''
   let random = false
   if(props.path) {
-    path = path
+    path = props.path
     const cutLength = maxLength - sufixLength/// because max id size
     if(path.length > cutLength) {
       let lastSep = path.lastIndexOf('-')
@@ -164,7 +164,7 @@ async function generateUrl(props, emit) {
     console.log("TRYING PATH", prefix + path + suffix)
     const res = await UrlToTarget.rangeGet([props.targetType, props.domain, fullPath])
     const count = res?.length ?? 0
-    if(count == 0) {
+    if(count === 0) {
       //Url.create({ id: `${group}_${path}`, group, path: prefix + path + suffix, to: props.to || null })
       created = true
     } else {
@@ -203,7 +203,7 @@ async function generateUrl(props, emit) {
   if(props.redirect) {
     url = app.generateUid()
     emit({
-      type: 'targetOwnedRedirectCreated',
+      type: 'RedirectCreated',
       redirect: app.generateUid(),
       identifiers: {
         targetType: props.targetType,
@@ -217,7 +217,7 @@ async function generateUrl(props, emit) {
   } else {
     if(existingCanonical) {
       emit({
-        type: 'targetOwnedRedirectCreated',
+        type: 'RedirectCreated',
         redirect: app.generateUid(),
         identifiers: {
           targetType: props.targetType,
@@ -230,7 +230,7 @@ async function generateUrl(props, emit) {
       })
     }
     emit({
-      type: 'targetOwnedCanonicalSet',
+      type: 'CanonicalSet',
       identifiers: {
         targetType: props.targetType,
         target: props.target
@@ -370,7 +370,7 @@ definition.action({
   },
   queuedBy: 'targetType',
   async execute({ targetType, target, domain, path, redirect }, { client, service }, emit) {
-    while(path[0] == '/') path = path.slice(1)
+    while(path[0] === '/') path = path.slice(1)
 
     const res = await UrlToTarget.rangeGet([targetType, domain, path])
     const count = res?.length ?? 0
@@ -383,7 +383,7 @@ definition.action({
     if(redirect) {
       url = app.generateUid()
       emit({
-        type: 'targetOwnedRedirectCreated',
+        type: 'RedirectCreated',
         redirect: app.generateUid(),
         identifiers: {
           targetType, target,
@@ -395,7 +395,7 @@ definition.action({
     } else {
       if(existingCanonical) {
         emit({
-          type: 'targetOwnedRedirectCreated',
+          type: 'RedirectCreated',
           redirect: app.generateUid(),
           identifiers: {
             targetType, target
@@ -407,7 +407,7 @@ definition.action({
         })
       }
       emit({
-        type: 'targetOwnedCanonicalSet',
+        type: 'CanonicalSet',
         identifiers: {
           targetType, target,
         },

@@ -1,5 +1,5 @@
 import {
-  defineAnyProperties, defineAnyIndex, processModelsAnyAnnotation
+  defineAnyProperties, defineAnyIndex, processModelsAnyAnnotation, defineAnyTypeIndexes
 } from './utilsAny.js'
 
 import {
@@ -7,7 +7,7 @@ import {
 } from './itemEvents.js'
 
 import {
-  defineView,
+  defineSingleView, defineRangeView,
   defineCreateAction, defineUpdateAction, defineDeleteAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
   defineSortIndex
@@ -21,6 +21,7 @@ export default function(service, app) {
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
+    defineAnyTypeIndexes(config, context, false)
 
     if(config.sortBy) {
       for(const sortFields of config.sortBy) {
@@ -28,7 +29,10 @@ export default function(service, app) {
       }
     }
 
-    defineView(config, context,
+    defineSingleView(config, context,
+      config.readAccess || config.readAccessControl || config.writeAccessControl
+    )
+    defineRangeView(config, context,
       config.readAccess || config.readAccessControl || config.writeAccessControl
     )
     /// TODO: multiple views with limited fields

@@ -27,7 +27,7 @@ class Observable {
     for(const observer of observersToFire) {
       handled = this.fireObserver(observer, signal, ...args) || handled
     }
-    if(signal == 'error') {
+    if(signal === 'error') {
       let error = args[0]
       handled = this.handleError(error) || handled
       if(!handled) {
@@ -57,7 +57,7 @@ class Observable {
 
   uncatch(errorObserver) {
     let id = this.errorObservers.indexOf(errorObserver)
-    if(id == -1) throw new Error("error observer not found")
+    if(id === -1) throw new Error("error observer not found")
     this.errorObservers.splice(id, 1)
   }
 
@@ -67,13 +67,13 @@ class Observable {
   }
   unobserve(observer) {
     let id = this.observers.indexOf(observer)
-    if(id == -1) throw new Error("observer not found")
+    if(id === -1) throw new Error("observer not found")
     this.observers.splice(id, 1)
     if(this.isUseless()) this.dispose()
   }
 
   isUseless() {
-    return this.observers.length == 0
+    return this.observers.length === 0
   }
 
   isDisposed() {
@@ -102,16 +102,16 @@ class Observable {
     let errorObserver
 
     const waitPromise = new Promise((resolve, reject) => {
-      errorObserver = (error) => {
-        console.log("ERROR SIGNAL", error)
-        console.trace("WEER")
+      errorObserver = (signal, error) => {
+        console.log("ERROR SIGNAL", error ?? signal)
+        console.trace("ERROR SIGNAL")
         if(resultObserver) this.unobserve(resultObserver)
         resultObserver = undefined
         if(errorObserver) this.uncatch(errorObserver)
         errorObserver = undefined
         if(finished) return
         finished = true
-        reject(error)
+        reject(error ?? signal)
       }
       if(!finished) this.catch(errorObserver)
       resultObserver = (signal) => {

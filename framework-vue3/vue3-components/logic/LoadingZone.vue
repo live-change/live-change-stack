@@ -17,7 +17,12 @@
       </div>
     </template>
   </suspense>
-  <slot v-else v-bind="{ isLoading: !!loading.length, loading, errors }"></slot>
+  <div v-else>
+    <slot v-bind="{ isLoading: !!loading.length, loading, errors }"></slot>
+    <slot name="loading" v-if="loading.length && !errors.length">
+      Loading...
+    </slot>
+  </div>
 
   <slot name="error" v-if="errors.length" v-bind="{ errors }">
     <h1>Loading errors!</h1>
@@ -50,7 +55,8 @@
       return {
         loading: [],
         loadingBlockId: 0,
-        connectionProblem: false
+        connectionProblem: false,
+        r: Math.random()
       }
     },
     setup() {
@@ -75,13 +81,12 @@
     },
     methods: {
       loadingStarted(task) {
-        if(this.loading.length == 0) {
+        if(this.loading.length === 0) {
           analytics.emit('loadingStarted', { task: task.name })
           info('LOADING STARTED!')
-
           const loadingBlockId = this.loadingBlockId
           this.loadingTimeout = setTimeout(() => {
-            if(loadingBlockId == this.loadingBlockId && this.loading.length > 0) {
+            if(loadingBlockId === this.loadingBlockId && this.loading.length > 0) {
               this.connectionProblem = true
               analytics.emit('loadingError', {
                 task: 'View loading', reason: "connection problem",
@@ -98,12 +103,12 @@
       loadingFinished(task) {
         let id = this.loading.indexOf(task)
         debug(`task finished ${task.name}`)
-        if(id == -1) throw new Error("Task not found")
+        if(id === -1) throw new Error("Task not found")
         this.loading.splice(id, 1)
 
         if(this.$allLoadingTasks)
           this.$allLoadingTasks.splice(this.$allLoadingTasks.indexOf(task), 1)
-        if(this.loading.length == 0) {
+        if(this.loading.length === 0) {
           this.loadingBlockId++
           clearTimeout(this.loadingTimeout)
           analytics.emit('loadingDone', { task: task.name })
@@ -118,7 +123,7 @@
         this.errors.push({ task, reason })
         analytics.emit('loadingError', { task: task.name, reason })
         let id = this.loading.indexOf(task)
-        if(id == -1) {
+        if(id === -1) {
           this.errors.push({ task, reason: "unknown task "+task.name })
           throw new Error("Task not found")
         }

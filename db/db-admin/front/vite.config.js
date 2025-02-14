@@ -18,7 +18,6 @@ export default defineConfig(async ({ command, mode }) => {
   //console.log("VITE CONFIG", command, mode)
   return {
     define: {
-      ENV_BASE_HREF: JSON.stringify(process.env.BASE_HREF || 'http://localhost:8001')
     },
     server: {
       hmr: {

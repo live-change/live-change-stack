@@ -43,7 +43,7 @@ class SplitEmitQueue {
       events.push(event)
     }
     if(this.commited) {
-      if(events.length == 0) return
+      if(events.length === 0) return
       this.service.dao.request(['database', 'putLog'], this.service.databaseName,
           this.service.name+'_events', { type: 'bucket', events, ...this.flags })
     }
@@ -52,7 +52,7 @@ class SplitEmitQueue {
   async commit() {
     let promises = []
     this.commited = true
-    if(this.emittedEvents.length == 0) return []
+    if(this.emittedEvents.length === 0) return []
     let allEvents = []
     for(const [service, events] of this.emittedEvents.keys()) {
       promises.push(this.service.dao.request(['database', 'putLog'], this.service.databaseName,

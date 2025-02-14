@@ -48,17 +48,20 @@
     },
     accessType: {
       type: String,
-      default: 'offline', //'online'
+      default: 'online', //'offline'
     },
-    scope: {
+    scopes: {
       type: Array,
       default: () => ['profile', 'email']
     }
   })
 
-  const { action, accessType, scope } = toRefs(props)
+  const { action, accessType, scopes } = toRefs(props)
   const state = ref('waiting')
   const error = ref(null)
+
+  import { useApi } from '@live-change/vue3-ssr'
+  const api = useApi()
 
   function googleAuth() {
     state.value = 'waiting'
@@ -72,11 +75,16 @@
       }, 4000)
     }))
 
+    let allScopes = new Set(scopes.value ?? [])
+    allScopes.add('profile') // it will be needed if account is not connected
+    allScopes.add('email') // it will be needed if account is not connected
+
     googleAuthRedirect({
-      scope: scope.value.join(' '),
+      scope: Array.from(allScopes).join(' '),
       redirectUri: document.location.protocol + '//' + document.location.host
         + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href,
-      accessType: accessType.value
+      accessType: accessType.value,
+      clientId: api.services.googleAuthentication.config.clientId
     })
 
   }

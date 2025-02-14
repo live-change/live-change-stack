@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-observable-db",
-  "version": "0.8.34",
+  "version": "0.9.32",
   "description": "Database backend protocol",
   "main": "index.js",
   "scripts": {
@@ -24,10 +24,10 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "0.8.34",
+    "@live-change/dao": "0.9.32",
     "bufferutil": "^4.0.3",
     "utf-8-validate": "^5.0.4",
     "ws": "^7.4.5"
   },
-  "gitHead": "40e61928bf43b35352c76fc135f36a2d8bd76c4a"
+  "gitHead": "2aa34c0589d115aeaa573bd2cae09bb43a66d162"
 }

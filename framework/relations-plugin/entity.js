@@ -1,17 +1,20 @@
 import {
   defineProperties, defineIndex,
-  processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData
+  processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl,
+  includeAccessRoles
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } from "@live-change/framework"
+import pluralize from 'pluralize'
 
 const annotation = 'entity'
 
 function entityAccessControl({service, modelName, modelPropertyName}, accessControl) {
   if(!accessControl) return undefined
+  if(Array.isArray(accessControl)) accessControl = { roles: accessControl }
   return {
     objects: p => [{ objectType: service.name + '_' + modelName, object: p[modelPropertyName]}],
     ...accessControl
@@ -21,6 +24,7 @@ function entityAccessControl({service, modelName, modelPropertyName}, accessCont
 function defineView(config, context, external) {
   const { service, modelRuntime, modelPropertyName, modelName, model } = context
   const viewName = (config.prefix || '' ) + (config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
+  if(external) model.crud.read = viewName
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {
@@ -38,6 +42,32 @@ function defineView(config, context, external) {
     daoPath(properties, { client, context }) {
       const id = properties[modelPropertyName]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
+      return path
+    }
+  })
+}
+
+function defineRangeView(config, context, external = true) {
+  const { service, modelRuntime, modelPropertyName, modelName, model } = context
+  const viewName = (config.prefix || '' ) + pluralize(config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
+  if(external) model.crud.range = viewName
+  service.views[viewName] = new ViewDefinition({
+    name: viewName,
+    properties: {
+      ...App.utils.rangeProperties
+    },
+    returns: {
+      type: Array,
+      of: {
+        type: model
+      }
+    },
+    internal: !external,
+    global: config.globalView,
+    access: external && config.readAllAccess,
+    daoPath(properties, { client, context }) {
+      const range = App.extractRange(properties)
+      const path = modelRuntime().rangePath(range)
       return path
     }
   })
@@ -140,6 +170,7 @@ function defineCreateAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'create' + modelName
+  model.crud.create = actionName
   const action = new ActionDefinition({
     name: actionName,
     properties: { ...model.properties },
@@ -192,7 +223,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     )
     await App.validation.validate({ ...data }, validators,
       validationContext)
-    await fireChangeTriggers(context, null, id,
+    await fireChangeTriggers(context, objectType, null, id,
       entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
     emit({
       type: eventName,
@@ -209,7 +240,7 @@ function defineUpdateAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'update' + modelName
-  const triggerName = `${service.name}_${actionName}`
+  model.crud.update = actionName
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -282,7 +313,7 @@ function defineDeleteAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'delete' + modelName
-  const triggerName = `${service.name}_${actionName}`
+  model.crud.delete = actionName
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {
@@ -336,6 +367,13 @@ export default function(service, app) {
     const modelProperties = Object.keys(model.properties)
     const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
 
+    model.identifiers = [{ name: modelPropertyName, field: 'id' }]
+    model.crud = {}
+    includeAccessRoles(model, [
+      config.readAccessControl, config.writeAccessControl,
+      config.createAccessControl, config.updateAccessControl, config.deleteAccessControl
+    ])
+
     function modelRuntime() {
       return service._runtime.models[modelName]
     }
@@ -354,6 +392,7 @@ export default function(service, app) {
     }
 
     defineView(config, context, config.readAccess || config.readAccessControl || config.writeAccessControl)
+    defineRangeView(config, context, config.readAllAccess)
     /// TODO: multiple views with limited fields
 
     defineCreatedEvent(config, context)

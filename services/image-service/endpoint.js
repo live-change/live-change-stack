@@ -17,12 +17,12 @@ const debug = Debug("image-service:endpoint")
 
 function normalizeFormat(f1) {
   f1 = f1.toLowerCase().trim()
-  if(f1 == 'jpg') f1 = 'jpeg'
+  if(f1 === 'jpg') f1 = 'jpeg'
   return f1
 }
 
 function isFormatsIdentical(f1, f2) {
-  return normalizeFormat(f1) == normalizeFormat(f2)
+  return normalizeFormat(f1) === normalizeFormat(f2)
 }
 
 function fileExists(fn) {
@@ -139,7 +139,7 @@ async function handleImageGet(req, res, params) {
         height = Math.round(height * metadata.width / width)
         width = metadata.width
       }
-      if(width == metadata.width && height == metadata.height) return res.sendFile(sourceFilePath)
+      if(width === metadata.width && height === metadata.height) return res.sendFile(sourceFilePath)
       const normalized = normalizeFormat(params.format || metadata.extension)
       const convertedFilePath = path.resolve(imagePrefix + `rect-${width}-${height}.${normalized}`)
       if(!(await fileExists(convertedFilePath))) {

@@ -41,21 +41,39 @@ export function defineProperties(model, types, names) {
   return identifiers
 }
 
-export function defineIndex(model, what, props) {
+export function defineIndex(model, what, props, multi = undefined) {
   console.log("DEFINE INDEX", model.name, what, props)
   model.indexes['by' + what] = new IndexDefinition({
-    property: props
+    property: props,
+    multi
   })
 }
 export function defineIndexes(model, props, types) {
-  console.log("DEFINE INDEXES", model.name, props, types)
-  const propCombinations = allCombinations(Object.keys(props))
+  console.log("DEFINE INDEXES!", model.name, props, types)
+  const propCombinations = allCombinations(Object.keys(props)) /// combinations of indexes
   for(const propCombination of propCombinations) {
     const upperCaseProps = propCombination.map(id => {
       const prop = props[id]
       return prop[0].toUpperCase() + prop.slice(1)
     })
-    defineIndex(model, upperCaseProps.join('And'), props[propCombination])
+    const indexProps = propCombination.map(id => props[id])
+    defineIndex(model, upperCaseProps.join('And'), indexProps)
+  }
+  const propsByType = {}
+  for(const prop in props) {
+    const type = types[prop]
+    if(!propsByType[type]) propsByType[type] = []
+    propsByType[type].push(prop)
+  }
+  const multiPropsTypes = Object.keys(propsByType).filter(type => propsByType[type].length > 1)
+  const typeCombinations = allCombinations(multiPropsTypes)
+  for(const typeCombination of typeCombinations) {
+    const typeNames = typeCombination.map(t => {
+      const type = t.split('_')[1]
+      return type[0].toUpperCase() + type.slice(1)
+    })
+    const typeProps = typeCombination.map(type => propsByType[type])
+    defineIndex(model, typeNames.join('And'), typeProps, true)
   }
 }
 
@@ -75,6 +93,9 @@ export function processModelsAnnotation(service, app, annotation, multiple, cb) 
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
       const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
+
+      if(!model.editableProperties) model.editableProperties = modelProperties
+      model.crud = {}
 
       function modelRuntime() {
         return service._runtime.models[modelName]
@@ -96,14 +117,15 @@ export function processModelsAnnotation(service, app, annotation, multiple, cb) 
           config = { what: config }
         }
 
-        console.log("MODEL " + modelName + " IS " + annotation + " " + config.what)
+        console.log("MODEL " + modelName + " IS " + annotation + " " + config.what ?? '')
 
         const what = (Array.isArray(config.what) ? config.what : [config.what])
         const others = what.map(other => other.getTypeName ? other.getTypeName() : (other.name ? other.name : other))
 
         const writeableProperties = modelProperties || config.writeableProperties
         const otherNames = what.map(other => other.name ? other.name : other)
-        const otherPropertyNames = otherNames.map(name => name[0].toLowerCase() + name.slice(1))
+        const otherPropertyNames = config.propertyNames
+          ?? otherNames.map(name => name[0].toLowerCase() + name.slice(1))
 
         const joinedOthersPropertyName = (otherNames[0][0].toLowerCase() + otherNames[0].slice(1)) +
             (otherNames.length > 1 ? ('And' + otherNames.slice(1).join('And')) : '')
@@ -124,19 +146,24 @@ export function processModelsAnnotation(service, app, annotation, multiple, cb) 
 
 export function addAccessControlParents(context) {
   const { modelRuntime } = context
-  context.model.accessControlParents = async (id) => {
+  context.model.accessControlParents = async (what) => {
+    const id = what.object
     const data = await modelRuntime().get(id)
-    return context.otherPropertyNames.map(otherPropertyName => {
-      const objectType = (otherPropertyName.slice(0, 1).toUpperCase() + otherPropertyName.slice(1))
+    return context.otherPropertyNames.map((otherPropertyName, i) => {
+      const other = context.others[i]
+      const objectType = other
       const object = data[otherPropertyName]
       return { objectType, object }
     }).filter(parent => parent.object && parent.objectType)
   }
   context.model.accessControlParentsSource = context.otherPropertyNames.map(
-    otherPropertyName => ({
-      property: otherPropertyName,
-      type: (otherPropertyName.slice(0, 1).toUpperCase() + otherPropertyName.slice(1))
-    })
+    (otherPropertyName, i) => {
+      const other = context.others[i]
+      return ({
+        property: otherPropertyName,
+        type: other
+      })
+    }
   )
 }
 
@@ -146,7 +173,18 @@ export function prepareAccessControl(accessControl, names, types) {
       objectType: types[index],
       object: params[name]
     })))
+    accessControl.objParams = { names, types }
   }
+}
+
+export function cloneAndPrepareAccessControl(accessControl, names, types) {
+  if(!accessControl) return accessControl
+  if(Array.isArray(accessControl)) {
+    accessControl = { roles: accessControl}
+  }
+  const newAccessControl = { ...accessControl }
+  prepareAccessControl(newAccessControl, names, types)
+  return newAccessControl
 }
 
 export function defineDeleteByOwnerEvents(config, context, generateId) {
@@ -154,7 +192,7 @@ export function defineDeleteByOwnerEvents(config, context, generateId) {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
   } = context
   for(const propertyName of otherPropertyNames) {
-    const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
+    const eventName = modelName + 'DeleteByOwner'
     service.events[eventName] = new EventDefinition({
       name: eventName,
       properties: {
@@ -190,4 +228,20 @@ export function defineParentDeleteTriggers(config, context) {
 
 export function defineParentCopyTriggers(config, context) {
   registerParentCopyTriggers(context, config)
+}
+
+export function includeAccessRoles(model, access) {
+  if(!access) return
+  if(!model.accessRoles) model.accessRoles = []
+  if(typeof access === 'string' && !model.accessRoles.find(role => role === access)) {
+    model.accessRoles.push(access)
+  }
+  if(Array.isArray(access)) {
+    for(const element of access) {
+      includeAccessRoles(model, element)
+    }
+  }
+  if(access.roles) {
+    includeAccessRoles(model, access.roles)
+  }
 }

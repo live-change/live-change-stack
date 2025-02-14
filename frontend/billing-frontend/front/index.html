@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--head-->
+</head>
+<body>
+<!--body-tags-open-->
+<div id="app"><!--app-html--></div>
+<!--app-data-->
+<!--body-tags-->
+<script type="module" src="/src/entry-client.js"></script>
+
+<div>
+  <div id="not-supported" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+           z-index: 1000; background-color: black; color: white; font-size: 20px; font-family: sans-serif;
+           align-items: center; justify-content: center; overflow-y: auto">
+    <div style="padding: 2em;">
+      <h1 style="margin-bottom: 1.23em">Your browser is not supported.</h1>
+      <p>We apologize for the inconvenience, but it seems that your current web browser version does not support
+        our web application.</p>
+      <p>In order to use our service, you would need to upgrade to, or install, one of the following browsers:</p>
+      <ul>
+        <li>Microsoft Edge 99 or later</li>
+        <li>Mozilla Firefox 97 or later</li>
+        <li>Google Chrome 99 or later</li>
+        <li>Apple Safari 15 or later</li>
+      </ul>
+      <p>Please note that our application does not function with older browser versions. We've optimized our service
+        for the above-mentioned browsers to ensure robust functionality and a smooth user experience.</p>
+      <p>If you need assistance with updating your browser or installing a new one, please consult your browser's
+        help documentation or contact your IT support.</p>
+      <p>Thank you for your understanding and cooperation. We're eager to deliver a great experience with our
+        web application.</p>
+    </div>
+  </div>
+</div>
+<script>
+  const oses = ['Windows', 'Android', 'Linux', 'iPhone', 'iPad', 'iPod', 'Mac OS']
+  const browsers = ['Edg', 'Edge', 'CriOS', 'OPR', 'Chrome', 'SamsungBrowser', 'Firefox', 'Opera', 'Safari']
+  const ua = window.navigator.userAgent
+  const detected = {}
+  for(const browser of browsers) {
+    const match = ua.match(new RegExp(`(${browser})/([^ ;)]*)`,'i'))
+    if(match) {
+      detected.browser = match[1]
+      detected.browserVersion = match[2]
+      break
+    }
+  }
+  const match = ua.match(new RegExp(`Version/([^ ;)]*)`,'i'))
+  if(match) detected.browser = match[1]
+  for(const os of oses) {
+    const match = ua.match(new RegExp(`(${os}) ?([^;)]*)`,'i'))
+    if(match) {
+      detected.os = match[1]
+      detected.osVersion = match[2]
+      break
+    }
+  }
+
+  if(!(typeof CSSLayerBlockRule === 'function')) {
+    document.getElementById('not-supported').style.display = 'flex'
+    console.error("CSS Layers not supported!")
+  }
+
+  detected.browserVersionMajor = +detected.browserVersion.split('.')[0]
+  document.body.classList.add('on-browser-' + detected.browser.toLowerCase())
+  document.body.classList.add('on-os-' + detected.os.replace(' ','-').toLowerCase())
+  window.onload = function() { setTimeout(function() {
+    if(!window.appStarted) {
+      document.getElementById('not-supported').style.display = 'flex'
+      console.error("App not started!")
+    }
+  }, 1000) }
+</script>
+
+</body>
+</html>

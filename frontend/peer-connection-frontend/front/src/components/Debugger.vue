@@ -9,28 +9,47 @@
     <div v-if="peer">
       <h2>Peer connection</h2>
       <pre>{{ JSON.stringify(peer.summary, null, "  ") }}</pre>
-      <div class="flex justify-content-between">
-        <Button @click="() => peer.setOnline(true)">Set Online</Button>
-        <Button @click="() => peer.setOnline(false)">Set Offline</Button>
+      <div class="flex justify-content-between align-items-center">
+        <div class="flex align-items-center">
+          <InputSwitch v-model="peer.online" />
+          <div class="ml-3">Peer online</div>
+        </div>
         <Button @click="sendTestMessage">Test Message</Button>
       </div>
     </div>
     <div v-for="remoteStream in remoteStreams">
       <h2>Remote stream {{ remoteStream.stream.id }} from {{ remoteStream.from }}</h2>
-      <video autoplay playsinline :src-object.prop.camel="remoteStream.stream">
+      <video autoplay playsinline :src-object.prop.camel="remoteStream.stream" class="w-full">
       </video>
+    </div>
+
+    <div class="my-2">
+      <h2>Local tracks</h2>
+      <div v-for="(track, index) in (localTracks ?? [])">
+        Track #{{ index }} {{ track.track.kind }} ({{ track.track.label }}) enabled: {{ track.enabled }}
+        id: {{ track.track.id }}
+        <div class="buttons">
+          <button type="button" class="button" v-if="!track.enabled"
+                  @click="() => peer.setTrackEnabled(track, true)">
+            Enable Track
+          </button>
+          <button type="button" class="button" v-if="track.enabled"
+                  @click="() => peer.setTrackEnabled(track, false)">
+            Disable Track
+          </button>
+        </div>
+      </div>
     </div>
 
     <div>
       <h2>User media</h2>
-      <DevicesSelect v-model="selectedDevices" />
-<!--      <hr>
-      <pre>{{ selectedDevices }}</pre> -->
+      <DeviceSelect v-model="selectedDevices" />
+      <hr>
+      <pre>{{ selectedDevices }}</pre>
       <div class="mt-1 mb-3 flex align-items-center">
         <InputSwitch v-model="userMediaEnabled" />
         <div class="ml-3">User media stream enabled</div>
       </div>
-
     </div>
 
     <div>
@@ -45,40 +64,21 @@
       </video>
     </div>
 
-    <div v-for="(track, index) in (peer ? peer.localTracks : [])">
-      Track #{{ index }} {{ track.track.kind }} ({{ track.track.label }}) enabled: {{ track.enabled }}
-      id: {{ track.track.id }}
-      <div class="buttons">
-        <button type="button" class="button" v-if="!track.enabled"
-                @click="() => peer.setTrackEnabled(track, true)">
-          Enable Track
-        </button>
-        <button type="button" class="button" v-if="track.enabled"
-                @click="() => peer.setTrackEnabled(track, false)">
-          Disable Track
-        </button>
-      </div>
-    </div>
-
-
   </div>
 </template>
 
 <script setup>
   import Button from "primevue/button"
-  import Dropdown from "primevue/dropdown"
-  import Dialog from "primevue/dialog"
-  import PermissionsDialog from './PermissionsDialog.vue'
-  import DevicesSelect from './DevicesSelect.vue'
+  import DeviceSelect from './DeviceSelect.vue'
 
-  import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue'
+  import { ref, unref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue'
   import { path, live, actions, api as useApi } from '@live-change/vue3-ssr'
   const api = useApi()
 
   const appContext = (typeof window != 'undefined') && getCurrentInstance()?.appContext
 
   import { createPeer } from "./Peer.js"
-  import { getUserMedia as getUserMediaNative, getDisplayMedia as getDisplayMediaNative, isUserMediaPermitted }
+  import { getDisplayMedia as getDisplayMediaNative }
     from "./userMedia.js"
   import { mediaStreamsTracks } from './mediaStreamsTracks.js'
 
@@ -98,12 +98,23 @@
 
   const selectedDevices = ref({ })
   const userMediaEnabled = ref(false)
-  const userMedia = computed(() => userMediaEnabled.value ? selectedDevices.value.userMedia : null)
   const displayMedia = ref()
   const localMediaStreams = computed(() =>
-      (userMedia.value ? [userMedia.value] : []).concat(displayMedia.value ? [displayMedia.value] : [])
+      ( userMediaEnabled.value ? [selectedDevices.value.media] : []).concat(displayMedia.value ? [displayMedia.value] : [])
   )
   const localTracks = mediaStreamsTracks(localMediaStreams)
+  watch(() => ([selectedDevices.value.audioMuted, selectedDevices.value.media]), ([muted, media]) => {
+    if(!media) return
+    console.log("UPDATE MUTED", muted, media.getAudioTracks())
+    for(const track of media.getAudioTracks()) for(const localTrack of localTracks.value) 
+      if(localTrack.track === track) localTrack.enabled = !muted
+  }, { immediate: true })
+  watch(() => ([selectedDevices.value.videoMuted, selectedDevices.value.media]), ([muted, media]) => {
+    if(!media) return
+    console.log("UPDATE MUTED", muted, media.getVideoTracks())
+    for(const track of media.getVideoTracks()) for(const localTrack of localTracks.value)
+      if(localTrack.track === track) localTrack.enabled = !muted
+  }, { immediate: true })
 
   const displayMediaEndedHandler = () => displayMedia.value = null
   watch(() => displayMedia.value, (mediaStream, oldMediaStream) => {
@@ -125,8 +136,8 @@
   const remoteStreams = computed(() => {
     if(!peer.value) return []
     let remoteStreams = []
-    for(const connection of peer.value.connections) {
-      for(const remoteTrack of connection.remoteTracks) {
+    for(const connection of unref(peer.value.connections)) {
+      for(const remoteTrack of unref(connection.remoteTracks)) {
         if(remoteStreams.find(remoteStream => remoteStream.stream === remoteTrack.stream)) continue
         remoteStreams.push({
           from: connection.to,
@@ -154,43 +165,6 @@
     createPeerPromise = null
   }
 
-  const permissionsDialog = ref(false)
-  const permissionsCallbacks = ref(null)
-
-  async function showPermissionsDialog() {
-    return new Promise((resolve, reject) => {
-      permissionsCallbacks.value = {
-        disabled: () => {
-          resolve(false)
-        },
-        ok: () => {
-          resolve(true)
-        },
-        cancel: () => {
-          reject('canceled by user')
-        }
-      }
-      permissionsDialog.value = {
-        visible: true
-      }
-    })
-  }
-
-  const connectDeviceDialog = ref(false)
-  const connectDeviceCallbacks = ref(null)
-
-  async function askToConnectCamera(constraints) {
-    return new Promise((resolve, reject) => {
-      connectDeviceCallbacks.value = {
-        connected: () => resolve({ ...constraints }),
-        camera: () => resolve({ ...constraints, audio: false }),
-        microphone: () => resolve({ ...constraints, video: false }),
-        cancel: () => resolve(null)
-      }
-      connectDeviceDialog.value = true
-    })
-  }
-
   async function getDisplayMedia() { // media stream retrival logic
     let initialConstraints = { video: true } // make a copy
     let constraints = { ...initialConstraints }
@@ -216,7 +190,6 @@
     displayMedia.value = null
   }
 
-
   function sendTestMessage() {
     for(const connection of peer.value.connections) {
       peer.value.sendMessage({
@@ -227,12 +200,10 @@
     }
   }
 
-
 </script>
 
 <style scoped lang="scss">
   .peer-connection-debugger {
-
     position: absolute;
     left: 0;
     bottom: 0;

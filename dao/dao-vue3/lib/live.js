@@ -31,14 +31,25 @@ async function fetch(api, path) {
   debug("PRE FETCH DATA", preFetchPaths)
   /*console.log("PATHS", paths)
   return null*/
+  for(const path of preFetchPaths) {
+    if(path.error) {
+      throw new Error(''
+        + (path.error.stack ?? path.error.message ?? (typeof path.error === 'object' ? JSON.stringify(path.error) : path.error))
+        + '\n when fetching '+JSON.stringify(path.what)
+      )
+    }
+  }
   const preFetchMap = new Map(preFetchPaths.map((res) => [JSON.stringify(res.what), res] ))
   function createObject(what, more) {
     const res = preFetchMap.get(JSON.stringify(what))
     debug("PREFETCH", what, "RES", res, "MORE", more, "ERR", res?.error)
     if(res.error) {
-      throw new Error(JSON.stringify(res.error) + ' when fetching '+JSON.stringify(what) + ' with more=('+JSON.stringify(more)+')')
+      throw new Error(''
+        + (res.error.stack ?? res.error.message ?? (typeof res.error === 'object' ? JSON.stringify(res.error) : res.error))
+        + '\n when fetching '+JSON.stringify(what) + ' with more=('+JSON.stringify(more)+')'
+      )
     }
-    const data = res.data
+    const data = JSON.parse(JSON.stringify(res.data))
     if(data && more) {
       if(Array.isArray(data)) {
         for(let i = 0; i < data.length; i ++) {
@@ -136,6 +147,7 @@ async function live(api, path, onUnmountedCb) {
   if(Array.isArray(path)) path = { what: path }
   const paths = [ path ]
   const preFetchPaths = api.observable({ paths })
+  const fetchPromises = []
   function bindResult(what, more, actions, object, property, onError) {
     if(!what) throw new Error("what parameter required!")
     const observable = api.observable(what)
@@ -249,6 +261,7 @@ async function live(api, path, onUnmountedCb) {
         extendedObservable.unbindProperty(object, property)
         observable.unobserve(errorObserver)
       }
+      fetchPromises.push(extendedObservable.wait())
     } else {
       observable.bindProperty(object, property)
       observable.observe(errorObserver)
@@ -257,30 +270,41 @@ async function live(api, path, onUnmountedCb) {
         observable.unbindProperty(object, property)
         observable.unobserve(errorObserver)
       }
+      fetchPromises.push(observable.wait())
     }
     return {
       what, property, dispose
     }
   }
   const resultRef = ref()
+  let error = null
   await new Promise((resolve, reject) => {
-    let error = null
-    const onError = (msg) => {
-      console.error("LIVE ERROR", msg, 'WHILE FETCHING', path)
-      if(error) return
+    const onBindError = (msg) => {
+      console.error("LIVE BIND ERROR", msg, 'WHILE FETCHING', path)
       error = msg
-      reject(error)
+      //reject(error)
     }
-    const bound = bindResult(path.what, path.more, path.actions, resultRef, 'value', onError)
+    const onResolveError = (msg) => {
+      console.error("LIVE RESOLVE ERROR", msg, 'WHILE FETCHING', path)
+      error = msg
+      //reject(error)
+    }
+    const bound = bindResult(path.what, path.more, path.actions, resultRef, 'value', onBindError)
     const pathsObserver = (signal, value) => {}
     preFetchPaths.observe(pathsObserver)
     onUnmountedCb(() => {
       preFetchPaths.unobserve(pathsObserver)
       bound.dispose()
     })
-    preFetchPaths.wait().then(resolve).catch(onError)
+    preFetchPaths.wait().then((v) => {
+      resolve(v)
+    }).catch(onResolveError)
   })
+  while(fetchPromises.length > 0) { // wait for all fetch promises, including ones added by bindResult
+    await fetchPromises.shift()
+  }
   while(unref(resultRef) === undefined) { // wait for next tick
+    if(error) throw new Error(error)
     await new Promise((resolve) => setTimeout(resolve, 0))
   }
   return resultRef

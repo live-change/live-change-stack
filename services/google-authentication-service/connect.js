@@ -9,6 +9,7 @@ import { User, googleProperties, Account } from './account.js'
 import { getTokensWithCode, getUserInfo } from './googleClient.js'
 
 import { downloadData } from './downloadData.js'
+import { OfflineAccess } from './offlineAccess.js'
 
 definition.trigger({
   name: "connectGoogle",
@@ -39,7 +40,7 @@ definition.trigger({
       if(accountData.user !== user) {
         if(transferOwnership) {
           emit({
-            'type': 'userOwnedAccountTransferred',
+            'type': 'AccountTransferred',
             account, to: user
           })
           await downloadData(user, data, context)
@@ -68,10 +69,29 @@ definition.trigger({
       validation: ['nonEmpty']
     }
   },
-  async execute({ account }, { client, service }, emit) {
+  async execute({ account }, { client, service, triggerService }, emit) {
     const accountData = await Account.get(account)
     if(!accountData) throw 'notFound'
     const { user } = accountData
+
+    let offlineAccess
+    const userAccounts = await Account.indexRangeGet('byUser', user)
+    console.log("GET OFFLINE ACCESS!", account, user)
+    if(userAccounts.length === 1) {
+      offlineAccess = await OfflineAccess.indexObjectGet('byUser', [user])
+    } else {
+      offlineAccess = await OfflineAccess.indexObjectGet('byUserAccount', [user, account])
+    }
+    console.log("OFFLINE ACCESS", offlineAccess)
+    if(offlineAccess) {
+      await triggerService({
+        type: 'googleAuthentication_resetOfflineAccess',
+        service: definition.name
+      }, {
+        offlineAccess: offlineAccess.to ?? offlineAccess.id
+      })
+    }
+
     emit({
       type: 'accountDisconnected',
       account, user
@@ -99,7 +119,7 @@ definition.action({
       default: false
     }
   },
-  async execute({ accessToken, transferOwnership }, { client, service }, emit) {
+  async execute({ code, redirectUri, transferOwnership }, { client, service }, emit) {
     const user = client.user
     if(!user) throw 'notAuthorized'
     const tokens = await getTokensWithCode(code, redirectUri)

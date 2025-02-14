@@ -6,9 +6,18 @@ import {
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
 
 import {
-  defineView,
-  defineSetAction, defineUpdateAction, defineSetOrUpdateAction, defineResetAction,
-  defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
+  defineObjectView,
+  defineRangeViews,
+  defineSetAction,
+  defineUpdateAction,
+  defineSetOrUpdateAction,
+  defineResetAction,
+  defineSetTrigger,
+  defineUpdateTrigger,
+  defineSetOrUpdateTrigger,
+  defineResetTrigger,
+  defineDeleteAction,
+  defineDeleteTrigger
 } from './singularRelationUtils.js'
 
 export default function(service, app) {
@@ -16,16 +25,25 @@ export default function(service, app) {
 
     context.relationWord = 'Friend'
     context.reverseRelationWord = 'Bound'
+    context.partialReverseRelationWord = 'Bound'
 
     defineProperties(context.model, context.others, context.otherPropertyNames)
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
-    defineView({ ...config, access: config.readAccess }, context,
+    defineObjectView({ ...config, access: config.readAccess }, context,
       config.readAccess || config.readAccessControl || config.writeAccessControl
     )
+    defineRangeViews(config, context,
+      config.listAccess || config.readAccess || config.listAccessControl
+    )
+
     if(config.views) {
       for(const view of config.views) {
-        defineView({ ...config, ...view }, context, !view.internal)
+        if(view.type !== 'range') {
+          defineObjectView({ ...config, ...view }, context, !view.internal)
+        } else {
+          defineRangeViews({ ...config, ...view }, context, !view.internal)
+        }
       }
     }
 
@@ -38,6 +56,7 @@ export default function(service, app) {
     defineUpdateTrigger(config, context)
     defineSetOrUpdateTrigger(config, context)
     defineResetTrigger(config, context)
+    defineDeleteTrigger(config, context)
 
     if(config.setAccess || config.writeAccess || config.setAccessControl || config.writeAccessControl) {
       defineSetAction(config, context)
@@ -53,7 +72,8 @@ export default function(service, app) {
     }
 
     if(config.resetAccess || config.writeAccess || config.resetAccessControl || config.writeAccessControl) {
-      defineResetAction(config, context);
+      defineResetAction(config, context)
+      defineDeleteAction(config, context)
     }
   })
 }

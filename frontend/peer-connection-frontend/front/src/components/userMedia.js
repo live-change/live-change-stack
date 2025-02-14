@@ -44,8 +44,46 @@ async function isUserMediaPermitted(constraints = { audio: true, video: true }) 
   return true
 }
 
-const getUserMedia = userMediaFactory()
-const getDisplayMedia = displayMediaFactory()
+const getUserMediaNative = userMediaFactory()
+const getDisplayMediaNative = displayMediaFactory()
 
-export { getUserMedia, getDisplayMedia, isUserMediaPermitted }
+//const trackedStreams = []
+globalThis.trackedStreams = []
+
+async function getUserMedia(...args) {
+  const stream = await getUserMediaNative(...args)
+  const index = trackedStreams.indexOf(stream)
+  if(index >= 0) {
+    console.error("STREAM ALREADY TRACKED", stream, "ALL STREAMS", trackedStreams)
+  }
+  trackedStreams.push(stream)
+  console.log("STREAM ADDED", stream, "ALL STREAMS", trackedStreams.length)
+  return stream
+}
+
+async function getDisplayMedia(...args) {
+  const stream = await getDisplayMediaNative(...args)
+  trackedStreams.push(stream)
+  console.log("STREAM ADDED", stream, "ALL STREAMS", trackedStreams.length)
+  return stream
+}
+
+function stopMedia(stream) {
+  const index = trackedStreams.indexOf(stream)
+  if(index >= 0) {
+    trackedStreams.splice(index, 1)
+    console.log("STREAM REMOVED", stream, "ALL STREAMS", trackedStreams.length)
+  } else {
+    console.error("STREAM NOT FOUND", stream, "ALL STREAMS", trackedStreams)
+  }
+  if(stream.getTracks) {
+    for(const track of stream.getTracks()) {
+      track.stop()
+    }
+  } else {
+    stream.stop()
+  }
+}
+
+export { getUserMedia, getDisplayMedia, isUserMediaPermitted, stopMedia }
 

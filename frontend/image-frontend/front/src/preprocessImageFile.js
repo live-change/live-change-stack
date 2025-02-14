@@ -1,5 +1,5 @@
 import {
-  imageToCanvas, loadImageUpload, cancelOrientation, hasAlpha, isExifOrientationSupported
+  imageToCanvas, loadImageUpload, cancelOrientation, hasAlpha, isExifOrientationSupported, loadImage
 } from "./imageUtils.js"
 import imageResizer from "./imageResizer"
 
@@ -68,6 +68,8 @@ async function preProcessImageFile({ file, image, canvas }, config) {
 
   if(!canvas) canvas = imageToCanvas(image.image)
 
+  const exifOrientationSupported = (await isExifOrientationSupported())
+
   if(image.width > maxUploadWidth || image.height > maxUploadHeight ) { /// RESIZING NEEDED
     const maxRatio = maxUploadWidth / maxUploadHeight
     const inputRatio = image.width / image.height
@@ -77,30 +79,38 @@ async function preProcessImageFile({ file, image, canvas }, config) {
       targetWidth = maxUploadWidth
       targetHeight = Math.round(maxUploadWidth / inputRatio)
     } else { /// scale to max height
+      let scale = maxUploadHeight / image.height
       targetWidth = Math.round(maxUploadHeight * inputRatio)
       targetHeight = maxUploadHeight
     }
 
     console.log(`RESIZING ${image.width}x${image.height} => ${targetWidth}x${targetHeight}`)
 
+    let [destWidth, destHeight] =
+      (image.orientation > 4/* && !exifOrientationSupported*/) /// use orientation when scaling even if supported!
+      ? [targetHeight, targetWidth]
+      : [targetWidth, targetHeight]
     let destCanvas = document.createElement('canvas')
-    if(image.orientation > 4 && !(await isExifOrientationSupported())) { // Swap dimmensions
-      destCanvas.width = targetHeight
-      destCanvas.height = targetWidth
-    } else {
-      destCanvas.width = targetWidth
-      destCanvas.height = targetHeight
+    destCanvas.width = destWidth
+    destCanvas.height = destHeight
+    try {
+      await imageResizer.resize(canvas, destCanvas, {
+        unsharpAmount: 80,
+        unsharpRadius: 0.6,
+        unsharpThreshold: 2,
+        alpha: hasAlpha(canvas)
+      })
+    } catch (e) {
+      const context = destCanvas.getContext('2d')
+      context.imageSmoothingEnabled = true
+      context.imageSmoothingQuality = 'high'
+      context.drawImage(canvas, 0, 0, destCanvas.width, destCanvas.height)
     }
-    await imageResizer.resize(canvas, destCanvas, {
-      unsharpAmount: 80,
-      unsharpRadius: 0.6,
-      unsharpThreshold: 2,
-      alpha: hasAlpha(canvas)
-    })
     canvas = destCanvas
   }
 
-  if(image.orientation && !(await isExifOrientationSupported())) {
+  if(image.orientation && !exifOrientationSupported) {
+    // if exif orientation is supoorted it will be automatically canceled!
     console.log("CANCEL ORIENTATION", image.orientation)
     canvas = cancelOrientation(canvas, image.orientation)
   }

@@ -20,7 +20,7 @@ class ObservableValue extends Observable {
     this.handleError(null)
     if(value === this.value) return;
     try {
-      if (JSON.stringify(value) == JSON.stringify(this.value)) return;
+      if (JSON.stringify(value) === JSON.stringify(this.value)) return;
     } catch(e) {}
     this.value = value
     this.fireObservers('set', value)
@@ -37,7 +37,7 @@ class ObservableValue extends Observable {
   unbindProperty(object, property) {
     for(let i = 0; i < this.properties.length; i++) {
       let prop = this.properties[i]
-      if(prop[0] == object && prop[1] == property) {
+      if(prop[0] === object && prop[1] === property) {
         this.properties.splice(i,1)
         if(this.isUseless()) this.dispose()
         return;
@@ -54,7 +54,7 @@ class ObservableValue extends Observable {
   unbindErrorProperty(object, property) {
     for(let i = 0; i < this.errorProperties.length; i++) {
       let prop = this.errorProperties[i]
-      if(prop[0] == object && prop[1] == property) {
+      if(prop[0] === object && prop[1] === property) {
         this.errorProperties.splice(i,1)
         if(this.isUseless()) this.dispose()
         return;
@@ -74,8 +74,8 @@ class ObservableValue extends Observable {
   }
 
   isUseless() {
-    return (this.observers.length == 0) && (this.properties.length == 0)
-        && (this.errorProperties.length == 0)
+    return (this.observers.length === 0) && (this.properties.length === 0)
+        && (this.errorProperties.length === 0)
   }
 
   save() {
@@ -164,6 +164,12 @@ class ObservableValue extends Observable {
 
   getError() {
     return this.savedError
+  }
+
+  dispose() {
+    this.savedError = null
+    this.value = undefined
+    super.dispose()
   }
 }
 

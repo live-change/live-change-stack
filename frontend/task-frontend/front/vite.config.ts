@@ -1,21 +1,27 @@
 import { defineConfig } from 'vite'
 import Pages from 'vite-plugin-pages'
 
-let version = process.env.VERSION ?? 'unknown'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { accessSync, readFileSync } from 'fs'
+
+const packageJsonPath = dirname(fileURLToPath(import.meta.url))
+  .split('/').map((part, i, arr) =>
+    join(arr.slice(0, arr.length - i).join('/'), 'package.json')
+  ).find(p => { try { accessSync(p); return true } catch(e) { return false }})
+const packageJson = packageJsonPath ? JSON.parse(readFileSync(packageJsonPath, 'utf-8')) : {}
+const version = process.env.VERSION ?? packageJson.version ?? 'unknown'
 
 // @ts-ignore
 import baseViteConfig from '@live-change/frontend-base/vite-config.js'
 
 export default defineConfig(async ({ command, mode }) => {
-  const baseConfig = (await baseViteConfig({ command, mode }))
+  const baseConfig = (await baseViteConfig({ command, mode, version }))
   return {
     ...baseConfig,
 
     define: {
       ...baseConfig.define,
-      ENV_VERSION: JSON.stringify(version),
-      ENV_BRAND_NAME: JSON.stringify("Example"),
-      ENV_BRAND_DOMAIN: JSON.stringify("example.com"),
     },
 
     plugins: [

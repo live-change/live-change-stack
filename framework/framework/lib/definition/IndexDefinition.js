@@ -17,18 +17,18 @@ class IndexDefinition {
     let oldIndex = JSON.parse(JSON.stringify(oldIndexParam))
     oldIndex.indexes = oldIndex.indexes || {}
     let changes = []
-    if(oldIndex.function != `${this.function}`) {
+    if(oldIndex.function !== `${this.function}`) {
       changes.push({ operation: "deleteIndex", name: this.name })
       changes.push({ operation: "createIndex", name: this.name, index: this.toJSON() })
     }
     if(oldIndex.search && !this.search) changes.push({ operation: "indexSearchDisabled", index: this.name })
     if(!oldIndex.search && this.search) changes.push({ operation: "indexSearchEnabled", index: this.name })
-    if(oldIndex.search && this.search && JSON.stringify(oldIndex.search) != JSON.stringify(this.search))
+    if(oldIndex.search && this.search && JSON.stringify(oldIndex.search) !== JSON.stringify(this.search))
       changes.push({ operation: "indexSearchUpdated", index: this.name })
 
     const oldStorage = oldIndex.storage || {}
     const newStorage = this.storage || {}
-    if(JSON.stringify(oldStorage) != JSON.stringify(newStorage)) {
+    if(JSON.stringify(oldStorage) !== JSON.stringify(newStorage)) {
       changes.push({ operation: "indexStorageChanged", index: this.name, oldStorage, storage: newStorage })
     }
 

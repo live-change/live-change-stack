@@ -20,7 +20,7 @@
                       toggle-mask v-model:masked="masked"
                       :class="{ 'p-invalid': data.currentPasswordHashError }"
                       v-model="data.currentPasswordHash" />
-            <small id="currentPassword-help" class="p-error">{{ data.currentPasswordHashError }}</small>
+            <small v-if="data.currentPasswordHashError" id="currentPassword-help" class="p-error">{{ t(`errors.${data.currentPasswordHashError}`) }}</small>
           </div>
 
           <div class="p-field mb-3">
@@ -40,7 +40,7 @@
                 </ul>
               </template>
             </Password>
-            <small id="newPassword-help" class="p-error">{{ data.passwordHashError }}</small>
+            <small v-if="data.passwordHashError" id="newPassword-help" class="p-error">{{ t(`errors.${data.passwordHashError}`) }}</small>
           </div>
 
           <div class="p-field mb-3">
@@ -75,6 +75,9 @@
   import { useRouter } from 'vue-router'
   const router = useRouter()
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
 
@@ -87,7 +90,7 @@
     form.value.addValidator('passwordHash', () => {
       const value = form.value.getFieldValue('passwordHash')
       console.log("PASSWORDS MATCH?", secondPassword.value, value)
-      if(value != secondPassword.value) return "passwordsNotMatch"
+      if(value !== secondPassword.value) return "passwordsNotMatch"
     })
   })
 

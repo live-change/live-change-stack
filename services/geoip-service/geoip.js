@@ -11,6 +11,7 @@ async function getGeoIp(ip) {
   if(!ip) return defaultCountry
   if(ip === '1' || ip.slice(0,4) === '127.') return defaultCountry
   return countryDatabase.then(db => {
+    console.log('GEOIP', db, ip)
     let result = db.get(ip)
     if(!result) return defaultCountry
     if(!result.country) return defaultCountry
@@ -24,9 +25,6 @@ async function getGeoIp(ip) {
 definition.view({
   name: "myCountry",
   properties: {
-    ip: {
-      type: String
-    }
   },
   returns: {
     type: String

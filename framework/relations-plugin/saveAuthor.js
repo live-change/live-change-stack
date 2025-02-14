@@ -22,12 +22,12 @@ export function defineUpdaterProperties() {
     updaterType: new PropertyDefinition({
       type: String,
       validation: ['nonEmpty'],
-      default: (_props, context) => context.client.user ? 'user_User' : 'session_Session'
+      updated: (_props, context) => context.client.user ? 'user_User' : 'session_Session'
     }),
     updater: new PropertyDefinition({
       type: String,
       validation: ['nonEmpty'],
-      default: (_props, context) => context.client.user ? context.client.user : context.client.session
+      updated: (_props, context) => context.client.user ? context.client.user : context.client.session
     })
   }
 }

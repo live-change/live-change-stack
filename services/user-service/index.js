@@ -117,8 +117,8 @@ definition.action({
   access: (params, { client }) => {
     return client.roles && client.roles.includes('admin')
   },
-  async execute({ user }, { client, service }, emit) {
-    const userData = await User.get(user)
+  async execute({ to }, { client, service }, emit) {
+    const userData = await User.get(to)
     if(!userData) throw 'userNotFound'
     await service.trigger({ type: 'signedOut' }, {
       session: client.session,
@@ -131,11 +131,11 @@ definition.action({
     })
     const session = client.session
     await service.trigger({ type: 'signedIn' }, {
-      session, user
+      session, user: to
     })
     emit({
       type: "signedIn",
-      user, session
+      user: to, session
     })
   }
 })
@@ -158,6 +158,13 @@ definition.action({
     })
     await service.trigger({ type: 'userDeleted'  }, {
       user
+    })
+    await service.trigger({ type: 'deleteUser_User'  }, {
+      object: user
+    })
+    await service.trigger({ type: 'deleteObject'  }, {
+      objectType: 'user_User',
+      object: user
     })
     emit([{
       type: "deleted",

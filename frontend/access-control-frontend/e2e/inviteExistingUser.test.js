@@ -6,9 +6,9 @@ Scenario('invite user that already exists - path 1', async ({ I }) => {
 
   const adminUser = await I.haveUser()
   const anotherUser = await I.haveUser()
-  await I.haveUserWithAccess(adminUser, 'example_Example', 'one', ['administrator'])
+  await I.haveUserWithAccess(adminUser, 'example_Example', 'one', ['admin'])
 
-  console.log('ADMIN', adminUser)
+  console.log(', adminUser)
   console.log("ANOTHER USER", anotherUser)
 
   session('X')

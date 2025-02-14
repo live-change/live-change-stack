@@ -1,7 +1,7 @@
 import App from '@live-change/framework'
 const app = App.app()
 import definition from './definition.js'
-const config = definition.config
+import config from "./config.js"
 
 import { contactProperties } from './authentication.js'
 
@@ -99,9 +99,8 @@ for(const contactType of config.contactTypes) {
         ...contactTypeProperties
       },
       async execute({ [contactTypeName]: contact }, { _client, service }, _emit) {
-        const contactData = await service.trigger({ type: 'get' + contactTypeUName }, {
-          [contactTypeName]: contact,
-        })
+        const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
+        if(!contactData) throw { properties: { email: 'notFound' } }
         const messageData = {
           user: contactData.user
         }
@@ -179,9 +178,7 @@ for(const contactType of config.contactTypes) {
         ...contactTypeProperties
       },
       async execute({ [contactTypeName]: contact }, { client, service }, _emit) {
-        const contactData = await service.trigger({ type: 'get' + contactTypeUName + 'OrNull' }, {
-          [contactTypeName]: contact,
-        })
+        const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
         if(contactData) {
           const messageData = {
             user: contactData.user

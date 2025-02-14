@@ -107,7 +107,7 @@ const Task = definition.model({
     byRoot: {
       function: async function(input, output, { tableName }) {
         async function findAncestors(object){
-          const result = []
+          const result = [`"task_Task":"${object.id}"`]
           let current = object
           while(current) {
             result.push(`"${current.causeType}":"${current.cause}"`)
@@ -186,22 +186,6 @@ definition.view({
     const range = App.extractRange(props)
     if(!range.limit) range.limit = 256
     return Task.indexRangePath('byRoot', [rootType, root], range)
-  }
-})
-
-definition.view({
-  name: 'task',
-  internal: true,
-  properties: {
-    task: {
-      type: String
-    }
-  },
-  returns: {
-    type: Task
-  },
-  async daoPath({ task }) {
-    return Task.path(task)
   }
 })
 

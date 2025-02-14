@@ -7,6 +7,7 @@ import passwordAuthentication from '@live-change/password-authentication-service
 import userIdentification from '@live-change/user-identification-service'
 import identicon from '@live-change/identicon-service'
 import localeSettings from '@live-change/locale-settings-service'
+import geoIp from '@live-change/geoip-service'
 import security from '@live-change/security-service'
 import notification from '@live-change/notification-service'
 import upload from '@live-change/upload-service'
@@ -15,6 +16,7 @@ import secretCode from '@live-change/secret-code-service'
 import secretLink from '@live-change/secret-link-service'
 import messageAuthentication from '@live-change/message-authentication-service'
 import googleAuthentication from '@live-change/google-authentication-service'
+import linkedinAuthentication from '@live-change/linkedin-authentication-service'
 
 //import backup from '@live-change/backup-service'
 import init from './init.js'
@@ -36,7 +38,9 @@ export {
   secretLink,
   messageAuthentication,
   googleAuthentication,
+  linkedinAuthentication,
   localeSettings,
+  geoIp,
 //  backup,
   init
 }

@@ -87,7 +87,7 @@
   const urlPathFunction = computed(() => (range, p) => urlPathBaseFunction.value(range, p)
     .with(url => url.type.$switch({
       'canonical': null,
-      'redirect': p.url.targetOwnedCanonical({ targetType: targetType.value, target: url.target })
+      'redirect': p.url.canonical({ targetType: targetType.value, target: url.target })
     }).$bind('canonical'))
     //.with(url => p.accessControl.myAccessTo({ objectType: targetType, object: url.target }).bind('access'))
   )

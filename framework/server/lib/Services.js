@@ -189,6 +189,9 @@ class Services {
       return app.startService(defn, startOptions)
     }))
     this.services = await this.servicesPromise
+    for(const service of this.services) {
+      setTimeout(() => service.afterStart(startOptions), 0)
+    }
   }
 
   async getServicesObject() {

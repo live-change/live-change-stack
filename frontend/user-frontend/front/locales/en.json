@@ -1,0 +1,13 @@
+{
+  "errors": {
+    "emailTaken": "Email is already registered, try to sign-in.",
+    "phoneTaken": "Phone is already registered, try to sign-in.",
+    "codeNotFound": "Secret code not recognized.",
+    "codeExpired": "Secret code expired."
+  },
+  "app": {
+    "updateAvailable": "Update available!",
+    "newVersions": "New version of app is available!",
+    "reload": "Reload"
+  }
+}

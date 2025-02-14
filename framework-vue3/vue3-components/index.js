@@ -18,8 +18,9 @@ import createReactiveObject from "./utils/createReactiveObject.mjs"
 
 export { createReactiveObject }
 
-import { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList } from "./logic"
-export { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList }
+export { analytics, useAnalytics, installRouterAnalytics, synchronized, synchronizedList } from "./logic"
+
+export { injectComponent, provideComponent, InjectComponent } from "./logic/dependencyInjection.js"
 
 export {
   useLocale, Locale

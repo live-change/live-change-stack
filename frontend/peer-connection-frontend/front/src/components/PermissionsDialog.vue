@@ -9,7 +9,8 @@
     <template #default>
       <slot name="introduction" />
       <div class="mt-2">
-        <div v-for="permission in Object.entries(model.permissions)" class="flex flex-row align-items-center mb-2">
+        <div v-for="permission in Object.entries(model.permissions ?? {})"
+             class="flex flex-row align-items-center mb-2">
           <i :class="permissionIcons[permission[0]]" />
           <div class="ml-2">{{ permission[0] }}: </div>
           <div v-if="permission[1] === 'granted'" class="ml-1 font-semibold text-green-400">
@@ -53,13 +54,16 @@
 </template>
 
 <script setup>
+
+  import Dialog from 'primevue/dialog'
+
+  import { defineProps, defineModel, defineEmits, toRefs, ref, computed, watch } from 'vue'
+  import { useInterval } from '@vueuse/core'
+
   const permissionIcons = {
     camera: 'pi pi-camera',
     microphone: 'pi pi-microphone'
   }
-
-  import { defineProps, defineModel, defineEmits, toRefs, ref, computed, watch } from 'vue'
-  import { useInterval } from '@vueuse/core'
 
   const props = defineProps({
     title: {
@@ -96,12 +100,18 @@
   const emit = defineEmits(['ok'])
 
   watch(() => JSON.stringify(requiredPermissions.value), async value => {
+    if(typeof window === 'undefined') return
     console.log("requiredPermissions", value)
 
     for(const requiredPermission of JSON.parse(value)) {
       console.log("check permission", requiredPermission)
-      const permissionState = await navigator.permissions.query(requiredPermission)
-      const state = permissionState ? permissionState.state : "unknown"
+      let state, permissionState
+      try {
+        permissionState = await navigator.permissions.query(requiredPermission)
+        state = permissionState ? permissionState.state : "unknown"
+      } catch {
+        state = 'not_supported'
+      }
       model.value = {
         ...model.value,
         permissions: {

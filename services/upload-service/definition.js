@@ -6,7 +6,7 @@ import userService from '@live-change/user-service'
 
 const definition = app.createServiceDefinition({
   name: "upload",
-  use: [ relationsPlugin, userService ]
+  use: [ userService, relationsPlugin ]
 })
 
 export default definition

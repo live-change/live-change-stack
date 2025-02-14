@@ -244,7 +244,7 @@ class CountObservable extends ReactiveDao.ObservableValue {
     this.store.rangeObservables.set(this.rangeKey, this)
     const treeInsert = this.rangeDescr
     const inserted = this.store.rangeObservablesTree.insert(treeInsert, this)
-    if(this.store.rangeObservablesTree.search([this.low, this.high]).length == 0) {
+    if(this.store.rangeObservablesTree.search([this.low, this.high]).length === 0) {
       console.error("TREE NOT WORKING")
       console.log("INSERTED", JSON.stringify(treeInsert),
           "TO TREE", this.store.rangeObservablesTree)

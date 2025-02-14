@@ -13,6 +13,9 @@ class PropertyDefinition {
     if(definition.of) {
       this.of = new PropertyDefinition(definition.of)
     }
+    if(definition.items) {
+      this.items = new PropertyDefinition(definition.items)
+    }
   }
 
   createAndAddProperty(name, definition) {
@@ -36,6 +39,9 @@ class PropertyDefinition {
     if(this.of) {
       json.of = this.of.toJSON()
     }
+    if(this.items) {
+      json.items = this.items.toJSON()
+    }
     
     return json
   }
@@ -43,8 +49,10 @@ class PropertyDefinition {
   computeChanges( oldProperty, params, name) {
     let changes = []
     let typeChanged = false
-    if(typeName(this.type) != typeName(oldProperty.type)) typeChanged = true
-    if((this.of && typeName(this.of.type)) != (oldProperty.of && typeName(oldProperty.of.type)))
+    if(typeName(this.type) !== typeName(oldProperty.type)) typeChanged = true
+    if((this.of && typeName(this.of.type)) !== (oldProperty.of && typeName(oldProperty.of.type)))
+      typeChanged = true
+    if((this.items && typeName(this.items.type)) !== (oldProperty.items && typeName(oldProperty.items.type)))
       typeChanged = true
     if(typeChanged) {
       changes.push({
@@ -54,7 +62,7 @@ class PropertyDefinition {
         ...this
       })
     }
-    if(JSON.stringify(this.search) != JSON.stringify(oldProperty.search)) {
+    if(JSON.stringify(this.search) !== JSON.stringify(oldProperty.search)) {
       changes.push({
         operation: "changePropertySearch",
         ...params,

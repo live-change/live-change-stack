@@ -85,6 +85,7 @@ class ServiceDefinition {
     this.processors = []
     this.authenticators = []
     this.beforeStartCallbacks = []
+    this.afterStartCallbacks = []
     this.endpoints = []
     this.validators = { ...defaultValidators }
     this.clientSideFilters = []
@@ -92,6 +93,7 @@ class ServiceDefinition {
   }
 
   model(definition) {
+    if(this.models[definition.name]) throw new Error('model ' + definition.name + ' already exists')
     const model = new ModelDefinition(definition, this.name)
     this.models[model.name] = model
     return createModelProxy(this, model)
@@ -104,6 +106,7 @@ class ServiceDefinition {
   }
 
   index(definition) {
+    if(this.indexes[definition.name]) throw new Error('index ' + definition.name + ' already exists')
     const index = new IndexDefinition(definition)
     this.indexes[index.name] = index
     return createIndexProxy(this, index)
@@ -116,18 +119,21 @@ class ServiceDefinition {
   }
 
   action(definition) {
+    if(this.actions[definition.name]) throw new Error('action ' + definition.name + ' already exists')
     const action = new ActionDefinition(definition)
     this.actions[action.name] = action
     return action
   }
 
   event(definition) {
+    if(this.events[definition.name]) throw new Error('event ' + definition.name + ' already exists')
     const event = new EventDefinition(definition)
     this.events[event.name] = event
     return event
   }
 
   view(definition) {
+    if(this.views[definition.name]) throw new Error('view ' + definition.name + ' already exists')
     const view = new ViewDefinition(definition)
     this.views[view.name] = view
     return view
@@ -158,11 +164,16 @@ class ServiceDefinition {
     this.beforeStartCallbacks.push(callback)
   }
 
+  afterStart(callback) {
+    this.afterStartCallbacks.push(callback)
+  }
+
   endpoint(endpoint) {
     this.endpoints.push(endpoint)
   }
 
   validator(name, validator) {
+    if(this.validators[name]) throw new Error('validator ' + name + ' already exists')
     this.validators[name] = validator
     console.log("VALIDATOR DEFINED", name, validator)
   }
@@ -212,6 +223,8 @@ class ServiceDefinition {
     let changes = []
     changes.push(...crudChanges(oldModule.models || {}, this.models || {},
         "Model", "model", { }))
+    changes.push(...crudChanges(oldModule.indexes || {}, this.indexes || {},
+      "Index", "index", { }))
     return changes
   }
 }

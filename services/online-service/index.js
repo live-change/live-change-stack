@@ -101,7 +101,7 @@ class SelfObservable extends ReactiveDao.Observable {
     this.setOnlineEventTimeout()
   }
   setOnlineEventTimeout() {
-    if(this.lastEvent == 'online') return
+    if(this.lastEvent === 'online') return
     this.onlineEventTimeout = setTimeout(() => {
       sendOnlineEvent(this.path)
       this.lastEvent = 'online'
@@ -109,7 +109,7 @@ class SelfObservable extends ReactiveDao.Observable {
     }, eventDelay)
   }
   setOfflineEventTimeout() {
-    if(this.lastEvent == 'offline') return
+    if(this.lastEvent === 'offline') return
     this.offlineEventTimeout = setTimeout(() => {
       sendOfflineEvent(this.path)
       this.lastEvent = 'offline'
@@ -173,12 +173,12 @@ function getSelfObservable(path) {
 const onlineDao = {
   observable([type, ...path]) {
     console.log("OBSERVABLE", type, path)
-    if(type!='online') throw new Error("not found")
+    if(type !== 'online') throw new Error("not found")
     return getSelfObservable(path)
   },
   get([type, ...path]) {
     console.log("GET", type, path)
-    if(type!='online') throw new Error("not found")
+    if(type !== 'online') throw new Error("not found")
     let observable = selfObservables.get(path)
     return observable ? observable.observers.length : 0
   },
@@ -191,7 +191,7 @@ const createDao = (clientSessionId) => {
   return onlineDao
 }
 
-definition.beforeStart(async service => {
+definition.afterStart(async service => {
   await sendAllOfflineEvent()
 
   const reactiveServer = new ReactiveServer(createDao)
@@ -205,7 +205,7 @@ definition.beforeStart(async service => {
     reactiveServer.handleConnection(serverConnection)
   })
 
-  console.log(`server started at localhost:${onlinePort}`)
+  console.log(`online server started at localhost:${onlinePort}`)
 })
 
 const onlineClient = new ReactiveDaoWebsocket.client("api-server-"+process.pid, onlineUrl)

@@ -81,8 +81,8 @@
     if(!content) return
     if(!editor) return
     const pixelRatio = window.devicePixelRatio || 1
-    if((canvas.width != Math.floor(canvas.clientWidth * pixelRatio))
-      || (canvas.height != Math.floor(canvas.clientHeight * pixelRatio))) {
+    if((canvas.width !== Math.floor(canvas.clientWidth * pixelRatio))
+      || (canvas.height !== Math.floor(canvas.clientHeight * pixelRatio))) {
       canvas.width = Math.floor(canvas.clientWidth * pixelRatio)
       canvas.height = Math.floor(canvas.clientHeight * pixelRatio)
     }
@@ -95,7 +95,7 @@
     context.fillRect(0, 0, canvas.width, canvas.height)
     context.strokeStyle = "white"
     context.lineWidth = 1.5 * pixelRatio;
-    if(props.type == 'circle') {
+    if(props.type === 'circle') {
       context.save()
       context.globalCompositeOperation = 'destination-out'
       context.fillStyle = '#000'
@@ -233,7 +233,7 @@
         return Math.sqrt(x*x+y*y)
       }).reduce((a,b) => a + b / newTouches.length, 0)
       : 1
-    if(newTouches.length == (dragStart.value && dragStart.value.touchCount || 0)) {
+    if(newTouches.length === (dragStart.value && dragStart.value.touchCount || 0)) {
       if(!newTouches.length) return
       //console.log("newSize", newSize, "size", this.dragStart.size, "scale", this.dragStart.size * newSize)
       updatePosition(
@@ -299,7 +299,7 @@
   function handleEditorTouchMove(ev) {
     ev.preventDefault()
     ev.stopPropagation()
-    if($refs.editor && $refs.content) updateTouches(
+    if(dragArea.value && cropArea.value) updateTouches(
       Array.prototype.slice.call(ev.targetTouches).map(t => preProcessTouch(t, t.identifier))
     )
   }

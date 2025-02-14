@@ -15,6 +15,9 @@ export function routes(config = {}) {
     route({ name: 'user:connect-google', path: prefix + 'connect-google',
       redirect: { name: 'user:googleAuth', params: { action: 'connectGoogle' } } }),
 
+    route({ name: 'user:connect-linkedin', path: prefix + 'connect-linkedin',
+      redirect: { name: 'user:linkedinAuth', params: { action: 'connectLinkedin' } } }),
+
     route({ name: 'user:connectFinished', path: prefix + 'connect-finished',
       component: () => import("./ConnectFinished.vue") }),
 

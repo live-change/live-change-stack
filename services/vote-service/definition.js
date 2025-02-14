@@ -6,7 +6,7 @@ import accessControlService from '@live-change/access-control-service'
 
 const definition = app.createServiceDefinition({
   name: "vote",
-  use: [ relationsPlugin, accessControlService ]
+  use: [ accessControlService, relationsPlugin ]
 })
 
 export default definition

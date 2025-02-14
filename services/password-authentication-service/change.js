@@ -35,7 +35,7 @@ definition.action({
     const user = client.user
     const passwordAuthenticationData = await PasswordAuthentication.get(user)
     if(!passwordAuthenticationData) throw 'notFound'
-    if(currentPasswordHash != passwordAuthenticationData.passwordHash) throw { properties: {
+    if(currentPasswordHash !== passwordAuthenticationData.passwordHash) throw { properties: {
       currentPasswordHash: 'wrongPassword'
     } }
     emit({

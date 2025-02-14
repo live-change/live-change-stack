@@ -14,6 +14,7 @@
   import { usePath, live } from '@live-change/vue3-ssr'
   import BuildShelterResult from './components/BuildShelterResult.vue'
   import MakePlanksResult from './components/MakePlanksResult.vue'
+  import Task from './components/Task.vue'
 
   const props = defineProps({
     action: {

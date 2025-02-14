@@ -72,7 +72,7 @@
       )
       console.log("GAUTH RESULT", result)
       const { action: actionDone, user } = result
-      while(api.client.value.user !== result.user) {
+      while(user && api.client.value.user !== user) {
         await new Promise(resolve => setTimeout(resolve, 100))
       }
       if(actionDone === 'signIn') {
@@ -81,6 +81,8 @@
         router.push({ name: 'user:signUpFinished' })
       } else if(actionDone === 'connectGoogle') {
         router.push({ name: 'user:connected' })
+      } else if(actionDone === 'addOfflineAccessToken') {
+        router.push({ name: 'user:google-access-gained' })
       } else {
         console.error("Unknown action", actionDone)
       }

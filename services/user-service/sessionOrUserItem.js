@@ -59,7 +59,7 @@ definition.processor(function(service, app) {
               const { transferred, updated, deleted } = mergeResult
               for(const entity of transferred) {
                 emit({
-                  type: 'sessionOrUserOwned' + modelName + 'Transferred',
+                  type: modelName + 'Transferred',
                   [modelPropertyName]: entity.id,
                   to: {
                     sessionOrUserType: 'user_User',
@@ -69,7 +69,7 @@ definition.processor(function(service, app) {
               }
               for(const entity of updated) {
                 emit({
-                  type: 'sessionOrUserOwned' + modelName + 'Updated',
+                  type: modelName + 'Updated',
                   [modelPropertyName]: entity.id,
                   identifiers: {
                     id: entity.id,
@@ -81,7 +81,7 @@ definition.processor(function(service, app) {
               }
               for(const entity of deleted) {
                 emit({
-                  type: 'sessionOrUserOwned' + modelName + 'Deleted',
+                  type: modelName + 'Deleted',
                   [modelPropertyName]: entity.id,
                 })
               }
@@ -89,7 +89,7 @@ definition.processor(function(service, app) {
           } else {
             for(const entity of sessionItems) {
               emit({
-                type: 'sessionOrUserOwned' + modelName + 'Transferred',
+                type: modelName + 'Transferred',
                 [modelPropertyName]: entity.id,
                 identifiers: {
                   id: entity.id
@@ -104,7 +104,7 @@ definition.processor(function(service, app) {
         }
       })
 
-      service.trigger({
+/*      service.trigger({
         name: 'userDeleted',
         properties: {
           user: {
@@ -115,7 +115,7 @@ definition.processor(function(service, app) {
         async execute({ user, session }, { service }, emit) {
           /// TODO: delete on userDeleted trigger
         }
-      })
+      })*/
 
       if(config.ownerReadAccess) {
         const viewName = 'my' + modelName
@@ -177,7 +177,7 @@ definition.processor(function(service, app) {
       }
 
       if(config.ownerCreateAccess || config.ownerWriteAccess) {
-        const eventName = 'sessionOrUserOwned' + modelName + 'Created'
+        const eventName = modelName + 'Created'
         const actionName = 'createMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
@@ -213,7 +213,7 @@ definition.processor(function(service, app) {
         })
       }
       if(config.ownerUpdateAccess || config.ownerWriteAccess) {
-        const eventName = 'sessionOrUserOwned' + modelName + 'Updated'
+        const eventName = modelName + 'Updated'
         const actionName = 'updateMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,

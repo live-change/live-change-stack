@@ -5,8 +5,4 @@ import definition from './definition.js'
 
 import './comment.js'
 
-definition.beforeStart(() => {
-  /// TODO: restart stopped tasks
-})
-
 export default definition

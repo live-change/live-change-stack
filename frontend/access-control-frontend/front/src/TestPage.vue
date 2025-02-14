@@ -59,7 +59,7 @@
     },
     requiredRoles: {
       type: Array,
-      default: () => ['reader', 'writer', 'moderator', 'administrator']
+      default: () => ['reader', 'writer', 'moderator', 'admin']
     }
   })
 

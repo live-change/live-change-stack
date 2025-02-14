@@ -34,6 +34,7 @@ import { mkdir } from 'fs/promises'
 
 await mkdir('build-stats', { recursive: true })
 
+
 const ssrTransformCustomDir = () => {
   return {
     props: [],
@@ -43,19 +44,14 @@ const ssrTransformCustomDir = () => {
 
 let version = process.env.VERSION ?? 'unknown'
 
-export default async ({ command, mode }, options = {
+export default async ({ command, mode, version }, options = {
   ssrDisabledDirectives: ['ripple', 'styleclass', 'badge', 'shared-element', 'lazy']
 }) => {
   //console.log("VITE CONFIG", command, mode, process.argv)
   return {
     define: {
-      ENV_BASE_HREF: JSON.stringify(process.env.BASE_HREF || 'http://localhost:8001'),
-      ENV_BRAND_NAME: JSON.stringify(process.env.BRAND_NAME || "Example"),
-      ENV_BRAND_DOMAIN: JSON.stringify(process.env.BRAND_DOMAIN || "example.com"),
-      ENV_BRAND_SMS_FROM: JSON.stringify(process.env.BRAND_PHONE_FROM || null),
-      ENV_GOOGLE_CLIENT_ID: JSON.stringify(process.env.GOOGLE_CLIENT_ID || null),
       ENV_MODE: JSON.stringify(mode),
-      ENV_VERSION: JSON.stringify(version),
+      ENV_VERSION: JSON.stringify(version || process.env.VERSION || 'unknown'),
     },
     server: {
       hmr: {
@@ -67,6 +63,7 @@ export default async ({ command, mode }, options = {
           path.dirname(fileURLToPath(import.meta.resolve('primeicons/package.json'))),
           path.dirname(fileURLToPath(import.meta.resolve('primevue/package.json'))),
           path.dirname(fileURLToPath(import.meta.resolve('@fortawesome/fontawesome-free/package.json'))),
+          path.dirname(fileURLToPath(import.meta.resolve('boxicons/package.json'))),
         ]
       }
     },
@@ -188,6 +185,12 @@ export default async ({ command, mode }, options = {
         '@live-change/user-frontend',
         '@live-change/wysiwyg-frontend',
         '@live-change/flow-frontend',
+        '@live-change/task-frontend',
+        '@live-change/balance-frontend',
+        '@live-change/billing-frontend',
+        '@live-change/survey-frontend',
+        '@live-change/peer-connection-frontend',
+        '@live-change/video-call-frontend',
         '@live-change/frontend-auto-form',
         '@live-change/db-web',
         '@live-change/db',

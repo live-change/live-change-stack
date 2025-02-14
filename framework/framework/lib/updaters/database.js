@@ -2,6 +2,9 @@ import * as utils from "../utils.js"
 import Debug from 'debug'
 const debug = Debug('framework:updaters:db')
 
+const cartesian =
+  (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
+
 async function update(changes, service, app, force) {
 
   const dao = app.dao
@@ -22,6 +25,14 @@ async function update(changes, service, app, force) {
       dao.request(['database', 'createTable'], database, service.name + '_commands').catch(e => 'ok')
     } else {
       dao.request(['database', 'createTable'], database, 'commands').catch(e => 'ok')
+      dao.request(['database', 'createIndex'], database, 'commands_byTimestamp', `${
+        async (input, output) => {
+          await input.table('commands').onChange((obj, oldObj) => {
+            if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
+            if(!obj && oldObj) output.change(null, { id: oldObj.timestamp+'_'+oldObj.id, to: oldObj.id })
+          })
+        }
+      }`, {}).catch(e => 'ok')
     }
   }
   if(!app.shortTriggers) {
@@ -30,6 +41,14 @@ async function update(changes, service, app, force) {
       dao.request(['database', 'createTable'], database, service.name + '_triggers').catch(e => 'ok')
     } else {
       dao.request(['database', 'createTable'], database, 'triggers').catch(e => 'ok')
+      dao.request(['database', 'createIndex'], database, 'triggers_byTimestamp', `${
+        async (input, output) => {
+          await input.table('triggers').onChange((obj, oldObj) => {
+            if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
+            if(!obj && oldObj) output.change(null, { id: oldObj.timestamp+'_'+oldObj.id, to: oldObj.id })
+          })
+        }
+      }`, {}).catch(e => 'ok')
     }
   }
 
@@ -61,46 +80,57 @@ async function update(changes, service, app, force) {
     } else {
       if(!table) throw new Error("only function indexes are possible without table")
       if(index.multi) {
-        if(Array.isArray(index.property)) throw new Error("multi indexes on multiple properties are not supported!")
-        const func = async function(input, output, { table, property }) {
-          const values = (obj) => {
+       // if(Array.isArray(index.property)) throw new Error("multi indexes on multiple properties are not supported!")
+        const properties = (Array.isArray(index.property) ? index.property : [index.property])
+          .map(propSet => (Array.isArray(propSet) ? propSet : [propSet]).map(p => p.split('.')))
+        const func = async function(input, output, { table, properties, hash }) {
+          const value = (obj, property) => {
             let at = obj
             for(const p of property) at = at && at[p]
             if(at === undefined) return []
             if(Array.isArray(at)) return at.map(v => JSON.stringify(v))
-            return [at]
+            return [JSON.stringify(at)]
+          }
+          const keys = (obj, id = 0) => {
+            const values = properties[id].map(property => value(obj, property)).flat()
+            if(id === properties.length - 1) return values
+            return values.flatMap(v => keys(obj, id + 1).map(k => v + ':' + k))
           }
           await input.table(table).onChange((obj, oldObj) => {
             if(obj && oldObj) {
-              let pointers = obj && new Set(values(obj))
-              let oldPointers = oldObj && new Set(values(oldObj))
-              for(let pointer of pointers) {
-                if(!!oldPointers.has(pointer)) output.change({ id: pointer+'_'+obj.id, to: obj.id }, null)
+              let pointers = obj && new Set(keys(obj))
+              let oldPointers = oldObj && new Set(keys(oldObj))
+              for(let pointer of pointers) if(!oldPointers.has(pointer)) {
+                output.change({ id: pointer+'_'+(hash ? sha1(obj.id, 'base64') : obj.id), to: obj.id }, null)
               }
-              for(let pointer of oldPointers) {
-                if(!!pointers.has(pointer)) output.change(null, { id: pointer+'_'+obj.id, to: obj.id })
+              for(let pointer of oldPointers) if(!pointers.has(pointer)) {
+                output.change(null, { id: pointer+'_'+(hash ? sha1(obj.id, 'base64') : obj.id), to: obj.id })
               }
             } else if(obj) {
-              values(obj).forEach(v => output.change({ id: v+'_'+obj.id, to: obj.id }, null))
+              keys(obj).forEach(k => output.change({
+                id: k+'_'+(hash ? sha1(obj.id, 'base64') : obj.id),
+                to: obj.id }, null))
             } else if(oldObj) {
-              values(oldObj).forEach(v => output.change(null, { id: v+'_'+oldObj.id, to: oldObj.id }))
+              keys(oldObj).forEach(k => output.change(null, {
+                id: k+'_'+(hash ? sha1(obj.id, 'base64') : obj.id),
+                to: oldObj.id }))
             }
           })
         }
         const functionCode = `(${func})`
         ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[functionCode] = func
         await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
-          functionCode, { property: index.property.split('.'), table }, index.storage ?? {})
+          functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
       } else {
         if(!table) throw new Error("only function indexes are possible without table")
         const properties = (Array.isArray(index.property) ? index.property : [index.property]).map(p => p.split('.'))
-        const func = async function(input, output, { table,  properties }) {
+        const func = async function(input, output, { table, properties, hash }) {
           const mapper = (obj) => ({
             id: properties.map(path => {
               let at = obj
               for(const p of path) at = at && at[p]
               return at === undefined ? '' : JSON.stringify(at)
-            }).join(':')+'_'+obj.id,
+            }).join(':')+'_'+(hash ? sha1(obj.id, 'base64') : obj.id),
             to: obj.id
           })
           await input.table(table).onChange((obj, oldObj) =>
@@ -109,7 +139,7 @@ async function update(changes, service, app, force) {
         const functionCode = `(${func})`
         ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[functionCode] = func
         await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
-          functionCode, { properties, table }, index.storage ?? {})
+          functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
       }
     }
 

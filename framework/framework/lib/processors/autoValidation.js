@@ -3,15 +3,29 @@ import { getValidators, validate } from '../utils/validation.js'
 export default function(service, app) {
   for(let actionName in service.actions) {
     const action = service.actions[actionName]
-    if(action.skipValidation) continue
+    if(action.skipValidation && !action.validation) continue
     const validators = getValidators(action, service, action)
     if(Object.keys(validators).length > 0) {
       const oldExec = action.execute
       action.execute = async (...args) => {
         const context = args[1]
-        return validate(args[0], validators, { source: action, action, service, app, ...context }).then(() =>
-          oldExec.apply(action, args)
-        )
+        if(args[0]._validationOnly) {
+          if(!action.skipValidation) {
+            await validate(args[0], validators, { source: action, action, service, app, ...context })
+          }
+          if(action.validation === true) {
+            return await oldExec.apply(action, args) // validate inside execute
+          } else if(typeof action.validation === 'function') {
+            const result = await action.validation(args[0], { source: action, action, service, app, ...context })
+            if(result) throw result
+            return 'ok'
+          }
+        } else {
+          if(!action.skipValidation) {
+            await validate(args[0], validators, { source: action, action, service, app, ...context })
+          }
+          return oldExec.apply(action, args)
+        }
       }
     }
   }

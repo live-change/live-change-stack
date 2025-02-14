@@ -61,8 +61,8 @@ class ObservableProxy extends Observable {
   }
 
   isUseless() {
-    return (this.observers.length == 0) && (this.properties.length == 0)
-        && (this.errorProperties.length == 0)
+    return (this.observers.length === 0) && (this.properties.length === 0)
+        && (this.errorProperties.length === 0)
   }
 
   catch(...args) {
@@ -121,7 +121,7 @@ class ObservableProxy extends Observable {
   unbindErrorProperty(object, property) {
     for(var i = 0; i < this.errorProperties.length; i++) {
       var prop = this.errorProperties[i]
-      if(prop[0] == object && prop[1] == property) {
+      if(prop[0] === object && prop[1] === property) {
         this.errorProperties.splice(i,1)
         if(this.observable) this.observable.unbindErrorProperty(object, property)
         if(this.isUseless()) this.dispose()

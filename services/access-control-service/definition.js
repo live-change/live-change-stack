@@ -7,7 +7,7 @@ import emailService from '@live-change/email-service'
 
 const definition = app.createServiceDefinition({
   name: "accessControl",
-  use: [ relationsPlugin, userService, emailService ]
+  use: [userService, relationsPlugin, emailService ]
 })
 
 export default definition

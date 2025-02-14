@@ -1,0 +1,10 @@
+{
+  "currency": {
+    "credits": "credit | credits"
+  },
+  "app": {
+    "updateAvailable": "Update available!",
+    "newVersions": "New version of app is available!",
+    "reload": "Reload"
+  }
+}

@@ -2,7 +2,7 @@ import * as LcDao from '@live-change/dao'
 const { DaoProxy, DaoPrerenderCache, DaoCache, Path } = LcDao // hack for vite
 import validators from '@live-change/framework/lib/utils/validators.js'
 import { hashCode, encodeNumber, uidGenerator, randomString } from '@live-change/uid'
-import { ref, computed, watch } from "vue"
+import { ref, computed, watch, reactive } from "vue"
 
 class Api extends DaoProxy {
   constructor(source, settings = {}) {
@@ -74,14 +74,13 @@ class Api extends DaoProxy {
       if(!softwareVersion) return
       return version.value !== softwareVersion.value
     })
-    const client = computed(() => {
-      return api?.value?.client
-    })
+    const client = computed(() => api?.value?.client)
+    const config = computed(() => api?.value?.config)
     this.metadata = {
       api, version,
       softwareVersion,
       versionMismatch,
-      client
+      client, config
     }
     let lastApiJson = ''
     this.apiObservable.observe((signal, ...args) => {
@@ -95,16 +94,17 @@ class Api extends DaoProxy {
       }
       if(lastApiJson) console.log("API CHANGED", lastApiJson, JSON.stringify(newApi))
       lastApiJson = JSON.stringify(newApi)
-      api.value = JSON.parse(lastApiJson)
+      /// First, generate the API for microservices, then set api.value – otherwise, a race condition is possible
+      /// if something reacts to the api value, either the client or the config, and uses the microservices API.
       this.generateServicesApi()
     })
     //console.log("SETUP API", api.value)
-    this.afterPreFetch.push(() => this.generateServicesApi())
+    // this.afterPreFetch.push(() => this.generateServicesApi()) - i think it's not needed
   }
 
   generateServicesApi() {
+    let apiInfo = this.apiObservable.getValue()
     const api = this
-    let apiInfo = api.metadata.api?.value
     if(!apiInfo) {
       const cachePath = '["metadata","api"]'
       if(typeof window != 'undefined') {
@@ -118,6 +118,11 @@ class Api extends DaoProxy {
         apiInfo = this.prerenderCache.cache.get(cachePath)
       }
     }
+    if(!apiInfo) throw new Error("API INFO NOT FOUND! UNABLE TO GENERATE SERVICES API!")
+
+    api.windowId = this.settings.windowId || randomString(10)
+    api.shortWindowId = api.windowId.split('@')[0].slice(-5).replace('.', '')
+
     //console.trace("GENERATE API SERVICES!")
     //console.log("GENERATE SERVICES API", apiInfo)
     const definitions = [...(apiInfo?.services ?? []), ...(this.settings.localDefinitions ?? [])]
@@ -125,7 +130,7 @@ class Api extends DaoProxy {
     if(!definitions) throw new Error("API DEFINITIONS NOT FOUND! UNABLE TO GENERATE API!")
     api.uidGenerator = uidGenerator(
       apiInfo.client.user || (apiInfo.client.session ? apiInfo.client.session.slice(0, 16) : randomString(10) )
-      , 1, '[]')
+      , 1, '[]', api.shortWindowId)
     //console.log("GENERATE API DEFINITIONS", definitions)
     api.servicesApiDefinitions = definitions
     api.servicesDefinitions.value = definitions
@@ -164,7 +169,7 @@ class Api extends DaoProxy {
         models[modelName] = serviceDefinition.models[modelName]
       }
       globalServices[serviceDefinition.name] = {
-        actions, views, models, definitions
+        actions, views, models, definitions, config: serviceDefinition.clientConfig
       }
     }
 
@@ -174,8 +179,14 @@ class Api extends DaoProxy {
     api.client = this.metadata.client
     api.uid = api.uidGenerator
     api.services = globalServices
+    api.models = globalModels
 
     api.globals.$lc = api
+
+    api.globals.$allLoadingTasks = reactive([])
+    api.globals.$allLoadingErrors = reactive([])
+    api.globals.$allWorkingTasks = reactive([])
+    api.globals.$allWorkingErrors = reactive([])
 
     /// Deprecated:
     api.globals.$api = this
@@ -184,11 +195,11 @@ class Api extends DaoProxy {
     api.globals.$fetch = this.fetch
     api.globals.$services = this.services
 
-    api.windowId = this.settings.windowId || api.uid()
-
     for(const glob of this.globalInstances) {
       this.installInstanceProperties(glob)
     }
+
+    api.metadata.api.value = apiInfo
 
     if(api.resolveReadyPromise) {
       api.resolveReadyPromise()

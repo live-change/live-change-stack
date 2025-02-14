@@ -7,7 +7,7 @@
          [props.acceptedClass]: dragging && accepted,
          [props.wrongClass]: dragging && !accepted
          }, props.class]">
-    <FileInput v-if="clickable" @input="input => emit('input', input)">
+    <FileInput v-if="clickable" @input="input => emit('input', input)" :accept="accept">
       <slot></slot>
     </FileInput>
     <slot v-else></slot>

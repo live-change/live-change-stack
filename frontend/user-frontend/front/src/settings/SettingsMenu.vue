@@ -8,15 +8,15 @@
 
         <SettingsMenuItem name="user:identification" icon="id-card" label="Identification" class="hidden md:block" />
 
-        <SettingsMenuItem v-if="client.user" name="user:settings" icon="id-card" label="General Settings" class="hidden md:block" />
+        <SettingsMenuItem v-if="client.user" name="user:settings" icon="cog" label="General Settings" class="hidden md:block" />
 
-        <SettingsMenuItem name="user:locale" icon="id-card" label="Language and Locale" class="hidden md:block" />
+        <SettingsMenuItem name="user:locale" icon="language" label="Language and Locale" class="hidden md:block" />
 
-<!--        <SettingsMenuItem name="user:notificationsSettings" icon="exclamation-circle" label="Notifications" />-->
+        <SettingsMenuItem name="user:notificationsSettings" icon="exclamation-circle" label="Notifications" />
 
       </ul>
 
-      <ul class="list-none p-2 m-0 border-top-1 surface-border">
+      <ul v-if="client.user"  class="list-none p-2 m-0 border-top-1 surface-border">
         <li>
           <div class="p-3 text-500 font-medium">AUTHORIZATION</div>
         </li>
@@ -27,7 +27,7 @@
 
       </ul>
 
-      <ul class="list-none p-2 m-0 border-top-1 surface-border">
+      <ul v-if="client.user" class="list-none p-2 m-0 border-top-1 surface-border">
 
         <SettingsMenuItem v-if="client.user" name="user:delete" icon="trash" label="Delete Account" />
 

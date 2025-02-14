@@ -33,7 +33,9 @@ async function writeDbBackup(stream) {
       //serverUrl: process.env.DB_URL || 'http://localhost:9417/api/ws',
       //db: process.env.DB_NAME || 'test',
       structure: true,
-      verbose: true
+      verbose: true,
+      bucket: 128, // less database stress
+      delay: 10 // less database stress
     },
     (method, ...args) => write({ type: 'request', method, parameters: args }),
       () => write({ type: 'sync' })

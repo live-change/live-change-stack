@@ -1,6 +1,6 @@
 {
   "name": "@live-change/image-service",
-  "version": "0.8.34",
+  "version": "0.9.32",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,12 +21,12 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.8.34",
-    "@live-change/relations-plugin": "0.8.34",
+    "@live-change/framework": "0.9.32",
+    "@live-change/relations-plugin": "0.9.32",
     "download": "^8.0.0",
     "pluralize": "^8.0.0",
     "sharp": "^0.32.5"
   },
-  "gitHead": "40e61928bf43b35352c76fc135f36a2d8bd76c4a",
+  "gitHead": "2aa34c0589d115aeaa573bd2cae09bb43a66d162",
   "type": "module"
 }

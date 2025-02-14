@@ -13,7 +13,7 @@
 
   import { useLocale } from '@live-change/vue3-components'
   const locale = useLocale()
-  locale.captureLocale()
+  if(typeof window !== 'undefined') locale.captureLocale()
 
   import { ViewRoot, NavBar, UpdateBanner } from "@live-change/frontend-base"
 
@@ -23,13 +23,17 @@
   import { useI18n } from 'vue-i18n'
   const i18n = useI18n()
 
+  import { client as useClient, useApi } from '@live-change/vue3-ssr'
+  const api = useApi()
+  const client = useClient()
+
   useHead(computed(() => ({
-    title: ENV_BRAND_NAME,
+    title: api.metadata.config.value.brandName,
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport',
         content: "user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1," +
-            " width=device-width, viewport-fit=cover" }
+          " width=device-width, viewport-fit=cover" }
     ],
     htmlAttrs: {
       lang: i18n.locale.value,
@@ -38,13 +42,10 @@
   })))
 
   import { watch } from 'vue'
-  import { client as useClient, useApi } from '@live-change/vue3-ssr'
-  const client = useClient()
   watch(client, (newClient, oldClient) => {
     console.log("WATCH CLIENT", oldClient, '=>', newClient)
   })
 
-  const api = useApi()
   import emailValidator from "@live-change/email-service/clientEmailValidator.js"
   import passwordValidator from "@live-change/password-authentication-service/clientPasswordValidator.js"
   api.validators.email = emailValidator

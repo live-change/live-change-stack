@@ -40,8 +40,7 @@ definition.processor(function(service, app) {
         to: ['contactOrUser', ...extendedWith]
       }
 
-      const transferEventName = ['contactOrUser', ...(extendedWith.map(e => e[0].toUpperCase() + e.slice(1)))]
-          .join('And') + 'Owned' + modelName + 'Transferred'
+      const transferEventName = modelName + 'Transferred'
 
       service.trigger({
         name: 'contactConnected',
@@ -77,7 +76,7 @@ definition.processor(function(service, app) {
               const mergeResult = await config.merge(contactProperty, userProperty)
               if(mergeResult && userProperty) {
                 emit({
-                  type: 'contactOrUserOwned' + modelName + 'Updated',
+                  type: modelName + 'Updated',
                   identifiers: {
                     contactOrUserType: 'user_User',
                     contactOrUser: user
@@ -86,7 +85,7 @@ definition.processor(function(service, app) {
                 })
               } else {
                 emit({
-                  type: 'contactOrUserOwned' + modelName + 'Set',
+                  type: modelName + 'Set',
                   identifiers: {
                     contactOrUserType: 'user_User',
                     contactOrUser: user
@@ -95,7 +94,7 @@ definition.processor(function(service, app) {
                 })
               }
               emit({
-                type: 'contactOrUserOwned' + modelName + 'Reset',
+                type: modelName + 'Reset',
                 identifiers: {
                   contactOrUserType: contactType,
                   contactOrUser: contact
@@ -108,7 +107,7 @@ definition.processor(function(service, app) {
                   extendedIdentifiers[key+'Type'] = contactProperty[key+'Type']
                   extendedIdentifiers[key] = contactProperty[key]
                 }
-                await service.trigger({ type: 'contactOrUserOwned' + modelName + 'Moved' }, {
+                await service.trigger({ type: modelName + 'Moved' }, {
                   from: {
                     contactOrUserType: contactType,
                     contactOrUser: contact
@@ -206,16 +205,16 @@ definition.processor(function(service, app) {
         }
       }
 
-      const eventPrefix = ['contactOrUser',
-        ...(extendedWith.map(p => p[0].toUpperCase()+p.slice(1)))
-      ].join('And') +'Owned'
+      const eventPrefix = ''
 
       if(config.ownerSetAccess || config.ownerWriteAccess) {
         const eventName = eventPrefix + modelName + 'Set'
         const actionName = 'setMy' + modelName
+        const identifiers = createIdentifiersProperties(extendedWith)
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
           properties: {
+            ...identifiers,
             ...originalModelProperties
           },
           access: (params, context) => context.client.user
@@ -224,6 +223,11 @@ definition.processor(function(service, app) {
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
           async execute(properties, {client, service}, emit) {
+            const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
+            const id = owner.map(p => JSON.stringify(p)).join(':')
+            const entity = await modelRuntime().get(id)
+            if(entity) throw 'alerady_exists'
             let newObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -234,8 +238,12 @@ definition.processor(function(service, app) {
               App.computeDefaults(model, properties, { client, service } ), newObject)
             await App.validation.validate(data, validators, { source: action, action, service, app, client })
             const identifiers = {
-              ownerType: 'user_User',
-              owner: client.user,
+              contactOrUserType: 'user_User',
+              contactOrUser: client.user,
+            }
+            for(const key of extendedWith) {
+              identifiers[key+'Type'] = properties[key+'Type']
+              identifiers[key]=properties[key]
             }
             emit({
               type: eventName,
@@ -251,9 +259,11 @@ definition.processor(function(service, app) {
       if(config.ownerUpdateAccess || config.ownerWriteAccess) {
         const eventName = eventPrefix + modelName + 'Updated'
         const actionName = 'updateMy' + modelName
+        const identifiers = createIdentifiersProperties(extendedWith)
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
           properties: {
+            ...identifiers,
             ...originalModelProperties
           },
           access: (params, context) => context.client.user
@@ -263,6 +273,7 @@ definition.processor(function(service, app) {
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
             const entity = await modelRuntime().get(id)
             if(!entity) throw 'not_found'
@@ -275,8 +286,12 @@ definition.processor(function(service, app) {
             const merged = App.utils.mergeDeep({}, entity, updateObject)
             await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             const identifiers = {
-              ownerType: 'user_User',
-              owner: client.user,
+              contactOrUserType: 'user_User',
+              contactOrUser: client.user,
+            }
+            for(const key of extendedWith) {
+              identifiers[key+'Type'] = properties[key+'Type']
+              identifiers[key]=properties[key]
             }
             emit({
               type: eventName,
@@ -292,20 +307,29 @@ definition.processor(function(service, app) {
       if(config.ownerResetAccess || config.ownerWriteAccess) {
         const eventName = eventPrefix + modelName + 'Reset'
         const actionName = 'resetMy' + modelName
+        const identifiers = createIdentifiersProperties(extendedWith)
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
+          properties: {
+            ...identifiers,
+          },
           access: (params, context) => context.client.user
               && (config.ownerResetAccess || config.ownerWriteAccess)(params, context),
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
           async execute(properties, {client, service}, emit) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+            for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
             const entity = await modelRuntime().get(id)
             if (!entity) throw 'not_found'
             const identifiers = {
-              ownerType: 'user_User',
-              owner: client.user,
+              contactOrUserType: 'user_User',
+              contactOrUser: client.user,
+            }
+            for(const key of extendedWith) {
+              identifiers[key+'Type'] = properties[key+'Type']
+              identifiers[key]=properties[key]
             }
             emit({
               type: eventName,

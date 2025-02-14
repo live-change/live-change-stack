@@ -2,6 +2,9 @@ import App from '@live-change/framework'
 const app = App.app()
 import definition from './definition.js'
 const config = definition.config
+import pluralize from 'pluralize'
+
+const inviteMessageActionByObjectType = config.inviteMessageActionByObjectType ?? {}
 
 import { AccessInvitation, invitationProperties, Access } from './model.js'
 import accessModule from './access.js'
@@ -70,7 +73,7 @@ definition.event({
 })
 
 definition.trigger({
-  name: 'contactOrUserOwnedAccessInvitationMoved',
+  name: 'AccessInvitationMoved',
   properties: {
     ...contactProperties,
     from: {
@@ -136,7 +139,9 @@ definition.trigger({
     console.error("INVITE WITH MESSAGE AUTHENTICATED", { contactType, contact, session, objectType, object })
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     /// Load invitation
-    const invitation = App.encodeIdentifier([ contactType + '_' + contactTypeUpperCase, contact, objectType, object ])
+    const invitation = App.encodeIdentifier([
+      contactType + '_' + contactTypeUpperCase, contact, objectType, object
+    ])
     console.log("INVITATION", invitation)
     const invitationData = await AccessInvitation.get(invitation)
     if(!invitationData) throw 'not_found'
@@ -186,6 +191,9 @@ definition.action({
   }
 })
 
+import task from '@live-change/task-service/task.js' // need to import taks.js to avoid circular dependency
+
+
 for(const contactType of config.contactTypes) {
 
   const contactTypeUpperCaseName = contactType[0].toUpperCase() + contactType.slice(1)
@@ -199,6 +207,52 @@ for(const contactType of config.contactTypes) {
     [contactType]: {
       type: String,
       validation: ['nonEmpty', contactTypeName]
+    }
+  }
+
+  async function doInvite(contact, objectType, object, invitationData, emit, trigger = app.trigger) {
+    const contactData = await app.viewGet('get' + contactTypeUName, { [contactType]: contact })
+    if(contactData?.user) { // user exists
+      const { user } = contactData
+      await trigger({ type: 'notify' }, {
+        sessionOrUserType: 'user_User',
+        sessionOrUser: user,
+        notificationType: 'accessControl_Invitation',
+        objectType,
+        object,
+        ...invitationData, id: undefined
+      })
+      emit({
+        type: 'userInvited',
+        user,
+        objectType, object,
+        ...invitationData, id: undefined
+      })
+      return 'userInvited'
+    } else {
+      // Authenticate with message because we will create account later
+      const messageData = {
+        objectType, object,
+        ...invitationData, id: undefined,
+        action: inviteMessageActionByObjectType[objectType] ?? 'inviteWithMessage'
+      }
+      await trigger({ type: 'authenticateWithMessage' }, {
+        contactType,
+        contact,
+        messageData,
+        action: 'inviteWithMessage',
+        actionProperties: { objectType, object },
+        targetPage: { name: 'accessControl:invitationAccepted', params: { objectType, object } },
+        fallbackPage: { name: 'accessControl:invitationFallback', params: { objectType, object } }
+      })
+      emit({
+        type: 'contactInvited',
+        contactType: contactTypeName + '_' + contactTypeUName,
+        contact,
+        objectType, object,
+        ...invitationData, id: undefined
+      })
+      return 'contactInvited'
     }
   }
 
@@ -217,65 +271,212 @@ for(const contactType of config.contactTypes) {
       ...contactTypeProperties,
       ...invitationProperties
     },
-    access: (params, { client, context, visibilityTest }) =>
+    access: (params, { client, context, visibilityTest}) =>
         visibilityTest || access.clientCanInvite(client, params),
-    async execute(params, { client, service }, emit) {
+    async execute(params, { client, service, trigger }, emit) {
       const { [contactTypeName]: contact } = params
       const { objectType, object } = params
       const { roles } = params
 
       const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
-      if(!myRoles.includes('administrator')) {
+      if(!myRoles.includes('admin')) {
         for(const requestedRole of roles) {
           if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
         }
       }
 
       const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
-      const invitationData = { fromType, from }
+      const invitationData = { fromType, from, roles }
       for(const propertyName in invitationProperties) invitationData[propertyName] = params[propertyName]
+      await doInvite(contact, objectType, object, invitationData, emit, trigger)
+    }
+  })
 
-      const contactData = (await service.trigger({ type: 'get' + contactTypeUName + 'OrNull'  }, {
-        [contactType]: contact,
-      }))[0]
-      if(contactData?.user) { // user exists
-        const { user } = contactData
-        await service.trigger({ type: 'notify'  }, {
-          sessionOrUserType: 'user_User',
-          sessionOrUser: user,
-          notificationType: 'accessControl_Invitation',
-          objectType,
-          object,
-          ...invitationData, id: undefined
-        })
-        emit({
-          type: 'userInvited',
-          user,
-          objectType, object,
-          ...invitationData, id: undefined
-        })
-      } else {
-        // Authenticate with message because we will create account later
-        const messageData = {
-          objectType, object,
-          ...invitationData, id: undefined
+  const inviteOneTask = task({
+    name: "invite" + contactTypeUpperCaseName,
+    properties: {
+      objectType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      object: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      fromType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      from: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      ...contactTypeProperties,
+      ...invitationProperties
+    },
+    maxRetries: 1,
+    async execute(params, { service, task, trigger }, emit) {
+      const { [contactTypeName]: contact } = params
+      const { objectType, object } = params
+      const { roles } = params
+      const { fromType, from } = params
+      const invitationData = { fromType, from, roles }
+      for(const propertyName in invitationProperties) invitationData[propertyName] = params[propertyName]
+      return await doInvite(contact, objectType, object, invitationData, emit, trigger)
+    }
+  }, definition)
+
+  const inviteManyTask = task({
+    name: "inviteMany" + contactTypeUpperCaseName,
+    properties: {
+      objectType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      object: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      fromType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      from: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      ...invitationProperties,
+      contacts: {
+        type: Array,
+        of: {
+          type: Object,
+          properties: contactTypeProperties
         }
-        await service.trigger({ type: 'authenticateWithMessage'  }, {
-          contactType,
-          contact,
-          messageData,
-          action: 'inviteWithMessage',
-          actionProperties: { objectType, object },
-          targetPage: { name: 'accessControl:invitationAccepted', params: { objectType, object } }
-        })
-        emit({
-          type: 'contactInvited',
-          contactType: contactTypeName + '_' + contactTypeUName,
-          contact,
-          objectType, object,
-          ...invitationData, id: undefined
-        })
       }
+    },
+    async execute(params, { service, task, trigger }, emit) {
+      const contactsCount = params.contacts.length
+      for(let i = 0; i < contactsCount; i++) {
+        task.progress(i, contactsCount, 'inviting')
+        const contact = params.contacts[i]
+        try {
+          task.run(inviteOneTask, {
+            ...params,
+            ...contact
+          })
+        } catch(e) {
+          // ignore errors
+        }
+      }
+      task.progress(contactsCount, contactsCount, 'done')
+    }
+  }, definition)
+
+  definition.action({
+    name: 'inviteMany' + pluralize(contactTypeUpperCaseName),
+    waitForEvents: true,
+    properties: {
+      objectType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      object: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      ...invitationProperties,
+      contacts: {
+        validation: ['nonEmpty'],
+        type: Array,
+        of: {
+          type: Object,
+          properties: contactTypeProperties
+        }
+      }
+    },
+    access: (params, { client, context, visibilityTest}) =>
+      visibilityTest || access.clientCanInvite(client, params),
+    async execute(params, { client, service, trigger, command  }, emit) {
+      const { objectType, object } = params
+
+      const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
+      if(!myRoles.includes('admin')) {
+        for(const requestedRole of roles) {
+          if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+        }
+      }
+
+      const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+
+      return await inviteManyTask.start({
+        ...params,
+        fromType, from,
+        ownerType: objectType,
+        owner: object,
+      }, 'action', command.id )
+    }
+  })
+
+  definition.action({
+    name: 'inviteMany' + pluralize(contactTypeUpperCaseName) + 'FromText',
+    waitForEvents: true,
+    properties: {
+      objectType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      object: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      ...invitationProperties,
+      [pluralize(contactTypeName) + 'Text']: {
+        type: String,
+        validation: ['nonEmpty']
+      }
+    },
+    access: (params, { client, context, visibilityTest}) =>
+      visibilityTest || access.clientCanInvite(client, params),
+    async execute(params, { client, service, trigger, command  }, emit) {
+      const fieldName = pluralize(contactTypeName) + 'Text'
+      const contacts = params[fieldName].split(/[,;\n]/).map(line => {
+        const parts = line.split('\t')
+        return parts[0].trim()
+      }).filter(x => !!x).map(contact => ({ [contactTypeName]: contact }))
+
+      if(contacts.length === 0) throw {
+        properties: { [fieldName]: 'empty' }
+      }
+      for(const contact of contacts) {
+        console.log("C", contact)
+        const error = service.definition.validators[contactTypeName]()(contact[contactTypeName], {
+          source: { properties: { [fieldName]: contact[contactTypeName] } }
+        })
+        if(error) throw {
+          properties: { [fieldName]: error }
+        }
+      }
+
+      const { objectType, object } = params
+
+      const myRoles = await access.getClientObjectRoles(
+        client, { objectType, object }, true
+      )
+      if(!myRoles.includes('admin')) {
+        for(const requestedRole of roles) {
+          if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+        }
+      }
+
+      const [ fromType, from ] = client.user ? ['user_User', client.user] : ['session_Session', client.session]
+
+      return await inviteManyTask.start({
+        ...params,
+        fromType, from,
+        ownerType: objectType,
+        owner: object,
+        contacts
+      }, 'action', command.id )
     }
   })
 

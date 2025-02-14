@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue"
+import { computed, ref, watch, unref } from "vue"
 import { useThrottleFn, useDebounceFn } from "@vueuse/core"
 
 function copy(value) {
@@ -25,7 +25,8 @@ function synchronized(options) {
     recursive = false,
     throttle = 0,
     debounce = 300,
-    autoSave = true
+    autoSave = true,
+    updateDataProperty = undefined
   } = options
   if(!source) throw new Error('source must be defined')
   if(!update) throw new Error('update function must be defined')
@@ -36,16 +37,20 @@ function synchronized(options) {
 
     let lastSavedUpdate = lastLocalUpdate.value
 
-    const changed = computed(() => (JSON.stringify(source.value) != synchronizedJSON.value)
+    const changed = computed(() => (JSON.stringify(source.value) !== synchronizedJSON.value)
                                 && (lastLocalUpdate.value > ((source.value && source.value[timeField]) ?? '')))
+
+    const saving = ref(false)
+
     async function save() {
-      if((JSON.stringify(source.value) == JSON.stringify(synchronizedValue.value))
+      if((JSON.stringify(source.value) === JSON.stringify(synchronizedValue.value))
          || (lastLocalUpdate.value <= ((source.value && source.value[timeField]) ?? ''))) {
         return false // identical, no need to save
       }
-      if(lastSavedUpdate == lastLocalUpdate.value) {
+      if(lastSavedUpdate === lastLocalUpdate.value) {
         return false // duplicated save action
       }
+      saving.value = true
       lastSavedUpdate = lastLocalUpdate.value
       const data = JSON.parse(synchronizedJSON.value)
       // console.log("LAST LOCAL UPDATE", lastLocalUpdate.value)
@@ -53,17 +58,25 @@ function synchronized(options) {
       // console.log("SOURCE JSON", JSON.stringify(source.value))
       // console.log("SYNCHRONIZED JSON", JSON.stringify(synchronizedValue.value))
       try {
-        await update({ ...data, [timeField]: lastLocalUpdate.value, ...identifiers })
+        if(updateDataProperty) {
+          await update({
+            [updateDataProperty]: { ...data, [timeField]: lastLocalUpdate.value },
+            ...unref(identifiers)
+          })
+        } else {
+          await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+        }
         try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
       } catch(e) {
         if(resetOnError) synchronizedValue.value = copy(source.value)
         console.error("SAVE ERROR", e)
         onSaveError(e)
       }
+      saving.value = false
       return true
     }
     const throttledSave = debounce ? () => {} : (throttle ? useThrottleFn(save, throttle) : save)
-    const debouncedSave = debounce ? useDebounceFn(save, throttle)
+    const debouncedSave = debounce ? useDebounceFn(save, debounce)
         : (throttle ? useDebounceFn(save, throttle) : () => {}) // debounce after throttle
     watch(() => synchronizedJSON.value, json => {
       lastLocalUpdate.value = timeSource()
@@ -83,28 +96,39 @@ function synchronized(options) {
           lastLocalUpdate.value = sourceData[timeField]
           synchronizedValue.value = copy(sourceData)
         }
-
       }
     })
-    return { value: synchronizedValue, save, changed }
+    return { value: synchronizedValue, save, changed, saving }
   } else {
     const local = ref(source.value)
-    const changed = computed(() => (JSON.stringify(source.value) != JSON.stringify(local.value))
+    const changed = computed(() => (JSON.stringify(source.value) !== JSON.stringify(local.value))
                                 && ( ((local.value && local.value[timeField]) ?? '')
                                    > ((source.value && source.value[timeField]) ?? '')))
+    const saving = ref(false)
     async function save() {
-      if((JSON.stringify(source.value) == JSON.stringify(local.value))
+      if((JSON.stringify(source.value) === JSON.stringify(local.value))
          || ( ((local.value && local.value[timeField]) ?? '')
            <= ((source.value && source.value[timeField]) ?? ''))) return false // identical, no need to save
+
+      saving.value = true
       const data = JSON.parse(JSON.stringify(local.value))
       try {
-        await update({...data, ...identifiers})
-        try { onSave() } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
+        let updateResult
+        if(updateDataProperty) {
+          updateResult = await update({
+            [updateDataProperty]: { ...data, [timeField]: lastLocalUpdate.value },
+            ...unref(identifiers)
+          })
+        } else {
+          updateResult = await update({ ...data, [timeField]: lastLocalUpdate.value, ...unref(identifiers) })
+        }
+        try { onSave(updateResult) } catch(e) { console.error("ON SAVE HANDLER ERROR", e) }
       } catch(e) {
         if(resetOnError) synchronizedValue.value = source.value
         console.error("SAVE ERROR", e)
         onSaveError(e)
       }
+      saving.value = false
       return true
     }
     const throttledSave = debounce ? () => {} : (throttle ? useThrottleFn(save, throttle) : save)
@@ -125,7 +149,7 @@ function synchronized(options) {
         }
       }
     })
-    return { value: synchronizedComputed, save, changed }
+    return { value: synchronizedComputed, save, changed, saving }
   }
 }
 

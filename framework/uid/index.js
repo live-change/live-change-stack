@@ -60,7 +60,7 @@ function randomString(length = 8) {
 
 function hashCode(str) {
   let hash = 0
-  if(str.length == 0) return hash
+  if(str.length === 0) return hash
   for(let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
     hash = ((hash << 5) - hash) + char
@@ -69,21 +69,20 @@ function hashCode(str) {
   return Math.abs(hash)
 }
 
-function uidGenerator(fingerprint = randomString(4), numberLength = 0, borders = '{}') {
+function uidGenerator(fingerprint = randomString(4), numberLength = 0, borders = '{}', idSuffix = '') {
   let lastMillisecond = Date.now(), lastId = 0
   function next() {
     const date = new Date()
     const now = date.getTime()
-    if(now == lastMillisecond) {
+    if(now === lastMillisecond) {
       lastId ++
     } else {
       lastId = 0
       lastMillisecond = now
     }
     const idPart = encodeNumber(lastId).padStart(numberLength, '0')
-    return borders[0] + encodeDate(date) + '.' + idPart + '@' + fingerprint + borders[1]
+    return borders[0] + encodeDate(date) + '.' + idPart + idSuffix + '@' + fingerprint + borders[1]
   }
-
   return next
 }
 
@@ -93,12 +92,17 @@ function decodeUid(uid) {
   const date = decodeDate(uid.slice(1, dotIndex))
   const number = decodeNumber(uid.slice(dotIndex + 1, atIndex))
   const at = uid.slice(atIndex + 1, -1)
-  return { date, number, at }
+  const borders = uid.slice(0, 1) + uid.slice(-1)
+  return { date, number, at, borders }
+}
+
+function encodeUid({ date, number, at, borders }) {
+  return borders[0] + encodeDate(date) + '.' + encodeNumber(number) + '@' + at + borders[1]
 }
 
 function verifyUidSource(uid, source) {
   const { at } = decodeUid(uid)
-  return at.slice(0, source.length) == source
+  return at.slice(0, source.length) === source
 }
 
 export {
@@ -109,5 +113,6 @@ export {
   randomString,
   uidGenerator,
   decodeUid,
+  encodeUid,
   verifyUidSource
 }

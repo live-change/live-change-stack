@@ -3,13 +3,21 @@ const { extractRange } = App
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
 } from "@live-change/framework"
-import { extractTypeAndIdParts, extractIdentifiersWithTypes, prepareAccessControl } from "./utilsAny.js"
-import { extractObjectData, extractIdentifiers} from "./utils.js"
+import {
+  extractTypeAndIdParts,
+  extractIdentifiersWithTypes,
+  prepareAccessControl,
+  cloneAndPrepareAccessControl
+} from './utilsAny.js'
+import {
+  extractObjectData, extractIdentifiers, extractIdParts,
+  cloneAndPrepareAccessControl as cloneAndPrepareSingleAccessControl
+} from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 
 import pluralize from 'pluralize'
 
-function defineView(config, context, external = true) {
+function defineRangeView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
     modelName, others, model } = context
   const indexName = 'by'+context.joinedOthersClassName
@@ -24,10 +32,11 @@ function defineView(config, context, external = true) {
       validation: ['nonEmpty']
     })
   }
-  const accessControl = external && (config.readAccessControl || config.writeAccessControl)
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
-  service.views[viewName] = new ViewDefinition({
+  model.crud.range = viewName
+  service.view({
     name: viewName,
     properties: {
       ...viewProperties,
@@ -40,6 +49,7 @@ function defineView(config, context, external = true) {
       }
     },
     internal: !external,
+    global: config.globalView,
     access: external && (config.readAccess || config.writeAccess),
     accessControl,
     daoPath(properties, { client, context }) {
@@ -51,12 +61,44 @@ function defineView(config, context, external = true) {
   })
 }
 
+function defineSingleView(config, context, external = true) {
+  const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
+    modelName, others, model, modelPropertyName, objectType } = context
+  const viewProperties = {}
+  viewProperties[modelPropertyName] = new PropertyDefinition({
+    type: model,
+    validation: ['nonEmpty']
+  })
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareSingleAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
+  const viewName = modelName[0].toLowerCase() + modelName.slice(1)
+  model.crud.read = viewName
+  service.view({
+    name: viewName,
+    properties: {
+      ...viewProperties
+    },
+    returns: {
+      type: model
+    },
+    internal: !external,
+    global: config.globalView,
+    access: external && (config.readAccess || config.writeAccess),
+    accessControl,
+    async daoPath(properties, { client, context }) {
+      return modelRuntime().path(properties[modelPropertyName])
+    }
+  })
+}
+
 function getCreateFunction( validators, validationContext, config, context) {
   const {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Created'
+  const eventName = modelName + 'Created'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName] || app.generateUid()
     const entity = await modelRuntime().get(id)
@@ -81,9 +123,10 @@ function defineCreateAction(config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
-  const accessControl = config.createAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const actionName = 'create' + modelName
+  model.crud.create = actionName
+  const sourceAccessControl = config.createAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -99,6 +142,7 @@ function defineCreateAction(config, context) {
   const validators = App.validation.getValidators(action, service, action)
   const validationContext = { source: action, action }
   action.execute = getCreateFunction( validators, validationContext, config, context)
+  if(service.actions[actionName]) throw new Error('Action ' + actionName + ' already defined')
   service.actions[actionName] = action
 }
 
@@ -107,7 +151,7 @@ function defineCreateTrigger(config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const actionName = 'create' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const actionName = 'create' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -123,6 +167,7 @@ function defineCreateTrigger(config, context) {
   const validators = App.validation.getValidators(trigger, service, trigger)
   const validationContext = { source: trigger, trigger }
   trigger.execute = getCreateFunction( validators, validationContext, config, context)
+  if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
   service.triggers[triggerName] = [trigger]
 }
 
@@ -131,7 +176,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Updated'
+  const eventName = modelName + 'Updated'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName]
     if(!id) throw new Error('no_id')
@@ -167,9 +212,12 @@ function defineUpdateAction(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
-  const accessControl = config.updateAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const actionName = 'update' + modelName
+  model.crud.update = actionName
+  const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareSingleAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -189,6 +237,7 @@ function defineUpdateAction(config, context) {
   const validators = App.validation.getValidators(action, service, action)
   const validationContext = { source: action, action }
   action.execute = getUpdateFunction( validators, validationContext, config, context)
+  if(service.actions[actionName]) throw new Error('Action ' + actionName + ' already defined')
   service.actions[actionName] = action
 }
 
@@ -197,7 +246,7 @@ function defineUpdateTrigger(config, context) {
     service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const actionName = 'update' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const actionName = 'update' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -217,6 +266,7 @@ function defineUpdateTrigger(config, context) {
   const validators = App.validation.getValidators(trigger, service, trigger)
   const validationContext = { source: trigger, trigger }
   trigger.execute = getUpdateFunction( validators, validationContext, config, context)
+  if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
   service.triggers[triggerName] = [trigger]
 }
 
@@ -225,7 +275,7 @@ function getDeleteFunction(config, context) {
     service, app, model, modelPropertyName, modelRuntime, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const eventName = joinedOthersPropertyName + context.reverseRelationWord + modelName + 'Deleted'
+  const eventName = modelName + 'Deleted'
   return async function execute(properties, { client, service }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
@@ -249,9 +299,12 @@ function defineDeleteAction(config, context) {
     service, app, model, modelRuntime, modelPropertyName, identifiers, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const actionName = 'delete' + joinedOthersClassName + context.reverseRelationWord + modelName
-  const accessControl = config.deleteAccessControl || config.writeAccessControl
-  prepareAccessControl(accessControl, otherPropertyNames)
+  const actionName = 'delete' + modelName
+  model.crud.delete = actionName
+  const sourceAccessControl = config.deleteAccessControl || config.writeAccessControl
+  const accessControl = cloneAndPrepareSingleAccessControl(
+    sourceAccessControl, [modelPropertyName], [objectType]
+  )
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -269,6 +322,7 @@ function defineDeleteAction(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   action.execute = getDeleteFunction(config, context)
+  if(service.actions[actionName]) throw new Error('Action ' + actionName + ' already defined')
   service.actions[actionName] = action
 }
 
@@ -277,7 +331,7 @@ function defineDeleteTrigger(config, context) {
     service, app, model, modelRuntime, modelPropertyName, identifiers, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
-  const actionName = 'delete' + joinedOthersClassName + context.reverseRelationWord + modelName
+  const actionName = 'delete' + modelName
   const triggerName = `${service.name}_${actionName}`
   const trigger = new TriggerDefinition({
     name: triggerName,
@@ -295,6 +349,7 @@ function defineDeleteTrigger(config, context) {
     execute: () => { throw new Error('not generated yet') }
   })
   trigger.execute = getDeleteFunction(config, context)
+  if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
   service.triggers[triggerName] = [trigger]
 }
 
@@ -310,7 +365,7 @@ function defineSortIndex(context, sortFields) {
 }
 
 export {
-  defineView,
+  defineSingleView, defineRangeView,
   defineCreateAction, defineUpdateAction, defineDeleteAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
   defineSortIndex

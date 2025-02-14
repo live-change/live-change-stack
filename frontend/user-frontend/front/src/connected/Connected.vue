@@ -14,7 +14,10 @@
           <div class="flex flex-row align-items-center">
             <i v-if="contact.contactType.contactType === 'email'" class="pi pi-envelope mr-2"></i>
             <i v-if="contact.contactType.contactType === 'phone'" class="pi pi-mobile mr-2"></i>
-            <span class="block text-900 font-medium text-lg">{{ contact.id }}</span>
+            <span v-if="contact.contactType.contactType === 'phone'"
+                  class="block text-900 font-medium text-lg">{{ formatPhoneNumber(contact.id) }}</span>
+            <span v-else
+                  class="block text-900 font-medium text-lg">{{ contact.id }}</span>
           </div>
           <Button class="p-button-text p-button-plain p-button-rounded mr-1" icon="pi pi-times"
                   v-if="canDelete"
@@ -27,6 +30,11 @@
             <i  class="pi pi-google mr-2"></i>
             <span class="block text-900 font-medium text-lg">{{ account.email }}</span>
           </div>
+          <div v-else-if="account.accountType.accountType === 'linkedin'"
+               class="flex flex-row align-items-center">
+            <i  class="pi pi-linkedin mr-2"></i>
+            <span class="block text-900 font-medium text-lg">{{ account.name }}</span>
+          </div>
           <pre v-else>{{ account }}</pre>
           <Button class="p-button-text p-button-plain p-button-rounded mr-1" icon="pi pi-times"
                   v-if="canDelete"
@@ -38,11 +46,15 @@
       <div class="flex flex-row flex-wrap">
         <router-link v-for="contactType in contactsTypes"
                      :to="{ name: 'user:connect-'+contactType.contactType }" class="mr-2 no-underline block mb-1">
-          <Button :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
+          <Button v-if="contactType.contactType === 'email'"
+                  :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
+          <Button v-else-if="contactType.contactType === 'phone'"
+                  :label="'Add '+contactType.contactType" icon="pi pi-phone" id="connect" />
+          <Button v-else :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
         </router-link>
         <router-link v-for="accountType in accountTypes"
                      :to="{ name: 'user:connect-'+accountType.accountType }" class="mr-2 no-underline block mb-1">
-          <Button :label="'Add '+accountType.accountType" icon="pi pi-google" id="connect" />
+          <Button v :label="'Add '+accountType.accountType" icon="pi pi-google" id="connect" />
         </router-link>
 
       </div>
@@ -65,16 +77,13 @@
   onMounted(() => isMounted.value = true)
   onUnmounted(() => isMounted.value = false)
 
+  import { formatPhoneNumber } from '../phone/phoneNumber.js'
+
   const workingZone = inject('workingZone')
 
   import { useApi, live, usePath, useActions } from '@live-change/vue3-ssr'
   const api = useApi()
   const path = usePath()
-  const messageAuthenticationClientConfig = api.getServiceDefinition('messageAuthentication')?.clientConfig
-  const contactTypesAvailable = messageAuthenticationClientConfig?.contactTypes || []
-
-  const userClientConfig = api.getServiceDefinition('user')?.clientConfig
-  const accountTypesAvailable = userClientConfig?.remoteAccountTypes || []
 
   const messageAuthenticationApi = useActions().messageAuthentication
 
@@ -118,43 +127,10 @@
     })
   }
 
-  const contactsTypes = contactTypesAvailable.map(contactType => {
-    const contactTypeUpper = contactType[0].toUpperCase() + contactType.slice(1)
+  import { getContactTypes, getAccountTypes} from './connected.js'
 
-    let serviceName = contactType
-    let viewName = 'myUser'+contactTypeUpper+'s'
-    if(!path[serviceName]) { // find service by viewName
-      for(const s in path) {
-        if(path[s][viewName]) {
-          serviceName = s
-          break
-        }
-      }
-    }
-    //console.log('contactType', contactType, 'serviceName', serviceName, 'viewName', viewName)
-    console.log(`path[${serviceName}][${viewName}] =`, path[serviceName][viewName])
-    return {
-      contactType,
-      serviceName,
-      viewName,
-      path: path[serviceName][viewName]({}),
-      contacts: null
-    }
-  })
-
-  const accountTypes = accountTypesAvailable.map(accountType => {
-    let serviceName = accountType+'Authentication'
-    let viewName = 'myUserAccounts'
-    console.log('remoteAccountType', accountType, 'serviceName', serviceName, 'viewName', viewName)
-    console.log(`path[${serviceName}][${viewName}] =`, path[serviceName][viewName])
-    return {
-      accountType,
-      serviceName,
-      viewName,
-      path: path[serviceName][viewName]({}),
-      accounts: null
-    }
-  })
+  const contactsTypes = getContactTypes()
+  const accountTypes = getAccountTypes()
 
   const contactPromises = contactsTypes.map(async contactType => {
     contactType.contacts = await live(contactType.path)

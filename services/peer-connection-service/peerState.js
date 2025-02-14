@@ -1,7 +1,7 @@
 import definition from './definition.js'
 const config = definition.config
 const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'].
+  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'],
   writerRoles = ['speaker', 'vip', 'moderator', 'owner']
 } = config
 
@@ -12,6 +12,9 @@ import { Peer } from './peer.js'
 
 
 const peerStateFields = {
+  online: {
+    type: Boolean
+  },
   audioState: {
     type: String
   },
@@ -26,7 +29,13 @@ const PeerState = definition.model({
     what: Peer
   },
   properties: {
-    ...peerStateFields
+    ...peerStateFields,
+    sessionOrUserType: {
+      type: String
+    },
+    sessionOrUser: {
+      type: String
+    },
   }
 })
 
@@ -34,29 +43,6 @@ definition.event({
   name: "peerStateSet",
   async execute({ peer, data }) {
     await PeerState.create({ ...data, id: peer })
-  }
-})
-
-definition.view({
-  name: "peerState",
-  properties: {
-    peer: {
-      type: Peer
-    }
-  },
-  returns: {
-    type: PeerState
-  },
-  access: async ({ peer }, context) => {
-    const { client, service, visibilityTest } = context
-    if(visibilityTest) return true
-    const [toType, toId, toSession] = peer.split('_')
-    return toType.split('.')[0] === 'priv'
-        ? checkPrivAccess(toId, context)
-        : checkIfRole(toType.split('.')[0], toId, writerRoles, context)
-  },
-  async daoPath({ peer }, { client, service }, method) {
-    return PeerState.path(peer)
   }
 })
 
@@ -72,12 +58,14 @@ definition.action({
   access: async ({ peer }, context) => {
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
-    const [toType, toId, toSession] = peer.split('_')
+    const [toType, toId, toSession] = peer.split(':')
     if(client.session !== toSession) return false
     const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
     return hasRole
   },
   async execute(props, { client, service }, emit) {
+    const [sessionOrUserType, sessionOrUser] =
+      client.user ? ['user_User', client.user] : ['session_Session', client.session]
     let data = { }
     for(const key in peerStateFields) {
       data[key] = props[key]

@@ -93,6 +93,14 @@ class Service {
     console.log("Service", this.definition.name, "started")
   }
 
+  async afterStart(config){
+    if(config.runCommands) {
+      for (const afterStartCallback of this.definition.afterStartCallbacks) {
+        await afterStartCallback(this)
+      }
+    }
+  }
+
   async trigger(trigger, data) {
     return this.app.trigger({
       causeType: 'service',

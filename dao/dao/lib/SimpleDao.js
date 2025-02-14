@@ -30,13 +30,16 @@ class SimpleDao {
 
   get(what) {
     const source = this.defn.values[what[1]]
-    if(!source) throw new Error(`source ${what[1]} is not defined`)
+    if(!source) throw new Error(`source ${what[1]} is not defined while getting ${what}`)
     return source.get(...(what.slice(2)))
   }
 
   request(what, ...args) {
     let method = this.defn.methods[what[1]]
-    if(!method) throw new Error("methodNotFound")
+    if(!method) {
+      console.log("METHOD", what[1], "not found in", what)
+      throw new Error("methodNotFound")
+    }
     let res = method(...(what.slice(2).concat(args)))
     if(res && res.then) return res
     return Promise.resolve(res)

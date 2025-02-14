@@ -79,6 +79,9 @@ class TableReader extends ChangeStream {
   object(id) {
     return new ObjectReader(this.#table, id, this.#time)
   }
+  objectGet(id) {
+    return this.#table.objectGet(id)
+  }
   async get(range = {}) {
     return (await this.#table).rangeGet(range)
   }

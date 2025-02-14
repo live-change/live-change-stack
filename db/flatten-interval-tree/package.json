@@ -1,6 +1,6 @@
 {
   "name": "@live-change/flatten-interval-tree",
-  "version": "0.8.34",
+  "version": "0.9.32",
   "description": "Interval search tree - this is a fork of the original project that support strings as keys.",
   "author": "Michał Łaszczewski <michal@lasczewski.pl>",
   "contributors": [
@@ -48,5 +48,5 @@
     "nyc": "^14.1.1",
     "rollup": "^1.6.0"
   },
-  "gitHead": "40e61928bf43b35352c76fc135f36a2d8bd76c4a"
+  "gitHead": "2aa34c0589d115aeaa573bd2cae09bb43a66d162"
 }

@@ -17,7 +17,9 @@
 
     <slot v-if="frozen && buckets?.changed" name="changedTop"></slot>
 
-    <template v-for="(bucket, bucketIndex) in buckets.buckets" :key="bucket.id">
+    <slot v-if="itemsCount === 0" name="empty"></slot>
+
+    <template v-for="(bucket, bucketIndex) in buckets?.buckets ?? []" :key="bucket.id">
 
       <slot v-for="(item, itemIndex) in bucket.data" v-bind="{ item, bucket, itemIndex, bucketIndex }">
         <h4>{{bucketIndex}}.{{itemIndex}}</h4>
@@ -48,7 +50,7 @@
 <script setup>
 
   import ScrollBorder from 'vue3-scroll-border'
-  import { ref, toRefs, defineProps, defineEmits, watch } from 'vue'
+  import { ref, toRefs, defineProps, defineEmits, watch, computed } from 'vue'
   import { rangeBuckets } from '@live-change/vue3-ssr'
 
   const props = defineProps({
@@ -142,17 +144,27 @@
   const loadingBottom = ref(false)
 
   async function createBuckets() {
-    return rangeBuckets(
-        (range, p) => pathFunction.value(range, p),
-        {
-          bucketSize: bucketSize.value,
-          initialPosition: initialPosition.value,
-          softClose: softClose.value
-        }
-    )
+    try {
+      return await rangeBuckets(
+          (range, p) => pathFunction.value(range, p),
+          {
+            bucketSize: bucketSize.value,
+            initialPosition: initialPosition.value,
+            softClose: softClose.value
+          }
+      )
+    } catch(e) {
+      console.error("Error creating buckets", e)
+      throw e
+    }
   }
 
   const buckets = ref()
+
+  const itemsCount = computed(() => {
+    if(!buckets.value) return 0
+    return buckets.value.buckets.reduce((acc, b) => acc + b.data.length, 0)
+  })
 
   if(props.buckets) {
     buckets.value = props.buckets

@@ -6,23 +6,23 @@
         <div :class="['ml-2']">{{ label }}</div>
       </div>
       <div v-if="task?.progress && task?.state !== 'done'" class="w-8rem mr-3 flex-grow-1" style="max-width: 50vw">
-        <ProgressBar :value="(100 * task.progress.current / task.progress.total).toFixed()" />
+        <ProgressBar :value="Math.floor((100 * taskData.progress.current / taskData.progress.total))" />
       </div>
-      <div v-if="task?.retries?.length" class="mr-3">
+      <div v-if="task?.retries?.length && taskData.retries.length < taskData.maxRetries" class="mr-3">
         <i class="pi pi-replay" />
-        {{ task.retries.length }} / {{ task.maxRetries }}
+        {{ taskData.retries.length }} / {{ taskData.maxRetries }}
       </div>
       <div>{{ task?.state !== 'done' ? (task?.progress?.action || task?.state) : 'done' }}</div>
     </div>
     <div v-for="retry in task?.retries" class="ml-4 flex flex-row justify-content-between text-red-800">
       {{ retry.error }} at {{ d(retry.failedAt, 'shortestTime')}}
     </div>
-<!--    <pre>{{ task.progress }}</pre>-->
-    <div v-if="taskResultComponent && task.result" class="m-2">
-      <component :is="taskResultComponent" :task="task" :result="task.result" :taskType="taskType" />
+<!--    <pre>{{ taskData.progress }}</pre>-->
+    <div v-if="taskResultComponent && taskData.result" class="m-2">
+      <component :is="taskResultComponent" :task="task" :result="taskData.result" :taskType="taskType" />
     </div>
     <div class="ml-4">
-      <Task v-for="task in childTasks" :key="task.id" :task="task" :tasks="tasks" :taskTypes="taskTypes" />
+      <Task v-for="task in childTasks" :key="taskData.id" :task="task" :tasks="allTasks" :taskTypes="taskTypes" />
     </div>
   </div>
 </template>
@@ -30,14 +30,12 @@
 
 <script setup>
 
+  import ProgressBar from "primevue/progressbar"
+
   import { ref, onMounted, defineProps, toRefs, computed } from "vue"
 
-  import { useToast } from 'primevue/usetoast'
-  const toast = useToast()
-  import { useConfirm } from 'primevue/useconfirm'
-  const confirm = useConfirm()
-
   import { useActions, usePath, live } from '@live-change/vue3-ssr'
+  const path = usePath()
   const actions = useActions()
 
   import { useI18n } from 'vue-i18n'
@@ -50,7 +48,7 @@
     },
     tasks: {
       type: Array,
-      required: true
+      default: undefined
     },
     taskTypes: {
       type: Object,
@@ -59,25 +57,41 @@
   })
   const { task, tasks, taskTypes } = toRefs(props)
 
-  const taskId = computed(() => task.value.to || task.value.id)
-  const taskType = computed(() => taskTypes.value[task.value.type || task.value.name] || {})
+  const taskId = computed(() => task.value?.to || task.value?.id || task.value)
+
+  const loadedTasksPath = computed(() => tasks.value ? null : (taskId.value ? path.task.tasksByRoot({
+    root: taskId.value,
+    rootType: 'task_Task'
+  }) : null))
+
+  const [ loadedTasks ] = await Promise.all([
+    live(loadedTasksPath)
+  ])
+  
+  const allTasks = computed(() => tasks.value || loadedTasks.value)
+
+  const taskData = computed(() => allTasks.value && allTasks.value.find(m => (m.to ?? m.id) === taskId.value))
+
+  const taskType = computed(() => taskTypes.value[taskData.value?.type || taskData.value?.name] || {})
 
   const taskResultComponent = computed(() => taskType.value.resultComponent)
 
   const label = computed(() => {
     if(taskType.value.label) {
-      if(typeof taskType.value.label == 'function') return taskType.value.label(task.value)
+      if(typeof taskType.value.label == 'function') return taskType.value.label(taskData.value)
       return taskType.value.label
     }
-    return task.value.name || task.value.type
+    return taskData.value?.name || taskData.value?.type
   })
 
   const childTasks = computed(
-    () => tasks.value.filter(m => m.causeType === "task_Task" && m.cause === taskId.value)
+    () => allTasks.value
+      ? allTasks.value.filter(m => m.causeType === "task_Task" && m.cause === taskId.value)
+      : []
   )
 
   const icon = computed(() => {
-    switch(task.value.state) {
+    switch(taskData.value?.state) {
       case 'created': return 'pi-sparkles'
       case 'waiting': return 'pi-hourglass pi-spin'
       case 'running': return 'pi-play'
@@ -90,7 +104,8 @@
   })
 
   const taskColor = computed(() => {
-    switch(task.value.state) {
+    console.log("TD", taskData.value, "AT", allTasks.value)
+    switch(taskData.value?.state) {
       case 'failed': return 'text-red-600'
       default: {}
     }

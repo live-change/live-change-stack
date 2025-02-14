@@ -9,6 +9,7 @@ import signRoutes from "./sign/routes.js"
 import connectedRoutes from "./connected/routes.js"
 import identificationRoutes from "./identification/routes.js"
 import deleteRoutes from "./delete/routes.js"
+import googleAccessRoutes from "./google-access/routes.js"
 import { passwordResetRoutes, passwordChangeRoutes } from "./password/routes.js"
 import { notificationsSettingsRoutes, notificationsRoutes } from "./notifications/routes.js"
 import localeSettingsRoutes from "./locale/routes.js"
@@ -23,6 +24,7 @@ export function userRoutes(config = {}) {
     ...signRoutes(config),
     ...passwordResetRoutes(config),
     ...notificationsRoutes(config),
+    ...googleAccessRoutes(config),
 
     route({
       path: prefix + 'settings', meta: { pageType: 'wide' },
@@ -58,11 +60,18 @@ import { client as useClient } from '@live-change/vue3-ssr'
 
 export function installUserRedirects(router, app, config) {
   const client = useClient(app._context)
+  if(typeof window === 'undefined') return
   router.beforeEach(async (to, from) => {
     if(to?.matched.find(m => m?.meta.signedIn)) {
       if(!client.value.user) {
         console.log("REDIRECT TO LOGIN BECAUSE PAGE REQUIRES LOGIN!")
-        router.redirectAfterSignIn = to.fullPath
+        console.log("SAVE FOR LOGIN", from)
+        localStorage.redirectAfterSignIn = JSON.stringify({
+          name: to.name,
+          params: to.params,
+          query: to.query,
+          hash: to.hash
+        })
         return { name: 'user:signInEmail' }
       }
     }
@@ -73,8 +82,13 @@ export function installUserRedirects(router, app, config) {
       }
     }
     if(to && to.name === 'user:signInEmail' && from?.matched.find(m => m?.meta.saveForSignIn)) {
-      console.log("SAVE FOR LOGIN", from.fullPath)
-      localStorage.redirectAfterLogin = from.fullPath
+      console.log("SAVE FOR LOGIN", from)
+      localStorage.redirectAfterSignIn = JSON.stringify({
+        name: from.name,
+        params: from.params,
+        query: from.query,
+        hash: from.hash
+      })
     }
   })
 }
@@ -87,7 +101,7 @@ export function createRouter(app, config) {
     history: import.meta.env.SSR ? createMemoryHistory() : createWebHistory(),
     routes: [
       { name: 'index', path: '/', component: () => import('./Index.vue') },
-      ...userRoutes(config),
+      ...userRoutes({ ...config, prefix: '/user/' }),
       ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) })
     ]
   })

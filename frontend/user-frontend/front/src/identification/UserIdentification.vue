@@ -65,8 +65,7 @@
   const blockImageSize = '28px'
 
   import { toRefs } from "@vueuse/core"
-  const { data, inline } = toRefs(props)
-  const { ownerType, owner } = props
+  const { data, inline, ownerType, owner } = toRefs(props)
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
@@ -75,33 +74,36 @@
   import { usePath, live, actions } from '@live-change/vue3-ssr'
 
   const path = usePath()
-  const userIdentificationPath = path.userIdentification.sessionOrUserOwnedIdentification({
-    sessionOrUserType: ownerType, sessionOrUser: owner
-  })
+  const userIdentificationPath = computed(() => ownerType.value && owner.value &&
+    path.userIdentification.identification({
+      sessionOrUserType: ownerType.value, sessionOrUser: owner.value
+    }) || null
+  )
 
   const dataPromise = data.value !== undefined ? Promise.resolve(data) :
        live(userIdentificationPath)
 
-  const identiconUrl = `/api/identicon/jdenticon/${ownerType}:${owner}/28.svg`
+  const identiconUrl = computed(() => `/api/identicon/jdenticon/${ownerType.value}:${owner.value}/28.svg`)
 
   import { computed } from 'vue'
 
   const imageStyle = computed(() => inline
-      ? { width: inlineImageSize, height: inlineImageSize }
+      ? { width: inlineImageSize, height: inlineImageSize, verticalAlign: 'middle' }
       : { width: blockImageSize, height: blockImageSize }
   )
 
   const [ userData ] = await Promise.all([ dataPromise ])
 
-  const nameGeneratorConfig = {
-    dictionaries: [/*["anonymous", "unnamed"],*/ colors, animals],
-    separator: ' ',
-    seed: ownerType + '_' + owner
-  }
-
   const name = computed(() => userData.value?.name
+    || ((userData.value?.firstName && userData.value?.lastName)
+      ? userData.value?.firstName + ' ' + userData.value?.lastName
+      : userData.value?.firstName)
     || props.anonymous
-    || uniqueNamesGenerator(nameGeneratorConfig))
+    || uniqueNamesGenerator({
+      dictionaries: [/*["anonymous", "unnamed"],*/ colors, animals],
+      separator: ' ',
+      seed: ownerType.value + '_' + owner.value
+    }))
 
 </script>
 

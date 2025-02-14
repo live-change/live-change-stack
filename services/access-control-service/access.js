@@ -11,7 +11,7 @@ export default (definition) => {
 
   const { /// TODO: per type access config
     hasAny = (roles, client, { objectType, object }) => roles.length > 0,
-    isAdmin = (roles, client, { objectType, object }) => roles.includes('administrator'),
+    isAdmin = (roles, client, { objectType, object }) => roles.includes('admin'),
     canInvite = (roles, client, { objectType, object }) => roles.length > 0,
     canRequest = (roles, client, { objectType, object }) => false
   } = config
@@ -54,7 +54,6 @@ export default (definition) => {
   }
 
   async function getUnitClientRoles(client, { objectType, object }, ignorePublic) {
-    const [ sessionOrUserType, sessionOrUser ] = client.user ? ['user_User', client.user] : ['session_Session']
     const [
       publicAccessData,
       sessionAccess,
@@ -73,6 +72,9 @@ export default (definition) => {
     }
     if(sessionAccess) roles.push(...sessionAccess.roles)
     if(userAccess) roles.push(...userAccess.roles)
+    if(objectType === 'user_User' && object === client.user) roles.push('owner')
+    if(objectType === 'session_Session' && object === client.session) roles.push('owner')
+    //console.log("GOT UNIT CLIENT:", client, "ROLES:", roles, "IGNORE PUBLIC:", ignorePublic)
     return Array.from(new Set(roles))
   }
 
@@ -81,6 +83,9 @@ export default (definition) => {
     const accessParentsPromise = parents[objectType]
       ? parents[objectType]({ objectType, object })
       : Promise.resolve([])
+    /*accessParentsPromise.then((foundParents) => {
+      console.log('ACCESS CONTROL PARENTS', foundParents, "FOR", objectType, '/' ,object, 'IN MAP', parents)
+    })*/
     const parentRolesPromise = accessParentsPromise.then(accessParents => Promise.all(
         accessParents.map(
           ({ objectType, object }) =>
@@ -92,7 +97,9 @@ export default (definition) => {
   }
 
   async function getClientObjectsRoles(client, objects, ignorePublic) {
-    const objectsRoles = await Promise.all(objects.map(obj => getClientObjectRoles(client, obj, ignorePublic)))
+    const objectsRoles = await Promise.all(
+      objects.map(obj => getClientObjectRoles(client, obj, ignorePublic))
+    )
     const firstObjectRoles = objectsRoles.shift()
     let roles = firstObjectRoles
     for(const objectRoles of objectsRoles) {
@@ -101,12 +108,7 @@ export default (definition) => {
     return roles
   }
 
-  async function checkRoles(client, { objectType, object, objects }, callback, ignorePublic) {
-    const allObjects = ((objectType && object) ? [{ objectType, object }] : []).concat(objects || [])
-    const roles = await getClientObjectsRoles(client, allObjects, ignorePublic)
-    console.log('checkRoles', allObjects, roles)
-    return await callback(roles, client, { objectType, object })
-  }
+
 
   /// QUERIES:
 
@@ -115,6 +117,8 @@ export default (definition) => {
       client, parentsSourcesMap, output
     }) {
     async function treeNode(objectType, object) {
+      if(!objectType) throw new Error('No objectType for accessControl treeNode')
+      if(!object) throw new Error('No object for accessControl treeNode')
       const node = {
         objectType, object,
         data: null,
@@ -122,7 +126,8 @@ export default (definition) => {
         publicSessionRoles: [],
         publicUserRoles: [],
         sessionRoles: [],
-        userRoles: []
+        userRoles: [],
+        ownerRoles: [],
       }
       let objectObserver, publicAccessObserver, sessionAccessObserver, userAccessObserver
 
@@ -149,6 +154,9 @@ export default (definition) => {
         if(isLoaded()) updateRoles()
       })
 
+      if(objectType === 'user_User' && object === client.user) node.ownerRoles.push('owner')
+      if(objectType === 'session_Session' && object === client.session) node.ownerRoles.push('owner')
+
       async function disposeParents() {
         const oldParents = node.parents
         return Promise.all(oldParents.map(parent => parent.dispose()))
@@ -157,13 +165,16 @@ export default (definition) => {
       if(parentsSources) {
         const objectTable = input.table(objectType)
         const objectTableObject = objectTable.object(object)
+        let obsv = false
         objectObserver = objectTableObject.onChange(async (objectData, oldObjectData) => {
           await disposeParents()
           node.parents = objectData ? await Promise.all(parentsSources.map(parentSource => {
             const parentType = parentSource.type || objectData[parentSource.property + 'Type']
-            const parent = objectData[parentSource.property]
-            return treeNode(parentType, parent)
-          })) : []
+            const property = objectData[parentSource.property]
+            const parents = Array.isArray(property) ? property : [ property ]
+            return parents.map(parent => treeNode(parentType, parent))
+          }).flat()) : []
+          obsv = true
         })
       }
       node.dispose = async function() {
@@ -185,13 +196,18 @@ export default (definition) => {
         ...node.publicUserRoles,
         ...node.publicSessionRoles,
         ...node.userRoles,
-        ...node.sessionRoles
+        ...node.sessionRoles,
+        ...node.ownerRoles,
       ]))
     }
     return { treeNode, computeNodeRoles }
   }
 
   function accessPath(client, objects) {
+    for(const obj of objects) {
+      if(!obj.objectType) throw new Error('No objectType for accessControl accessPath')
+      if(!obj.object) throw new Error('No object for accessControl accessPath')
+    }
     return ['database', 'queryObject', app.databaseName, `(${
       async (input, output, {
         objects, parentsSourcesMap, client,
@@ -206,7 +222,7 @@ export default (definition) => {
             input, publicAccessTable, accessTable, updateRoles, isLoaded: () => loaded,
             client, parentsSourcesMap, output
           })
-
+        
         let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object, client))
 
         const outputObjectId = `${JSON.stringify(client.session)}:${JSON.stringify(client.user)}:` +
@@ -214,9 +230,11 @@ export default (definition) => {
                                  .join(':')
         let oldOutputObject = null
         async function updateRoles() {
+          if(!loaded) return
           const roots = await Promise.all(rolesTreesRoots)
+          //output.debug('accessRoots', JSON.stringify(roots, null, 2))
           const accessesRoles = roots.map(root => computeNodeRoles(root))
-          output.debug(outputObjectId, "Accesses roles:", accessesRoles)
+          //output.debug(outputObjectId, "Accesses roles:", accessesRoles)
           const firstAccessRoles = accessesRoles.shift()
           let roles = firstAccessRoles
           for(const accessRoles of accessesRoles) {
@@ -241,6 +259,10 @@ export default (definition) => {
   }
 
   function accessesPath(client, objects) {
+    for(const obj of objects) {
+      if(!obj.objectType) throw new Error('No objectType for accessControl accessesPath')
+      if(!obj.object) throw new Error('No object for accessControl accessesPath')
+    }
     return ['database', 'query', app.databaseName, `(${
       async (input, output, {
         objects, parentsSourcesMap, client,
@@ -259,6 +281,7 @@ export default (definition) => {
         let rolesTreesRoots = objects.map(({ object, objectType }) => treeNode(objectType, object, client))
         const accesses = []
         async function updateRoles() {
+          if(!loaded) return
           const roots = await Promise.all(rolesTreesRoots)
           for(let root of roots) {
             const outputObjectId = `${JSON.stringify(client.session)}:${JSON.stringify(client.user)}` +
@@ -291,16 +314,14 @@ export default (definition) => {
     }]
   }
 
-  function accessLimitedGet(client, objects, requiredRoles, path) {
-    const roles = getClientObjectsRoles(client, objects)
-    for(const requiredRole of requiredRoles) {
-
-    }
-  }
-
-  function accessLimitedObservable(client, objects, path) {
-    if(path[0] !== 'database') throw new Error("non database path "+ JSON.stringify(path))
-    const isObject = path[1] === 'queryObject' || path[1] === ''
+  async function checkRoles(client, { objectType, object, objects }, callback, ignorePublic) {
+    const allObjects = ((objectType && object) ? [{ objectType, object }] : []).concat(objects || [])
+    //const roles = await getClientObjectsRoles(client, allObjects, ignorePublic)
+    const access = await app.dao.get(accessPath(client, allObjects))
+    const roles = access.roles
+    //console.log('checkRoles', allObjects, roles)
+    //console.trace("CHECK ROLES!")
+    return await callback(roles, client, { objectType, object })
   }
 
   return {

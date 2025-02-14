@@ -56,10 +56,10 @@
   const p = path()
 
   const livePublicAccessPath = computed(
-    () =>  p.accessControl.objectOwnedPublicAccess({ objectType: objectType.value, object: object.value })
+    () =>  p.accessControl.publicAccess({ objectType: objectType.value, object: object.value })
   )
   const liveMetadataPath = computed(
-    () =>  p.content.objectOwnedMetadata({ objectType: objectType.value, object: object.value })
+    () =>  p.content.metadata({ objectType: objectType.value, object: object.value })
   )
 
   const [publicAccessData, metadata] = await Promise.all([

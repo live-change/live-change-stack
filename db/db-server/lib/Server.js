@@ -17,6 +17,11 @@ import { profileLog } from '@live-change/db'
 import { Database } from '@live-change/db'
 import ReactiveDao from '@live-change/dao'
 
+import { fileURLToPath } from 'url'
+const packageInfo = await fs.promises.readFile(fileURLToPath(
+  new URL(import.meta.resolve('@live-change/db-server/package.json'))
+), 'utf8')
+
 import Debug from 'debug'
 const debug = Debug('db-server')
 
@@ -133,7 +138,6 @@ class Server {
   }
 
   createDaoConfig(session) {
-    const packageInfo = eval('import("@live-change/db-server/package.json"'+', { assert: { type: "json" } })')
 
     const store = { /// Low level data access
       type: 'local',
@@ -292,7 +296,7 @@ class Server {
         const indexesInfo = await indexesTable.rangeGet({})
         const infoByName = new Map()
         for(const indexInfo of indexesInfo) {
-          const indexMeta = metadata.indexes[indexInfo.name]
+          const indexMeta = metadata?.indexes[indexInfo.name]
           if(!indexMeta || (indexMeta.uid !== indexInfo.id)) {
             console.error("CORRUPTED INDEX INFO", indexInfo.name, indexInfo.id)
             console.log("DELETING CORRUPTED INFO")

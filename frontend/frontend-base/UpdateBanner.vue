@@ -28,8 +28,11 @@
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
 
+  const codeVersion = ref(ENV_VERSION)
+
   const updateAvailable = computed(
-      () => ENV_VERSION != 'unknown' && api.metadata.version.value && api.metadata.version.value != ENV_VERSION
+      () => codeVersion.value !== 'unknown'
+        && api.metadata.version.value && api.metadata.version.value !== codeVersion.value
   )
   const updateBannerHidden = ref(false)
   function hideUpdateBanner() {
@@ -39,7 +42,7 @@
   async function update(ev) {
     ev.preventDefault()
     ev.stopPropagation()
-    if (ENV_MODE == 'pwa' && navigator.serviceWorker) {
+    if (ENV_MODE === 'pwa' && navigator.serviceWorker) {
       if(navigator.serviceWorker.ready) {
         console.log("TRY UPDATE PWA!")
         setTimeout(() => {

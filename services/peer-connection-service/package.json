@@ -1,6 +1,6 @@
 {
   "name": "@live-change/peer-connection-service",
-  "version": "0.8.34",
+  "version": "0.9.32",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -11,5 +11,5 @@
   },
   "author": "Michał Łaszczewski <michal@emikse.com>",
   "license": "BSD-3-Clause",
-  "gitHead": "40e61928bf43b35352c76fc135f36a2d8bd76c4a"
+  "gitHead": "2aa34c0589d115aeaa573bd2cae09bb43a66d162"
 }

@@ -84,7 +84,7 @@
 
   const [ accesses ] = await Promise.all([
     live(path().accessControl.objectOwnedAccesses({ object, objectType })
-        .with(access => path().userIdentification.sessionOrUserOwnedIdentification({
+        .with(access => path().userIdentification.identification({
           sessionOrUserType: access.sessionOrUserType, sessionOrUser: access.sessionOrUser
         }).bind('identification'))
     )
@@ -92,8 +92,8 @@
 
   const synchronizedAccessesList = synchronizedList({
     source: accesses,
-    update: accessControlApi.updateSessionOrUserAndObjectOwnedAccess,
-    delete: accessControlApi.resetSessionOrUserAndObjectOwnedAccess,
+    update: accessControlApi.updateAccess,
+    delete: accessControlApi.resetAccess,
     identifiers: { object, objectType },
     objectIdentifiers: ({ to, sessionOrUser, sessionOrUserType }) =>
         ({ access: to, sessionOrUser, sessionOrUserType, object, objectType }),
@@ -104,9 +104,15 @@
 
   function deleteAccess(access) {
     console.log("DELETE ACCESS", access)
+    const name = access.identification && (
+      access.identification.name
+      || ((access.identification.firstName && access.identification.lastName)
+          ? access.identification.firstName + ' ' + access.identification.lastName
+          : access.identification.firstName)
+    ) || 'Anonymous'
     confirm.require({
       target: event.currentTarget,
-      message: `Do you want to revoke user "${access.identification.name}" access?`,
+      message: `Do you want to revoke user "${name}" access?`,
       icon: 'pi pi-info-circle',
       acceptClass: 'p-button-danger',
       accept: async () => {

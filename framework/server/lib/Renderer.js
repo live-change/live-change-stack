@@ -53,6 +53,13 @@ class Renderer {
 
     const preloadLinks = this.renderPreloadLinks(modules)
 
+    for(const [path, value] of data) {
+      if(path !== '{"paths":[{"what":["accessControl","objectOwnedAccessInvitations",{"object":"[Wf1KCKj1w.0@BCriY]","objectType":"speedDating_Event"}],"more":[{"schema":[["userIdentification","identification",{"object":{"sessionOrUserType":{"property":"contactOrUserType"},"sessionOrUser":{"property":"contactOrUser"}}}]],"to":"identification"}]}]}')
+        continue
+      console.log("SERIALIZE DATA", path, value[0])
+      console.log("SERIALIZED", serialize(value[0], { isJSON: true }))
+    }
+
     const appDataScript = `  <script>` +
         `    window.__DAO_CACHE__= ${serialize(data, { isJSON: true })}\n`+
         (this.settings.fastAuth ? ''
@@ -60,7 +67,7 @@ class Renderer {
         `    window.__VERSION__ = ${serialize(version, { isJSON: true })}\n`+
         `    window.__WINDOW_ID__ = ${serialize(windowId, { isJSON: true })}\n`+
         `    window.__NOW__ = ${serialize(now, { isJSON: true })}\n`+
-        `    console.error("SOFTWARE VERSION:" + window.__VERSION__)\n`+
+        `    console.info("SOFTWARE VERSION:" + window.__VERSION__)\n`+
         `</script>\n`
 
     const template = await this.prepareTemplate(url)
@@ -166,7 +173,11 @@ class Renderer {
   }
 
   fixStackTrace(e) {
-    this.vite && this.vite.ssrFixStacktrace(e)
+    try {
+      this.vite && this.vite.ssrFixStacktrace(e)
+    } catch(e) {
+      console.error("Error fixing stack trace!")
+    }
   }
 
   async close() {

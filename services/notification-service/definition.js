@@ -6,14 +6,7 @@ import relationsPlugin from '@live-change/relations-plugin'
 
 const definition = app.createServiceDefinition({
   name: "notification",
-  use: [ relationsPlugin, userService ]
+  use: [ userService, relationsPlugin ]
 })
-
-const config = definition.config
-
-definition.clientConfig = {
-  contactTypes: config.contactTypes,
-  notificationTypes: config.notificationTypes
-}
 
 export default definition

@@ -6,7 +6,7 @@ function defineCreatedEvent(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Created'
+  const eventName = modelName + 'Created'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {
@@ -32,7 +32,7 @@ function defineUpdatedEvent(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Updated'
+  const eventName = modelName + 'Updated'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {
@@ -58,7 +58,7 @@ function defineTransferredEvent(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Transferred'
+  const eventName = modelName + 'Transferred'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {
@@ -81,7 +81,7 @@ function defineDeletedEvent(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Deleted'
+  const eventName = modelName + 'Deleted'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {
@@ -101,7 +101,7 @@ function defineCopyEvent(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, reverseRelationWord
   } = context
-  const eventName = joinedOthersPropertyName + reverseRelationWord + modelName + 'Copied'
+  const eventName = modelName + 'Copied'
   service.events[eventName] = new EventDefinition({
     name: eventName,
     properties: {

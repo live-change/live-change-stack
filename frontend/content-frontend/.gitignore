@@ -6,3 +6,5 @@ e2e/output
 stats.html
 *.db
 storage
+build-stats
+front/components.d.ts

@@ -5,10 +5,18 @@ export function routes(config = {}) {
 
     route({ name: 'user:googleAuth', path: prefix + 'google-auth/:action',
       component: () => import("./GoogleAuth.vue"), props: true, meta: { } }),
-    route({ name: 'user:googleAuthScopes', path: prefix + 'google-auth/:action/:scopes*',
+    route({ name: 'user:googleAuthScopes', path: prefix + 'google-auth/:action/:accessType/:scopes*',
       component: () => import("./GoogleAuth.vue"), props: true, meta: { } }),
     route({ name: 'user:googleAuthReturn', path: prefix + 'google-auth-return/:action',
       component: () => import("./GoogleAuthReturn.vue"), props: true }),
+
+    route({ name: 'user:linkedinAuth', path: prefix + 'linkedin-auth/:action',
+      component: () => import("./LinkedinAuth.vue"), props: true, meta: { } }),
+    route({ name: 'user:linkedinAuthScopes', path: prefix + 'linkedin-auth/:action/:scopes*',
+      component: () => import("./LinkedinAuth.vue"), props: true, meta: { } }),
+    route({ name: 'user:linkedinAuthReturn', path: prefix + 'linkedin-auth-return/:action',
+      component: () => import("./LinkedinAuthReturn.vue"), props: true }),
+
 
     route({ name: 'user:signInEmail', path: prefix + 'sign-in-email',
       component: () => import("./SignInEmail.vue"), meta: { signedOut: true } }),

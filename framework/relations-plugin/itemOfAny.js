@@ -1,7 +1,7 @@
 import {
   defineAnyProperties, defineAnyIndexes,
   processModelsAnyAnnotation, addAccessControlAnyParents, generateAnyId, defineDeleteByOwnerEvents,
-  defineParentDeleteTrigger
+  defineParentDeleteTrigger, defineAnyTypeIndexes
 } from './utilsAny.js'
 
 import {
@@ -9,7 +9,7 @@ import {
 } from './itemEvents.js'
 
 import {
-  defineView,
+  defineSingleView, defineRangeView,
   defineCreateAction, defineUpdateAction, defineDeleteAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
   defineSortIndex
@@ -22,8 +22,11 @@ export default function(service, app) {
     context.reverseRelationWord = 'Owned'
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
+    context.model.identifiers = [...Object.keys(context.identifiers), { name: context.modelPropertyName, field: 'id' }]
+
     addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames)
+    defineAnyTypeIndexes(config, context, false)
 
     if(config.sortBy) {
       for(const sortFields of config.sortBy) {
@@ -31,7 +34,9 @@ export default function(service, app) {
       }
     }
 
-    defineView(config, context,
+    defineSingleView(config, context,
+      config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
+    defineRangeView(config, context,
       config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
     /// TODO: multiple views with all properties combinations
     /// TODO: multiple views with limited fields

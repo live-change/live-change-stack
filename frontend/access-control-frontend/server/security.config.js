@@ -46,7 +46,7 @@ const counters = [
   }
 ]
 
-module.exports = {
+export default {
   clientKeys,
   patterns,
   counters

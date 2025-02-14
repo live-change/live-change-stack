@@ -95,9 +95,6 @@ class CommandQueue {
           delay: command.timestamp  && (started.getTime() - (new Date(command.timestamp)).getTime()),
           execution: finished.getTime() - started.getTime()
         }
-        console.log("UPDATE DATABASE", ['database', 'update'], this.database, this.tableName, command.id, [
-          { op: 'merge', property: null, value: { state: 'done', result, stats } }
-        ])
         await this.connection.request(['database', 'update'], this.database, this.tableName, command.id, [
           { op: 'merge', property: null, value: { state: 'done', result, stats } }
         ])

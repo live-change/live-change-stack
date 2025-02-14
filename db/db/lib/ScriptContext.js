@@ -20,17 +20,17 @@ const defaultNativeGlobals = [
 
 const defaultContext = {
   crypto,
-  sha1(data) {
+  sha1(data, encoding = 'hex') {
     if(typeof data != 'string') data = JSON.stringify(data)
-    return crypto.createHash('sha1').update(data).digest('hex')
+    return crypto.createHash('sha1').update(data).digest(encoding)
   },
-  sha256(data) {
+  sha256(data, encoding = 'hex') {
     if(typeof data != 'string') data = JSON.stringify(data)
-    return crypto.createHash('sha256').update(data).digest('hex')
+    return crypto.createHash('sha256').update(data).digest(encoding)
   },
-  hash(data) {
+  hash(data, encoding = 'hex') {
     if(typeof data != 'string') data = JSON.stringify(data)
-    return crypto.createHash('sha1').update(data).digest('hex')
+    return crypto.createHash('sha1').update(data).digest(encoding)
   },
   pipe() {
     return new ChangeStreamPipe()

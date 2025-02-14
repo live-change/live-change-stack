@@ -64,7 +64,7 @@
       //.with(url => p.url.targetOwnedCanonical({ targetType, target: url.target }).bind('canonical'))
       .with(url => url.type.$switch({
         'canonical': null,
-        'redirect': p.url.targetOwnedCanonical({ targetType, target: url.target })
+        'redirect': p.url.canonical({ targetType, target: url.target })
       }).$bind('canonical'))
       .with(url => p.accessControl.myAccessTo({ objectType: targetType, object: url.target }).bind('access'))
     for (let fetch of more) {

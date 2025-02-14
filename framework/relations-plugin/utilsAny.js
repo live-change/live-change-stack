@@ -5,9 +5,9 @@ import {
 } from "@live-change/framework"
 import { allCombinations } from "./combinations.js"
 import { fireChangeTriggers, registerParentDeleteTriggers } from "./changeTriggers.js"
-import { extractObjectData } from "./dataUtils.js"
 
-function extractTypeAndIdParts(otherPropertyNames, properties) {
+
+export function extractTypeAndIdParts(otherPropertyNames, properties) {
   const typeAndIdParts = []
   for (const propertyName of otherPropertyNames) {
     typeAndIdParts.push(properties[propertyName+'Type'])
@@ -16,7 +16,7 @@ function extractTypeAndIdParts(otherPropertyNames, properties) {
   return typeAndIdParts
 }
 
-function extractIdentifiersWithTypes(otherPropertyNames, properties) {
+export function extractIdentifiersWithTypes(otherPropertyNames, properties) {
   const identifiers = {}
   for (const propertyName of otherPropertyNames) {
     identifiers[propertyName] = properties[propertyName]
@@ -25,27 +25,28 @@ function extractIdentifiersWithTypes(otherPropertyNames, properties) {
   return identifiers
 }
 
-function generateAnyId(otherPropertyNames, properties) {
+export function generateAnyId(otherPropertyNames, properties) {
+/*
   console.log("GEN ID", otherPropertyNames, properties, '=>',
     otherPropertyNames
       .map(p => [p+'Type', p])
       .flat()
       .map(p => JSON.stringify(properties[p])).join(':'))
-
+*/
   return otherPropertyNames
       .map(p => [p+'Type', p])
       .flat()
       .map(p => JSON.stringify(properties[p])).join(':')
 }
 
-function defineAnyProperties(model, names) {
+export function defineAnyProperties(model, names) {
   const identifiers = {}
   for (let i = 0; i < names.length; i++) {
-    identifiers[names[i]] = new PropertyDefinition({
+    identifiers[names[i]+'Type'] = new PropertyDefinition({
       type: String,
       validation: ['nonEmpty']
     })
-    identifiers[names[i]+'Type'] = new PropertyDefinition({
+    identifiers[names[i]] = new PropertyDefinition({
       type: String,
       validation: ['nonEmpty']
     })
@@ -56,13 +57,14 @@ function defineAnyProperties(model, names) {
   return identifiers
 }
 
-function defineAnyIndex(model, what, props) {
+export function defineAnyIndex(model, what, props) {
   model.indexes['by' + what] = new IndexDefinition({
-    property: props.map(prop => [prop+'Type', prop]).flat()
+    property: props.map(prop => [prop+'Type', prop]).flat(),
+    hash: true
   })
 }
 
-function defineAnyIndexes(model, props, fullIndex = true) {
+export function defineAnyIndexes(model, props, fullIndex = true) {
   const propCombinations = allCombinations(props)
   for(const propCombination of propCombinations) {
     if(propCombination.length === props.length && !fullIndex) continue
@@ -71,7 +73,7 @@ function defineAnyIndexes(model, props, fullIndex = true) {
   }
 }
 
-function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
+export function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
   if (!service) throw new Error("no service")
   if (!app) throw new Error("no app")
 
@@ -87,6 +89,9 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
       const originalModelProperties = { ...model.properties }
       const modelProperties = Object.keys(model.properties)
       const modelPropertyName = modelName.slice(0, 1).toLowerCase() + modelName.slice(1)
+
+      if(!model.editableProperties) model.editableProperties = modelProperties
+      model.crud = {}
 
       function modelRuntime() {
         return service._runtime.models[modelName]
@@ -108,8 +113,18 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
 
         console.log("MODEL " + modelName + " IS " + annotation + " " + config.what)
 
-        const otherPropertyNames = (Array.isArray(config.to) ? config.to : [config.to ?? 'owner'])
-            .map(other => other.name ? other.name : other)
+        const to = (Array.isArray(config.to) ? config.to : [config.to ?? 'owner'])
+
+        const otherPropertyNames = to.map(other => other.name ? other.name : other)
+
+        const otherPossibleTypes = to.map(other => {
+          const name = other.name ? other.name : other
+          const typesConfig = config[name + 'Types'] || []
+          const otherTypes = other.types || []
+          return Array.from(new Set(
+            typesConfig.concat(otherTypes).map(t => t.getTypeName ? t.getTypeName() : t)
+          ))
+        })
 
         const writeableProperties = modelProperties || config.writeableProperties
         const others = otherPropertyNames.map(other => other.slice(0, 1).toUpperCase() + other.slice(1))
@@ -118,12 +133,15 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
         const joinedOthersClassName = others.join('And')
         const objectType = service.name + '_' + modelName
 
-        const { parentsTypes } = config
+        const parentsTypes = Array.from(new Set(
+          (config.parentsTypes || [])
+            .concat(otherPossibleTypes.filter(x => !!x).flat()
+        )))
 
         const context = {
           service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
-          objectType, parentsTypes
+          objectType, parentsTypes, otherPossibleTypes
         }
 
         cb(config, context)
@@ -132,9 +150,11 @@ function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
   }
 }
 
-function addAccessControlAnyParents(context) {
+export function addAccessControlAnyParents(context) {
   const { modelRuntime } = context
-  context.model.accessControlParents = async (id) => {
+  context.model.accessControlParents = async (what) => {
+    const id = what.object
+    console.log("PROPERTY OF ANY ACCESS CONTROL PARENTS", context.model.name, '/', id)
     const data = await modelRuntime().get(id)
     return context.otherPropertyNames.map(otherPropertyName => {
       const objectType = data[otherPropertyName + 'Type']
@@ -143,13 +163,14 @@ function addAccessControlAnyParents(context) {
     }).filter(parent => parent.object && parent.objectType)
   }
   context.model.accessControlParentsSource = context.otherPropertyNames.map(
-    otherPropertyName => ({
-      property: otherPropertyName
+    (otherPropertyName, index) => ({
+      property: otherPropertyName,
+      possibleTypes: context.otherPossibleTypes[index]
     })
   )
 }
 
-function prepareAccessControl(accessControl, names) {
+export function prepareAccessControl(accessControl, names) {
   if(typeof accessControl == 'object') {
     accessControl.objects = accessControl.objects ?? ((params) => names.map(name => ({
       objectType: params[name + 'Type'],
@@ -158,12 +179,22 @@ function prepareAccessControl(accessControl, names) {
   }
 }
 
-function defineDeleteByOwnerEvents(config, context, generateId) {
+export function cloneAndPrepareAccessControl(accessControl, names) {
+  if(!accessControl) return accessControl
+  if(Array.isArray(accessControl)) {
+    accessControl = { roles: accessControl}
+  }
+  const newAccessControl = { ...accessControl }
+  prepareAccessControl(newAccessControl, names)
+  return newAccessControl
+}
+
+export function defineDeleteByOwnerEvents(config, context) {
   const {
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
   } = context
   for(const propertyName of otherPropertyNames) {
-    const eventName = propertyName + reverseRelationWord + modelName + 'DeleteByOwner'
+    const eventName = modelName + 'DeleteByOwner'
     service.events[eventName] = new EventDefinition({
       name: eventName,
       properties: {
@@ -191,21 +222,63 @@ function defineDeleteByOwnerEvents(config, context, generateId) {
           }])
           const deletePromises = bucket.map(({to}) => runtime.delete(to))
           await Promise.all(deletePromises)
-        } while (bucket.length == bucketSize)
+        } while (bucket.length === bucketSize)
       }
     })
   }
 }
 
-function defineParentDeleteTrigger(config, context) {
+export function defineParentDeleteTrigger(config, context) {
   registerParentDeleteTriggers(context, config)
 }
 
-export {
-  extractTypeAndIdParts, extractIdentifiersWithTypes, defineAnyProperties,
-  defineAnyIndex, defineAnyIndexes,
-  processModelsAnyAnnotation, generateAnyId,
-  addAccessControlAnyParents,
-  prepareAccessControl,
-  defineDeleteByOwnerEvents, defineParentDeleteTrigger
+export function defineAnyTypeIndexes(config, context, useId = false) {
+  const { service, model } = context
+  const tableName = service.name + '_' + model.name
+  if(useId) { // don't use indexes - only object id's - good for propertyOfAny with one parent
+    if(context.otherPossibleTypes[0]?.length) return // types defined in definition - no need for index
+    model.indexes[context.otherPropertyNames[0]+'Types'] = new IndexDefinition({
+      //property: [propertyName+'Type'],
+      function:  async function(input, output, { tableName }) {
+        const table = await input.table(tableName)
+        await table.onChange(async (obj, oldObj) => {
+          const id = obj?.id ?? oldObj?.id
+          const typeJson = id.slice(0, id.indexOf(':'))
+          const type = JSON.parse(typeJson)
+          const count = await table.count({ gte: typeJson+':', lte: type+'_\xFF\xFF\xFF\xFF', limit: 1 })
+          if(count > 0) {
+            await output.put({ id: type })
+          } else {
+            await output.delete({ id: type })
+          }
+        })
+      },
+      parameters: { tableName: tableName }
+    })
+    return
+  }
+  for(let i = 0; i < context.otherPropertyNames.length; i++) {
+    const propertyName = context.otherPropertyNames[i]
+    const propertyTypes = context.otherPossibleTypes[i]
+    if(propertyTypes.length !== 0) continue // types defined in definition - no need for index
+    const srcIndexName = 'by' + propertyName[0].toUpperCase() + propertyName.slice(1)
+    if(!model.indexes[srcIndexName]) throw new Error("Parent index not defined: " + srcIndexName)
+    model.indexes[propertyName+'Types'] = new IndexDefinition({
+      //property: [propertyName+'Type'],
+      function:  async function(input, output, { indexName }) {
+        const index = await input.index(indexName)
+        await index.onChange(async (obj, oldObj) => {
+          const id = obj?.id ?? oldObj?.id
+          const type = id.slice(0, id.indexOf(':'))
+          const count = await index.count({ gte: type+':', lte: type+'_\xFF\xFF\xFF\xFF', limit: 1 })
+          if(count > 0) {
+            await output.put({ id: JSON.parse(type) })
+          } else {
+            await output.delete({ id: JSON.parse(type) })
+          }
+        })
+      },
+      parameters: { indexName: tableName + '_' + srcIndexName }
+    })
+  }
 }

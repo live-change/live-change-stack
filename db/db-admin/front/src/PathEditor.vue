@@ -77,7 +77,7 @@
   const path = reactive(JSON.parse(JSON.stringify(props.modelValue)))
 
   watch(() => props.modelValue, value => {
-    if(JSON.stringify(path) != JSON.stringify(value)) {
+    if(JSON.stringify(path) !== JSON.stringify(value)) {
       path.read = value.read
       path.write = value.write
       path.remove = value.remove
@@ -142,13 +142,13 @@
 
   watch(() => codeParams.value, params => {
     for(const newParam of params) {
-      if(!path.params.find(p => p[0] == newParam)) {
+      if(!path.params.find(p => p[0] === newParam)) {
         path.params.push([newParam, ''])
       }
     }
     const removedParams = []
     for(const oldParam of path.params) {
-      if(!params.find(p => p == oldParam[0]) && !oldParam[1]) {
+      if(!params.find(p => p === oldParam[0]) && !oldParam[1]) {
         removedParams.push(oldParam[0])
       }
     }
@@ -158,7 +158,7 @@
   })
 
   watch(() => output.value, value => {
-    if(JSON.stringify(props.modelValue) != JSON.stringify(value)) {
+    if(JSON.stringify(props.modelValue) !== JSON.stringify(value)) {
       console.log("EMIT OUTPUT!", JSON.stringify(props.modelValue), JSON.stringify(value))
       emit('update:modelValue', output.value)
     } else {
@@ -169,7 +169,8 @@
   const readCompiled = computed(() => {
     try {
       const compiled = compilePath(path.read, path.params, ['range'])
-      return { ...compiled, example: compiled.result({ range: {  } }, dbViewSugar) }
+      return { ...compiled, example: compiled.result({ range: {  } }, dbViewSugar), empty: path.read === 'false'
+        }
     } catch (error) {
       console.error("READ CODE ERROR", error)
       return {
@@ -181,7 +182,8 @@
   const writeCompiled = computed(() => {
     try {
       const compiled = compilePath(path.write, path.params, ['object'])
-      return { ...compiled, example: compiled.result({ object: { id: 'object' } }, dbRequestSugar) }
+      return { ...compiled, example: compiled.result({ object: { id: 'object' } }, dbRequestSugar),
+        empty: path.write === 'false' }
     } catch (error) {
       console.error("WRITE CODE ERROR", error)
       return {
@@ -193,7 +195,8 @@
   const removeCompiled = computed(() => {
     try {
       const compiled = compilePath(path.remove, path.params, ['object'])
-      return { ...compiled, example: compiled.result({ object: { id: 'object' } }, dbRequestSugar) }
+      return { ...compiled, example: compiled.result({ object: { id: 'object' } }, dbRequestSugar),
+        empty: path.remove === 'false' }
     } catch (error) {
       console.error("DELETE CODE ERROR", error)
       return {

@@ -22,11 +22,11 @@
   const p = path()
 
   const metadataLivePath = computed(
-    () => p.content.objectOwnedMetadata({ objectType: props.objectType, object: props.object })
+    () => p.content.metadata({ objectType: props.objectType, object: props.object })
            .with(metadata => p.image.image({ image: metadata.og.image }).bind('ogImage'))
   )
   const canonicalUrlLivePath = computed(
-    () =>  p.url.targetOwnedCanonical({ targetType: props.objectType, target: props.object })
+    () =>  p.url.canonical({ targetType: props.objectType, target: props.object })
   )
   const [metadata, canonical] = await Promise.all([
     live(metadataLivePath),
