@@ -7,7 +7,6 @@
 </template>
 
 <script setup>
-  import 'primevue/resources/themes/lara-light-blue/theme.css'
 
   import { useLocale } from '@live-change/vue3-components'
   const locale = useLocale()
@@ -48,3 +47,18 @@
   api.validators.password = passwordValidator
 
 </script>
+
+<style>
+  :root { font-family: 'Verdana', sans-serif; }
+  @supports (font-variation-settings: normal) {
+    :root { font-family: 'Verdana var', sans-serif; }
+  }
+  html,body
+  {
+    min-height:100%;
+    font-family: 'Verdana var', 'Verdana', sans-serif;
+  }
+  .p-component, .p-component * {
+    font-family: 'Verdana var', 'Verdana', sans-serif;
+  }
+</style>

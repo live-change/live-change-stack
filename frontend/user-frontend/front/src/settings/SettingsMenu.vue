@@ -60,7 +60,7 @@
               </ul>
               <a v-ripple class="p-3 flex align-items-center cursor-pointer text-700 hover:surface-100
                   border-round transition-colors transition-duration-150 p-ripple"
-                 v-styleclass="{ selector: '@prev', enterClass: 'hidden', enterActiveClass: 'scalein',
+                 v-styleclass="{ selector: '@prev', enterFromClass: 'hidden', enterActiveClass: 'scalein',
                    leaveToClass: 'hidden', leaveActiveClass: 'fadeout' }">
                 <img src="/images/empty-user-photo.svg" class="mr-2 border-circle" style="width: 28px; height: 28px"/>
                 <span class="font-medium">Amy Elsner</span>

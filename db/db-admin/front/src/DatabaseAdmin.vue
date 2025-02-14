@@ -15,7 +15,7 @@
                   {{ database.id }}
                 </router-link>
                 <i class="pi pi-chevron-down"
-                   v-styleclass="{ selector: `#db-menu-${database.id}`, enterClass: 'hidden',
+                   v-styleclass="{ selector: `#db-menu-${database.id}`, enterFromClass: 'hidden',
                                    enterActiveClass: 'slidedown', leaveToClass: 'hidden',
                                    leaveActiveClass: 'slideup' }" v-ripple/>
               </div>
@@ -23,7 +23,7 @@
                 <li>
                   <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
                                       hover:surface-100 transition-duration-150 transition-colors p-ripple"
-                     v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'slidedown',
+                     v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'slidedown',
                                      leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                     <i class="pi pi-table mr-2"></i>
                     <span class="font-medium">{{ database?.tables?.length }} TABLES</span>
@@ -44,7 +44,7 @@
                 <li>
                   <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
                                      hover:surface-100 transition-duration-150 transition-colors p-ripple"
-                     v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'slidedown',
+                     v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'slidedown',
                                      leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                     <i class="pi pi-list mr-2"></i>
                     <span class="font-medium">{{ database?.logs?.length }} LOGS</span>
@@ -65,7 +65,7 @@
                 <li>
                   <a v-ripple class="flex align-items-center cursor-pointer p-3 border-round text-700
                                      hover:surface-100 transition-duration-150 transition-colors p-ripple"
-                     v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'slidedown',
+                     v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'slidedown',
                                      leaveToClass: 'hidden', leaveActiveClass: 'slideup' }">
                     <i class="pi pi-external-link mr-2"></i>
                     <span class="font-medium">{{ database?.indexes?.length }} INDEXES</span>
@@ -94,7 +94,7 @@
                     relative lg:hidden" style="height:60px">
         <div class="flex">
           <a v-ripple class="cursor-pointer block text-700 mr-3 p-ripple"
-             v-styleclass="{ selector: '#app-sidebar-1', enterClass: 'hidden', enterActiveClass: 'fadeinleft', leaveToClass: 'hidden', leaveActiveClass: 'fadeoutleft', hideOnOutsideClick: true }">
+             v-styleclass="{ selector: '#app-sidebar-1', enterFromClass: 'hidden', enterActiveClass: 'fadeinleft', leaveToClass: 'hidden', leaveActiveClass: 'fadeoutleft', hideOnOutsideClick: true }">
             <i class="pi pi-bars text-4xl"></i>
           </a>
         </div>

@@ -4,7 +4,7 @@
        style="min-height: 80px; z-index: 10" key="navbar">
     <img src="/images/logo.svg" alt="Image" height="40" class="mr-0 lg:mr-6">
     <a v-ripple class="cursor-pointer block lg:hidden text-700 p-ripple"
-       v-styleclass="{ selector: '@next', enterClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }">
+       v-styleclass="{ selector: '@next', enterFromClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }">
       <i class="pi pi-bars text-4xl"></i>
     </a>
     <div class="align-items-center flex-grow-1 justify-content-between hidden lg:flex absolute lg:static w-full surface-overlay left-0 top-100 z-1 shadow-2 lg:shadow-none">
@@ -17,7 +17,7 @@
         </li>
         <li class="lg:relative">
           <a v-ripple class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-600 hover:text-900 hover:surface-100 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
-             v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'scalein', leaveToClass: 'hidden', leaveActiveClass: 'fadeout', hideOnOutsideClick: true }">
+             v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'scalein', leaveToClass: 'hidden', leaveActiveClass: 'fadeout', hideOnOutsideClick: true }">
             <i class="pi pi-users mr-2"></i>
             <span>Customers</span>
             <i class="pi pi-angle-down ml-auto lg:ml-3"></i>
@@ -31,7 +31,7 @@
             </li>
             <li class="relative">
               <a v-ripple class="flex p-3 align-items-center text-600 hover:text-900 hover:surface-100 transition-colors transition-duration-150 p-ripple"
-                 v-styleclass="{ selector: '@next', enterClass: 'hidden', enterActiveClass: 'scalein', leaveToClass: 'hidden', leaveActiveClass: 'fadeout', hideOnOutsideClick: true }">
+                 v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'scalein', leaveToClass: 'hidden', leaveActiveClass: 'fadeout', hideOnOutsideClick: true }">
                 <i class="pi pi-search mr-2"></i>
                 <span class="font-medium">Search</span>
                 <i class="pi pi-angle-down ml-auto lg:-rotate-90"></i>

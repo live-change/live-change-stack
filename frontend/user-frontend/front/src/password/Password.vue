@@ -1,3 +1,6 @@
+<template></template>
+
+<!--
 <template>
   <div :class="containerClass">
     <PInputText
@@ -512,3 +515,4 @@ export default {
   right: 1em
 }
 </style>
+-->

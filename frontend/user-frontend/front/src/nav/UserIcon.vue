@@ -1,8 +1,8 @@
 <template>
   <a v-ripple
-     v-styleclass="{ selector: '@next', enterClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
-     class="relative shadow-none">
-      <span class="flex mx-0 px-3 align-items-center font-medium
+     v-styleclass="{ selector: '@next', enterFromClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
+     class="relative shadow-none b">
+      <span class="flex mx-0 px-3 align-items-center font-medium justify-content-center
          cursor-pointer transition-colors transition-duration-150 border-round">
         <Image v-if="myIdentification?.image" :image="myIdentification.image"
                class="mr-0 border-circle border-1 surface-border" style="width: 3rem; " />
@@ -11,7 +11,6 @@
         <img v-else :src="identiconUrl"
              class="mr-0 border-circle border-1 surface-border" style="width: 3rem;" />
       </span>
-
   </a>
   <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto surface-overlay
        right-0 top-100 z-5 shadow-2">

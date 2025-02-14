@@ -43,7 +43,7 @@
     <UserIcon />
 
     <a v-ripple class="cursor-pointer block lg:hidden text-700 p-ripple ml-2 hover:surface-100 p-2"
-       v-styleclass="{ selector: '.top-menu', enterClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }">
+       v-styleclass="{ selector: '.top-menu', enterFromClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }">
       <i class="pi pi-bars text-4xl"></i>
     </a>
 

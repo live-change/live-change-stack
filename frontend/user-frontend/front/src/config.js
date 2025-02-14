@@ -8,12 +8,16 @@ import Aura from '@primevue/themes/aura'
 export default {
   defaultLocale: 'en',
 
-  primevue: {
+  primeVue: {
     theme: {
       preset: Aura,
-      cssLayer: false,
-      darkModeSelector: 'body'
-    }
+      options: {
+        prefix: 'p',
+        darkModeSelector: 'body',
+        cssLayer: false
+      }
+    },
+    ripple: true
   },
 
   i18n: {
