@@ -2,19 +2,19 @@
   <Dialog v-model:visible="shareDialog"
           :modal="true">
     <template #header>
-      <div class="text-900 text-3xl font-medium">
+      <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium">
         Access Control
       </div>
     </template>
     <AccessControl :objectType="objectType" :object="object" />
   </Dialog>
-  <div class="w-full sm:w-9 md:w-8 lg:w-6 surface-card p-4 shadow-2 border-round">
+  <div class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12 bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
     <LimitedAccess :objectType="objectType" :object="object" :requiredRoles="requiredRoles"
                    v-slot="{ authorized, roles, accesses }">
       <div v-if="authorized" class="text-right">
-        <Button label="Share" icon="pi pi-share-alt" class="p-button mb-4" @click="showShareDialog" />
+        <Button label="Share" icon="pi pi-share-alt" class="p-button mb-6" @click="showShareDialog" />
       </div>
-      <div v-if="authorized" class="text-900 text-3xl font-medium mb-3">
+      <div v-if="authorized" class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
         Access Granted!
       </div>
       <div>

@@ -1,9 +1,9 @@
 <template>
-  <div v-if="additionalScopes.length > 0" class="w-full flex flex-row justify-content-center">
-    <div class="surface-card border-round shadow-2 p-4 w-30rem">
-      <div class="text-900 font-medium mb-3 text-xl mb-4">Google API Access</div>
+  <div v-if="additionalScopes.length > 0" class="w-full flex flex-row justify-center">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6 w-[30rem]">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">Google API Access</div>
       <div v-if="currentAccess.length > 0">
-        <p class="mt-0 p-0 line-height-3">
+        <p class="mt-0 p-0 leading-normal">
           You are currently granting us access to the following Google API features:
         </p>
         <ul>

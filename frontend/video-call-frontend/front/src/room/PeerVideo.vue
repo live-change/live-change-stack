@@ -21,7 +21,7 @@
     </video>
 
     <div v-if="(peerState?.videoState !== 'enabled' || !stream) && !image && ownerType && owner"
-         class="absolute w-full h-full left-0 top-0 flex flex-column align-items-center justify-content-center identification">
+         class="absolute w-full h-full left-0 top-0 flex flex-col items-center justify-center identification">
       <UserIdentification :ownerType="ownerType" :owner="owner" />
       <!--      <pre>{{ peerState }}</pre>
             <pre>[{{ ownerType }}]</pre>-->
@@ -30,7 +30,7 @@
     <slot name="videoOverlay" v-bind="props" />
 
     <div v-if="peerState"
-         class="absolute top-0 right-0 h-3rem pr-1 flex align-items-center">
+         class="absolute top-0 right-0 h-12 pr-1 flex items-center">
       <div v-if="peerState.audioState === 'muted'"
            class="border-circle bg-black-alpha-40 mx-1
                   flex align-items-center justify-content-center w-2rem h-2rem">

@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-row flex-wrap ">
     <div v-for="type in paddingTypes"
-         class="flex flex-row align-items-center justify-content-start my-1"
+         class="flex flex-row items-center justify-start my-1"
          style="width: 5.6em">
       <label :for="'padding-'+type" class="mb-0 mr-1">{{ type }}</label>
       <InputNumber v-if="props.modelValue[type] !== undefined"

@@ -1,9 +1,9 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card border-round shadow-2 p-4">
-      <div class="text-900 font-medium mb-3 text-xl mb-4">Sign Out</div>
-      <p class="mt-0 p-0 line-height-3">Signing out</p>
-      <ProgressSpinner v-if="isMounted" class="m-3" />
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">Sign Out</div>
+      <p class="mt-0 p-0 leading-normal">Signing out</p>
+      <ProgressSpinner v-if="isMounted" class="m-4" />
     </div>
   </div>
 </template>

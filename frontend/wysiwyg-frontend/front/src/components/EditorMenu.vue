@@ -1,7 +1,7 @@
 <template>
   <div class="sticky" style="top: 90px; z-index: 10">
     <slot name="before" />
-    <div class="surface-card p-1 shadow-2 border-round flex flex-row flex-wrap">
+    <div class="bg-surface-0 dark:bg-surface-900 p-1 shadow rounded-border flex flex-row flex-wrap">
 
       <slot name="begin" />
 
@@ -9,7 +9,7 @@
         <Button v-if="config.marks.bold" label="B" class="p-button-sm font-bold"
                 :class="{ 'p-button-outlined': !editor.isActive('bold')  }"
                 @click="editor.chain().focus().toggleBold().run()" />
-        <Button v-if="config.marks.italic" label="I" class="p-button-sm font-italic"
+        <Button v-if="config.marks.italic" label="I" class="p-button-sm italic"
                 :class="{ 'p-button-outlined': !editor.isActive('italic')  }"
                 @click="editor.chain().focus().toggleItalic().run()" />
         <Button v-if="config.marks.underline" label="U" class="p-button-sm underline"
@@ -116,7 +116,7 @@
       <LinkEditor :config="config" :editor="editor" />
     </OverlayPanel>
 
-<!--    <div class="surface-card p-1 shadow-2" style="width: 450px">
+<!--    <div class="bg-surface-0 dark:bg-surface-900 p-1 shadow" style="width: 450px">
       <h3>components:</h3>
       <TemplatesMenu :config="config" />
     </div>-->

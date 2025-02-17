@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <div class="surface-card shadow-1 border-round p-3 mb-1">
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 mb-1">
       <div class="text-xl">Balance: {{ balance.owner }}</div>
       <div>
         Amount:
@@ -11,21 +11,21 @@
         <BalanceDisplay :available="true" ownerType="balanceTest_balance" :owner="name" />
       </div>
     </div>
-    <div class="surface-card shadow-1 border-round p-3 text-xl mb-1 mt-2 text-xl">
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 text-xl mb-1 mt-2 text-xl">
       Operations:
     </div>
-    <div v-if="startedOperations.length === 0" class="surface-card shadow-1 border-round p-3 mb-1">
+    <div v-if="startedOperations.length === 0" class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 mb-1">
       No operations started
     </div>
     <div v-for="operation of startedOperations"
-         class="surface-card shadow-1 border-round mb-1 flex flex-row align-items-center">
-      <div class="flex-1 flex-grow pl-3">
+         class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border mb-1 flex flex-row items-center">
+      <div class="flex-1 flex-grow pl-4">
         {{ operation.cause }}
       </div>
-      <div class="w-15rem text-right pl-3 font-semibold mr-3">
+      <div class="w-60 text-right pl-4 font-semibold mr-4">
         {{ operation.createdAt }}
       </div>
-      <div class="w-10rem text-right pl-3 font-semibold mr-3"
+      <div class="w-40 text-right pl-4 font-semibold mr-4"
            :class="operation.change > 0 ? 'text-green-500' : 'text-red-500'">
         {{ operation.change > 0 ? '+' : '-' }} <CurrencyDisplay :value="Math.abs(+operation.change)" />
       </div>
@@ -37,65 +37,69 @@
     </div>
 
     <div class="flex flex-row">
-      <div class="surface-card shadow-1 border-round p-3 text-xl mt-3 flex-1">
+      <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 text-xl mt-4 flex-1">
         <div class="text-xl mb-2">Start operation</div>
         <command-form service="balanceTest" action="startOperation"
                       :parameters="{ balance: balance.id }"
                       v-slot="{ data }" reset-on-done>
-          <div class="col-12 md:col-6 py-1">
-            <div class="p-field mb-3">
-              <label for="email" class="block text-900 font-medium mb-2">
+          <div class="col-span-12 md:col-span-6 py-1">
+            <div class="p-field mb-4">
+              <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                 Name
               </label>
               <InputText id="name" type="text" class="w-full"
-                         aria-describedby="email-help" :class="{ 'p-invalid': data.nameError }"
+                         aria-describedby="email-help" :invalid="!!data.nameError"
                          v-model="data.name" />
-              <small v-if="data.nameError" id="email-help" class="p-error">
+              <Message v-if="data.nameError" severity="error" variant="simple" size="small">
                 {{ t(`errors.${data.nameError}`) }}
-              </small>
+              </Message>
             </div>
           </div>
-          <div class="col-12 md:col-6 py-1">
-            <div class="p-field mb-3">
-              <label for="email" class="block text-900 font-medium mb-2">
+          <div class="col-span-12 md:col-span-6 py-1">
+            <div class="p-field mb-4">
+              <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                 Change
               </label>
               <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
-                         aria-describedby="email-help" :class="{ 'p-invalid': data.changeError }"
+                         aria-describedby="email-help" :invalid="!!data.changeError"
                          v-model="data.change" />
-              <small v-if="data.changeError" id="email-help" class="p-error">
+              <Message v-if="data.changeError" severity="error" variant="simple" size="small">
                 {{ t(`errors.${data.changeError}`) }}
-              </small>
+              </Message>
             </div>
           </div>
           <Button label="Start operation" icon="pi pi-plus" type="submit" />
         </command-form>
       </div>
-      <div class="surface-card shadow-1 border-round p-3 text-xl mt-3 flex-1 ml-2">
+      <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 text-xl mt-4 flex-1 ml-2">
         <div class="text-xl mb-2">Do instant operation</div>
         <command-form service="balanceTest" action="doOperation"
                       :parameters="{ balance: balance.id }"
                       v-slot="{ data }" reset-on-done>
-          <div class="col-12 md:col-6 py-1">
-            <div class="p-field mb-3">
-              <label for="email" class="block text-900 font-medium mb-2">
+          <div class="col-span-12 md:col-span-6 py-1">
+            <div class="p-field mb-4">
+              <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                 Name
               </label>
               <InputText id="name" type="text" class="w-full"
-                         aria-describedby="name-help" :class="{ 'p-invalid': data.nameError }"
+                         aria-describedby="name-help" :invalid="!!data.nameError"
                          v-model="data.name" />
-              <small v-if="data.nameError" id="name-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
+              <Message v-if="data.nameError" severity="error" variant="simple" size="small">
+                {{ t(`errors.${data.nameError}`) }}
+              </Message>
             </div>
           </div>
-          <div class="col-12 md:col-6 py-1">
-            <div class="p-field mb-3">
-              <label for="email" class="block text-900 font-medium mb-2">
+          <div class="col-span-12 md:col-span-6 py-1">
+            <div class="p-field mb-4">
+              <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                 Change
               </label>
               <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
-                           aria-describedby="change-help" :class="{ 'p-invalid': data.changeError }"
+                           aria-describedby="change-help" :invalid="!!data.changeError"
                            v-model="data.change" />
-              <small v-if="data.changeError" id="change-help" class="p-error">{{ t(`errors.${data.changeError}`) }}</small>
+              <Message v-if="data.changeError" severity="error" variant="simple" size="small">
+                {{ t(`errors.${data.changeError}`) }}
+              </Message>
             </div>
           </div>
           <Button label="Do operation" icon="pi pi-plus" type="submit" />
@@ -103,27 +107,27 @@
       </div>
     </div>
 
-    <div class="surface-card shadow-1 border-round p-3 text-xl mb-1 mt-2 text-xl">
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 text-xl mb-1 mt-2 text-xl">
       Finished operations:
     </div>
     <OperationsList ownerType="balanceTest_balance" :owner="name" state="finished" />
 
-<!--    <div v-if="finishedOperations.length === 0" class="surface-card shadow-1 border-round p-3 mb-1">
+<!--    <div v-if="finishedOperations.length === 0" class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 mb-1">
       No operations finished
     </div>
     <div v-for="operation of finishedOperations"
-         class="surface-card shadow-1 border-round mb-1 flex flex-row align-items-center">
-      <div class="flex-1 flex-grow pl-3 py-1">
+         class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border mb-1 flex flex-row items-center">
+      <div class="flex-1 flex-grow pl-4 py-1">
         {{ operation.cause }}
       </div>
-      <div class="w-15rem text-right pl-3 font-semibold mr-3">
+      <div class="w-60 text-right pl-4 font-semibold mr-4">
         {{ operation.updatedAt ?? operation.createdAt }}
       </div>
-      <div class="w-10rem text-right pl-3 font-semibold mr-3"
+      <div class="w-40 text-right pl-4 font-semibold mr-4"
            :class="operation.change > 0 ? 'text-green-500' : 'text-red-500'">
         {{ operation.change > 0 ? '+' : '-' }} {{ Math.abs(operation.change) }}
       </div>
-      <div class="w-10rem text-right pl-3 font-semibold mr-3">
+      <div class="w-40 text-right pl-4 font-semibold mr-4">
         {{ operation.amountAfter }}
       </div>
     </div>-->
@@ -133,6 +137,7 @@
 
 <script setup>
 
+  import Message from "primevue/message"
   import InputText from "primevue/inputtext"
   import BalanceDisplay from './components/BalanceDisplay.vue'
   import OperationsList from './components/OperationsList.vue'

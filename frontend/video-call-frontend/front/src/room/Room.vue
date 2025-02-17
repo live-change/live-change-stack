@@ -4,14 +4,14 @@
                  hidden
                  class="absolute w-full h-full">
     <template #default>
-      <div class="absolute w-full h-full flex flex-row align-items-center justify-content-center">
+      <div class="absolute w-full h-full flex flex-row items-center justify-center">
         <div v-if="isMounted"
-             class="surface-card shadow-1 border-round p-3 flex flex-row flex-wrap align-items-center"
+             class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 flex flex-row flex-wrap items-center"
              :class="{ hidden: state !== 'welcome' }">
-          <div class="w-30rem m-1" style="max-width: 80vw">
+          <div class="w-[30rem] m-1" style="max-width: 80vw">
             <DeviceSelect :modelValue="selectedDevices" @update:modelValue="updateSelectedDevices" retry-media-on-error />
           </div>
-          <div class="m-3 text-center">
+          <div class="m-4 text-center">
             <h3>Select your media devices, and join.</h3>
             <Button @click="join" icon="pi pi-check" label="Join" />
           </div>
@@ -24,7 +24,7 @@
           class="w-full h-full top-0 absolute"
           style="background: black"
         />
-        <div class="absolute bottom-0 h-4rem left-50 right-50 flex flex-row justify-content-center">
+        <div class="absolute bottom-0 h-16 left-1/2 right-1/2 flex flex-row justify-center">
           <div class="absolute w-11rem h-full bg-black-alpha-70 flex flex-row align-items-center
            justify-content-between px-3">
             <MicrophoneButton v-model="selectedDevices" />
@@ -37,7 +37,7 @@
       <!--    <p>selected devices: {{ selectedDevices }}</p>
           <p>local media streams:  {{ localMediaStreams }}</p>
           <p>local tracks:  {{ localTracks }}</p>-->
-<!--      <div class="bg-black-alpha-50 shadow-1 border-round mt-3 p-3 absolute text-white-alpha-90">
+<!--      <div class="bg-black/50 shadow-sm rounded-border mt-4 p-4 absolute text-white/90">
         <pre>{{ JSON.stringify(peer?.summary, null, "  ") }}</pre>
       </div>-->
     </template>

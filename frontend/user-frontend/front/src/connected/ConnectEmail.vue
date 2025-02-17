@@ -1,27 +1,29 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card p-4 shadow-2 border-round">
-      <div class="text-center mb-5">
-        <div class="text-900 text-3xl font-medium mb-3">Add email</div>
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
+      <div class="text-center mb-8">
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Add email</div>
       </div>
 
       <command-form service="messageAuthentication" action="connectEmail" v-slot="{ data }"
                     @done="handleSent" keepOnDone>
 
-        <div class="p-field mb-3">
-          <label for="email" class="block text-900 font-medium mb-2">
+        <div class="p-field mb-4">
+          <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
             Email address
           </label>
           <InputText id="email" type="text" class="w-full"
-                     aria-describedby="email-help" :class="{ 'p-invalid': data.emailError}"
+                     aria-describedby="email-help" :invalid="!!data.emailError"
                      v-model="data.email" />
-          <small v-if="data.emailError" id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
+          <Message v-if="data.emailError" severity="error" variant="simple" size="small">
+            {{ t(`errors.${data.emailError}`) }}
+          </Message>
         </div>
 
         <Button label="Add Email" icon="pi pi-envelope" class="w-full" type="submit" />
 
-        <Divider align="center" class="my-4">
-          <span class="text-600 font-normal text-sm">OR</span>
+        <Divider align="center" class="my-6">
+          <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">OR</span>
         </Divider>
 
         <router-link :to="{ name: 'user:connect-phone' }">
@@ -41,6 +43,7 @@
   import Checkbox from "primevue/checkbox"
   import Button from "primevue/button"
   import Divider from "primevue/divider"
+  import Message from "primevue/message"
 
   import { useRouter } from 'vue-router'
   const router = useRouter()

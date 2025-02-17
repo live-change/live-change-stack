@@ -1,7 +1,7 @@
 <template>
-  <div v-if="isMounted" class="w-full sm:w-9 md:w-8 lg:w-6 surface-card p-4 shadow-2 border-round">
-    <div class="text-center mb-5">
-      <div class="text-900 text-3xl font-medium mb-3">
+  <div v-if="isMounted" class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12 bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
+    <div class="text-center mb-8">
+      <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
         Peer Connection Debugger
       </div>
     </div>
@@ -9,10 +9,10 @@
     <div v-if="peer">
       <h2>Peer connection</h2>
       <pre>{{ JSON.stringify(peer.summary, null, "  ") }}</pre>
-      <div class="flex justify-content-between align-items-center">
-        <div class="flex align-items-center">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
           <InputSwitch v-model="peer.online" />
-          <div class="ml-3">Peer online</div>
+          <div class="ml-4">Peer online</div>
         </div>
         <Button @click="sendTestMessage">Test Message</Button>
       </div>
@@ -46,16 +46,16 @@
       <DeviceSelect v-model="selectedDevices" />
       <hr>
       <pre>{{ selectedDevices }}</pre>
-      <div class="mt-1 mb-3 flex align-items-center">
+      <div class="mt-1 mb-4 flex items-center">
         <InputSwitch v-model="userMediaEnabled" />
-        <div class="ml-3">User media stream enabled</div>
+        <div class="ml-4">User media stream enabled</div>
       </div>
     </div>
 
     <div>
       <h2>Display media</h2>
 
-      <div class="justify-content-between" v-if="!displayMedia">
+      <div class="justify-between" v-if="!displayMedia">
         <Button v-if="!displayMedia" @click="getDisplayMedia">getDisplayMedia</Button>
         <Button v-if="displayMedia" @click="dropDisplayMedia">drop DisplayMedia</Button>
       </div>

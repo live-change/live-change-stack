@@ -1,7 +1,7 @@
 <template>
 
   <LimitedAccess :requiredRoles="['writer']" :objectType="objectType" :object="object" hidden>
-    <div class="absolute top-0 right-0 pr-4 max-h-0 flex align-items-center z-5">
+    <div class="absolute top-0 right-0 pr-6 max-h-0 flex items-center z-50">
       <Badge severity="warning" value="This is page preview" class="mr-2" />
       <router-link :to="editorRoute(objectType, object)" class="no-underline">
         <Button icon="pi pi-pencil"

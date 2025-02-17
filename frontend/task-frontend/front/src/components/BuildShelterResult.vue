@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-row justify-content-between flex-wrap">
+  <div class="flex flex-row justify-between flex-wrap">
     <div class="font-semibold">
       Built shelter with:
     </div>

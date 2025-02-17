@@ -1,9 +1,9 @@
 <template>
   <slot v-if="blockActive" name="blocked" :block="block">
-    <div class="flex align-items-start p-4 bg-pink-100 border-round border-1 border-pink-300 mb-4">
-      <i class="pi pi-times-circle text-pink-900 text-2xl mr-3" />
-      <div class="mr-3">
-        <div class="text-pink-900 font-medium text-xl mb-3 line-height-1">Action Blocked</div>
+    <div class="flex items-start p-6 bg-pink-100 rounded-border border border-pink-300 mb-6">
+      <i class="pi pi-times-circle text-pink-900 text-2xl mr-4" />
+      <div class="mr-4">
+        <div class="text-pink-900 font-medium text-xl mb-4 leading-none">Action Blocked</div>
         <p class="m-0 p-0 text-pink-700">
           Your safety is important for us, which is why we block suspicious activities.<br />
           Please try again in:
@@ -15,11 +15,11 @@
     </div>
   </slot>
   <slot v-if="!blockActive && counterActive" name="counter" :counter="counter">
-    <div class="flex align-items-start p-4 bg-yellow-100 border-round border-1 border-yellow-300 mb-4">
-      <i class="pi pi-check-circle text-yellow-900 text-2xl mr-3"></i>
-      <div class="mr-3">
-        <div class="text-yellow-900 font-medium text-xl mb-2 line-height-1">Attention</div>
-        <p class="m-0 p-0 text-yellow-700 line-height-3">
+    <div class="flex items-start p-6 bg-yellow-100 rounded-border border border-yellow-300 mb-6">
+      <i class="pi pi-check-circle text-yellow-900 text-2xl mr-4"></i>
+      <div class="mr-4">
+        <div class="text-yellow-900 font-medium text-xl mb-2 leading-none">Attention</div>
+        <p class="m-0 p-0 text-yellow-700 leading-normal">
           You have
           <strong v-if="counter.remaining > 1">{{ counter.remaining }} more tries.</strong>
           <strong v-else>one more try.</strong>

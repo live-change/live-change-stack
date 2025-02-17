@@ -13,7 +13,7 @@
         <Button icon="pi pi-eye" label="Preview" class="p-button-secondary p-button-sm mr-1 mb-1" />
       </router-link>
 
-      <div class="p-buttonset mr-1 mb-1 border-round">
+      <div class="p-buttonset mr-1 mb-1 rounded-border">
         <Button type="button"
                 class="p-button p-component p-button-sm p-button-outlined p-button-secondary cursor-auto inline-block"
                 :class="{ 'p-disabled': saveState == 'saving' }">

@@ -15,7 +15,7 @@ definition.trigger({
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     const user = app.generateUid()
     await service.trigger({ type: 'connect' + contactTypeUpperCase }, {
-      [contactType]: contact,
+      [contactTypeName]: contact,
       user
     })
     await service.trigger({ type: 'signUpAndSignIn' }, {
@@ -34,7 +34,7 @@ definition.trigger({
   async execute({ contactType, contact, session }, { service }, _emit) {
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     const user = await service.trigger({ type: 'signIn' + contactTypeUpperCase }, {
-      [contactType]: contact,
+      [contactTypeName]: contact,
       session
     })
     return user
@@ -50,7 +50,7 @@ definition.trigger({
   async execute({ contactType, contact, user }, { client, service }, _emit) {
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     await service.trigger({ type: 'connect' + contactTypeUpperCase }, {
-      [contactType]: contact,
+      [contactTypeName]: contact,
       user
     })
     return user
@@ -99,8 +99,8 @@ for(const contactType of config.contactTypes) {
         ...contactTypeProperties
       },
       async execute({ [contactTypeName]: contact }, { _client, service }, _emit) {
-        const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
-        if(!contactData) throw { properties: { email: 'notFound' } }
+        const contactData = await app.viewGet('get'+contactTypeUName, { [contactTypeName]: contact })
+        if(!contactData) throw { properties: { email: contactTypeName +'NotFound' } }
         const messageData = {
           user: contactData.user
         }
@@ -159,7 +159,7 @@ for(const contactType of config.contactTypes) {
         const contactData = contacts.find(c =>
           c.type === contactTypeName && c.contact === contact
         )
-        if(!contactData) throw 'notFound'
+        if(!contactData) throw contactTypeName+'MotFound'
         if(contacts.length === 1) throw 'lastOne'
         console.log("DISCONNECT", contact)
         return await service.trigger({ type: 'disconnect' + contactTypeUName }, {
@@ -178,7 +178,7 @@ for(const contactType of config.contactTypes) {
         ...contactTypeProperties
       },
       async execute({ [contactTypeName]: contact }, { client, service }, _emit) {
-        const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
+        const contactData = await app.viewGet('get'+contactTypeUName, { [contactTypeName]: contact })
         if(contactData) {
           const messageData = {
             user: contactData.user

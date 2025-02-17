@@ -3,7 +3,9 @@
     "emailTaken": "Email is already registered, try to sign-in.",
     "phoneTaken": "Phone is already registered, try to sign-in.",
     "codeNotFound": "Secret code not recognized.",
-    "codeExpired": "Secret code expired."
+    "codeExpired": "Secret code expired.",
+    "wrongPassword": "Wrong password.",
+    "emailNotFound": "Email not found."
   },
   "app": {
     "updateAvailable": "Update available!",

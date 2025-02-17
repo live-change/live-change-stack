@@ -1,14 +1,14 @@
 <template>
   <loading-zone suspense>
     <template v-slot:loading>
-      <div class="fixed w-full h-full flex align-items-center justify-content-center top-0 left-0">
+      <div class="fixed w-full h-full flex items-center justify-center top-0 left-0">
         <ProgressSpinner animationDuration=".5s"/>
       </div>
     </template>
     <template v-slot:default="{ isLoading }">
       <working-zone>
         <template v-slot:working>
-          <div class="fixed w-full h-full flex align-items-center justify-content-center top-0 left-0">
+          <div class="fixed w-full h-full flex items-center justify-center top-0 left-0">
             <ProgressSpinner animationDuration=".5s"/>
           </div>
         </template>

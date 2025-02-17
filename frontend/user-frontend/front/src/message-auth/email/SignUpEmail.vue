@@ -1,6 +1,6 @@
 <template>
   <pre data-headers>{{ JSON.stringify(metadata, null, '  ') }}</pre>
-  <div data-html class="message m-6">
+  <div data-html class="message m-12">
     <p class="text-lg">
       Hello!
     </p>

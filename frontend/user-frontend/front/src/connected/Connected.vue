@@ -1,39 +1,39 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9">
+  <div class="w-full lg:w-6/12 md:w-9/12">
 
     <ConfirmPopup v-if="isMounted" />
     <Toast v-if="isMounted" />
 
-    <div class="surface-card border-round shadow-2 p-4">
-      <div class="text-900 font-medium mb-3 text-xl">Connected accounts</div>
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Connected accounts</div>
 
-      <ul class="list-none p-0 m-0 mt-5 mb-4">
+      <ul class="list-none p-0 m-0 mt-8 mb-6">
 
         <li v-for="contact in contacts"
-            class="flex flex-row align-items-center justify-content-between mb-2">
-          <div class="flex flex-row align-items-center">
+            class="flex flex-row items-center justify-between mb-2">
+          <div class="flex flex-row items-center">
             <i v-if="contact.contactType.contactType === 'email'" class="pi pi-envelope mr-2"></i>
             <i v-if="contact.contactType.contactType === 'phone'" class="pi pi-mobile mr-2"></i>
             <span v-if="contact.contactType.contactType === 'phone'"
-                  class="block text-900 font-medium text-lg">{{ formatPhoneNumber(contact.id) }}</span>
+                  class="block text-surface-900 dark:text-surface-0 font-medium text-lg">{{ formatPhoneNumber(contact.id) }}</span>
             <span v-else
-                  class="block text-900 font-medium text-lg">{{ contact.id }}</span>
+                  class="block text-surface-900 dark:text-surface-0 font-medium text-lg">{{ contact.id }}</span>
           </div>
           <Button class="p-button-text p-button-plain p-button-rounded mr-1" icon="pi pi-times"
                   v-if="canDelete"
                   @click="event => disconnectContact(event, contact)" />
         </li>
         <li v-for="account in accounts"
-            class="flex flex-row align-items-center justify-content-between mb-2">
+            class="flex flex-row items-center justify-between mb-2">
           <div v-if="account.accountType.accountType === 'google'"
-               class="flex flex-row align-items-center">
+               class="flex flex-row items-center">
             <i  class="pi pi-google mr-2"></i>
-            <span class="block text-900 font-medium text-lg">{{ account.email }}</span>
+            <span class="block text-surface-900 dark:text-surface-0 font-medium text-lg">{{ account.email }}</span>
           </div>
           <div v-else-if="account.accountType.accountType === 'linkedin'"
-               class="flex flex-row align-items-center">
+               class="flex flex-row items-center">
             <i  class="pi pi-linkedin mr-2"></i>
-            <span class="block text-900 font-medium text-lg">{{ account.name }}</span>
+            <span class="block text-surface-900 dark:text-surface-0 font-medium text-lg">{{ account.name }}</span>
           </div>
           <pre v-else>{{ account }}</pre>
           <Button class="p-button-text p-button-plain p-button-rounded mr-1" icon="pi pi-times"

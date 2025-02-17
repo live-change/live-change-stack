@@ -1,10 +1,10 @@
 <template>
 
-  <SettingsMenu class="h-full block md:hidden surface-section" />
+  <SettingsMenu class="h-full block md:hidden bg-surface-0 dark:bg-surface-950" />
 
-  <div class="flex-column flex-auto align-items-center p-5 hidden md:flex">
-<!--    <LocaleSettings class="mb-5" />-->
-    <Connected class="mb-5" />
+  <div class="flex-col flex-auto items-center p-8 hidden md:flex">
+<!--    <LocaleSettings class="mb-8" />-->
+    <Connected class="mb-8" />
     <ChangePassword />
   </div>
 

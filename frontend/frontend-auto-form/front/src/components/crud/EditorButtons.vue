@@ -1,16 +1,16 @@
 <template>
-  <div class="flex flex-column-reverse md:flex-row justify-content-between align-items-center mt-3">
-    <div class="flex flex-column mt-2 md:mt-0">
-      <div v-if="savingDraft" class="text-500 mr-2 flex flex-row align-items-center">
+  <div class="flex flex-col-reverse md:flex-row justify-between items-center mt-4">
+    <div class="flex flex-col mt-2 md:mt-0">
+      <div v-if="savingDraft" class="text-surface-500 dark:text-surface-300 mr-2 flex flex-row items-center">
         <i class="pi pi-spin pi-spinner mr-2" style="font-size: 1.23rem"></i>
         <span>Saving draft...</span>
       </div>
-      <div v-else-if="draftChanged" class="text-sm text-500 mr-2">
+      <div v-else-if="draftChanged" class="text-sm text-surface-500 dark:text-surface-300 mr-2">
         Draft changed
       </div>
-      <div v-else-if="validationResult" class="font-semibold p-error mr-2">
+      <Message v-else-if="validationResult" severity="error" variant="simple" size="small" class="mr-2">
         Before saving, please correct the errors above.
-      </div>
+      </Message>
       <div v-else-if="!changed" class="">
         No changes to save.
       </div>
@@ -32,6 +32,8 @@
 </template>
 
 <script setup>
+
+  import Message from "primevue/message"
 
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs, getCurrentInstance } from 'vue'
 

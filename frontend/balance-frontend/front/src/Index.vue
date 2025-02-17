@@ -1,16 +1,16 @@
 <template>
   <div class="w-full">
-    <div class="surface-card shadow-1 border-round p-3 text-xl mb-1">
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 text-xl mb-1">
       All balances:
     </div>
-    <div v-for="balance in allBalances" class="surface-card shadow-1 border-round flex flex-row align-items-center mt-1">
-      <div class="flex-1 flex-grow pl-3">
+    <div v-for="balance in allBalances" class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border flex flex-row items-center mt-1">
+      <div class="flex-1 flex-grow pl-4">
         {{ balance.owner }}
       </div>
-      <div class="w-10rem">
+      <div class="w-40">
         Amount: {{ balance.amount }}
       </div>
-      <div class="w-10rem">
+      <div class="w-40">
         Available: {{ balance.available }}
       </div>
       <div>
@@ -20,21 +20,23 @@
         <Button @click="() => deleteBalance(balance)" label="Delete" icon="pi pi-trash" severity="danger" />
       </div>
     </div>
-    <div v-if="allBalances.length === 0" class="surface-card shadow-1 border-round p-3 flex flex-row">
+    <div v-if="allBalances.length === 0" class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 flex flex-row">
       No balances found
     </div>
-    <div class="surface-card shadow-1 border-round p-3 mt-3">
+    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border p-4 mt-4">
       <div class="text-xl mb-2">Add balance</div>
       <command-form service="balanceTest" action="createBalance" v-slot="{ data }" reset-on-done>
-        <div class="col-12 md:col-6 py-1">
-          <div class="p-field mb-3">
-            <label for="email" class="block text-900 font-medium mb-2">
+        <div class="col-span-12 md:col-span-6 py-1">
+          <div class="p-field mb-4">
+            <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
               Name
             </label>
             <InputText id="name" type="text" class="w-full"
-                       aria-describedby="name-help" :class="{ 'p-invalid': data.nameError }"
+                       aria-describedby="name-help" :invalid="!!data.nameError"
                        v-model="data.name" />
-            <small v-if="data.nameError" id="name-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
+            <Message v-if="data.nameError" severity="error" variant="simple" size="small">
+              {{ t(`errors.${data.nameError}`) }}
+            </Message>
           </div>
         </div>
         <Button label="Add balance" icon="pi pi-plus" type="submit" />
@@ -46,6 +48,7 @@
 <script setup>
 
   import InputText from "primevue/inputtext"
+  import Message from "primevue/message"
 
   import {
     defineProps, defineEmits, defineModel, toRefs, computed, watch, ref, watchEffect, onUnmounted,

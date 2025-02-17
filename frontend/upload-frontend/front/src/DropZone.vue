@@ -27,7 +27,7 @@
     },
     acceptedClass: {
       type: String,
-      default: 'surface-500'
+      default: 'bg-surface-500 dark:bg-surface-300'
     },
     wrongClass: {
       type: String,

@@ -1,6 +1,6 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9">
-    <div v-if="isMounted" class="surface-card border-round shadow-2 p-4">
+  <div class="w-full lg:w-6/12 md:w-9/12">
+    <div v-if="isMounted" class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
       <NotificationsList />
     </div>
   </div>

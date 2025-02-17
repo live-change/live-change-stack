@@ -1,9 +1,9 @@
 <template>
   <div>
     <OverlayPanel ref="mediaSettingsOverlay">
-      <div class="flex flex-column gap-2 pt-2 justify-content-around" style="min-width: 20rem; max-width: 90vw">
+      <div class="flex flex-col gap-2 pt-2 justify-around" style="min-width: 20rem; max-width: 90vw">
         <div v-if="audioInputRequest !== 'none' && audioInputs.length > 0"
-             class="flex flex-column align-items-stretch flex-grow-1">
+             class="flex flex-col items-stretch grow">
           <div class="text-sm mb-1 pl-1">Microphone</div>
           <Dropdown :modelValue="model.audioInput"
                     @update:modelValue="value => updateAudioInput(value)"
@@ -11,10 +11,10 @@
                     optionLabel="label"
                     placeholder="Select">
             <template #value="slotProps">
-              <div class="flex flex-row align-items-center">
+              <div class="flex flex-row items-center">
                 <i class="pi pi-microphone mr-2" />
                 &nbsp;
-                <div class="absolute overflow-hidden text-overflow-ellipsis" style="left: 2em; right: 2em;">
+                <div class="absolute overflow-hidden text-ellipsis" style="left: 2em; right: 2em;">
                   {{ slotProps.value ? slotProps.value.label : slotProps.placeholder }}
                 </div>
               </div>
@@ -22,17 +22,17 @@
           </Dropdown>
         </div>
         <div v-if="audioOutputRequest !== 'none' && audioOutputs.length > 0"
-             class="flex flex-column align-items-stretch flex-grow-1">
+             class="flex flex-col items-stretch grow">
           <div class="text-sm mb-1 pl-1">Audio output</div>
           <Dropdown :modelValue="model.audioOutput"
                     @update:modelValue="value => updateAudioOutput(value)"
                     :options="audioOutputs" optionLabel="label"
                     placeholder="Select">
             <template #value="slotProps">
-              <div class="flex flex-row align-items-center">
+              <div class="flex flex-row items-center">
                 <i class="pi pi-volume-up mr-2" />
                 &nbsp;
-                <div class="absolute overflow-hidden text-overflow-ellipsis" style="left: 2em; right: 2em;">
+                <div class="absolute overflow-hidden text-ellipsis" style="left: 2em; right: 2em;">
                   {{ slotProps.value ? slotProps.value.label : slotProps.placeholder }}
                 </div>
               </div>
@@ -41,17 +41,17 @@
         </div>
 
         <div v-if="videoInputRequest !== 'none' && videoInputs.length > 0"
-             class="flex flex-column align-items-stretch flex-grow-1">
+             class="flex flex-col items-stretch grow">
           <div class="text-sm mb-1 pl-1">Camera</div>
           <Dropdown :modelValue="model.videoInput"
                     @update:modelValue="value => updateVideoInput(value)"
                     :options="videoInputs" optionLabel="label"
                     placeholder="Select">
             <template #value="slotProps">
-              <div class="flex flex-row align-items-center">
+              <div class="flex flex-row items-center">
                 <i class="pi pi-camera mr-2" />
                 &nbsp;
-                <div class="absolute overflow-hidden text-overflow-ellipsis" style="left: 2em; right: 2em;">
+                <div class="absolute overflow-hidden text-ellipsis" style="left: 2em; right: 2em;">
                   {{ slotProps.value ? slotProps.value.label : slotProps.placeholder }}
                 </div>
               </div>

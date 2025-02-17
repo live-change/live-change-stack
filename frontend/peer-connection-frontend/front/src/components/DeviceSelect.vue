@@ -3,7 +3,7 @@
     <div v-if="videoInputRequest !== 'none'" @click="handleEmptyPreviewClick"
          class="w-full bg-gray-900 relative" style="aspect-ratio: 16/9">
       <div v-if="!model?.videoInput?.deviceId"
-           class="flex flex-column align-items-center justify-content-center h-full">
+           class="flex flex-col items-center justify-center h-full">
         <i class="pi pi-eye-slash text-9xl text-gray-500" style="font-size: 2.5rem" />
         <div class="text-xl">Video input not found!</div>
         <div class>Please connect camera.</div>
@@ -12,7 +12,7 @@
                :src-object.prop.camel="model.media">
         </audio>
       </div>
-      <div v-else class="bg-black-alpha-90 flex align-items-center justify-content-center absolute w-full h-full">
+      <div v-else class="bg-black/90 flex items-center justify-center absolute w-full h-full">
         <video v-if="model.media" autoplay playsinline :muted="userMediaMuted" ref="outputElement"
                :src-object.prop.camel="model.media"
                class="max-w-full max-h-full" style="object-fit: contain; transform: scaleX(-1)">
@@ -20,9 +20,9 @@
       </div>
 
       <div v-if="model.cameraAccessError || model.mediaError"
-           class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-center align-items-center">
+           class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
         <div v-if="model.cameraAccessError"
-             class="flex flex-column justify-content-center align-items-center m-3 p-2 bg-black-alpha-40">
+             class="flex flex-col justify-center items-center m-4 p-2 bg-black/40">
           <i class="bx bx-camera-off text-4xl text-red-600" />
           <div class="text-red-500 text-xl mb-1">
             Cannot access the camera.
@@ -33,7 +33,7 @@
           </div>
         </div>
         <div v-else-if="model.mediaError"
-             class="flex flex-column justify-content-center align-items-center m-3 p-2 bg-black-alpha-40">
+             class="flex flex-col justify-center items-center m-4 p-2 bg-black/40">
           <i class="bx bx-camera-off text-4xl text-red-600" />
           <div class="text-red-500 text-xl mb-1">
             Cannot access media devices.
@@ -45,26 +45,26 @@
       </div>
 
       <div v-if="gettingUserMedia"
-           class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-center align-items-center">
+           class="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center">
         <ProgressSpinner  />
       </div>
 
-      <div class="absolute top-0 left-0 w-full h-full flex flex-column justify-content-end align-items-center">
-        <div class="flex flex-row justify-content-between align-items-center h-5rem w-7rem media-buttons">
+      <div class="absolute top-0 left-0 w-full h-full flex flex-col justify-end items-center">
+        <div class="flex flex-row justify-between items-center h-20 w-28 media-buttons">
           <MicrophoneButton v-model="model" @disabled-audio-click="handleDisabledAudioClick" />
           <CameraButton v-model="model" @disabled-video-click="handleDisabledVideoClick" />
         </div>
       </div>
       <div class="absolute top-0 right-0" v-if="model.media">
-        <div class="m-3">
+        <div class="m-4">
           <VolumeIndicator :stream="model.media" />
         </div>
       </div>
 
     </div>
-    <div class="flex flex-row gap-2 pt-2 justify-content-around">
+    <div class="flex flex-row gap-2 pt-2 justify-around">
       <div v-if="audioInputRequest !== 'none' && audioInputs.length > 0"
-           class="flex flex-column align-items-stretch flex-grow-1">
+           class="flex flex-col items-stretch grow">
         <div class="text-sm mb-1 pl-1">Microphone</div>
         <Dropdown :modelValue="model.audioInput"
                   @update:modelValue="value => updateAudioInput(value)"
@@ -72,10 +72,10 @@
                   optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
-            <div class="flex flex-row align-items-center">
+            <div class="flex flex-row items-center">
               <i class="pi pi-microphone mr-2" />
               &nbsp;
-              <div class="absolute overflow-hidden text-overflow-ellipsis" style="left: 2em; right: 2em;">
+              <div class="absolute overflow-hidden text-ellipsis" style="left: 2em; right: 2em;">
                 {{ slotProps.value ? slotProps.value.label : slotProps.placeholder }}
               </div>
             </div>
@@ -83,17 +83,17 @@
         </Dropdown>
       </div>
       <div v-if="audioOutputRequest !== 'none' && audioOutputs.length > 0"
-           class="flex flex-column align-items-stretch flex-grow-1">
+           class="flex flex-col items-stretch grow">
         <div class="text-sm mb-1 pl-1">Audio output</div>
         <Dropdown :modelValue="model.audioOutput"
                   @update:modelValue="value => updateAudioOutput(value)"
                   :options="audioOutputs" optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
-            <div class="flex flex-row align-items-center">
+            <div class="flex flex-row items-center">
               <i class="pi pi-volume-up mr-2" />
               &nbsp;
-              <div class="absolute overflow-hidden text-overflow-ellipsis" style="left: 2em; right: 2em;">
+              <div class="absolute overflow-hidden text-ellipsis" style="left: 2em; right: 2em;">
                 {{ slotProps.value ? slotProps.value.label : slotProps.placeholder }}
               </div>
             </div>
@@ -102,17 +102,17 @@
       </div>
 
       <div v-if="videoInputRequest !== 'none' && videoInputs.length > 0"
-           class="flex flex-column align-items-stretch flex-grow-1">
+           class="flex flex-col items-stretch grow">
         <div class="text-sm mb-1 pl-1">Camera</div>
         <Dropdown :modelValue="model.videoInput"
                   @update:modelValue="value => updateVideoInput(value)"
                   :options="videoInputs" optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
-            <div class="flex flex-row align-items-center">
+            <div class="flex flex-row items-center">
               <i class="pi pi-camera mr-2" />
               &nbsp;
-              <div class="absolute overflow-hidden text-overflow-ellipsis" style="left: 2em; right: 2em;">
+              <div class="absolute overflow-hidden text-ellipsis" style="left: 2em; right: 2em;">
                 {{ slotProps.value ? slotProps.value.label : slotProps.placeholder }}
               </div>
             </div>
@@ -126,7 +126,7 @@
       :required-permissions="[{ name: 'camera' }, { name: 'microphone' }]"
       title="User media permissions" auto-close>
       <template #introduction>
-        <div class="flex flex-column align-items-center">
+        <div class="flex flex-col items-center">
           <p>For the best experience, please allow access to your camera and microphone.</p>
           <img src="/images/cameraAccess/en.png" style="height:50vh">
         </div>

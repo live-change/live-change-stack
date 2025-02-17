@@ -1,13 +1,13 @@
 <template>
   <Dialog v-model:visible="visible" modal>
     <template #container="{ closeCallback }">
-      <div class="surface-card border-round shadow-3 p-3 overflow-y-auto" style="max-height: 70vh">
+      <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow-md p-4 overflow-y-auto" style="max-height: 70vh">
 
         <div class="text-xl mb-2">
           Task <strong>{{ taskData?.name }}</strong> {{ taskData?.state }}
         </div>
 
-        <div class="my-3" v-if="!noClose">
+        <div class="my-4" v-if="!noClose">
           <Button icon="pi pi-times" label="Close" class="w-full" @click="close" />
         </div>
 

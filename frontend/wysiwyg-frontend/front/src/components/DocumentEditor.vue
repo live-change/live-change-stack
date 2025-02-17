@@ -14,7 +14,7 @@
         </template>
         <template #after="scope">
           <div v-if="componentControl"
-               class="surface-card p-1 shadow-2 border-round">
+               class="bg-surface-0 dark:bg-surface-900 p-1 shadow rounded-border">
             <StyleEditor v-if="componentControl.type == 'style'" :nodeControl="componentControl.nodeControl"
                          :key="componentControl.uid" />
             <SettingsEditor v-if="componentControl.type == 'settings'" :nodeControl="componentControl.nodeControl"

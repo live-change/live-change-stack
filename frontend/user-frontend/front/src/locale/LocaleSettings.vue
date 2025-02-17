@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9">
+  <div class="w-full lg:w-6/12 md:w-9/12">
 
-    <div class="surface-card border-round shadow-2 p-4">
-      <div class="text-900 font-medium mb-3 text-xl">Locale settings</div>
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Locale settings</div>
 
       <command-form service="localeSettings" action="setOrUpdateMyLocaleSettings"
                     :initialValues="{
@@ -15,8 +15,8 @@
                     }"
                     v-slot="{ data }" keepOnDone @done="handleSettingsUpdated">
 
-        <div class="p-field mb-3">
-          <label for="title" class="block text-900 font-medium mb-2">
+        <div class="p-field mb-4">
+          <label for="title" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
             Language
           </label>
           <Dropdown v-model="data.language" :options="availableLocales"
@@ -24,9 +24,9 @@
                     :filter="availableLocales.length > 10"
                     placeholder="Auto-detect"
                     class="w-full" />
-          <small v-if="data.languageError" id="language-help" class="p-error">
+          <Message v-if="data.languageError" severity="error" variant="simple" size="small">
             {{ t(`errors.${data.languageError}`) }}
-          </small>
+          </Message>
         </div>
 
         <Button type="submit" label="Apply" class="mt-1" icon="pi pi-save" />
@@ -42,6 +42,8 @@
 </template>
 
 <script setup>
+  import Message from "primevue/message"
+
   import { usePath, live, useApi } from '@live-change/vue3-ssr'
   const api = useApi()
   const path = usePath()

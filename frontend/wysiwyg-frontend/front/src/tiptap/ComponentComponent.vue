@@ -4,7 +4,7 @@
       ...attrs, class: ['relative', editorClass]
     }">
       <node-view-content :class="[editorContentClass]" />
-      <div class="absolute top-0 right-0 pr-4 max-h-0 align-items-center z-5 edit-buttons ">
+      <div class="absolute top-0 right-0 pr-6 max-h-0 items-center z-50 edit-buttons ">
         <Button icon="pi pi-eye"
                 :class="[
                   'p-button p-button-icon-only p-button-rounded mr-0',

@@ -4,80 +4,94 @@
                   :initialValues="{ maxLength: 125, charset: 'all', ...initialValues }"
                   @done="handleTaken" keepOnDone>
 
-      <div class="p-field mb-3">
-        <label for="title" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="title" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Title (optional)
         </label>
         <InputText id="title" type="text" class="w-full"
-                   aria-describedby="title-help" :class="{ 'p-invalid': data.titleError }"
+                   aria-describedby="title-help" :invalid="!!data.titleError"
                    placeholder="enter title"
                    v-model="data.title" />
-        <small v-if="data.titleError" id="title-help" class="p-error">{{ t(`errors.${data.titleError}`) }}</small>
+        <Message v-if="data.titleError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.titleError}`) }}
+        </Message>
       </div>
-      <div class="p-field mb-3">
-        <label for="path" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="path" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Path (optional)
         </label>
         <InputText id="path" type="text" class="w-full"
-                   aria-describedby="path-help" :class="{ 'p-invalid': data.pathError }"
+                  aria-describedby="path-help" :invalid="!!data.pathError"
                    placeholder="or enter path"
                    v-model="data.path" />
-        <small v-if="data.pathError" id="path-help" class="p-error">{{ t(`errors.${data.pathError}`) }}</small>
+        <Message v-if="data.pathError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.pathError}`) }}
+        </Message>
       </div>
-      <div class="p-field mb-3">
-        <label for="maxLength" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="maxLength" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Max length
         </label>
         <InputNumber inputId="maxLength" v-model="data.maxLength" showButtons buttonLayout="horizontal"
                      class="w-full"
                      :step="1" decrementButtonClass="p-button-danger" incrementButtonClass="p-button-success"
                      incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"
-                     mode="decimal" :useGrouping="false" :class="{ 'p-invalid': data.maxLengthError }" />
-        <small v-if="data.maxLengthError" id="maxLength-help" class="p-error">{{ t(`errors.${data.maxLengthError}`) }}</small>
+                     mode="decimal" :useGrouping="false" :invalid="!!data.maxLengthError" />
+        <Message v-if="data.maxLengthError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.maxLengthError}`) }}
+        </Message>
       </div>
 
-      <div class="p-field mb-3">
-        <label for="charset" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="charset" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Charset
         </label>
         <Dropdown id="charset" type="text" class="w-full"
-                   aria-describedby="charset-help" :class="{ 'p-invalid': data.charsetError }"
+                   aria-describedby="charset-help" :invalid="!!data.charsetError"
                    placeholder="select charset"
                    v-model="data.charset" :options="charsets" optionLabel="label" optionValue="value" />
-        <small v-if="data.charsetError" id="charset-help" class="p-error">{{ t(`errors.${data.charsetError}`) }}</small>
+        <Message v-if="data.charsetError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.charsetError}`) }}
+        </Message>
       </div>
 
-      <div class="p-field mb-3">
-        <label for="domain" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="domain" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Domain (optional)
         </label>
         <InputText id="domain" type="text" class="w-full"
-                   aria-describedby="domain-help" :class="{ 'p-invalid': data.domainError }"
+                   aria-describedby="domain-help" :invalid="!!data.domainError"
                    placeholder="any"
                    v-model="data.domain" />
-        <small v-if="data.domainError" id="domain-help" class="p-error">{{ t(`errors.${data.domainError}`) }}</small>
+        <Message v-if="data.domainError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.domainError}`) }}
+        </Message>
       </div>
 
-      <div class="p-field mb-3">
-        <label for="prefix" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="prefix" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Prefix (optional)
         </label>
         <InputText id="prefix" type="text" class="w-full"
-                   aria-describedby="prefix-help" :class="{ 'p-invalid': data.prefixError }"
+                   aria-describedby="prefix-help" :invalid="!!data.prefixError"
                    placeholder="or enter prefix"
                    v-model="data.prefix" />
-        <small v-if="data.prefixError" id="prefix-help" class="p-error">{{ t(`errors.${data.prefixError}`) }}</small>
+        <Message v-if="data.prefixError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.prefixError}`) }}
+        </Message>
       </div>
 
-      <div class="p-field mb-3">
-        <label for="suffix" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="suffix" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Suffix (optional)
         </label>
         <InputText id="suffix" type="text" class="w-full"
-                   aria-describedby="suffix-help" :class="{ 'p-invalid': data.suffixError }"
+                   aria-describedby="suffix-help" :invalid="!!data.suffixError"
                    placeholder="enter suffix"
                    v-model="data.suffix" />
-        <small v-if="data.suffixError" id="suffix-help" class="p-error">{{ t(`errors.${data.suffixError}`) }}</small>
+        <Message v-if="data.suffixError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.suffixError}`) }}
+        </Message>
       </div>
 
       <div class="flex flex-row flex-wrap">
@@ -94,6 +108,7 @@
   import InputText from "primevue/inputtext"
   import InputNumber from "primevue/inputnumber"
   import Dropdown from "primevue/dropdown"
+  import Message from "primevue/message"
 
   const { initialValues, target, targetType, redirect } = defineProps({
     initialValues: {

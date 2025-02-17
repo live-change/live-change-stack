@@ -17,27 +17,29 @@
     </slot>
     <div>
       <slot name="error"  v-bind="{ validationResult, uid }" >
-        <small v-if="validationResult && !minLengthErrorVisible" class="p-error mt-1">
+        <Message v-if="validationResult && !minLengthErrorVisible" severity="error" variant="simple" size="small" 
+                 class="mt-1">
           {{ (typeof validationResult === 'object')
                ? t( 'errors.' + validationResult.error, validationResult.validator )
                : t( 'errors.' + validationResult ) }}
-        </small>
+        </Message>
       </slot>
-      <small v-if="maxLengthValidation || minLengthValidation" style="float: right" class="mt-1"
-             :class="{
-               'p-error': minMaxError
-             }">
+      <Message v-if="maxLengthValidation || minLengthValidation" :severity="minMaxError ? 'error' : 'secondary'"
+               variant="simple" size="small" 
+               class="mt-1" style="float: right">
         {{
           (minLengthErrorVisible)
             ? t( 'info.minLength', { minLength: minLengthValidation.length, length: props.modelValue?.length ?? 0 })
             : t( 'info.maxLength', { maxLength: maxLengthValidation.length, length: props.modelValue?.length ?? 0 })
         }}
-      </small>
+      </Message>
     </div>
   </div>
 </template>
 
 <script setup>
+
+  import Message from "primevue/message"
 
   import AutoInput from "./AutoInput.vue"
 
@@ -174,7 +176,7 @@
 
   const fieldClass = computed(() => [inputConfig.value?.fieldClass, definition.value?.fieldClass, props.class, {
     'p-invalid': !!error.value
-  }, 'flex flex-column'])
+  }, 'flex flex-col'])
   const fieldStyle = computed(() => [inputConfig.value?.fieldStyle, definition.value?.fieldStyle, props.style])
 
   const configAttributes = computed(() => {

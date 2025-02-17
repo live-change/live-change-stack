@@ -4,10 +4,10 @@
                  :to="{ name: 'user:profile', params: { user: owner } }"
                  v-ripple
                  :class="inline ? inlineClass : blockClass">
-      <Image v-if="userData?.image" :image="userData.image" class="mr-2 border-circle"
+      <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full"
              :style="imageStyle"/>
-      <img v-else :src="identiconUrl" class="mr-2 border-circle" :style="imageStyle" domResize />
-      <span class="text-overflow-ellipsis white-space-nowrap overflow-hidden"
+      <img v-else :src="identiconUrl" class="mr-2 rounded-full" :style="imageStyle" domResize />
+      <span class="text-ellipsis whitespace-nowrap overflow-hidden"
             :class="[ ownerType === 'user_User' ? 'font-medium' : 'font-italic' ]">
         {{ name }}
       </span>
@@ -15,15 +15,15 @@
     <span v-else-if="ownerType === 'email_Email'">
       <i class="pi pi-envelope mr-2 ml-1"
          style="font-size: 1.3rem; margin-right: 0.7rem !important; position: relative; top: 3px;" />
-      <span class="text-overflow-ellipsis white-space-nowrap overflow-hidden">
+      <span class="text-ellipsis whitespace-nowrap overflow-hidden">
         {{ owner }}
       </span>
     </span>
     <span v-else :class="inline ? inlineClass : blockClass">
-      <Image v-if="userData?.image" :image="userData.image" class="mr-2 border-circle"
+      <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full"
              :style="imageStyle"/>
-      <img v-else :src="identiconUrl" class="mr-2 border-circle" :style="imageStyle" domResize />
-      <span class="text-overflow-ellipsis white-space-nowrap overflow-hidden"
+      <img v-else :src="identiconUrl" class="mr-2 rounded-full" :style="imageStyle" domResize />
+      <span class="text-ellipsis whitespace-nowrap overflow-hidden"
             :class="[ ownerType === 'user_User' ? 'font-medium' : 'font-italic' ]">
         {{ name }}
       </span>
@@ -60,7 +60,7 @@
   })
 
   const inlineClass = ""
-  const blockClass = "flex align-items-center cursor-pointer text-700 hover:surface-100 border-round p-ripple"
+  const blockClass = "flex items-center cursor-pointer text-surface-700 dark:text-surface-100 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-border p-ripple"
   const inlineImageSize = '1em'
   const blockImageSize = '28px'
 

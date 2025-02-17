@@ -1,5 +1,5 @@
 <template>
-  <div v-if="visible" class="pl-5 mb-3" :class="fieldClass" :style="fieldStyle">
+  <div v-if="visible" class="pl-8 mb-4" :class="fieldClass" :style="fieldStyle">
     <h3>{{ t( i18n + label + ':title' ) }}</h3>
     <auto-input :modelValue="modelValue" :definition="definition" :name="props.name"
                  :class="props.inputClass" :style="props.inputStyle"
@@ -7,7 +7,9 @@
                  :rootValue="props.rootValue" :propName="props.propName"
                  @update:modelValue="value => emit('update:modelValue', value)"
                 :i18n="props.i18n + props.propName.split('.').pop() + '.'" />
-    <small v-if="typeof validationResult == 'string'" class="p-error">{{ t( 'errors.' + validationResult ) }}</small>
+    <Message v-if="typeof validationResult == 'string'" severity="error" variant="simple" size="small">
+      {{ t( 'errors.' + validationResult ) }}
+    </Message>
   </div>
 </template>
 
@@ -15,6 +17,7 @@
   import AutoInput from "./AutoInput.vue"
   import { inputs, types } from '../../config.js'
   import { computed, inject, toRefs, getCurrentInstance } from 'vue'
+  import Message from 'primevue/message'
 
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()

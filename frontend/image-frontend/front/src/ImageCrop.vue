@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full relative surface-400 overflow-hidden" ref="dragArea"
+  <div class="w-full relative bg-surface-400 dark:bg-surface-400 overflow-hidden" ref="dragArea"
        @mousedown="handleEditorMouseDown"
        @mouseup="handleEditorMouseUp"
        @mouseout="handleEditorMouseOut"
@@ -9,13 +9,14 @@
        @touchcancel="handleEditorTouchCancel"
        @touchmove="handleEditorTouchMove"
        @wheel="handleEditorWheel">
-    <div class="p-4 md:p-5 lg:p-6 flex flex-row justify-content-center align-items-center">
+    <div class="p-6 md:p-8 lg:p-12 flex flex-row justify-center items-center">
       <div class="w-full relative"
            :style="`aspect-ratio: ${aspectRatio}; max-width: 40vh;`"
            ref="cropArea">
-        <div class="absolute left-50 top-50 w-0 h-0">
+        <div class="absolute left-1/2 top-1/2">
           <Image :image="sourceImage"
                  :style="{ width: `${rectSize?.x}px`, transform: imageTransform }"
+                 class="max-w-none"
                  @size="handleImageSize" />
         </div>
       </div>

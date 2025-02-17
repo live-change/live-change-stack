@@ -20,7 +20,7 @@ const templates = [
         attrs: {
           is: 'div',
           attrs: {
-            class: 'surface-card py-1 px-3 shadow-2'
+            class: 'bg-surface-0 dark:bg-surface-900 py-1 px-4 shadow'
           }
         },
         content: preview ? previewContent(this) : initialContent(this)
@@ -45,7 +45,7 @@ const templates = [
             attrs: {
               name: 'left',
               attrs: {
-                class: preview ? 'w-6' : 'w-12 md:w-6'
+                class: preview ? 'w-6/12' : 'w-full md:w-6/12'
               }
             },
             content: preview ? previewContent(this, 'Left') : initialContent(this, 'left')
@@ -55,7 +55,7 @@ const templates = [
             attrs: {
               name: 'right',
               attrs: {
-                class: preview ? 'w-6' : 'w-12 md:w-6'
+                class: preview ? 'w-6/12' : 'w-full md:w-6/12'
               }
             },
             content: preview ? previewContent(this, 'Right') : initialContent(this, 'right')

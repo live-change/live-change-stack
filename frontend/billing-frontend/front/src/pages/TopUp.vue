@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex flex-column align-items-center">
+  <div class="w-full flex flex-col items-center">
     <div v-if="selectedTopUp" class="w-full lg:w-6 md:w-9 surface-card border-round shadow-1 p-3
                              flex flex-column align-items-center text-center">
       <div class="text-2xl font-semibold my-2">
@@ -11,11 +11,11 @@
                          :denomination="priceDenomination" />
       </div>
 
-      <div class="relative mt-4">
+      <div class="relative mt-6">
         <ProgressSpinner style="width: 400px; height: 400px; max-width: 90vw; max-height: 70vh" strokeWidth="1"
                          animationDuration="1s" aria-label="Connecting to payment gateway" />
-        <div class="absolute w-full h-full top-0 left-0 flex align-items-center justify-content-center">
-          <div class="text-lg w-10rem text-center">
+        <div class="absolute w-full h-full top-0 left-0 flex items-center justify-center">
+          <div class="text-lg w-40 text-center">
             Connecting to payment gateway...
           </div>
         </div>

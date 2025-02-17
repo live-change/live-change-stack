@@ -6,7 +6,7 @@
       Invited you to
       <ObjectIdentification :objectType="notification.objectType" :object="notification.object" />
     </div>
-    <div class="mt-2 ml-4" v-if="!notification.state && invitation">
+    <div class="mt-2 ml-6" v-if="!notification.state && invitation">
       <Button label="Accept" icon="pi pi-check" class="p-button-sm mr-2" @click="acceptInvitation" />
       <Button label="Ignore" icon="pi pi-times" class="p-button-sm" @click="deleteNotification" />
     </div>

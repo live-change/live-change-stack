@@ -1,5 +1,5 @@
 <template>
-  <ul class="surface-card p-0 m-0 list-none flex overflow-x-auto select-none">
+  <ul class="bg-surface-0 dark:bg-surface-900 p-0 m-0 list-none flex overflow-x-auto select-none">
     <li v-for="tab in tabs">
       <router-link v-ripple :to="{ name: tab.route }"
          class="cursor-pointer px-4 py-3 flex align-items-center border-bottom-2 hover:border-500

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-column surface-ground">
+  <div class="min-h-screen flex flex-col bg-surface-50 dark:bg-surface-950">
     <slot name="navbar"></slot>
 
     <ConfirmPopup v-if="isMounted" />
@@ -9,10 +9,10 @@
       <ProgressBar v-if="loading || working" mode="indeterminate" class="absolute w-full" style="height: .2em" />
     </div>
     <div v-if="pageType === 'simple'"
-         class="p-3 md:p-5 flex-grow-1 flex flex-column flex-auto align-items-center relative">
+         class="p-4 md:p-8 grow flex flex-col flex-auto items-center relative">
       <slot></slot>
     </div>
-    <div v-if="pageType === 'wide'" class="relative flex-grow-1">
+    <div v-if="pageType === 'wide'" class="relative grow">
       <slot></slot>
     </div>
     <div>

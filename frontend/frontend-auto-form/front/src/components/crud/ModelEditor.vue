@@ -9,7 +9,7 @@
     <div class="">
       Service <strong>{{ service }}</strong>
     </div>
-    <div class="text-2xl mb-4">
+    <div class="text-2xl mb-6">
       <span v-if="isNew">Create </span>
       <span v-else>Edit </span>
       <strong>{{ model }}</strong>

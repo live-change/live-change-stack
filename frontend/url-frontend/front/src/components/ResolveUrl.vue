@@ -1,6 +1,6 @@
 <template>
   <slot v-if="url && accessible" :url="url" :target="url.target" :class="clazz" :style="style">
-    <div class="w-full surface-card p-4 shadow-2 border-round">
+    <div class="w-full bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <h2>Url resolved:</h2>
       <pre>{{ JSON.stringify(url, null, "  ") }}</pre>
     </div>

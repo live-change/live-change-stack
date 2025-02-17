@@ -1,6 +1,6 @@
 
 <template>
-  <div class="surface-card p-3 shadow-2 border-round">
+  <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow rounded-border">
     {{ d(new Date(), 'long') }}
   </div>
 </template>

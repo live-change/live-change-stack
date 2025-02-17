@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen flex flex-column surface-ground">
+  <div class="min-h-screen flex flex-col bg-surface-50 dark:bg-surface-950">
     <NavBar></NavBar>
     <ConfirmPopup v-if="isMounted"></ConfirmPopup>
     <Toast v-if="isMounted"></Toast>
     <div class="relative h-0 w-full">
       <ProgressBar v-if="loading || working" mode="indeterminate" style="height: .2em" />
     </div>
-    <div v-if="pageType == 'simple'" class="p-5 flex flex-column flex-auto align-items-center">
+    <div v-if="pageType == 'simple'" class="p-8 flex flex-col flex-auto items-center">
       <slot></slot>
     </div>
     <div v-if="pageType == 'wide'">

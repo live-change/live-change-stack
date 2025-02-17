@@ -1,30 +1,32 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9">
-    <div class="surface-card p-4 shadow-2 border-round">
-      <div class="text-center mb-5">
-        <div class="text-900 text-3xl font-medium mb-3">
+  <div class="w-full lg:w-6/12 md:w-9/12">
+    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
+      <div class="text-center mb-8">
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
           Profile
         </div>
       </div>
 
-      <div class="flex flex-wrap align-items-center justify-content-center" v-if="userData !== undefined">
-        <div class="relative mb-3" @click="openImageEditor">
-          <Image v-if="userData?.image" :image="userData.image" class="mr-2 border-circle profile-image"
+      <div class="flex flex-wrap items-center justify-center" v-if="userData !== undefined">
+        <div class="relative mb-4" @click="openImageEditor">
+          <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full profile-image"
                  domResize width="200" height="200" />
-          <img v-else :src="identiconUrl" class="mr-2 border-circle profile-image">
+          <img v-else :src="identiconUrl" class="mr-2 rounded-full profile-image">
         </div>
         <command-form service="userIdentification" :action="updateMethod"
                       :initialValues="{ name: userData?.name }"
                       :parameters="{ image: userData?.image }" v-slot="{ data }"
                       keepOnDone @done="handleNameSaved"
-                      class="ml-3 mb-3 flex flex-column">
-          <div class="p-field flex flex-column">
+                      class="ml-4 mb-4 flex flex-col">
+          <div class="p-field flex flex-col">
             <InputText type="text" v-model="data.name"
-                       :class="{ 'p-invalid': data.nameError }"
+                       :invalid="!!data.nameError"
                        class="p-inputtext-lg" placeholder="Your name" />
-            <small v-if="data.nameError" id="currentPassword-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
+            <Message v-if="data.nameError" severity="error" variant="simple" size="small">
+              {{ t(`errors.${data.nameError}`) }}
+            </Message>
           </div>
-          <Button type="submit" label="Save name" class="mt-3" icon="pi pi-save" />
+          <Button type="submit" label="Save name" class="mt-4" icon="pi pi-save" />
         </command-form>
       </div>
 
@@ -39,6 +41,7 @@
   import { useDialog } from 'primevue/usedialog'
   import InputText from 'primevue/inputtext'
   import Button from 'primevue/button'
+  import Message from "primevue/message"
   const dialog = useDialog()
 
   import { shallowRef, ref, inject, computed } from 'vue'

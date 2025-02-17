@@ -167,8 +167,8 @@ definition.trigger({
   async execute({ user, email }, { client, service }, emit) {
     email = preFilter(email)
     const emailData = await Email.get(email)
-    if(!emailData) throw { properties: { email: 'notFound' } }
-    if(emailData.user !== user) throw { properties: { email: 'notFound' } }
+    if(!emailData) throw { properties: { email: 'emailNotFound' } }
+    if(emailData.user !== user) throw { properties: { email: 'emailNotFound' } }
     emit({
       type: 'emailDisconnected',
       user, email
@@ -188,7 +188,7 @@ definition.trigger({
   async execute({ email, session }, { service }, _emit) {
     email = preFilter(email)
     const emailData = await Email.get(email)
-    if(!emailData) throw { properties: { email: 'notFound' } }
+    if(!emailData) throw { properties: { email: 'emailNotFound' } }
     const { user } = emailData
     return service.trigger({ type: 'signIn' }, {
       user, session

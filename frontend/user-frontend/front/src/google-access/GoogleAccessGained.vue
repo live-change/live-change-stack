@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card border-round shadow-2 p-4">
-      <div class="text-900 font-medium mb-3 text-xl mb-4">Signed In</div>
-      <p class="mt-0 p-0 line-height-3">
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">Signed In</div>
+      <p class="mt-0 p-0 leading-normal">
         Congratulations! You added offline access to your account. Now your account have access to:
         <ul>
           <li v-for="access in accessList">
@@ -11,11 +11,11 @@
         </ul>
 <!--        <pre>{{ offlineAccess }}</pre>-->
       </p>
-      <div v-if="afterGoogleAccessGained" class="flex flex-row align-items-center">
+      <div v-if="afterGoogleAccessGained" class="flex flex-row items-center">
         <router-link :to="afterGoogleAccessGained" class="no-underline">
           <Button label="Next" v-ripple />
         </router-link>
-        <p class="ml-4" v-if="isMounted && redirectTime">
+        <p class="ml-6" v-if="isMounted && redirectTime">
           Redirect in {{ pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }}...
         </p>
       </div>

@@ -1,23 +1,23 @@
 <template>
 <!--  <pre>{{ JSON.stringify(classInfo, null, "  ") }}</pre>-->
-  <div class="flex flex-column flex-wrap w-full">
+  <div class="flex flex-col flex-wrap w-full">
     <div v-if="editingPadding">
-      <div class="flex flex-row align-items-center mb-2">
-        <label class="mr-3" style="width: 4em">Padding:</label>
+      <div class="flex flex-row items-center mb-2">
+        <label class="mr-4" style="width: 4em">Padding:</label>
         <PaddingEditor :modelValue="classInfo.padding"
                        @update:modelValue="p => handleClassInfoUpdate({ padding: p })" />
       </div>
-      <div class="flex flex-row align-items-center">
-        <label class="mr-3" style="width: 4em">Margin:</label>
+      <div class="flex flex-row items-center">
+        <label class="mr-4" style="width: 4em">Margin:</label>
         <PaddingEditor :modelValue="classInfo.margin"
                        @update:modelValue="p => handleClassInfoUpdate({ margin: p })" />
       </div>
     </div>
-    <div class="flex flex-column md:flex-row">
-      <div class="flex-1 mr-2 flex flex-column">
-        <div class="flex flex-row align-items-center flex-shrink-0">
-          <label class="my-2 flex-grow-1">Classes:</label>
-          <div class="flex flex-row align-items-center mr-4">
+    <div class="flex flex-col md:flex-row">
+      <div class="flex-1 mr-2 flex flex-col">
+        <div class="flex flex-row items-center shrink-0">
+          <label class="my-2 grow">Classes:</label>
+          <div class="flex flex-row items-center mr-6">
             <i class="pi pi-arrows-alt" style="font-size: 1.2rem"></i>
             <InputSwitch v-model="editingPadding" class="ml-2" />
           </div>
@@ -26,15 +26,15 @@
                       @update:modelValue="l => handleClassInfoUpdate({ list: l })"
                       :separator="/ /" :multiple="true" :suggestions="classSuggestions"
                       @complete="ev => searchClasses(ev)"
-                      class="autocomplete-w-full flex-grow-1" />
+                      class="autocomplete-w-full grow" />
       </div>
-      <div class="flex-1 flex flex-column">
-        <div class="flex flex-row flex-shrink-0">
-          <label class="my-2 flex-grow-1">Style:</label>
+      <div class="flex-1 flex flex-col">
+        <div class="flex flex-row shrink-0">
+          <label class="my-2 grow">Style:</label>
         </div>
-        <div class="style-editor p-inputtext flex-grow-1" ref="codeMirrorWrapper"></div>
+        <div class="style-editor p-inputtext grow" ref="codeMirrorWrapper"></div>
 <!--        <prism-editor v-if="isMounted"
-                      class="style-editor p-inputtext flex-grow-1" :highlight="highlightCss"
+                      class="style-editor p-inputtext grow" :highlight="highlightCss"
                       :style="{ height: (nodeStyleLines * 1.35 + 1.1) + 'em' }"
                       :modelValue="nodeStyle" @update:modelValue="handleStyleUpdate"
                       :readonly="false" :line-numbers="nodeStyleLines > 1" />-->
@@ -115,7 +115,7 @@
     }
   }
 
-  const insertableClasses = ['flex', 'flex-grow-1']
+  const insertableClasses = ['flex', 'grow']
   const nodeClass = computed(() => {
     console.log("nodeControl", nodeControl.value)
     return nodeControl.value.attrs.class

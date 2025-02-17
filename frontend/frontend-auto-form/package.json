@@ -41,7 +41,7 @@
     "pretty-bytes": "^6.1.1",
     "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
-    "primevue": "^3.52.0",
+    "primevue": "^4.2.5",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-visualizer": "5.14.0",
     "serialize-javascript": "^6.0.2",

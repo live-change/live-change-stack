@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-row">
 
-    <div class="flex-grow-1 pt-1 pb-1 w-10rem">
+    <div class="grow pt-1 pb-1 w-40">
       <CodeEditor :readOnly="readOnly || !write" :initialData="initialData" @result="result => handleEditResult(result)"
         :ref="el => editorElementFound(el)" />
     </div>
-    <div class="flex flex-column justify-content-end align-items-center">
+    <div class="flex flex-col justify-end items-center">
       <Button v-if="edited" @click="ev => resetObject(ev)"
               icon="pi pi-refresh" class="p-button-rounded p-button-warning m-1 mr-2 mt-2" />
       <Button v-if="edited" @click="ev => updateObject(ev)"

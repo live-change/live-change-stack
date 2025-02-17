@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="grid w-full">
+    <div class="grid grid-cols-12 gap-4 w-full">
       <div class="col relative">
         <Editor v-model="content" :config="contentConfig" />
       </div>

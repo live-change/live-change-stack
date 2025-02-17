@@ -5,6 +5,8 @@ import { findFreePorts } from 'find-free-ports'
 import path from 'path'
 import vuePlugin from '@vitejs/plugin-vue'
 
+import tailwindcss from '@tailwindcss/vite'
+
 import Markdown from 'unplugin-vue-markdown/vite'
 import MarkdownItAnchor from 'markdown-it-anchor'
 import MarkdownItSub from 'markdown-it-sub'
@@ -80,6 +82,7 @@ export default async ({ command, mode, version }, options = {
           }
         },
       }),
+      tailwindcss(),
       Markdown({
         headEnabled: true,
         markdownItOptions: {

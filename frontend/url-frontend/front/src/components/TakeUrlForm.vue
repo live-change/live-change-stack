@@ -3,25 +3,29 @@
     <command-form service="url" action="takeUrl" v-slot="{ data }" :parameters="{ target, targetType, redirect }"
                   :initialValues="initialValues" @done="handleTaken" keepOnDone>
 
-      <div class="p-field mb-3">
-        <label for="path" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="path" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Path
         </label>
         <InputText id="path" type="text" class="w-full"
-                   aria-describedby="path-help" :class="{ 'p-invalid': data.pathError }"
+                   aria-describedby="path-help" :invalid="!!data.pathError"
                    placeholder="enter/absolute/path"
                    v-model="data.path" />
-        <small v-if="data.pathError" id="path-help" class="p-error">{{ t(`errors.${data.pathError}`) }}</small>
+        <Message v-if="data.pathError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.pathError}`) }}
+        </Message>
       </div>
-      <div class="p-field mb-3">
-        <label for="domain" class="block text-900 font-medium mb-2">
+      <div class="p-field mb-4">
+        <label for="domain" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
           Domain (optional)
         </label>
         <InputText id="domain" type="text" class="w-full"
-                   aria-describedby="domain-help" :class="{ 'p-invalid': data.domainError }"
+                   aria-describedby="domain-help" :invalid="!!data.domainError"
                    placeholder="any"
                    v-model="data.domain" />
-        <small v-if="data.domainError" id="domain-help" class="p-error">{{ t(`errors.${data.domainError}`) }}</small>
+        <Message v-if="data.domainError" severity="error" variant="simple" size="small">
+          {{ t(`errors.${data.domainError}`) }}
+        </Message>
       </div>
 
       <div class="flex flex-row flex-wrap">
@@ -32,7 +36,7 @@
     </command-form>
 
     <Dialog :visible="generateDialogVisible" @update:visible="v => generateDialogVisible = v"
-            :modal="true" class="w-full sm:w-9 md:w-8 lg:w-6">
+            :modal="true" class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12">
       <template #header>
         <h3>Generate url</h3>
       </template>
@@ -46,6 +50,7 @@
   import Button from "primevue/button"
   import InputText from "primevue/inputtext"
   import Dialog from "primevue/dialog"
+  import Message from "primevue/message"
 
   import GenerateUrlForm from "./GenerateUrlForm.vue"
 

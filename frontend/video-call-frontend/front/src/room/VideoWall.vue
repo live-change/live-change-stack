@@ -4,7 +4,7 @@
     <!--<pre style="display: none">{{ JSON.stringify(allVisibleVideos, null, "  ") }}</pre>
     <pre style="display: none">{{ JSON.stringify(allVideos, null, "  ") }}</pre>-->
 
-<!--    <div class="surface-card p-3">
+<!--    <div class="bg-surface-0 dark:bg-surface-900 p-4">
       <pre>videoStyles = {{ videoStyles }}</pre>
       <pre>wall = {{ wall }} {{ wallSize }}</pre>
       <pre>mainVideos = {{ mainVideos }}</pre>

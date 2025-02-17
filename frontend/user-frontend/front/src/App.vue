@@ -7,7 +7,6 @@
 </template>
 
 <script setup>
-  import 'primevue/resources/themes/lara-light-blue/theme.css'
 
   import { useLocale } from '@live-change/vue3-components'
   const locale = useLocale()
@@ -48,3 +47,35 @@
   api.validators.password = passwordValidator
 
 </script>
+
+<style>
+  @import "tailwindcss";
+  @plugin "tailwindcss-primeui";
+
+  @custom-variant dark (&:where(.app-dark-mode, .app-dark-mode *));
+
+  :root { font-family: 'Verdana', sans-serif; }
+  @supports (font-variation-settings: normal) {
+    :root { font-family: 'Verdana var', sans-serif; }
+  }
+  html,body
+  {
+    min-height:100%;
+    font-family: 'Verdana var', 'Verdana', sans-serif;
+  }
+
+  @layer base {
+    a {
+      color: var(--p-blue-700);
+      text-decoration: underline;
+    }
+    a:hover {
+      color: var(--p-blue-900);
+      text-decoration: none;
+    }
+    a:visited {
+      color: var(--p-purple-800);
+    }
+  }
+
+</style>

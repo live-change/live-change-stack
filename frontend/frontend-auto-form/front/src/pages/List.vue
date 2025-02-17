@@ -1,5 +1,5 @@
 <template>
-  <ModelList :service="serviceName" :model="modelName" class="w-full lg:w-8 md:w-11" />
+  <ModelList :service="serviceName" :model="modelName" class="w-full lg:w-8/12 md:w-11/12" />
 </template>
 
 <script setup>

@@ -1,7 +1,7 @@
 <template>
-  <div class="w-full sm:w-9 md:w-8 lg:w-6 surface-card p-4 shadow-2 border-round">
-    <div class="text-center mb-5">
-      <div class="text-900 text-3xl font-medium mb-3">
+  <div class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12 bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
+    <div class="text-center mb-8">
+      <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
         Upload Test
       </div>
     </div>
@@ -10,7 +10,7 @@
       <Button label="Upload File" icon="pi pi-upload"></Button>
     </FileInput>
 
-    <UploadView v-if="upload" :upload="upload" cancelable class="surface-card shadow-2 border-round p-4 mt-3" />
+    <UploadView v-if="upload" :upload="upload" cancelable class="bg-surface-0 dark:bg-surface-900 shadow rounded-border p-6 mt-4" />
   </div>
 </template>
 

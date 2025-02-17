@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full lg:w-8 md:w-11">
+  <div class="w-full lg:w-8/12 md:w-11/12">
 
     <ModelView :service="serviceName" :model="modelName" :identifiers="identifiersObject" />
 

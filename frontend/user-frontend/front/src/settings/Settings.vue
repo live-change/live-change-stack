@@ -1,12 +1,12 @@
 <template>
-  <div class="flex relative lg:static surface-ground" style="height: calc(100vh - 88px)">
-    <div id="settings-menu" class="surface-section hidden flex-shrink-0 absolute left-0 h-full
-       top-0 z-1 border-right-1 surface-border select-none md:static md:block" style="width:280px">
+  <div class="flex relative lg:static bg-surface-50 dark:bg-surface-950" style="height: calc(100vh - 88px)">
+    <div id="settings-menu" class="bg-surface-0 hidden flex-shrink-0 absolute left-0 h-full
+       top-0 z-1 border-r-1 border-r-surface-300 dark:border-r-surface-750 select-none md:static md:block" style="width:280px">
       <SettingsMenu />
     </div>
 
-    <div class="flex flex-column relative flex-auto">
-      <div v-if="viewType === 'simple'" class="p-5 flex flex-column flex-auto align-items-center">
+    <div class="flex flex-col relative flex-auto">
+      <div v-if="viewType === 'simple'" class="p-8 flex flex-col flex-auto items-center">
         <router-view></router-view>
       </div>
       <template v-if="viewType === 'wide'">

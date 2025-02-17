@@ -1,21 +1,21 @@
 <template>
-  <div class="w-full lg:w-6 md:w-9" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
-    <div class="surface-card border-round shadow-2 p-4">
-      <div class="text-center mb-5">
-        <div class="text-900 text-3xl font-medium mb-3">
+  <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
+      <div class="text-center mb-8">
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
           Signed Up
         </div>
       </div>
-      <p class="mt-0 p-0 line-height-3">
+      <p class="mt-0 p-0 leading-normal">
         Congratulations! You have successfully created your account.
         <span v-if="needPassword && !afterSignIn">
           You can now set password to secure your account.
         </span>
-        <div v-else-if="afterSignIn" class="flex flex-row justify-content-center align-items-center">
+        <div v-else-if="afterSignIn" class="flex flex-row justify-center items-center">
           <router-link :to="afterSignIn" class="no-underline">
             <Button label="Next" v-ripple />
           </router-link>
-          <p class="ml-4" v-if="isMounted && redirectTime">
+          <p class="ml-6" v-if="isMounted && redirectTime">
             Redirect in {{ pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }}...
           </p>
         </div>
@@ -27,9 +27,9 @@
       </p>
     </div>
 
-    <div class="surface-card p-4 shadow-2 border-round mt-2" v-if="needPassword && !afterSignIn">
-      <div class="text-center mb-5">
-        <div class="text-900 text-3xl font-medium mb-3">
+    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border mt-2" v-if="needPassword && !afterSignIn">
+      <div class="text-center mb-8">
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
           {{ passwordExists ? 'Change password' : 'Set password' }}
         </div>
       </div>
@@ -40,11 +40,11 @@
 
         <template v-if="isMounted">
 
-          <div class="p-field mb-3">
-            <label for="newPassword" class="block text-900 font-medium mb-2">New password</label>
+          <div class="p-field mb-4">
+            <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">New password</label>
             <Password id="newPassword" class="w-full" inputClass="w-full"
                       toggleMask v-model:masked="masked"
-                      :class="{ 'p-invalid': data.passwordHashError }"
+                      :invalid="!!data.passwordHashError"
                       v-model="data.passwordHash">
               <template #footer>
                 <Divider />
@@ -57,11 +57,13 @@
                 </ul>
               </template>
             </Password>
-            <small id="newPassword-help" class="p-error">{{ data.passwordHashError }}</small>
+            <Message v-if="data.passwordHashError" severity="error" variant="simple" size="small">
+              {{ t(`errors.${data.passwordHashError}`) }}
+            </Message>
           </div>
 
-          <div class="p-field mb-3">
-            <label for="reenterPassword" class="block text-900 font-medium mb-2">Re-enter password</label>
+          <div class="p-field mb-4">
+            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Re-enter password</label>
             <Password id="reenterPassword" class="w-full" inputClass="w-full"
                       toggleMask v-model:masked="masked"
                       v-model="secondPassword"
@@ -85,6 +87,7 @@
 
   import Button from "primevue/button"
   import Divider from "primevue/divider"
+  import Message from "primevue/message"
   import Password from "../password/Password.vue"
 
   import { live, path, useApi } from '@live-change/vue3-ssr'
