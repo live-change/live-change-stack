@@ -6,7 +6,7 @@
             hover:text-surface-900 hover:dark:text-surface-100 overflow-visible
             font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
     <OverlayBadge v-if="unreadNotificationsCount?.count" :value="unreadNotificationsCount?.count ?? 0" size="small">
-      <i class="pi pi-bell" style="font-size: 2rem" />
+      <i class="pi pi-bell" style="font-size: 1.5rem" />
     </OverlayBadge>
   </a>
   <div

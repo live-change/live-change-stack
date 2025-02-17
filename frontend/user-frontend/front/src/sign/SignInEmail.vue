@@ -18,21 +18,21 @@
             Email address
           </label>
           <InputText id="email" type="text" class="w-full"
-                     aria-describedby="email-help" :class="{ 'p-invalid': data.emailError }"
-                     v-model="data.email" />
-          <small v-if="data.emailError" id="email-help" class="p-error">
+                     aria-describedby="email-help" :invalid="data.emailError" 
+                     v-model="data.email" />        
+          <Message v-if="data.emailError" severity="error" variant="simple" size="small">
             {{ t(`errors.${data.emailError}`) }}
-          </small>
+          </Message>
         </div>
 
         <div class="p-field mb-4">
           <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Password (optional)</label>
           <Password id="password" class="w-full" inputClass="w-full" toggleMask :feedback="false"
-                    aria-describedby="password-help" :class="{ 'p-invalid': data.passwordHashError }"
-                    v-model="data.passwordHash" />
-          <small v-if="data.passwordHashError" id="password-help" class="p-error">
+                    aria-describedby="password-help" :invalid="data.passwordHashError" 
+                    v-model="data.passwordHash" />        
+          <Message v-if="data.passwordHashError" severity="error" variant="simple" size="small">
             {{ t(`errors.${data.passwordHashError}`) }}
-          </small>
+          </Message>
         </div>
 
         <div class="flex items-center justify-between mb-12">
@@ -76,6 +76,7 @@
   import Button from "primevue/button"
   import Divider from "primevue/divider"
   import Password from "../password/Password.vue"
+  import Message from "primevue/message"
 
   import { onMounted, ref } from 'vue'
   const isMounted = ref(false)

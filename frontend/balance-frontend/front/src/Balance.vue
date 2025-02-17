@@ -48,11 +48,11 @@
                 Name
               </label>
               <InputText id="name" type="text" class="w-full"
-                         aria-describedby="email-help" :class="{ 'p-invalid': data.nameError }"
+                         aria-describedby="email-help" :invalid="!!data.nameError"
                          v-model="data.name" />
-              <small v-if="data.nameError" id="email-help" class="p-error">
+              <Message v-if="data.nameError" severity="error" variant="simple" size="small">
                 {{ t(`errors.${data.nameError}`) }}
-              </small>
+              </Message>
             </div>
           </div>
           <div class="col-span-12 md:col-span-6 py-1">
@@ -61,11 +61,11 @@
                 Change
               </label>
               <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
-                         aria-describedby="email-help" :class="{ 'p-invalid': data.changeError }"
+                         aria-describedby="email-help" :invalid="!!data.changeError"
                          v-model="data.change" />
-              <small v-if="data.changeError" id="email-help" class="p-error">
+              <Message v-if="data.changeError" severity="error" variant="simple" size="small">
                 {{ t(`errors.${data.changeError}`) }}
-              </small>
+              </Message>
             </div>
           </div>
           <Button label="Start operation" icon="pi pi-plus" type="submit" />
@@ -82,9 +82,11 @@
                 Name
               </label>
               <InputText id="name" type="text" class="w-full"
-                         aria-describedby="name-help" :class="{ 'p-invalid': data.nameError }"
+                         aria-describedby="name-help" :invalid="!!data.nameError"
                          v-model="data.name" />
-              <small v-if="data.nameError" id="name-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
+              <Message v-if="data.nameError" severity="error" variant="simple" size="small">
+                {{ t(`errors.${data.nameError}`) }}
+              </Message>
             </div>
           </div>
           <div class="col-span-12 md:col-span-6 py-1">
@@ -93,9 +95,11 @@
                 Change
               </label>
               <InputNumber id="name" type="text" class="w-full" :min="-1000000" :max="1000000" showButtons :step="1000"
-                           aria-describedby="change-help" :class="{ 'p-invalid': data.changeError }"
+                           aria-describedby="change-help" :invalid="!!data.changeError"
                            v-model="data.change" />
-              <small v-if="data.changeError" id="change-help" class="p-error">{{ t(`errors.${data.changeError}`) }}</small>
+              <Message v-if="data.changeError" severity="error" variant="simple" size="small">
+                {{ t(`errors.${data.changeError}`) }}
+              </Message>
             </div>
           </div>
           <Button label="Do operation" icon="pi pi-plus" type="submit" />
@@ -133,6 +137,7 @@
 
 <script setup>
 
+  import Message from "primevue/message"
   import InputText from "primevue/inputtext"
   import BalanceDisplay from './components/BalanceDisplay.vue'
   import OperationsList from './components/OperationsList.vue'

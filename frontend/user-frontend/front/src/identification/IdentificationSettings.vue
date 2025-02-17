@@ -20,9 +20,11 @@
                       class="ml-4 mb-4 flex flex-col">
           <div class="p-field flex flex-col">
             <InputText type="text" v-model="data.name"
-                       :class="{ 'p-invalid': data.nameError }"
+                       :invalid="!!data.nameError"
                        class="p-inputtext-lg" placeholder="Your name" />
-            <small v-if="data.nameError" id="currentPassword-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
+            <Message v-if="data.nameError" severity="error" variant="simple" size="small">
+              {{ t(`errors.${data.nameError}`) }}
+            </Message>
           </div>
           <Button type="submit" label="Save name" class="mt-4" icon="pi pi-save" />
         </command-form>
@@ -39,6 +41,7 @@
   import { useDialog } from 'primevue/usedialog'
   import InputText from 'primevue/inputtext'
   import Button from 'primevue/button'
+  import Message from "primevue/message"
   const dialog = useDialog()
 
   import { shallowRef, ref, inject, computed } from 'vue'

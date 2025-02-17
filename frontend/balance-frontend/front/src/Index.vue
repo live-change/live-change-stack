@@ -32,9 +32,11 @@
               Name
             </label>
             <InputText id="name" type="text" class="w-full"
-                       aria-describedby="name-help" :class="{ 'p-invalid': data.nameError }"
+                       aria-describedby="name-help" :invalid="!!data.nameError"
                        v-model="data.name" />
-            <small v-if="data.nameError" id="name-help" class="p-error">{{ t(`errors.${data.nameError}`) }}</small>
+            <Message v-if="data.nameError" severity="error" variant="simple" size="small">
+              {{ t(`errors.${data.nameError}`) }}
+            </Message>
           </div>
         </div>
         <Button label="Add balance" icon="pi pi-plus" type="submit" />
@@ -46,6 +48,7 @@
 <script setup>
 
   import InputText from "primevue/inputtext"
+  import Message from "primevue/message"
 
   import {
     defineProps, defineEmits, defineModel, toRefs, computed, watch, ref, watchEffect, onUnmounted,

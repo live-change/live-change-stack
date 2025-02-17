@@ -24,9 +24,9 @@
                     :filter="availableLocales.length > 10"
                     placeholder="Auto-detect"
                     class="w-full" />
-          <small v-if="data.languageError" id="language-help" class="p-error">
+          <Message v-if="data.languageError" severity="error" variant="simple" size="small">
             {{ t(`errors.${data.languageError}`) }}
-          </small>
+          </Message>
         </div>
 
         <Button type="submit" label="Apply" class="mt-1" icon="pi pi-save" />
@@ -42,6 +42,8 @@
 </template>
 
 <script setup>
+  import Message from "primevue/message"
+
   import { usePath, live, useApi } from '@live-change/vue3-ssr'
   const api = useApi()
   const path = usePath()

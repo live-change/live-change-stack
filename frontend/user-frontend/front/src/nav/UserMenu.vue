@@ -15,7 +15,8 @@
       <router-link :to="{ name: 'user:signUpEmail' }"
                    v-ripple
                    class="flex px-6 py-2 items-center text-surface-600 hover:text-surface-900 hover:bg-surface-100
-               font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
+                          font-medium border-round cursor-pointer p-ripple no-underline
+                          transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-user-plus mr-3"></i>
         <span>Sign Up</span>
@@ -25,7 +26,8 @@
       <router-link :to="{ name: 'user:signInEmail' }"
                    v-ripple
                    class="flex px-6 py-2 items-center text-surface-600 hover:text-surface-900 hover:bg-surface-100
-               font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
+                          font-medium border-round cursor-pointer p-ripple no-underline
+                          transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-key mr-3"></i>
         <span>Sign In</span>
@@ -35,7 +37,8 @@
       <router-link :to="{ name: 'user:settings' }"
                    v-ripple
                    class="flex px-6 py-2 items-center text-surface-600 hover:text-surface-900 hover:bg-surface-100
-               font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
+                          font-medium border-round cursor-pointer p-ripple no-underline
+                          transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-cog mr-3"></i>
         <span>Settings</span>
@@ -45,7 +48,8 @@
       <router-link :to="{ name: 'user:signOut' }"
                    v-ripple
                    class="flex px-6 py-2 items-center text-surface-600 hover:text-surface-900 hover:bg-surface-100
-             font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
+                          font-medium border-round cursor-pointer p-ripple no-underline
+                          transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-power-off mr-3"></i>
         <span>Sign Out</span>

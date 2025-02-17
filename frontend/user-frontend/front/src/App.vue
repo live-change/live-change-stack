@@ -64,5 +64,18 @@
     font-family: 'Verdana var', 'Verdana', sans-serif;
   }
 
+  @layer base {
+    a {
+      color: var(--p-blue-700);
+      text-decoration: underline;
+    }
+    a:hover {
+      color: var(--p-blue-900);
+      text-decoration: none;
+    }
+    a:visited {
+      color: var(--p-purple-800);
+    }
+  }
 
 </style>

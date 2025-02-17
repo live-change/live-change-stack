@@ -13,9 +13,11 @@
             Email address
           </label>
           <InputText id="email" type="text" class="w-full"
-                     v-model="data.email" :class="{ 'p-invalid': data.emailError }"
+                     v-model="data.email" :invalid="!!data.emailError"
                      aria-describedby="email-help" />
-          <small v-if="data.emailError" id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
+          <Message v-if="data.emailError" severity="error" variant="simple" size="small">
+            {{ t(`errors.${data.emailError}`) }}
+          </Message>
         </div>
 
         <Button type="submit" label="Reset password" icon="pi pi-key" class="w-full"></Button>
@@ -28,6 +30,7 @@
 <script setup>
   import InputText from "primevue/inputtext"
   import Button from "primevue/button"
+  import Message from "primevue/message"
 
   import { onMounted, ref } from "vue"
   const isMounted = ref(false)

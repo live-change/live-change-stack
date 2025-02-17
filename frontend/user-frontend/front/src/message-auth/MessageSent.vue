@@ -19,11 +19,13 @@
               <label for="code" class="p-sr-only">Code</label>
               <InputOtp id="code"  :length="6" class="mb-2"
                          v-model="data.secret"
-                         aria-describedby="code-help" :class="{ 'p-invalid': data.secretError }" />
+                         aria-describedby="code-help" :invalid="!!data.secretError" />
 <!--              <InputMask id="code" class="p-inputtext-lg" mask="999999" slotChar="######" placeholder="Enter code"
                          v-model="data.secret"
-                         aria-describedby="code-help" :class="{ 'p-invalid': data.secretError }" />-->
-              <span v-if="data.secretError" id="code-help" class="p-error">{{ t(`errors.${data.secretError}`) }}</span>
+                         aria-describedby="code-help" :invalid="!!data.secretError" />-->
+              <Message v-if="data.secretError" severity="error" variant="simple">
+                {{ t(`errors.${data.secretError}`) }}
+              </Message>
             </div>
             <div class="flex flex-col">
               <Button label="OK" type="submit" class="p-button-lg grow-0"
@@ -44,6 +46,7 @@
   import InputMask from "primevue/inputmask"
   import InputOtp from "primevue/inputotp"
   import Button from "primevue/button"
+  import Message from "primevue/message"
 
   import { Secured } from "@live-change/security-frontend"
 

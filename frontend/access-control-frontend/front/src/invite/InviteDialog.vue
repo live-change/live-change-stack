@@ -28,9 +28,11 @@
                       Email address
                     </label>
                     <InputText id="email" type="text" class="w-full"
-                               aria-describedby="email-help" :class="{ 'p-invalid': data.emailError }"
+                               aria-describedby="email-help" :invalid="!!data.emailError"
                                v-model="data.email" />
-                    <small v-if="data.emailError" id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
+                    <Message v-if="data.emailError" severity="error" variant="simple" size="small">
+                      {{ t(`errors.${data.emailError}`) }}
+                    </Message>
                   </div>
                 </div>
                 <div class="col-span-12 md:col-span-6">
@@ -49,7 +51,9 @@
                                  :optionLabel="optionLabel"
                                  v-model="data.roles"
                                  :feedback="false" toggleMask />
-                    <small v-if="data.rolesError" id="roles-help" class="p-error">{{ t(`errors.${data.rolesError}`) }}</small>
+                    <Message v-if="data.rolesError" severity="error" variant="simple" size="small">
+                      {{ t(`errors.${data.rolesError}`) }}
+                    </Message>
                   </div>
                 </div>
               </div>
@@ -78,11 +82,11 @@
                   </label>
                   <Textarea id="emailsText" type="text" class="w-full"
                             rows="4"
-                            aria-describedby="emails-help" :class="{ 'p-invalid': data.emailsTextError }"
+                            aria-describedby="emails-help" :invalid="!!data.emailsTextError"
                             v-model="data.emailsText" />
-                  <small v-if="data.emailsTextError" id="emails-help" class="p-error">
+                  <Message v-if="data.emailsTextError" severity="error" variant="simple" size="small">
                     {{ t(`errors.${data.emailsTextError}`) }}
-                  </small>
+                  </Message>
                 </div>
                 <div class="p-field mb-4">
                   <label for="inviteAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
@@ -99,7 +103,9 @@
                                :optionLabel="optionLabel"
                                v-model="data.roles"
                                :feedback="false" toggleMask />
-                  <small v-if="data.rolesError" id="roles-help" class="p-error">{{ t(`errors.${data.rolesError}`) }}</small>
+                  <Message v-if="data.rolesError" severity="error" variant="simple" size="small">
+                    {{ t(`errors.${data.rolesError}`) }}
+                  </Message>
                 </div>
               <div class="p-field mb-1">
                 <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
@@ -141,6 +147,8 @@
   import { TaskModal } from "@live-change/task-frontend"
 
   import { WorkingZone } from "@live-change/vue3-components"
+
+  import Message from "primevue/message"
 
   import ProgressSpinner from 'primevue/progressspinner'
 

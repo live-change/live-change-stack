@@ -4,7 +4,9 @@
                 :style="{ height: (codeLines * 1.35) + 'em' }"
                 v-model="code"
                 :readonly="readOnly" :line-numbers="codeLines > 1" />
-  <small v-if="editResult.error" class="p-error">{{ editResult.error }}</small>
+  <Message v-if="editResult.error" severity="error" variant="simple" size="small">
+    {{ editResult.error }}
+  </Message>
 </template>
 
 <script setup>
@@ -16,6 +18,8 @@
   import * as Prism from 'prismjs/components/prism-core'
   import 'prismjs/components/prism-clike'
   import 'prismjs/components/prism-javascript'
+
+  import Message from "primevue/message"
 
   import { PrismEditor } from 'vue-prism-editor'
 

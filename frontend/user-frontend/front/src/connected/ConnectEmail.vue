@@ -13,9 +13,11 @@
             Email address
           </label>
           <InputText id="email" type="text" class="w-full"
-                     aria-describedby="email-help" :class="{ 'p-invalid': data.emailError}"
+                     aria-describedby="email-help" :invalid="!!data.emailError"
                      v-model="data.email" />
-          <small v-if="data.emailError" id="email-help" class="p-error">{{ t(`errors.${data.emailError}`) }}</small>
+          <Message v-if="data.emailError" severity="error" variant="simple" size="small">
+            {{ t(`errors.${data.emailError}`) }}
+          </Message>
         </div>
 
         <Button label="Add Email" icon="pi pi-envelope" class="w-full" type="submit" />
@@ -41,6 +43,7 @@
   import Checkbox from "primevue/checkbox"
   import Button from "primevue/button"
   import Divider from "primevue/divider"
+  import Message from "primevue/message"
 
   import { useRouter } from 'vue-router'
   const router = useRouter()

@@ -30,7 +30,7 @@ for(const contactType of config.contactTypes) {
     },
     async execute({ [contactTypeName]: contact, passwordHash }, { client, service }, emit) {
       const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
-      if(!contactData) throw { properties: { email: 'notFound' } }
+      if(!contactData) throw { properties: { email: 'emailNotFound' } }
       const { user } = contactData
       if(passwordHash) { // login with password
         console.log("USER!", user)

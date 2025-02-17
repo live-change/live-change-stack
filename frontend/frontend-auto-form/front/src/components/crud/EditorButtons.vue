@@ -8,9 +8,9 @@
       <div v-else-if="draftChanged" class="text-sm text-surface-500 dark:text-surface-300 mr-2">
         Draft changed
       </div>
-      <div v-else-if="validationResult" class="font-semibold p-error mr-2">
+      <Message v-else-if="validationResult" severity="error" variant="simple" size="small" class="mr-2">
         Before saving, please correct the errors above.
-      </div>
+      </Message>
       <div v-else-if="!changed" class="">
         No changes to save.
       </div>
@@ -32,6 +32,8 @@
 </template>
 
 <script setup>
+
+  import Message from "primevue/message"
 
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs, getCurrentInstance } from 'vue'
 

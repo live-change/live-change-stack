@@ -1,15 +1,15 @@
 <template>
   <a v-ripple
      v-styleclass="{ selector: '@next', enterFromClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
-     class="relative shadow-none b">
+     class="relative shadow-none b shrink-0">
       <span class="flex mx-0 px-3 align-items-center font-medium justify-content-center
          cursor-pointer transition-colors transition-duration-150 border-round">
-        <Image v-if="myIdentification?.image" :image="myIdentification.image"
-               class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600" style="width: 4rem; " />
+        <Image v-if="myIdentification?.image" :image="myIdentification.image" width="56" height="56"
+               class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600 object-cover w-12 max-w-none" />
         <img v-else-if="ownerData[0] === 'session_Session'" src="/images/empty-user-photo.svg"
-             class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600" style="width: 4rem;" />
+             class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600 w-12 max-w-none" />
         <img v-else :src="identiconUrl"
-             class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600" style="width: 4rem;" />
+             class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600 w-12 max-w-none" />
       </span>
   </a>
   <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto bg-surface-0

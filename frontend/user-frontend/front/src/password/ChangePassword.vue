@@ -18,16 +18,18 @@
             <label for="currentPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Current password</label>
             <Password id="currentPassword" class="w-full" inputClass="w-full"
                       toggle-mask v-model:masked="masked"
-                      :class="{ 'p-invalid': data.currentPasswordHashError }"
+                      :invalid="!!data.currentPasswordHashError"
                       v-model="data.currentPasswordHash" />
-            <small v-if="data.currentPasswordHashError" id="currentPassword-help" class="p-error">{{ t(`errors.${data.currentPasswordHashError}`) }}</small>
+            <Message v-if="data.currentPasswordHashError" severity="error" variant="simple" size="small">
+              {{ t(`errors.${data.currentPasswordHashError}`) }}
+            </Message>
           </div>
 
           <div class="p-field mb-4">
             <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">New password</label>
             <Password id="newPassword" class="w-full" inputClass="w-full"
                       toggle-mask v-model:masked="masked"
-                      :class="{ 'p-invalid': data.passwordHashError }"
+                      :invalid="!!data.passwordHashError"
                       v-model="data.passwordHash">
               <template #footer>
                 <Divider />
@@ -40,7 +42,9 @@
                 </ul>
               </template>
             </Password>
-            <small v-if="data.passwordHashError" id="newPassword-help" class="p-error">{{ t(`errors.${data.passwordHashError}`) }}</small>
+            <Message v-if="data.passwordHashError" severity="error" variant="simple" size="small">
+              {{ t(`errors.${data.passwordHashError}`) }}
+            </Message>
           </div>
 
           <div class="p-field mb-4">
@@ -67,6 +71,7 @@
 
   import Button from "primevue/button"
   import Divider from "primevue/divider"
+  import Message from "primevue/message"
   import Password from "./Password.vue"
 
   import { live, path } from '@live-change/vue3-ssr'

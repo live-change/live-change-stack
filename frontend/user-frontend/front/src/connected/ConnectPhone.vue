@@ -15,7 +15,9 @@
           <PhoneInput id="phone" class="w-full"
                      aria-describedby="phone-help" :class="{ 'p-invalid': data.phoneError }"
                      v-model="data.phone" />
-          <small v-if="data.phoneError" id="phone-help" class="p-error">{{ t(`errors.${data.phoneError}`) }}</small>
+          <Message v-if="data.phoneError" severity="error" variant="simple" size="small">
+            {{ t(`errors.${data.phoneError}`) }}
+          </Message>
         </div>
 
         <Button label="Add Phone" icon="pi pi-mobile" class="w-full" type="submit" />
@@ -41,6 +43,8 @@
   import Checkbox from "primevue/checkbox"
   import Button from "primevue/button"
   import Divider from "primevue/divider"
+  import Message from "primevue/message"
+  
   import PhoneInput from "../phone/PhoneInput.vue"
 
   import { useI18n } from 'vue-i18n'

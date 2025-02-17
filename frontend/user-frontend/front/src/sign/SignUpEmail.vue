@@ -17,11 +17,11 @@
             Email address
           </label>
           <InputText id="email" type="text" class="w-full"
-                     aria-describedby="email-help" :class="{ 'p-invalid': data.emailError}"
+                     aria-describedby="email-help" :invalid="!!data.emailError"
                      v-model="data.email" />
-          <small v-if="data.emailError" id="email-help" class="p-error">
+          <Message v-if="data.emailError" severity="error" variant="simple" size="small">
             {{ t(`errors.${data.emailError}`) }}
-          </small>
+          </Message>
         </div>
 
         <Button label="Sign Up with email" icon="pi pi-user" class="w-full" type="submit" />
@@ -55,6 +55,7 @@
   import InputText from "primevue/inputtext"
   import Button from "primevue/button"
   import Divider from "primevue/divider"
+  import Message from "primevue/message"
 
   import { useRouter } from 'vue-router'
   const router = useRouter()

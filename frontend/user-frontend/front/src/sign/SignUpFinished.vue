@@ -44,7 +44,7 @@
             <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">New password</label>
             <Password id="newPassword" class="w-full" inputClass="w-full"
                       toggleMask v-model:masked="masked"
-                      :class="{ 'p-invalid': data.passwordHashError }"
+                      :invalid="!!data.passwordHashError"
                       v-model="data.passwordHash">
               <template #footer>
                 <Divider />
@@ -57,7 +57,9 @@
                 </ul>
               </template>
             </Password>
-            <small id="newPassword-help" class="p-error">{{ data.passwordHashError }}</small>
+            <Message v-if="data.passwordHashError" severity="error" variant="simple" size="small">
+              {{ t(`errors.${data.passwordHashError}`) }}
+            </Message>
           </div>
 
           <div class="p-field mb-4">
@@ -85,6 +87,7 @@
 
   import Button from "primevue/button"
   import Divider from "primevue/divider"
+  import Message from "primevue/message"
   import Password from "../password/Password.vue"
 
   import { live, path, useApi } from '@live-change/vue3-ssr'

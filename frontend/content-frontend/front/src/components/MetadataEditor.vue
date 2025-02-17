@@ -3,12 +3,13 @@
   <auto-editor :definition="editableDefinition" v-model="editable" :rootValue="editable" i18n="content.metadata." />
   <Button label="Save metadata" icon="pi pi-save" :disabled="!changed || error" @click="save" />
   <div>
-    <small v-if="error" class="p-error">Fix errors above to save</small>
+    <Message v-if="error" severity="error" variant="simple" size="small">Fix errors above to save</Message>
   </div>
 </template>
 
 <script setup>
   import Button from 'primevue/button'
+  import Message from "primevue/message"
   import { AutoInput, AutoField, AutoEditor } from '@live-change/frontend-auto-form'
 
   import "@live-change/image-frontend"
