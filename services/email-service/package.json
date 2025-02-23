@@ -1,6 +1,6 @@
 {
   "name": "@live-change/email-service",
-  "version": "0.9.33",
+  "version": "0.9.34",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.9.33",
+    "@live-change/framework": "^0.9.34",
     "got": "^11.8.6",
     "html-to-text": "8.1.0",
     "inline-css": "4.0.2",
@@ -29,8 +29,8 @@
     "juice": "11.0.0",
     "nodemailer": "^6.7.2",
     "postcss": "8.5.3",
-    "postcss-custom-properties": "14.0.4",
-    "postcss-calc": "10.1.1"
+    "postcss-calc": "10.1.1",
+    "postcss-custom-properties": "14.0.4"
   },
   "gitHead": "2aa34c0589d115aeaa573bd2cae09bb43a66d162",
   "type": "module"
