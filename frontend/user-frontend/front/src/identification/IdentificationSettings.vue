@@ -10,7 +10,7 @@
       <div class="flex flex-wrap items-center justify-center" v-if="userData !== undefined">
         <div class="relative mb-4" @click="openImageEditor">
           <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full profile-image"
-                 domResize width="200" height="200" />
+                 domResize width="200" height="200" />              
           <img v-else :src="identiconUrl" class="mr-2 rounded-full profile-image">
         </div>
         <command-form service="userIdentification" :action="updateMethod"

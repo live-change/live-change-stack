@@ -9,3 +9,5 @@ yarn.lock
 .nx
 **/.nx
 *.iml
+.history
+.vscode

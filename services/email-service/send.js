@@ -6,23 +6,9 @@ const app = App.app()
 
 import renderEmail from './render.js'
 
-const config = definition.config
+import config from './config.js'
 
-const smtp = nodemailer.createTransport(config.transport || {
-  host: config.host || process.env.SMTP_HOST,
-  port: +(config.port || process.env.SMTP_PORT),
-  auth: {
-    user: (config.user || process.env.SMTP_USER),
-    pass: (config.password || process.env.SMTP_PASSWORD)
-  },
-  secure: (config.secure || process.env.SMTP_SECURE) !== undefined
-      ? !!((config.secure || process.env.SMTP_SECURE))
-      : undefined, // secure:true for port 465, secure:false for port 587
-  tls: {
-    // do not fail on invalid certs
-    rejectUnauthorized: !(config.ignoreTLS || process.env.SMTP_IGNORE_TLS)
-  }
-})
+const smtp = nodemailer.createTransport(config.smtp)
 
 const SentEmail = definition.model({
   name: "SentEmail",
