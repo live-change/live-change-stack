@@ -9,7 +9,7 @@ import crypto from 'crypto'
 import { ObservableValue } from '@live-change/dao'
 
 import definition from './definition.js'
-const config = definition.config
+import config from './config.js'
 
 import { runWithBrowser } from './browser.js'
 
@@ -423,8 +423,8 @@ async function renderEmailWithBrowser(url) {
 export { renderEmailWithJuice, renderEmailWithBrowser }
 
 async function renderEmail(data) {
-  const baseUrl = `http://${config.ssrHost||process.env.SSR_HOST||'127.0.0.1'}`+
-  `:${config.ssrPort||process.env.SSR_PORT||'8001'}`
+  console.log("RENDER EMAIL WITH CONFIG", config)
+  const baseUrl = config.ssrUrl
 
   const encodedData = encodeURIComponent(JSON.stringify(data))
   const url = `${baseUrl}/_email/${data.action}/${data.contact}/${encodedData}`

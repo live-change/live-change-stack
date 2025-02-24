@@ -56,6 +56,7 @@ export default async ({ command, mode, version }, options = {
       ENV_VERSION: JSON.stringify(version || process.env.VERSION || 'unknown'),
     },
     server: {
+      allowedHosts: true,
       hmr: {
         port: +(process.env.HMR_PORT ?? (await findFreePorts())[0])
       },

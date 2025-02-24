@@ -24,11 +24,6 @@ const browser = {
     null, 
     crypto.randomBytes(24).toString('hex')
   ),
-  ssrUrl: getValue(
-    definition.config.browser?.ssrUrl, 
-    process.env.SSR_URL, 
-    'http://localhost:8001'
-  ),
 }
 
 // SMTP configuration
@@ -48,6 +43,15 @@ const renderMethod = getValue(definition.config.renderMethod, process.env.EMAIL_
 
 definition.clientConfig = {}
 
-const config = { browser, smtp, renderMethod }
+const config = { 
+  browser, 
+  smtp,
+  renderMethod,
+  ssrUrl: getValue(
+    definition.config.browser?.ssrUrl, 
+    process.env.SSR_URL, 
+    'http://localhost:8001'
+  )
+}
 
 export default config

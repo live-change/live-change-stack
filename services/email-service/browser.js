@@ -14,6 +14,8 @@ import dns from "dns/promises"
 const browserQueue = new PQueue({ concurrency: config.browser.concurrency })
 
 async function newBrowser() {
+  console.log("New browser", config)
+  //process.exit(0)
   if(config.browser.webSocketDebuggerUrl) {
     const browser = await chromium.connect({ wsEndpoint: config.browser.webSocketDebuggerUrl })
     return browser
