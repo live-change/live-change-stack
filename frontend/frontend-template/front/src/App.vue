@@ -8,7 +8,6 @@
 </template>
 
 <script setup>
-  import 'primevue/resources/themes/saga-green/theme.css'
   import "@fortawesome/fontawesome-free/css/all.min.css"
 
   import { useLocale } from '@live-change/vue3-components'
@@ -60,3 +59,39 @@
   import "./analytics"
 
 </script>
+
+
+<style>
+  @import "tailwindcss";
+  @plugin "tailwindcss-primeui";
+
+  @custom-variant dark (&:where(.app-dark-mode, .app-dark-mode *));
+
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: var(--font-sans)
+  }
+  /* @supports (font-variation-settings: normal) {
+    :root { font-family: 'Verdana var', sans-serif; }
+  } */
+  html,body
+  {
+    min-height: 100%;
+    font-family: var(--font-sans);
+    font-weight: 400;
+  }
+
+  @layer base {
+    a {
+      color: var(--p-blue-700);
+      text-decoration: underline;
+    }
+    a:hover {
+      color: var(--p-blue-900);
+      text-decoration: none;
+    }
+    a:visited {
+      color: var(--p-purple-800);
+    }
+  }
+</style>

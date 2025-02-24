@@ -74,7 +74,7 @@ export function serverEntry(App, createRouter, config = {}) {
     styleSheets.push(Theme.getCommonStyleSheet())
     for(const name of usedStyles) {
       styleSheets.push(Theme.getStyleSheet(name))
-      const styleObject = await import(`primevue/${name}/style`)
+      const styleObject = await import(/* @vite-ignore */`primevue/${name}/style`)
       styleSheets.push(styleObject.default.getThemeStyleSheet())
     }
     styleSheets.push(BaseStyle.getThemeStyleSheet())

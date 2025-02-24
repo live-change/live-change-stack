@@ -15,7 +15,7 @@ definition.trigger({
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     const user = app.generateUid()
     await service.trigger({ type: 'connect' + contactTypeUpperCase }, {
-      [contactTypeName]: contact,
+      [contactType]: contact,
       user
     })
     await service.trigger({ type: 'signUpAndSignIn' }, {
@@ -34,7 +34,7 @@ definition.trigger({
   async execute({ contactType, contact, session }, { service }, _emit) {
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     const user = await service.trigger({ type: 'signIn' + contactTypeUpperCase }, {
-      [contactTypeName]: contact,
+      [contactType]: contact,
       session
     })
     return user
@@ -50,7 +50,7 @@ definition.trigger({
   async execute({ contactType, contact, user }, { client, service }, _emit) {
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
     await service.trigger({ type: 'connect' + contactTypeUpperCase }, {
-      [contactTypeName]: contact,
+      [contactType]: contact,
       user
     })
     return user

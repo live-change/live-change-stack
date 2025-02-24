@@ -6,7 +6,6 @@ import { locales as autoFormLocales } from "@live-change/frontend-auto-form"
 import Aura from '@primevue/themes/aura'
 
 export default {
-  defaultLocale: 'en',
 
   primeVue: {
     theme: {
@@ -23,6 +22,8 @@ export default {
     },
     ripple: true
   },
+
+  defaultLocale: 'en',
 
   i18n: {
     messages: {

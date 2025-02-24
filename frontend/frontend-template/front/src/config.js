@@ -27,11 +27,20 @@ export default {
       ])
     }
   },
-  primevue: {
+
+  primeVue: {
     theme: {
       preset: Aura,
-      cssLayer: false,
-      darkModeSelector: 'body'
-    }
-  }
+      options: {
+        prefix: 'p',
+        darkModeSelector: '.app-dark-mode, .app-dark-mode *',
+        //cssLayer: false
+        cssLayer: {
+          name: "primevue",
+          order: "base, primevue",
+        },
+      }
+    },
+    ripple: true
+  },
 }

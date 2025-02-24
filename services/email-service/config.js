@@ -44,7 +44,7 @@ const smtp = {
   ignoreTLS: getValue(definition.config.smtp?.ignoreTLS, undefined),
 }
 
-const renderMethod = getValue(definition.config.renderMethod, process.env.RENDER_METHOD, 'juice')
+const renderMethod = getValue(definition.config.renderMethod, process.env.EMAIL_RENDER_METHOD, 'juice')
 
 definition.clientConfig = {}
 

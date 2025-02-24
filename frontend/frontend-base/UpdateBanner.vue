@@ -5,11 +5,11 @@
     <div class="items-center hidden md:flex">
       <span class="leading-normal">{{ t("app.newVersions") }}</span>
     </div>
-    <a class="flex items-center ml-2 mr-20">
+    <div class="flex items-center ml-2 mr-20">
       <a class="text-gray-900" href="#" @click="update">
         <span class="underline font-bold">{{ t("app.reload") }}</span>
       </a>
-    </a>
+    </div>
     <a v-ripple class="flex align-items-center no-underline justify-content-center border-circle text-gray-900
          hover:bg-bluegray-700 cursor-pointer transition-colors transition-duration-150 p-ripple"
        style="width:2rem; height: 2rem" @click="hideUpdateBanner">
