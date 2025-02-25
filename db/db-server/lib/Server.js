@@ -80,6 +80,7 @@ class Server {
     this.metadataSavePromise = null
 
     this.databasesListObservable = new ReactiveDao.ObservableList([])
+    this.databasesListObservable.observe(() => {}) // prevent dispose and clear
 
     this.apiServer = new ReactiveDao.ReactiveServer((sessionId) => this.createDao(sessionId))
 

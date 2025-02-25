@@ -1,11 +1,21 @@
 import path from 'path'
-import { fileURLToPath } from 'url';
 import vuePlugin from '@vitejs/plugin-vue'
 import { defineConfig, searchForWorkspaceRoot } from 'vite'
 import findFreePorts from "find-free-ports"
 import { visualizer } from 'rollup-plugin-visualizer'
 import viteImages from 'vite-plugin-vue-images'
 import viteCompression from 'vite-plugin-compression'
+import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { accessSync, readFileSync } from 'fs'
+
+const packageJsonPath = dirname(fileURLToPath(import.meta.url))
+  .split('/').map((part, i, arr) =>
+    join(arr.slice(0, arr.length - i).join('/'), 'package.json')
+  ).find(p => { try { accessSync(p); return true } catch(e) { return false }})
+const packageJson = packageJsonPath ? JSON.parse(readFileSync(packageJsonPath, 'utf-8')) : {}
+const version = process.env.VERSION ?? packageJson.version ?? 'unknown'
 
 const ssrTransformCustomDir = () => {
   return {
@@ -17,7 +27,8 @@ const ssrTransformCustomDir = () => {
 export default defineConfig(async ({ command, mode }) => {
   //console.log("VITE CONFIG", command, mode)
   return {
-    define: {
+    define: {  
+      ENV_VERSION: JSON.stringify(version)
     },
     server: {
       hmr: {
@@ -40,11 +51,13 @@ export default defineConfig(async ({ command, mode }) => {
               'ripple': ssrTransformCustomDir,
               'styleclass': ssrTransformCustomDir,
               'badge': ssrTransformCustomDir,
-              'shared-element': ssrTransformCustomDir
+              'shared-element': ssrTransformCustomDir,
+              'lazy': ssrTransformCustomDir,
             }
           }
         },
       }),
+      tailwindcss(),
       viteImages({ extensions: ['jpg', 'jpeg', 'png', 'svg', 'webp'] }),
       viteCompression({ algorithm: 'brotliCompress', ext: '.br' }),
       viteCompression({ algorithm: 'gzip', ext: '.gz' }),
@@ -116,7 +129,6 @@ export default defineConfig(async ({ command, mode }) => {
 
     resolve: {
       alias: [
-        { find: 'debug', replacement: 'debug/src/browser.js' },
         { find: 'universal-websocket-client', replacement: 'universal-websocket-client/browser.js' },
         { find: 'sockjs-client', replacement: 'sockjs-client/dist/sockjs.min.js' }
       ],

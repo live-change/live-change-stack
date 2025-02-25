@@ -18,7 +18,10 @@ export function routes(config = {}) {
       path: prefix,
       component: () => import("./DatabaseAdmin.vue"),
       props: { dbApi },
-      meta: { pageType: 'wide', noNavBar: true },
+      meta: { 
+        pageType: 'wide',
+      // noNavBar: true 
+      },
       children: [
         ...dbAdminRoutes({ ...config, prefix: '' })
       ]

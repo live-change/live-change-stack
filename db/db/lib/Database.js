@@ -30,9 +30,13 @@ class Database {
     this.createScriptContext = createScriptContext
 
     this.configObservable = new ReactiveDao.ObservableValue(JSON.parse(JSON.stringify(this.config)))
+    this.configObservable.observe(() => {}) // prevent dispose and clear
     this.tablesListObservable = new ReactiveDao.ObservableList(Object.keys(this.config.tables))
     this.indexesListObservable = new ReactiveDao.ObservableList(Object.keys(this.config.indexes))
     this.logsListObservable = new ReactiveDao.ObservableList(Object.keys(this.config.logs))
+    this.tablesListObservable.observe(() => {}) // prevent dispose and clear
+    this.indexesListObservable.observe(() => {}) // prevent dispose and clear
+    this.logsListObservable.observe(() => {}) // prevent dispose and clear  
   }
 
   async start(startConfig = {}) {

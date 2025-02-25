@@ -35,9 +35,7 @@
   import ConfirmPopup from 'primevue/confirmpopup'
   import Toast from 'primevue/toast'
 
-  import 'primevue/resources/primevue.min.css'
-  import 'primevue/resources/themes/saga-blue/theme.css'
-  import 'primeflex/primeflex.css'
+  import "@fortawesome/fontawesome-free/css/all.min.css"
   import 'primeicons/primeicons.css'
 
   import ProgressSpinner from 'primevue/progressspinner'
@@ -78,16 +76,98 @@
 </script>
 
 <style>
-  body {
-    margin: 0;
-    height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background-color: var(--surface-a);
-    font-family: var(--font-family);
-    font-weight: 400;
-    color: var(--text-color);
+
+  @import "tailwindcss";
+  @plugin "tailwindcss-primeui";
+
+  @custom-variant dark (&:where(.app-dark-mode, .app-dark-mode *));
+
+  :root { 
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: var(--font-sans) 
   }
+  /* @supports (font-variation-settings: normal) {
+    :root { font-family: 'Verdana var', sans-serif; }
+  } */
+  html,body
+  {
+    min-height: 100%;
+    font-family: var(--font-sans);
+    font-weight: 400;
+  }
+
+  @layer base {
+    a {
+      color: var(--p-blue-700);
+      text-decoration: underline;
+    }
+    a:hover {
+      color: var(--p-blue-900);
+      text-decoration: none;
+    }
+    a:visited {
+      color: var(--p-purple-800);
+    }
+
+    
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+      text-align: left;
+    }
+
+    h1 {
+      font-size: 2.0em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      font-weight: 500;
+      color: var(--p-surface-700);
+    }
+
+    h2 {
+      font-size: 1.75em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      color: var(--p-surface-700);
+      font-weight: 500;
+    }
+
+    h3 {
+      font-size: 1.5em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      color: var(--p-surface-800);
+      font-weight: 500;
+    }
+
+    h4 {
+      font-size: 1.23em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      font-weight: 500;
+      color: var(--p-surface-800);
+    }
+
+    p {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    pre {
+      font-family: monospace;
+    }
+
+    ul {
+      list-style: disc;
+    }
+    ol {
+      list-style: decimal;
+    }
+    li {
+      margin-top: 0.23em;
+      margin-bottom: 0.23em;    
+    }
+  }
+
   .working-blur {
     transition: filter 0.3s;
   }

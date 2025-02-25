@@ -60,6 +60,7 @@ class Server {
     this.databaseStores = new Map()
 
     this.databasesListObservable = new ReactiveDao.ObservableList([])
+    this.databasesListObservable.observe(() => {}) // prevent dispose and clear
 
     this.backends = {}
     if(config.backend && !this.backends.default) { // backward compatibility

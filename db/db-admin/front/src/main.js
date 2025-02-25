@@ -12,7 +12,7 @@ import ToastService from 'primevue/toastservice'
 import StyleClass from 'primevue/styleclass'
 import Ripple from 'primevue/ripple'
 import BadgeDirective from 'primevue/badgedirective'
-
+import Aura from '@primevue/themes/aura'
 import App from './App.vue'
 import Page from './Page.vue'
 import { createRouter } from './router'
@@ -33,7 +33,19 @@ export function createApp(api) {
   app.use(router)
 
   app.use(PrimeVue, {
-    ripple: true
+    ripple: true,
+    theme: {
+      preset: Aura,
+      options: {
+        prefix: 'p',
+        darkModeSelector: '.app-dark-mode, .app-dark-mode *',
+        //cssLayer: false
+        cssLayer: {
+          name: "primevue",
+          order: "base, primevue",
+        },
+      }
+    },
   })
 
   app.use(ConfirmationService)

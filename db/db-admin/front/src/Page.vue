@@ -5,7 +5,7 @@
     <div class="relative h-0 w-full">
       <ProgressBar v-if="loading || working" mode="indeterminate" class="absolute top-0 w-full" style="height: .2em" />
     </div>
-    <div v-if="pageType == 'simple'" class="p-8 flex flex-col flex-auto items-center">
+    <div v-if="pageType == 'simple'" class="p-20 flex flex-col flex-auto items-center">
       <slot></slot>
     </div>
     <div v-if="pageType == 'wide'">

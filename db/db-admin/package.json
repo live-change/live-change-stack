@@ -5,7 +5,7 @@
     "memDev": "node server/start.js memDev --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --initScript ./init.js --dbAccess",
     "localDev": "node server/start.js localDev --dbAccess",
-    "dev": "node server/start.js dev",
+    "dev": "node server/start.js dev --dbAccess",
     "ssrDev": "node server/start.js ssrDev --dbAccess",
     "serveAllMem": "cross-env NODE_ENV=production node server/start.js --withApi --withServices --updateServices --withDb --dbBackend mem --createDb --dbAccess",
     "serveAll": "cross-env NODE_ENV=production node server/start.js --withApi --withServices --updateServices --dbAccess",

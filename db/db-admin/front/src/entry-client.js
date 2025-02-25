@@ -6,6 +6,7 @@ import {
   SharedElementRouteGuard
 } from 'v-shared-element'
 
+console.info("DB ADMIN VERSION", ENV_VERSION)
 
 window.api = clientApi({
   use: [  ]
