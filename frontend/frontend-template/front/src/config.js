@@ -7,6 +7,23 @@ import { locales as userFrontendLocales } from "@live-change/user-frontend"
 import Aura from '@primevue/themes/aura'
 
 export default {
+
+  primeVue: {
+    theme: {
+      preset: Aura,
+      options: {
+        prefix: 'p',
+        darkModeSelector: '.app-dark-mode, .app-dark-mode *',
+        //cssLayer: false
+        cssLayer: {
+          name: "primevue",
+          order: "base, primevue",
+        },
+      }
+    },
+    ripple: true
+  },
+
   defaultLocale: 'en',
   i18n: {
     messages: {
@@ -28,19 +45,4 @@ export default {
     }
   },
 
-  primeVue: {
-    theme: {
-      preset: Aura,
-      options: {
-        prefix: 'p',
-        darkModeSelector: '.app-dark-mode, .app-dark-mode *',
-        //cssLayer: false
-        cssLayer: {
-          name: "primevue",
-          order: "base, primevue",
-        },
-      }
-    },
-    ripple: true
-  },
 }

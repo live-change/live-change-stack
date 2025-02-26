@@ -16,7 +16,7 @@
                       v-slot="{ data }">
           <div class="flex justify-center flex-col items-center">
             <div class="p-field mx-1 flex flex-col mb-4">
-              <label for="code" class="p-sr-only">Code</label>
+              <label for="code" class="sr-only">Code</label>
               <InputOtp id="code"  :length="6" class="mb-2"
                          v-model="data.secret"
                          aria-describedby="code-help" :invalid="!!data.secretError" />

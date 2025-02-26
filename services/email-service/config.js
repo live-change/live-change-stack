@@ -35,7 +35,8 @@ const smtp = {
     pass: getValue(definition.config.smtp?.password, process.env.SMTP_PASSWORD),
   },
   // deduce secure from port, include all secure ports  
-  secure: getValue(definition.config.smtp?.secure, [465, 587, 2525].includes(definition.config.smtp?.port)),
+  secure: getValue(getValue(definition.config.smtp?.secure, process.env.SMTP_SECURE),
+     [465, 587, 2525].includes(definition.config.smtp?.port)),
   ignoreTLS: getValue(definition.config.smtp?.ignoreTLS, undefined),
 }
 

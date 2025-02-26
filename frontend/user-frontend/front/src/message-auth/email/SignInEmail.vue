@@ -74,6 +74,9 @@
   const secretLink = secrets.find(secret => secret.type === 'link')
   const secretCode = secrets.find(secret => secret.type === 'code')
 
+  import { useHead } from '@vueuse/head'
+  useHead({ htmlAttrs: { class: 'email-rendering' } })
+
   import { useApi } from '@live-change/vue3-ssr'
   const api = useApi()
 

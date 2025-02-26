@@ -81,6 +81,7 @@
     font-weight: 400;
   }
 
+
   @layer base {
     a {
       color: var(--p-blue-700);
@@ -93,5 +94,64 @@
     a:visited {
       color: var(--p-purple-800);
     }
+
+    
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+      text-align: left;
+    }
+
+    h1 {
+      font-size: 2.0em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      font-weight: 500;
+      color: var(--p-surface-700);
+    }
+
+    h2 {
+      font-size: 1.75em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      color: var(--p-surface-700);
+      font-weight: 500;
+    }
+
+    h3 {
+      font-size: 1.5em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      color: var(--p-surface-800);
+      font-weight: 500;
+    }
+
+    h4 {
+      font-size: 1.23em;
+      margin-top: 1em;
+      margin-bottom: 0.5em;
+      font-weight: 500;
+      color: var(--p-surface-800);
+    }
+
+    p {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    pre {
+      font-family: monospace;
+    }
+
+    ul {
+      list-style: disc;
+    }
+    ol {
+      list-style: decimal;
+    }
+    li {
+      margin-top: 0.23em;
+      margin-bottom: 0.23em;    
+    }
   }
+  
 </style>

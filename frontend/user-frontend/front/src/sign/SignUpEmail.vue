@@ -2,7 +2,7 @@
   <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Sign Up</div>
+        <div class="text-surface-900 dark:text-surface-200 text-3xl font-medium mb-4">Sign Up</div>
         <span class="text-surface-600 dark:text-surface-200 font-medium leading-normal">Already have an account?</span>
         <router-link :to="{ name: 'user:signInEmail' }"
                      class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
@@ -13,7 +13,7 @@
                     @done="handleSent" keepOnDone>
 
         <div class="p-field mb-4">
-          <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
+          <label for="email" class="block text-surface-900 dark:text-surface-200 font-medium mb-2">
             Email address
           </label>
           <InputText id="email" type="text" class="w-full"
@@ -41,7 +41,7 @@
         />
       </router-link>
 
-      <div class="mt-4">
+      <div class="mt-4 text-surface-600 dark:text-surface-200">
         By providing your email address or google account, you consent to its processing solely
         for registration and account verification purposes, in accordance with our
         <router-link to="/privacy-policy">Privacy Policy</router-link>.
