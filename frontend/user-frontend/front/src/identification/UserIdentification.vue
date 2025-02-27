@@ -4,9 +4,9 @@
                  :to="{ name: 'user:profile', params: { user: owner } }"
                  v-ripple
                  :class="inline ? inlineClass : blockClass">
-      <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full"
+      <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full inline"
              :style="imageStyle"/>
-      <img v-else :src="identiconUrl" class="mr-2 rounded-full" :style="imageStyle" domResize />
+      <img v-else :src="identiconUrl" class="mr-2 rounded-full inline" :style="imageStyle" domResize />
       <span class="text-ellipsis whitespace-nowrap overflow-hidden"
             :class="[ ownerType === 'user_User' ? 'font-medium' : 'font-italic' ]">
         {{ name }}
@@ -20,9 +20,9 @@
       </span>
     </span>
     <span v-else :class="inline ? inlineClass : blockClass">
-      <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full"
+      <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full inline"
              :style="imageStyle"/>
-      <img v-else :src="identiconUrl" class="mr-2 rounded-full" :style="imageStyle" domResize />
+      <img v-else :src="identiconUrl" class="mr-2 rounded-full inline" :style="imageStyle" domResize />
       <span class="text-ellipsis whitespace-nowrap overflow-hidden"
             :class="[ ownerType === 'user_User' ? 'font-medium' : 'font-italic' ]">
         {{ name }}

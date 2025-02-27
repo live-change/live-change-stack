@@ -2,7 +2,7 @@
   <a v-if="unreadNotificationsCount"
      v-ripple
      v-styleclass="{ selector: '@next', enterFromClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
-     class="flex mx-0 pl-4 pr-6  pt-3 pb-2 items-center text-surface-500 dark:text-surface-400
+     class="flex mx-0 pl-4 pr-6 pt-4 pb-2 items-center text-surface-500 dark:text-surface-400
             hover:text-surface-900 hover:dark:text-surface-100 overflow-visible
             font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple">
     <OverlayBadge v-if="unreadNotificationsCount?.count" :value="unreadNotificationsCount?.count ?? 0" size="small">

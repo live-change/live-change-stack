@@ -11,31 +11,88 @@
 
       <template #default>
 
-        <TabView :pt="{ panelcontainer:{ class: 'px-1' } }" v-model:activeIndex="tabIndex">
-          <TabPanel header="Single user">
+        <Tabs  v-model:value="tabIndex" class="w-full">
+          <TabList>
+            <Tab value="0">Single user</Tab>
+            <Tab value="1">Multiple users</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel value="0">
 
-            <command-form service="accessControl" action="inviteEmail"
-                          ref="inviteForm"
-                          v-slot="{ data }"
-                          :parameters="{ objectType, object }"
-                          :initialValues="{ roles: availableRoles }"
-                          @done="handleInvited" keepOnDone>
+              <command-form service="accessControl" action="inviteEmail"
+                            ref="inviteForm"
+                            v-slot="{ data }"
+                            :parameters="{ objectType, object }"
+                            :initialValues="{ roles: availableRoles }"
+                            @done="handleInvited" keepOnDone>
 
-              <div class="flex flex-row flex-wrap items-center" style="margin-left: -0.5rem; margin-right: -0.5rem;">
-                <div class="col-span-12 md:col-span-6 py-1">
-                  <div class="p-field mb-4">
-                    <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                      Email address
-                    </label>
-                    <InputText id="email" type="text" class="w-full"
-                               aria-describedby="email-help" :invalid="!!data.emailError"
-                               v-model="data.email" />
-                    <Message v-if="data.emailError" severity="error" variant="simple" size="small">
-                      {{ t(`errors.${data.emailError}`) }}
-                    </Message>
+                <div class="grid grid-cols-12 gap-4 formgrid p-fluid mb-2 pt-2">
+                  <div class="col-span-12 md:col-span-6 mb-2">
+                    <div class="p-field">
+                      <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
+                        Email address
+                      </label>
+                      <InputText id="email" type="text" class="w-full"
+                                aria-describedby="email-help" :invalid="!!data.emailError"
+                                v-model="data.email" />
+                      <Message v-if="data.emailError" severity="error" variant="simple" size="small">
+                        {{ t(`errors.${data.emailError}`) }}
+                      </Message>
+                    </div>
+                  </div>
+                  <div class="col-span-12 md:col-span-6 mb-2">
+                    <div class="p-field ">
+                      <label for="inviteAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
+                        Roles
+                      </label>
+                      <Dropdown v-if="!multiRole" id="inviteAccess" class="w-14em w-full"
+                                :options="['none'].concat(availableRoles)"
+                                :optionLabel="optionLabel"
+                                :modelValue="data.roles?.[0] ?? 'none'"
+                                @update:modelValue="newValue => data.roles = [newValue]"
+                                :feedback="false" toggleMask />
+                      <MultiSelect v-if="multiRole" id="inviteAccess" class="w-full"
+                                  :options="availableRoles"
+                                  :optionLabel="optionLabel"
+                                  v-model="data.roles"
+                                  :feedback="false" toggleMask />
+                      <Message v-if="data.rolesError" severity="error" variant="simple" size="small">
+                        {{ t(`errors.${data.rolesError}`) }}
+                      </Message>
+                    </div>
                   </div>
                 </div>
-                <div class="col-span-12 md:col-span-6">
+                <div class="p-field">
+                  <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
+                    Message ( optional )
+                  </label>
+                  <Textarea id="inviteMessage" v-model="data.message" :autoResize="true" rows="3" class="w-full" />
+                </div>
+
+              </command-form>
+
+            </TabPanel>
+            <TabPanel value="1">
+
+              <command-form service="accessControl" action="inviteManyEmailsFromText"
+                            ref="inviteManyForm"
+                            v-slot="{ data }"
+                            :parameters="{ objectType, object }"
+                            :initialValues="{ roles: availableRoles }"
+                            @done="handleInvitedMany" keepOnDone>
+
+                  <div class="p-field mb-4">
+                    <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
+                      Email addresses (newline or comma separated)
+                    </label>
+                    <Textarea id="emailsText" type="text" class="w-full"
+                              rows="4"
+                              aria-describedby="emails-help" :invalid="!!data.emailsTextError"
+                              v-model="data.emailsText" />
+                    <Message v-if="data.emailsTextError" severity="error" variant="simple" size="small">
+                      {{ t(`errors.${data.emailsTextError}`) }}
+                    </Message>
+                  </div>
                   <div class="p-field mb-4">
                     <label for="inviteAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
                       Roles
@@ -47,77 +104,26 @@
                               @update:modelValue="newValue => data.roles = [newValue]"
                               :feedback="false" toggleMask />
                     <MultiSelect v-if="multiRole" id="inviteAccess" class="w-full"
-                                 :options="availableRoles"
-                                 :optionLabel="optionLabel"
-                                 v-model="data.roles"
-                                 :feedback="false" toggleMask />
+                                :options="availableRoles"
+                                :optionLabel="optionLabel"
+                                v-model="data.roles"
+                                :feedback="false" toggleMask />
                     <Message v-if="data.rolesError" severity="error" variant="simple" size="small">
                       {{ t(`errors.${data.rolesError}`) }}
                     </Message>
                   </div>
-                </div>
-              </div>
-              <div class="p-field mb-1">
-                <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                  Message ( optional )
-                </label>
-                <Textarea id="inviteMessage" v-model="data.message" :autoResize="true" rows="3" class="w-full" />
-              </div>
-
-            </command-form>
-
-          </TabPanel>
-          <TabPanel header="Multiple users">
-
-            <command-form service="accessControl" action="inviteManyEmailsFromText"
-                          ref="inviteManyForm"
-                          v-slot="{ data }"
-                          :parameters="{ objectType, object }"
-                          :initialValues="{ roles: availableRoles }"
-                          @done="handleInvitedMany" keepOnDone>
-
-                <div class="p-field mb-4">
-                  <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                    Email addresses (newline or comma separated)
+                <div class="p-field mb-1">
+                  <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
+                    Message ( optional )
                   </label>
-                  <Textarea id="emailsText" type="text" class="w-full"
-                            rows="4"
-                            aria-describedby="emails-help" :invalid="!!data.emailsTextError"
-                            v-model="data.emailsText" />
-                  <Message v-if="data.emailsTextError" severity="error" variant="simple" size="small">
-                    {{ t(`errors.${data.emailsTextError}`) }}
-                  </Message>
+                  <Textarea id="inviteMessage" v-model="data.message" :autoResize="true" rows="3" class="w-full" />
                 </div>
-                <div class="p-field mb-4">
-                  <label for="inviteAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                    Roles
-                  </label>
-                  <Dropdown v-if="!multiRole" id="inviteAccess" class="w-14em w-full"
-                            :options="['none'].concat(availableRoles)"
-                            :optionLabel="optionLabel"
-                            :modelValue="data.roles?.[0] ?? 'none'"
-                            @update:modelValue="newValue => data.roles = [newValue]"
-                            :feedback="false" toggleMask />
-                  <MultiSelect v-if="multiRole" id="inviteAccess" class="w-full"
-                               :options="availableRoles"
-                               :optionLabel="optionLabel"
-                               v-model="data.roles"
-                               :feedback="false" toggleMask />
-                  <Message v-if="data.rolesError" severity="error" variant="simple" size="small">
-                    {{ t(`errors.${data.rolesError}`) }}
-                  </Message>
-                </div>
-              <div class="p-field mb-1">
-                <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                  Message ( optional )
-                </label>
-                <Textarea id="inviteMessage" v-model="data.message" :autoResize="true" rows="3" class="w-full" />
-              </div>
 
-            </command-form>
+              </command-form>
 
-          </TabPanel>
-        </TabView>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
 
       </template>
 
@@ -152,8 +158,11 @@
 
   import ProgressSpinner from 'primevue/progressspinner'
 
-  import TabView from 'primevue/tabview'
-  import TabPanel from 'primevue/tabpanel'
+  import Tabs from 'primevue/tabs';
+  import TabList from 'primevue/tablist';
+  import Tab from 'primevue/tab';
+  import TabPanels from 'primevue/tabpanels';
+  import TabPanel from 'primevue/tabpanel';
 
   import Button from "primevue/button"
   import Dropdown from "primevue/dropdown"
@@ -193,7 +202,7 @@
 
   const { availableRoles, multiRole, object, objectType } = toRefs(props)
 
-  const tabIndex = ref(0)
+  const tabIndex = ref('0')
 
   const visible = defineModel('visible', { required: true })
 

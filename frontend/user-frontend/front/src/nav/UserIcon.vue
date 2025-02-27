@@ -12,8 +12,9 @@
              class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600 w-12 max-w-none" />
       </span>
   </a>
-  <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto bg-surface-0
-       right-0 top-full z-5 shadow">
+  <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto
+             bg-surface-0 dark:bg-surface-950 dark:border-1 dark:border-surface-800
+             right-0 top-full z-5 shadow">
     <loading-zone suspense>
       <template v-slot:loading>
         <div class="flex items-center justify-center top-0 left-0 notifications-loading">

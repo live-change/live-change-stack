@@ -31,7 +31,7 @@
                    v-model="synchronizedPublicAccess.userRoles"
                    :feedback="false" toggleMask :disabled="disabled" />
     </div>
-    <div class="p-field field mb-6" v-if="isMounted && requestedRolesVisible"
+    <div class="p-field field mb-6 col-span-12 md:col-span-6" v-if="isMounted && requestedRolesVisible"
          :class="autoGrantRequestsVisible ? 'col-6' : 'col-12'">
       <label for="availablePublicAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Roles available to request:</label>
       <MultiSelect id="userPublicAccess" class="w-full" inputClass="w-full"
@@ -40,7 +40,7 @@
                    v-model="synchronizedPublicAccess.availableRoles"
                    :feedback="false" toggleMask :disabled="disabled" />
     </div>
-    <div class="p-field field mb-6 col-span-6" v-if="isMounted && autoGrantRequestsVisible">
+    <div class="p-field field mb-6 col-span-12 md:col-span-6" v-if="isMounted && autoGrantRequestsVisible">
       <label for="autoGrantRequests" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
         Automatically grant number of requests:
       </label>
