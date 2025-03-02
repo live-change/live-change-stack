@@ -13,8 +13,7 @@ export default {
       preset: Aura,
       options: {
         prefix: 'p',
-        darkModeSelector: '.app-dark-mode, .app-dark-mode *',
-        //cssLayer: false
+        darkModeSelector: '.app-dark-mode:not(.email-rendering)',
         cssLayer: {
           name: "primevue",
           order: "base, primevue",

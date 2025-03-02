@@ -82,7 +82,9 @@
   }
 
 
+
   @layer base {
+
     a {
       color: var(--p-blue-700);
       text-decoration: underline;
@@ -95,7 +97,7 @@
       color: var(--p-purple-800);
     }
 
-    
+
     h1, h2, h3, h4, h5, h6 {
       page-break-after: avoid;
       text-align: left;
@@ -131,6 +133,24 @@
       margin-bottom: 0.5em;
       font-weight: 500;
       color: var(--p-surface-800);
+    }
+
+    .app-dark-mode:not(.email-rendering) {
+      a {
+        color: var(--p-blue-400);
+      }
+      a:hover {
+        color: var(--p-blue-500);
+      }
+      a:visited {
+        color: var(--p-purple-400);
+      }
+      a:active {
+        color: var(--p-blue-600);
+      }
+      h1, h2, h3, h4, h5, h6 {
+        color: var(--p-surface-100);
+      }
     }
 
     p {

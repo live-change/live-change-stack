@@ -6,7 +6,7 @@
                                      select-none" style="width:280px">
       <div class="flex flex-col h-full">
         <div class="flex items-center px-4 shrink-0 py-3">
-          <img src="/images/logo.svg" alt="Image" class="h-6">
+          <img src="/images/logo.svg" alt="Image" class="h-6 w-6">
           <span  class="text-secondary-400 text-surface-600 font-medium ml-2 text-2xl">
             Databases:
           </span>

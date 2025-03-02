@@ -60,8 +60,9 @@ import { client as useClient } from '@live-change/vue3-ssr'
 
 export function installUserRedirects(router, app, config) {
   const client = useClient(app._context)
-  if(typeof window === 'undefined') return
-  router.beforeEach(async (to, from) => {
+  router.afterEach(async (to, from) => {
+    console.log("AFTER EACH", to, from)
+    if(typeof window === 'undefined') return
     if(to?.matched.find(m => m?.meta.signedIn)) {
       if(!client.value.user) {
         console.log("REDIRECT TO LOGIN BECAUSE PAGE REQUIRES LOGIN!")
@@ -72,13 +73,10 @@ export function installUserRedirects(router, app, config) {
           query: to.query,
           hash: to.hash
         })
+        setTimeout(() => {
+          router.push({ name: 'user:signInEmail' })
+        }, 50)
         return { name: 'user:signInEmail' }
-      }
-    }
-    if(to?.matched.find(m => m?.meta.signedOut)) {
-      if(client.value.user) {
-        console.log("REDIRECT TO USER INDEX BECAUSE PAGE REQUIRES LOGOUT!")
-        return { name: 'user:settings' }
       }
     }
     if(to && to.name === 'user:signInEmail' && from?.matched.find(m => m?.meta.saveForSignIn)) {
@@ -89,6 +87,14 @@ export function installUserRedirects(router, app, config) {
         query: from.query,
         hash: from.hash
       })
+    }
+  })
+  router.beforeEach(async (to, from) => {
+    if(to?.matched.find(m => m?.meta.signedOut)) {
+      if(client.value.user) {
+        console.log("REDIRECT TO USER INDEX BECAUSE PAGE REQUIRES LOGOUT!")
+        return { name: 'user:settings' }
+      }
     }
   })
 }

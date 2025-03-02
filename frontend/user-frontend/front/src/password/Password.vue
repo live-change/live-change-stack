@@ -78,6 +78,7 @@
   import Portal from 'primevue/portal';
   import BaseInput from '@primevue/core/baseinput';
   import PasswordStyle from 'primevue/password/style';
+  import { useId } from 'vue';
 
   export default {
     name: 'Password',
@@ -223,6 +224,12 @@
     emits: ['change', 'focus', 'blur', 'invalid', 'update:masked'],
     inject: {
       $pcFluid: { default: null }
+    },
+    setup() {
+      const uid = useId()
+      return {
+        uid
+      }
     },
     data() {
       return {
@@ -453,7 +460,7 @@
         return this.promptLabel || this.$primevue.config.locale.passwordPrompt;
       },
       overlayUniqueId() {
-        return this.$id + '_overlay';
+        return this.uid + '_overlay';
       }
     },
     watch: {
