@@ -38,6 +38,9 @@
       </FileInput>
     </div>
   </div>
+  <div v-else-if="state === 'uploading'" class="h-[10em] flex items-center justify-center">
+
+  </div>
   <div v-else>
     <ProgressSpinner />
   </div>
@@ -158,7 +161,7 @@
       emit('update:modelValue', upload.value.id)
       if(sourceUpload.value) await sourceUpload.value.upload()
       await upload.value.upload()
-      state.value = 'edit'
+      //state.value = 'edit'
       emit('close')
     })())
   }

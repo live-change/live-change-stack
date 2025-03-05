@@ -8,16 +8,24 @@
       </div>
 
       <div class="flex flex-wrap items-center justify-center" v-if="userData !== undefined">
-        <div class="relative mb-4" @click="openImageEditor">
-          <Image v-if="userData?.image" :image="userData.image" class="mr-2 rounded-full profile-image"
+        <div class="relative mb-4 rounded-full overflow-hidden image-container cursor-pointer"
+             @click="openImageEditor">
+          <Image v-if="userData?.image" :image="userData.image" class="rounded-full profile-image"
                  domResize width="200" height="200" />              
-          <img v-else :src="identiconUrl" class="mr-2 rounded-full profile-image">
+          <img v-else :src="identiconUrl" class="rounded-full profile-image">
+          <div class="absolute transition-opacity duration-300 image-hint pointer-events-none
+                      bottom-0 left-0 w-full h-[3em] bg-black/50 text-white text-center">
+            <div>
+              <i class="pi pi-camera mt-[0.5rem] text-surface-0 opacity-70" style="font-size: 2em;"></i>
+            </div>
+            
+          </div>
         </div>
         <command-form service="userIdentification" :action="updateMethod"
                       :initialValues="{ name: userData?.name }"
                       :parameters="{ image: userData?.image }" v-slot="{ data }"
                       keepOnDone @done="handleNameSaved"
-                      class="ml-4 mb-4 flex flex-col">
+                      class="mb-4 flex flex-col">
           <div class="p-field flex flex-col">
             <InputText type="text" v-model="data.name"
                        :invalid="!!data.nameError"
@@ -119,5 +127,11 @@
     max-width: 100%;
     height: auto;
     border: 1px solid gray;
+  }
+  .image-container .image-hint {
+    opacity: 0;
+  }
+  .image-container:hover .image-hint {
+    opacity: 1;
   }
 </style>
