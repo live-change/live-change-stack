@@ -3,7 +3,7 @@
     <router-link :to="{ name }"
                  :class="route.name == name ? 'text-primary-500 dark:text-primary-300' : 'text-surface-700 dark:text-surface-300'"
                  v-ripple
-                 class="flex align-items-center cursor-pointer p-3                       
+                 class="flex items-center cursor-pointer p-3                       
                         hover:bg-surface-100 dark:hover:bg-surface-800
                           rounded-border transition-colors transition-duration-150 p-ripple no-underline">
       <i class="pi mr-2" :class="'pi-'+icon"></i>

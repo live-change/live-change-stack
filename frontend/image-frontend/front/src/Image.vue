@@ -61,6 +61,7 @@
         const { width, height } = loaded
         size.value = { width, height }
         imageData.value = loaded
+        updateUrl()
       }
       if(!imageData.value && !upload.value) {
         tryCount ++
@@ -119,7 +120,7 @@
     return ''
   }
 
-  function updateUrl() {
+  async function updateUrl() {
     //console.log("UPDATE URL!", upload.value)
     if(upload.value && upload.value.url) { // available upload
       size.value = { ...upload.value.size }
@@ -128,7 +129,7 @@
     }
     if(!imageData.value) {
       tryCount = 0
-      loadImageData()
+      await loadImageData()
       return
     } else {
       const suffix = getSuffix()
@@ -136,12 +137,15 @@
     }
   }
 
-  if(!imageData.value) updateUrl()
+  console.error("IMAGE", props.image)
+
   watch(() => props.image, () => updateUrl())
   watch(() => upload.value && upload.value.url, () => updateUrl())
-  watch(() => imageData.value, (v) => updateUrl())
   watch(() => props.imageData, (v) => {
     imageData.value = v
+    updateUrl()
   })
+
+  if(!imageData.value) await updateUrl()
 
 </script>
