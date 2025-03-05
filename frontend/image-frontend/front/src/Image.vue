@@ -99,7 +99,7 @@
     if(props.noResize) return ''
     const domSize = stableDomSize.value
     if(props.domResize && domSize) {
-      console.log("DOM SIZE", domSize)
+      //console.log("DOM SIZE", domSize)
       let width = (domSize.width * dpr)|0
       let height = (domSize.height * dpr)|0
       if(imageData.value) {
@@ -127,17 +127,17 @@
       url.value = upload.value.url
       return
     }
-    if(!imageData.value) {
+    if(!imageData.value || (!props.imageData && props.image && imageData.value?.id !== props.image)) {
+      //console.log("IMAGE DATA NEED RELOAD!", imageData.value, props.image)
       tryCount = 0
       await loadImageData()
       return
     } else {
+      //console.log("IMAGE DATA", imageData.value, 'UPDATE URL')
       const suffix = getSuffix()
       url.value = `/api/image/image/${props.image}${suffix}`
     }
   }
-
-  console.error("IMAGE", props.image)
 
   watch(() => props.image, () => updateUrl())
   watch(() => upload.value && upload.value.url, () => updateUrl())

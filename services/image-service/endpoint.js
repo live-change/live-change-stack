@@ -50,6 +50,23 @@ function sanitizeImageId(id) {
   return id.replace(/[^a-zA-Z0-9\[\]@\.-]/g,"_")
 }
 
+const currentConversions = new Map()
+
+async function convertIfNeeded(convertedFilePath, convert) {
+  const currentConversion = currentConversions.get(convertedFilePath)
+  if(currentConversion) {
+    await currentConversion
+    return
+  }
+  if(await fileExists(convertedFilePath)) {
+    return // already converted
+  }
+  const conversionPromise = convert()
+  currentConversions.set(convertedFilePath, conversionPromise)
+  await conversionPromise
+  currentConversions.delete(convertedFilePath)
+}
+
 async function handleImageGet(req, res, params) {
   const { image } = params
   const metadata = await getImageMetadata(image)
@@ -69,6 +86,8 @@ async function handleImageGet(req, res, params) {
     return
   }
 
+  debug("SERVING IMAGE", params)
+
   const kernel = "lanczos3"
 
   switch(params.type) {
@@ -77,9 +96,9 @@ async function handleImageGet(req, res, params) {
         debug("CONVERTING IMAGE!", metadata.extension, params.format)
         const normalized = normalizeFormat(params.format)
         const convertedFilePath = path.resolve(imagePrefix + 'converted.' + normalized)
-        if(!(await fileExists(convertedFilePath))) {
-          await sharp(sourceFilePath).toFile(convertedFilePath)
-        }
+        await convertIfNeeded(convertedFilePath, async () => {      
+          await sharp(sourceFilePath).toFile(convertedFilePath) 
+        })
         res.sendFile(convertedFilePath)
       } else res.sendFile(sourceFilePath)
     } break;
@@ -93,14 +112,14 @@ async function handleImageGet(req, res, params) {
       if(width >= metadata.width) return res.sendFile(sourceFilePath)
       const normalized = normalizeFormat(params.format || metadata.extension)
       const convertedFilePath = path.resolve(imagePrefix + `width-${width}.${normalized}`)
-      if(!(await fileExists(convertedFilePath))) {
+      await convertIfNeeded(convertedFilePath, async () => {      
         await sharp(sourceFilePath)
             .resize({
               width,
               kernel
             })
             .toFile(convertedFilePath)
-      }
+      })
       res.sendFile(convertedFilePath)
     } break;
     case "height": {
@@ -113,14 +132,14 @@ async function handleImageGet(req, res, params) {
       if(height >= metadata.height) return res.sendFile(sourceFilePath)
       const normalized = normalizeFormat(params.format || metadata.extension)
       const convertedFilePath = path.resolve(imagePrefix + `height-${height}.${normalized}`)
-      if(!(await fileExists(convertedFilePath))) {
+      await convertIfNeeded(convertedFilePath, async () => {      
         await sharp(sourceFilePath)
             .resize({
               height,
               kernel
             })
             .toFile(convertedFilePath)
-      }
+      })
       res.sendFile(convertedFilePath)
     } break;
     case "rect": {
@@ -142,7 +161,7 @@ async function handleImageGet(req, res, params) {
       if(width === metadata.width && height === metadata.height) return res.sendFile(sourceFilePath)
       const normalized = normalizeFormat(params.format || metadata.extension)
       const convertedFilePath = path.resolve(imagePrefix + `rect-${width}-${height}.${normalized}`)
-      if(!(await fileExists(convertedFilePath))) {
+      await convertIfNeeded(convertedFilePath, async () => {      
         await sharp(sourceFilePath)
             .resize({
               width, height,
@@ -151,7 +170,7 @@ async function handleImageGet(req, res, params) {
               kernel
             })
             .toFile(convertedFilePath)
-      }
+      })
       res.sendFile(convertedFilePath)
     }
   }
