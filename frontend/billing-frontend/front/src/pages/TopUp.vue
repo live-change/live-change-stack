@@ -20,8 +20,7 @@
           </div>
         </div>
       </div>
-
-
+      
 <!--
       <h1>{{ offer }}</h1>
       <h2>{{ anyTopUpPrice }}</h2>

@@ -29,7 +29,9 @@ class TimeSynchronization {
     this.timeDiff = 0 // Calculated diff
 
     this.timeDiffObservable = new ObservableValue(0)
+    this.timeDiffObservable.observe(() => {}) // prevent unobserve
     this.synchronizedObservable = new ObservableValue(false)
+    this.synchronizedObservable.observe(() => {}) // prevent unobserve
 
     this.pongCount = 0
 

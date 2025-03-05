@@ -1,24 +1,11 @@
 <template>
-  <div class="flex flex-row border-circle w-2rem h-2rem bg-primary-800
-              align-items-center justify-content-center">
-    <div class="volume-indicator-bar bg-white rounded-border" ref="low"></div>
-    <div class="volume-indicator-bar bg-white rounded-border" ref="mid"></div>
-    <div class="volume-indicator-bar bg-white rounded-border" ref="high"></div>
+  <div class="flex flex-row rounded-full w-[2rem] h-[2rem] bg-primary-800
+              items-center justify-center">
+    <div class="w-[0.3rem] m-[0.1rem] bg-white rounded-border" ref="low" />
+    <div class="w-[0.3rem] m-[0.1rem] bg-white rounded-border" ref="mid" />
+    <div class="w-[0.3rem] m-[0.1rem] bg-white rounded-border" ref="high" />
   </div>
 </template>
-
-<style scoped lang="scss">
-  .volume-indicator-bar {
-    width: 0.3rem;
-    margin: 0.1rem;
-  }
-  .border-circle {
-    border-radius: 50%;
-  }
-  .bg-primary-700 {
-    background-color: #1976D2;
-  }
-</style>
 
 <script setup>
 
@@ -206,6 +193,3 @@
 
 </script>
 
-<style scoped>
-
-</style>
