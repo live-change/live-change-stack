@@ -18,7 +18,6 @@ export function provideComponent(description, component) {
   }
 }
 
-
 export function injectComponent(request, defaultComponent, factory) {
   if(!request) throw new Error("injectComponent: request is required")
   if(typeof request === 'string') request = { name: request }

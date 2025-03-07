@@ -43,7 +43,6 @@
 
   import AutoInput from "./AutoInput.vue"
 
-  import { inputs, types } from '../../config.js'
   import { computed, getCurrentInstance, inject, toRefs, onMounted, ref, useId } from 'vue'
 
   const isMounted = ref(false)
@@ -159,18 +158,8 @@
     && props.modelValue?.length < minLengthValidation.value.length
   )
 
-  const config = inject('auto-form', {
-    inputs: {},
-    types: {}
-  })
-  const inputConfig = computed(() => {
-    if(definition.value.input) return config.inputs?.[definition.value.input] ?? inputs[definition.value.input]
-    if(definition.value.type) return config.types?.[definition.value.type] ?? types[definition.value.type]
-    return {
-      ...(config.inputs?.default ?? inputs.default),
-      ...definition?.autoForm?.config, // possible to modify config per input
-    }
-  })
+  import { provideInputConfigByDefinition } from './inputConfigInjection.js'
+  const inputConfig = computed(() => provideInputConfigByDefinition(definition.value))
 
   const label = computed(() => props.i18n + (props.label || definition.value.label || props.name))
 

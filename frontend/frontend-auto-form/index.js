@@ -4,8 +4,8 @@ import AutoEditor from './front/src/components/form/AutoEditor.vue'
 
 export { AutoInput, AutoField, AutoEditor }
 
-import * as inputConfig from './front/src/config.js'
-export { inputConfig }
+export * from './front/src/components/form/provideAutoInputConfiguration.js'
+export * from './front/src/components/form/inputConfigInjection.js'
 
 import editorData from './front/src/logic/editorData.js'
 export { editorData }

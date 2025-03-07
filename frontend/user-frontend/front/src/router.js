@@ -61,7 +61,7 @@ import { client as useClient } from '@live-change/vue3-ssr'
 export function installUserRedirects(router, app, config) {
   const client = useClient(app._context)
   router.afterEach(async (to, from) => {
-    console.log("AFTER EACH", to, from)
+    //console.log("AFTER EACH", to, from)
     if(typeof window === 'undefined') return
     if(to?.matched.find(m => m?.meta.signedIn)) {
       if(!client.value.user) {

@@ -16,11 +16,33 @@
     </div>
 
     <form v-if="editor" @submit="handleSave" @reset="handleReset">
+      <div v-for="identifier in modelDefinition.identifiers">
+        <template v-if="identifier.slice(-4) !== 'Type'">
+          <div v-if="identifiers[identifier]" class="flex flex-col mb-3">        
+            <div class="min-w-[8rem] font-medium">{{ identifier }}</div>
+            <div class="">
+              <InjectedObjectIndentification
+                :type="identifiers[identifier+'Type'] ?? modelDefinition.properties[identifier].type"
+                :object="identifiers[identifier]"
+              />
+            </div>
+          </div>      
+          <div v-else class="flex flex-col mb-3">
+            <auto-field :key="identifier"
+                  v-model="editor.value.value[identifier]"              
+                  :definition="modelDefinition.properties[identifier]"
+                  :label="identifier"
+                  :rootValue="props.rootValue" :propName="identifier"
+                  :i18n="i18n"
+                  class="col-span-12" />
+          </div>
+        </template>
+      </div>
       <auto-editor
-          :definition="modelDefinition"
-          v-model="editor.value.value"
-          :rootValue="editor.value.value"
-          :i18n="i18n" />
+        :definition="modelDefinition"
+        v-model="editor.value.value"
+        :rootValue="editor.value.value"
+        :i18n="i18n" />
       <EditorButtons :editor="editor" reset-button />
     </form>
   </div>
@@ -30,6 +52,7 @@
 
   import AutoEditor from '../form/AutoEditor.vue'
   import EditorButtons from './EditorButtons.vue'
+  import AutoField from "../form/AutoField.vue"
 
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
 
@@ -73,6 +96,7 @@
 
   import { editorData } from "@live-change/frontend-auto-form"
   import { computedAsync } from "@vueuse/core"
+import InjectedObjectIndentification from './InjectedObjectIndentification.vue'
 
   const editor = computedAsync(async () => {
     try {

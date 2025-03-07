@@ -9,9 +9,7 @@
 </template>
 
 <script setup>
-  import { inputs, types } from '../../config.js'
   import { computed, inject, toRefs } from 'vue'
-  import deepmerge from 'deepmerge';
 
   const props = defineProps({
     modelValue: {
@@ -43,19 +41,8 @@
 
   const { definition, modelValue, propName } = toRefs(props)
 
-  const config = inject('auto-form', {
-    inputs: {},
-    types: {}
-  })
-  const inputConfig = computed(() => {
-    let baseConfig
-    if(definition.value.input && !baseConfig) baseConfig =
-      config.inputs?.[definition.value.input] ?? inputs[definition.value.input]
-    if(definition.value.type && !baseConfig) baseConfig =
-      config.types?.[definition.value.type] ?? types[definition.value.type]
-    if(!baseConfig) baseConfig = config.inputs?.default ?? inputs.default
-    return deepmerge(baseConfig, definition.value?.inputConfig ?? {}) // possible to modify config per input
-  })
+  import { provideInputConfigByDefinition } from './inputConfigInjection.js'
+  const inputConfig = computed(() => provideInputConfigByDefinition(definition.value))
 
   const definitionIf = computed(() => {
     if(definition.value?.if) {

@@ -35,7 +35,7 @@ definition.trigger({
       const payment = await Payment.get(referenceId)
       if(!payment) throw new Error('Payment '+referenceId+' not found')
       if(object.payment_status === 'paid') {
-        console.log("PAYMENT TO UPDATE", payment)
+        //console.log("PAYMENT TO UPDATE", payment)
         await triggerService({
           service: definition.name,
           type: 'stripe_updatePayment'

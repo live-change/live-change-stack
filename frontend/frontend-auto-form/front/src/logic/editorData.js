@@ -65,7 +65,7 @@ export default function editorData(options) {
       draftIdParts.push(identifier)
     }
   }
-  const isNew = (idKey ? (!identifiers[idKey]) : (!draftIdParts.some(key => identifiers[key])))
+  const isNew = (idKey ? (!identifiers[idKey]) : (!draftIdParts.every(key => identifiers[key])))
   const draftId = (idKey ? identifiers[idKey]
     : draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_')) ?? 'new'
   const draftIdentifiers = {
