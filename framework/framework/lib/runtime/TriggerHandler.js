@@ -28,14 +28,17 @@ class TriggerHandler {
       ...trig,
       action: this,
       service: this.service,
+      client: trig.client,
       trigger: (trigger, data) => this.service.trigger({
         causeType: 'trigger',
         cause: trig.id,
+        client: trig.client,
         ...trigger
       }, data),
       triggerService: (trigger, data, returnArray = false) => this.service.triggerService({
         causeType: 'trigger',
         cause: trig.id,
+        client: trig.client,
         ...trigger
       }, data, returnArray)
     }, emit))

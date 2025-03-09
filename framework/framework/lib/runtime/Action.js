@@ -24,11 +24,13 @@ class Action {
       trigger: (trigger, data) => this.service.trigger({
         causeType: 'action',
         cause: command.id,
+        client: command.client,
         ...trigger
       }, data),
       triggerService: (trigger, data, returnArray = false) => this.service.triggerService({
         causeType: 'action',
         cause: command.id,
+        client: command.client,
         ...trigger
       }, data, returnArray)
     }, emit)

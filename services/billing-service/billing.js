@@ -24,7 +24,7 @@ definition.trigger({
     }
   },
   async execute({ object }, { triggerService }, emit) {
-    const ownerInfo = { ownerType: 'billing_Billing', ownerId: object }
+    const ownerInfo = { ownerType: 'billing_Billing', owner: object }
     const existingBalance = await app.serviceViewGet('balance', 'balance', ownerInfo)
     if(!existingBalance) {
       await triggerService({

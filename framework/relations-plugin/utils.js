@@ -2,7 +2,7 @@ import App from "@live-change/framework"
 const app = App.app()
 import { allCombinations } from "./combinations.js"
 import {
-  fireChangeTriggers, registerParentDeleteTriggers, registerParentCopyTriggers
+  registerParentDeleteTriggers, registerParentCopyTriggers
 } from "./changeTriggers.js"
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition

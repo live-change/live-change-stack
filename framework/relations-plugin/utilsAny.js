@@ -4,7 +4,7 @@ import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } from "@live-change/framework"
 import { allCombinations } from "./combinations.js"
-import { fireChangeTriggers, registerParentDeleteTriggers } from "./changeTriggers.js"
+import { registerParentDeleteTriggers } from "./changeTriggers.js"
 
 
 export function extractTypeAndIdParts(otherPropertyNames, properties) {

@@ -143,10 +143,10 @@ export function getSetFunction( validators, validationContext, config, context) 
     const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const data = extractObjectData(writeableProperties, properties,
-      App.computeDefaults(model, properties, { client, service } ))
+      App.computeDefaults(model, properties, { client, service, trigger } ))
     await App.validation.validate({ ...identifiers, ...data }, validators,
       validationContext)
-    await fireChangeTriggers(context, objectType, identifiers, id, null, data)
+    await fireChangeTriggers(context, objectType, identifiers, id, null, data, trigger)
     emit({
       type: eventName,
       identifiers, data
@@ -209,7 +209,7 @@ export function getUpdateFunction( validators, validationContext, config, contex
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = modelName + 'Updated'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const id = generateId(otherPropertyNames, properties)
     const entity = await modelRuntime().get(id)
@@ -222,7 +222,7 @@ export function getUpdateFunction( validators, validationContext, config, contex
       validationContext)
     const oldData = extractObjectData(writeableProperties, entity, {})
     await fireChangeTriggers(context, objectType, identifiers, id,
-      entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
+      entity ? extractObjectData(writeableProperties, entity, {}) : null, data, trigger)
     emit({
       type: eventName,
       identifiers, data
@@ -288,7 +288,7 @@ export function getSetOrUpdateFunction( validators, validationContext, config, c
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = modelName + 'Updated'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const id = generateId(otherPropertyNames, properties)
     const entity = await modelRuntime().get(id)
@@ -299,7 +299,7 @@ export function getSetOrUpdateFunction( validators, validationContext, config, c
     )
     await App.validation.validate({ ...identifiers, ...data },  validators, { ...validationContext, service, app, client })
     await fireChangeTriggers(context, objectType, identifiers, id,
-      entity ? extractObjectData(writeableProperties, entity, {}) : null, data)
+      entity ? extractObjectData(writeableProperties, entity, {}) : null, data, trigger)
     emit({
       type: eventName,
       identifiers, data
@@ -365,13 +365,13 @@ export function getResetFunction( validators, validationContext, config, context
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model, others, writeableProperties
   } = context
   const eventName = modelName + 'Reset'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const id = properties[modelPropertyName] ?? generateId(otherPropertyNames, properties)
     const entity = await modelRuntime().get(id)
     if (!entity) throw new Error('not_found')
     await fireChangeTriggers(context, objectType, identifiers, id,
-        entity ? extractObjectData(writeableProperties, entity, {}) : null, null)
+        entity ? extractObjectData(writeableProperties, entity, {}) : null, null, trigger)
     emit({
       type: eventName,
       identifiers: {

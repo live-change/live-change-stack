@@ -3,23 +3,24 @@ import {
   TriggerDefinition
 } from "@live-change/framework"
 
-async function fireChangeTriggers(context, objectType, identifiers, object, oldData, data) {
+async function fireChangeTriggers(context, objectType, identifiers, object, oldData, data,
+     trigger = (...args) => app.trigger(...args)) {
   const { service, modelName, app } = context
   const changeType = data ? (oldData ? 'update' : 'create') : 'delete'
   //console.log("FIRE CHANGE TRIGGERS", { context, objectType, identifiers, object, oldData, data })
   //console.trace()
   const triggerParameters = { objectType, object, identifiers, data, oldData, changeType }
   await Promise.all([
-    app.trigger({
+    trigger({
       type: changeType + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
     }, triggerParameters),
-    app.trigger({
+    trigger({
       type: changeType + 'Object',
     }, triggerParameters),
-    app.trigger({
+    trigger({
       type: 'change' + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
     }, triggerParameters),
-    app.trigger({
+    trigger({
       type: 'changeObject',
     }, triggerParameters)
   ])

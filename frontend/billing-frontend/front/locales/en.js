@@ -1,7 +1,7 @@
 import messages from "./en.json"
 export { messages }
 
-export const numberFormats ={
+export const numberFormats = {
   "usd": {
     "style": "currency",
       "currency": "USD",

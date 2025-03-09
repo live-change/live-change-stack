@@ -34,7 +34,7 @@
             <span>Home</span>
           </router-link>
         </li>
-        <li class="w-1/1 lg:w-auto">
+        <li v-if="!client.user" class="w-1/1 lg:w-auto">
           <router-link
               :to="{ name: 'user:signInEmail' }" v-ripple
               class="flex justify-end px-6 p-3 lg:px-3 lg:py-2 align-items-center 

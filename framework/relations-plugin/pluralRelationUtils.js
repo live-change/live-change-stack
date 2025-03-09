@@ -94,7 +94,7 @@ function getCreateFunction( validators, validationContext, config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = modelName + 'Created'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName] || app.generateUid()
     const entity = await modelRuntime().get(id)
     if(entity) throw 'exists'
@@ -103,7 +103,7 @@ function getCreateFunction( validators, validationContext, config, context) {
       App.computeDefaults(model, properties, { client, service } ))
     await App.validation.validate({ ...identifiers, ...data }, validators,
       validationContext)
-    await fireChangeTriggers(context, objectType, identifiers, id, null, data)
+    await fireChangeTriggers(context, objectType, identifiers, id, null, data, trigger)
     emit({
       type: eventName,
       [modelPropertyName]: id,
@@ -169,7 +169,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = modelName + 'Updated'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
     if(!entity) throw 'not_found'
@@ -186,7 +186,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     await App.validation.validate({ ...identifiers, ...data, [modelPropertyName]: id }, validators,
       validationContext)
     await fireChangeTriggers(context, objectType, identifiers, id,
-      extractObjectData(writeableProperties, entity, {}), data)
+      extractObjectData(writeableProperties, entity, {}), data, trigger)
     emit({
       type: eventName,
       [modelPropertyName]: id,
@@ -262,7 +262,7 @@ function getDeleteFunction( validators, validationContext, config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = modelName + 'Deleted'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
     if(!entity) throw 'not_found'
@@ -273,7 +273,7 @@ function getDeleteFunction( validators, validationContext, config, context) {
     }
     const identifiers = extractIdentifiers(otherPropertyNames, entity)
     await fireChangeTriggers(context, objectType, identifiers, id,
-      extractObjectData(writeableProperties, entity, {}), null)
+      extractObjectData(writeableProperties, entity, {}), null, trigger)
     emit({
       type: eventName,
       [modelPropertyName]: id
@@ -348,7 +348,7 @@ function getCopyFunction( validators, validationContext, config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = modelName + 'Copied'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
     if(!entity) throw new Error('not_found')
@@ -382,7 +382,7 @@ function getCopyFunction( validators, validationContext, config, context) {
         identifiers,
         data: updatedData
       })
-    await fireChangeTriggers(context, objectType, identifiers, newId, null, updatedData)
+    await fireChangeTriggers(context, objectType, identifiers, newId, null, updatedData, trigger)
     emit({
       type: eventName,
       [modelPropertyName]: newId,
@@ -502,7 +502,8 @@ function defineCopyOnParentCopyTrigger(config, context) {
         type: Object,
       }
     },
-    async execute({ objectType, object, parentType, parent, fromParent, identifiers, data }, {client, service}, emit) {
+    async execute({ objectType, object, parentType, parent, fromParent, identifiers, data },
+       { client, service, trigger }, emit) {
       const newIdentifiers = {
         ...identifiers
       }
@@ -531,7 +532,7 @@ function defineCopyOnParentCopyTrigger(config, context) {
         identifiers: newIdentifiers,
         data
       })
-      await fireChangeTriggers(context, objectType, newIdentifiers, newId, null, data)
+      await fireChangeTriggers(context, objectType, newIdentifiers, newId, null, data, trigger)
       emit({
         type: eventName,
         [modelPropertyName]: newId,

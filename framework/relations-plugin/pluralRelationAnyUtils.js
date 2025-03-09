@@ -99,7 +99,7 @@ function getCreateFunction( validators, validationContext, config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = modelName + 'Created'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName] || app.generateUid()
     const entity = await modelRuntime().get(id)
     if(entity) throw 'exists'
@@ -108,7 +108,7 @@ function getCreateFunction( validators, validationContext, config, context) {
       App.computeDefaults(model, properties, { client, service } ))
     await App.validation.validate({ ...identifiers, ...data }, validators,
       validationContext)
-    await fireChangeTriggers(context, objectType, identifiers, id, null, data)
+    await fireChangeTriggers(context, objectType, identifiers, id, null, data, trigger)
     emit({
       type: eventName,
       [modelPropertyName]: id,
@@ -177,7 +177,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = modelName + 'Updated'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     if(!id) throw new Error('no_id')
     const entity = await modelRuntime().get(id)
@@ -197,7 +197,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     await App.validation.validate({ ...identifiers, ...data, [modelPropertyName]: id }, validators,
       validationContext)
     await fireChangeTriggers(context, objectType, identifiers, id,
-      extractObjectData(writeableProperties, entity, {}), data)
+      extractObjectData(writeableProperties, entity, {}), data, trigger)
     emit({
       type: eventName,
       [modelPropertyName]: id,
@@ -276,7 +276,7 @@ function getDeleteFunction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const eventName = modelName + 'Deleted'
-  return async function execute(properties, { client, service }, emit) {
+  return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
     if(!entity) throw 'not_found'
@@ -286,7 +286,7 @@ function getDeleteFunction(config, context) {
       throw 'not_authorized'
     }
     await fireChangeTriggers(context, objectType, extractIdentifiers(otherPropertyNames, entity), id,
-      extractObjectData(writeableProperties, entity, {}), null)
+      extractObjectData(writeableProperties, entity, {}), null, trigger)
     emit({
       type: eventName,
       [modelPropertyName]: id

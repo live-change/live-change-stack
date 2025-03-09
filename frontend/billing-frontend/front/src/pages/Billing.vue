@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <div class="mt-2">
+    <div class="mt-2" v-if="billing">
       <OperationsList ownerType="billing_Billing" :owner="billing.to ?? billing.id"
                       :currency="settings.currency" />
     </div>
