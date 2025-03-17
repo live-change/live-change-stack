@@ -401,7 +401,7 @@ if(config.indexed) {
     }
   })
 
-  definition.index({
+  const roleByOwnerAndObjectIndex = definition.index({
     name: 'roleByOwnerAndObject',
     async function(input, output, { expandedRolesIndexName }) {
       const expandedRolesIndex = await input.index(expandedRolesIndexName)
@@ -433,7 +433,7 @@ if(config.indexed) {
       expandedRolesIndexName: definition.name + '_expandedRoles'
     }
   })
-  definition.index({
+  const objectByOwnerAndRoleIndex = definition.index({
     name: 'objectByOwnerAndRole',
     async function(input, output, { rolesIndexName }) {
       const rolesIndex = await input.index(rolesIndexName)
@@ -455,7 +455,7 @@ if(config.indexed) {
     }
   })
 
-  definition.index({
+  const ownerByObjectAndRoleIndex = definition.index({
     name: 'ownerByObjectAndRole',
     async function(input, output, { rolesIndexName }) {
       const rolesIndex = await input.index(rolesIndexName)
@@ -477,4 +477,375 @@ if(config.indexed) {
     }
   })
 
+  definition.view({
+    name: 'accessibleObjects',
+    properties: {
+      sessionOrUserType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      sessionOrUser: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      objectType: {
+        type: String
+      },
+      ...App.rangeProperties
+    },
+    access({ }, { client }) {
+      return client.roles.includes('admin')
+    },
+    daoPath(params, { client, service }, method) {
+      const { sessionOrUserType, sessionOrUser, objectType } = params
+      const range = App.extractRange(params)
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(objectType) {
+        return roleByOwnerAndObjectIndex.rangePath(
+          [sessionOrUserType, sessionOrUser, objectType],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.rangePath(
+          [sessionOrUserType, sessionOrUser],
+          range
+        )
+      }
+    }
+  })
+
+  definition.view({
+    name: 'accessibleObjectsCount',
+    properties: {
+      sessionOrUserType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      sessionOrUser: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      objectType: {
+        type: String
+      },
+      ...App.rangeProperties
+    },
+    access({ }, { client }) {
+      return client.roles.includes('admin')
+    },
+    daoPath(params, { client, service }, method) {
+      const { sessionOrUserType, sessionOrUser, objectType } = params
+      const range = App.extractRange(params)
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(objectType) {
+        return roleByOwnerAndObjectIndex.countPath(
+          [sessionOrUserType, sessionOrUser, objectType],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.countPath(
+          [sessionOrUserType, sessionOrUser],
+          range
+        )
+      }
+    }
+  })
+
+  definition.view({
+    name: 'myAccessibleObjects',
+    properties: {
+      objectType: {
+        type: String
+      },
+      ...App.rangeProperties
+    },
+    access({ }, { client }) {
+      return client.roles.includes('admin')
+    },
+    daoPath(params, { client, service }, method) {
+      const [ sessionOrUserType, sessionOrUser ] = client.user 
+        ? ['user_User', client.user] : ['session_Session', client.session]
+      const { objectType } = params
+      const range = App.extractRange(params)
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(objectType) {
+        return roleByOwnerAndObjectIndex.rangePath(
+          [sessionOrUserType, sessionOrUser, objectType],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.rangePath(
+          [sessionOrUserType, sessionOrUser],
+          range
+        )
+      }
+    }
+  })
+
+  definition.view({
+    name: 'myAccessibleObjectsCount',
+    properties: {
+      objectType: {
+        type: String
+      },
+      ...App.rangeProperties
+    },
+    access({ }, { client }) {
+      return client.roles.includes('admin')
+    },
+    daoPath(params, { client, service }, method) {
+      const [ sessionOrUserType, sessionOrUser ] = client.user 
+        ? ['user_User', client.user] : ['session_Session', client.session]
+      const { objectType } = params
+      const range = App.extractRange(params)
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(objectType) {
+        return roleByOwnerAndObjectIndex.countPath(
+          [sessionOrUserType, sessionOrUser, objectType],
+          range
+        ) 
+      } else {
+        return ownerByObjectAndRoleIndex.countPath(
+          [sessionOrUserType, sessionOrUser],
+          range
+        )
+      }
+    }
+  })
+
+
+  definition.view({
+    name: 'accessibleObjectsByRole',
+    properties: {
+      sessionOrUserType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      sessionOrUser: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      role: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      objectType: {
+        type: String
+      },
+      ...App.rangeProperties
+    },
+    access({ }, { client }) {
+      return client.roles.includes('admin')
+    },
+    daoPath(params, { client, service }, method) {
+      const { sessionOrUserType, sessionOrUser, role, objectType } = params
+      const range = App.extractRange(params)
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(objectType) {
+        return objectByOwnerAndRoleIndex.rangePath(
+          [sessionOrUserType, sessionOrUser, role, objectType],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.rangePath(
+          [sessionOrUserType, sessionOrUser, role],
+          range
+        )
+      }
+    }
+  })
+
+  definition.view({
+    name: 'accessibleObjectsByRoleCount',
+    properties: {
+      sessionOrUserType: {
+        type: String,
+        validation: ['nonEmpty']    
+      },
+      sessionOrUser: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      role: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      objectType: {
+        type: String
+      },
+      ...App.rangeProperties
+    },  
+    access({ }, { client }) {
+      return client.roles.includes('admin')
+    },
+    daoPath(params, { client, service }, method) {
+      const { sessionOrUserType, sessionOrUser, role, objectType } = params
+      const range = App.extractRange(params)
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(objectType) {
+        return objectByOwnerAndRoleIndex.countPath(
+          [sessionOrUserType, sessionOrUser, role, objectType],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.countPath(
+          [sessionOrUserType, sessionOrUser, role],
+          range
+        )
+      }
+    }
+  })
+
+  definition.view({
+    name: 'myAccessibleObjectsByRole',
+    properties: {
+      role: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      objectType: {
+        type: String
+      },
+      ...App.rangeProperties
+    },
+    access({ }, { client }) {
+      return client.roles.includes('admin') 
+    },
+    daoPath(params, { client, service }, method) {
+      const [ sessionOrUserType, sessionOrUser ] = client.user 
+        ? ['user_User', client.user] : ['session_Session', client.session]
+      const { role, objectType } = params
+      const range = App.extractRange(params)  
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(objectType) {
+        return objectByOwnerAndRoleIndex.rangePath(
+          [sessionOrUserType, sessionOrUser, role, objectType],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.rangePath(
+          [sessionOrUserType, sessionOrUser, role],
+          range
+        )
+      }
+    }
+  })
+
+  definition.view({
+    name: 'myAccessibleObjectsByRoleCount',
+    properties: {
+      role: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      objectType: {
+        type: String
+      },
+      ...App.rangeProperties
+    },
+    access({ }, { client }) {
+      return client.roles.includes('admin')
+    },
+    daoPath(params, { client, service }, method) {
+      const [ sessionOrUserType, sessionOrUser ] = client.user 
+        ? ['user_User', client.user] : ['session_Session', client.session]
+      const { role, objectType } = params
+      const range = App.extractRange(params)
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(objectType) {
+        return objectByOwnerAndRoleIndex.countPath(
+          [sessionOrUserType, sessionOrUser, role, objectType],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.countPath(
+          [sessionOrUserType, sessionOrUser, role],
+          range
+        )
+      }
+    }
+  })
+
+  function isObjectRole(client, objectType, object, role) {
+    const [ sessionOrUserType, sessionOrUser ] = client.user 
+      ? [ 'user_User', client.user ] : [ 'session_Session', client.session ]
+    const found = objectByOwnerAndRoleIndex.rangePath(
+      [sessionOrUserType, sessionOrUser, role, objectType, object],
+      { limit: 1 }
+    )
+    return found.length > 0
+  }
+
+  definition.view({
+    name: 'objectAccesses',
+    properties: {
+      objectType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      object: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      role: {
+        type: String,    
+      },
+      ...App.rangeProperties
+    },
+    access({ objectType, object }, { client }) {
+      if(client.roles.includes('admin')) return true
+      return isObjectRole(client, objectType, object, 'owner')
+    },
+    daoPath(params, { client, service }, method) {
+      const { objectType, object } = params
+      const range = App.extractRange(params)
+      if(!range.limit || range.limit > 1000) range.limit = 1000
+      if(role) {
+        return objectByOwnerAndRoleIndex.rangePath(
+          [objectType, object, role],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.rangePath(
+          [objectType, object],
+          range
+        )
+      }
+    }
+  })
+
+  definition.view({
+    name: 'objectAccessesCount',
+    properties: {
+      objectType: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      object: {
+        type: String,
+        validation: ['nonEmpty']
+      },
+      ...App.rangeProperties
+    },  
+    access({ }, { client }) {
+      if(client.roles.includes('admin')) return true
+      return isObjectRole(client, objectType, object, 'owner')
+    },
+    daoPath(params, { client, service }, method) {
+      const { objectType, object } = params
+      const range = App.extractRange(params)  
+      if(role) {
+        return objectByOwnerAndRoleIndex.countPath(
+          [objectType, object, role],
+          range
+        )
+      } else {
+        return ownerByObjectAndRoleIndex.countPath(
+          [objectType, object],
+          range
+        )
+      }
+    }
+  })
+  
 }
