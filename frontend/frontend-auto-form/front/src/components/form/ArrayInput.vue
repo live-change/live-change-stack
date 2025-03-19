@@ -66,7 +66,6 @@
   import Button from "primevue/button";
   import AutoInput from "./AutoInput.vue"
 
-  import { inputs, types } from '../../config.js'
   import { computed, getCurrentInstance, toRefs } from 'vue'
 
   const props = defineProps({

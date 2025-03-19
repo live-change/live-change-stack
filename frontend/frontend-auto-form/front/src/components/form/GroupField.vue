@@ -15,8 +15,7 @@
 
 <script setup>
   import AutoInput from "./AutoInput.vue"
-  import { inputs, types } from '../../config.js'
-  import { computed, inject, toRefs, getCurrentInstance } from 'vue'
+  import { computed, toRefs, getCurrentInstance } from 'vue'
   import Message from 'primevue/message'
 
   import { useI18n } from 'vue-i18n'
@@ -87,11 +86,8 @@
     return true
   })
 
-  const inputConfig = computed(() => {
-    if(definition.value?.input) return inputs[definition.value.input]
-    if(definition.value?.type) return types[definition.value.type]
-    return inputs.default
-  })
+  import { provideInputConfigByDefinition } from './inputConfigInjection.js'
+  const inputConfig = computed(() => provideInputConfigByDefinition(definition.value))
 
   import { validateData } from "@live-change/vue3-components"
 
