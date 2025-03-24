@@ -559,9 +559,6 @@ if(config.indexed) {
       },
       ...App.rangeProperties
     },
-    access({ }, { client }) {
-      return client.roles.includes('admin')
-    },
     daoPath(params, { client, service }, method) {
       const [ sessionOrUserType, sessionOrUser ] = client.user 
         ? ['user_User', client.user] : ['session_Session', client.session]
@@ -569,10 +566,14 @@ if(config.indexed) {
       const range = App.extractRange(params)
       if(!range.limit || range.limit > 1000) range.limit = 1000
       if(objectType) {
+        console.log("PATH", roleByOwnerAndObjectIndex.rangePath(
+          [sessionOrUserType, sessionOrUser, objectType],
+          range
+        ))
         return roleByOwnerAndObjectIndex.rangePath(
           [sessionOrUserType, sessionOrUser, objectType],
           range
-        )
+        )      
       } else {
         return ownerByObjectAndRoleIndex.rangePath(
           [sessionOrUserType, sessionOrUser],
@@ -589,9 +590,6 @@ if(config.indexed) {
         type: String
       },
       ...App.rangeProperties
-    },
-    access({ }, { client }) {
-      return client.roles.includes('admin')
     },
     daoPath(params, { client, service }, method) {
       const [ sessionOrUserType, sessionOrUser ] = client.user 
@@ -708,9 +706,6 @@ if(config.indexed) {
       },
       ...App.rangeProperties
     },
-    access({ }, { client }) {
-      return client.roles.includes('admin') 
-    },
     daoPath(params, { client, service }, method) {
       const [ sessionOrUserType, sessionOrUser ] = client.user 
         ? ['user_User', client.user] : ['session_Session', client.session]
@@ -742,9 +737,6 @@ if(config.indexed) {
         type: String
       },
       ...App.rangeProperties
-    },
-    access({ }, { client }) {
-      return client.roles.includes('admin')
     },
     daoPath(params, { client, service }, method) {
       const [ sessionOrUserType, sessionOrUser ] = client.user 
@@ -792,7 +784,8 @@ if(config.indexed) {
       },
       ...App.rangeProperties
     },
-    access({ objectType, object }, { client }) {
+    access({ objectType, object }, { client, visibilityTest }) {
+      if(visibilityTest) return true
       if(client.roles.includes('admin')) return true
       return isObjectRole(client, objectType, object, 'owner')
     },
@@ -827,7 +820,8 @@ if(config.indexed) {
       },
       ...App.rangeProperties
     },  
-    access({ }, { client }) {
+    access({ objectType, object }, { client, visibilityTest }) {
+      if(visibilityTest) return true
       if(client.roles.includes('admin')) return true
       return isObjectRole(client, objectType, object, 'owner')
     },

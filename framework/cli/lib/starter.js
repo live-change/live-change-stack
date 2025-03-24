@@ -196,6 +196,13 @@ export default function starter(servicesConfig = null, args = {}) {
       await setupApp({...argv, uidBorders: '[]'})
       await apiServer(argv)
     })
+    .command('localApiServer', 'shortcut for devApiServer --withServices --updateServices --withDb --createDb', (yargs) => {
+      apiServerOptions(yargs)
+      startOptions(yargs)
+    }, async (argv) => {
+      await setupApp({...argv, uidBorders: '[]'})
+      await apiServer(argv)
+    })
     .command('ssrServer', 'start ssr server', (yargs) => {
       ssrServerOptions(yargs)
       apiServerOptions(yargs)

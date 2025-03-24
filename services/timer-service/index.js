@@ -5,6 +5,7 @@ import definition from './definition.js'
 
 import { Timer } from './model.js'
 import { insertTimer, removeTimer, startTimers } from './loop.js'
+import { queueDuration, loadMoreAfter } from './config.js'
 
 definition.trigger({
   name: "createTimer",

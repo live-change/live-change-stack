@@ -143,6 +143,10 @@ function serviceDefinition(service, context = getCurrentInstance().appContext) {
   return [...api.metadata.api.value.services].find(x => x.name === service)
 }
 
+export function getId(object) {
+  return object.to ?? object.id
+}
+
 // backward compatibility
 const api = useApi
 const path = usePath
