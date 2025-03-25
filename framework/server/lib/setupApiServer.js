@@ -89,7 +89,6 @@ async function setupApiServer(settings) {
 
   const internalCredentials = { internal: true, roles: ['admin'] }
 
-  let serviceRemotes = {}
   if(settings.withServices) {
     const localServer = new Dao.ReactiveServer(
         () => app.createDao(apiServerConfig, { ...internalCredentials, ignoreRemoteView: true })

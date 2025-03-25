@@ -11,12 +11,12 @@ class ApiServer {
 
     this.reactiveServer = new LcDao.ReactiveServer(
       (credentials, connection) => {
-        const ip = getIp(connection)
+        const ip = getIp(connection)      
         if(!credentials && this.config.fastAuth) {
-          if(typeof this.config.fastAuth == 'function') {
+          if(typeof this.config.fastAuth == 'function') {          
             credentials = this.config.fastAuth(connection)
           } else {
-            const cookies = cookie.parse(connection.headers.cookie || '')
+            const cookies = cookie.parse(connection.headers.cookie || '')            
             const sessionKey = cookies.sessionKey
             if(!sessionKey) return null // noFastAuth
             credentials = { sessionKey }

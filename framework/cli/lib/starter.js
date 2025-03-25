@@ -200,6 +200,11 @@ export default function starter(servicesConfig = null, args = {}) {
       apiServerOptions(yargs)
       startOptions(yargs)
     }, async (argv) => {
+      argv = {
+        ...argv,      
+        withServices: true, updateServices: true,
+        withDb: true, createDb: true
+      }
       await setupApp({...argv, uidBorders: '[]'})
       await apiServer(argv)
     })
@@ -398,7 +403,7 @@ export async function apiServer(argv) {
 
   const { apiPort, apiHost } = argv
 
-  const apiServer = await setupApiServer(argv)
+  const apiServer = await setupApiServer({ ...argv, fastAuth: true })
 
   const expressApp = express()
 
@@ -410,7 +415,7 @@ export async function apiServer(argv) {
   setupApiSockJs(httpServer, apiServer)
 
   httpServer.listen(apiPort, apiHost)
-  console.log('Listening on port ' + apiPort)
+  console.log(`Api server listening on ${apiHost}:${apiPort}`)
 }
 
 export async function server(argv, dev) {
@@ -434,7 +439,7 @@ export async function server(argv, dev) {
 
   if(!argv.withApi) {
     const apiServerHost = (argv.apiHost === '0.0.0.0' ? 'localhost' : argv.apiHost) + ':' + argv.apiPort
-    const target = `http://${apiServerHost}/`
+    const target = `http://${apiServerHost}/`  
     const apiProxy = createProxyMiddleware({
       target,
       changeOrigin: true,

@@ -1,5 +1,5 @@
 import Dao from "@live-change/dao"
-import { client as DaoWebsocket } from "@live-change/dao-websocket"
+import { client as WebSocketClient } from "@live-change/dao-websocket"
 
 function reactiveObservableListConstructor(reactive) {
   class ReactiveObservableList extends Dao.ObservableList {
@@ -23,7 +23,7 @@ function serverDao(credentials, ip, settings) {
   return new Dao(credentials, {
     remoteUrl: wsServer,
     protocols: {
-      'ws': DaoWebsocket.client
+      'ws': WebSocketClient
     },
 
     ...settings,

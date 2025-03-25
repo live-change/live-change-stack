@@ -600,6 +600,7 @@
       ...model.value,
       audioInput: value,
     }
+    console.log("UPDATE AUDIO INPUT", value)
     if(value && value.deviceId === audioInputs?.value?.[0]?.deviceId) {
       localStorage.removeItem('audioInput')
     } else if(value) localStorage.setItem('audioInput', JSON.stringify(value))
