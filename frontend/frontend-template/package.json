@@ -22,6 +22,8 @@
     "apiServer": "node dist/server/start.js apiServer --enableSessions",
     "devApiServer": "tsx server/start.js devApiServer --enableSessions",
     "memApiServer": "tsx server/start.js memApiServer --enableSessions",
+    "localApiServer": "tsx server/start.js localApiServer --enableSessions",
+    "localApiServerInit": "tsx server/start.js localApiServer --enableSessions --initScript ./init.js",
     "build": "yarn build:client && yarn build:ssr && yarn build:server",
     "build:client": "cd front; dotenvx run -f ../.env -- vite build --ssrManifest --outDir dist/client",
     "build:ssr": "cd front; dotenvx run -f ../.env -- vite build --ssr src/entry-server.js --outDir dist/server",
