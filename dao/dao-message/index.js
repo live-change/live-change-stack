@@ -29,8 +29,9 @@ class MessageConnection extends ReactiveConnection {
       this.target.addEventListener('error', (event) => {
         console.error("Worker", this.url, "error", event)
       })
-      this.target.addEventListener('unhandledrejection', (event) => {
-        console.error("Worker", this.url, "unhandled rejection", event)
+      this.target.addEventListener('unhandledrejection', (reason, promise) => {
+        console.error("Worker", this.url, "unhandled rejection", 
+          "reason", reason, "stack", reason.stack, "promise", promise)
       })
     }
     if(this.port.start) {

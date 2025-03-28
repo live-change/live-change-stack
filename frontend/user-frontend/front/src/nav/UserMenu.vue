@@ -3,10 +3,11 @@
     <li>
       <router-link :to="{ name: 'user:identification' }"
                    v-ripple
-                   class="flex px-6 py-2 items-center
-                   text-surface-600 hover:text-surface-900 hover:bg-surface-100
+                   class="flex px-6 py-2 items-center 
+                          text-surface-600 hover:text-surface-900 hover:bg-surface-100
                           dark:text-surface-400 dark:hover:text-surface-100 dark:hover:bg-surface-800
-               font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline"
+                          font-medium border-round cursor-pointer p-ripple no-underline
+                          transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-user mr-3"></i>
         <span>Profile</span>

@@ -39,8 +39,6 @@
 
   import { useToast } from 'primevue/usetoast'
   const toast = useToast()
-  import { useConfirm } from 'primevue/useconfirm'
-  const confirm = useConfirm()
 
   const userClientConfig = api.getServiceDefinition('user')?.clientConfig
 
@@ -55,7 +53,7 @@
       delete route.meta
       afterSignIn.value = route
       if(delay) {
-        redirectTime.value = new Date(Date.now() + delay * 1000)
+        redirectTime.value = new Date(Date.now() + delay * 1000).getTime()
         redirectTimeout = setTimeout(() => {
           if(!finished) router.push(route)
         }, redirectTime.value - currentTime.value)

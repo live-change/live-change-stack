@@ -3,10 +3,9 @@ export { ComponentDialog }
 
 import ViewRoot from "./ViewRoot.vue"
 import Page from "./Page.vue"
-import NavBar from "./NavBar.vue"
 import UpdateBanner from "./UpdateBanner.vue"
 
-export { ViewRoot, Page, NavBar, UpdateBanner }
+export { ViewRoot, Page, UpdateBanner }
 
 import { useHost } from "./host.js"
 export { useHost }

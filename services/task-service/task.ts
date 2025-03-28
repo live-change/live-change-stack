@@ -224,15 +224,15 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     }
 
     let selfProgress = { current: 0, total: 0, action: undefined }
-    const subtasksProgress = []
+    const subtasksProgress: { current: number, total: number, factor: number }[] = []
     let progressUpdateTimer, lastProgressUpdate = 0
     const progressThrottleTime = 400
     function updateProgress() {
       if(progressUpdateTimer) clearTimeout(progressUpdateTimer)
       const current = selfProgress.current + subtasksProgress.reduce(
-        (sum, progress) => sum + progress.current * (progress.factor ?? 1), 0)
+        (sum, progress: { current: number, total: number, factor: number }) => sum + progress.current * (progress.factor ?? 1), 0)
       const total = selfProgress.total + subtasksProgress.reduce(
-        (sum, progress) => sum + progress.total * (progress.factor ?? 1), 0)
+        (sum, progress: { current: number, total: number, factor: number }) => sum + progress.total * (progress.factor ?? 1), 0)
       reportProgress(current, total, selfProgress.action)
 
       if(lastProgressUpdate + progressThrottleTime > Date.now()) { // ignore this update, do it later

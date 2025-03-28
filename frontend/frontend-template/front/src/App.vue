@@ -14,7 +14,9 @@
   const locale = useLocale()
   if(typeof window !== 'undefined') locale.captureLocale()
 
-  import { ViewRoot, NavBar, UpdateBanner } from "@live-change/frontend-base"
+  import NavBar from "./components/NavBar.vue"
+
+  import { ViewRoot, UpdateBanner } from "@live-change/frontend-base"
 
   import { computed } from 'vue'
   import { useHead } from '@vueuse/head'

@@ -285,7 +285,8 @@ class Database {
 
   handleUnhandledRejectionInIndex(name, reason) {
     const config = this.config.indexes[name]
-    console.error("INDEX", name, "unhandledRejection", reason, "CODE:\n", config?.code)
+    console.error("INDEX", name, "unhandledRejection", reason, "CODE:\n", config?.code,
+      "\nPARAMS:\n", config?.parameters, "\nSTACK:\n", reason.stack, "\nPROMISE:\n", reason.promise)
     console.error("DELETING INDEX", name)
     const index = this.indexes.get(name)
     if(index) {

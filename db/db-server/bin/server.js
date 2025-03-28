@@ -17,8 +17,9 @@ import {
 } from "@live-change/server"
 
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Promise Rejection', (reason && reason.stack) || reason, "Promise:", promise)
-    //process.exit(1) // TODO: database should not fail because of it, but it should be logged somewhere
+  console.error('Unhandled Promise Rejection',
+      "reason", reason, "stack", reason.stack, "promise", promise)
+  //process.exit(1) // TODO: database should not fail because of it, but it should be logged somewhere
 })
 
 process.on('uncaughtException', function (err) {

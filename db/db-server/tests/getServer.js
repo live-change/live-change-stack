@@ -5,8 +5,9 @@ import ReactiveDao from '@live-change/dao'
 
 let serverPromise = null
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('Unhandled Rejection at: Promise', 
+    "reason", reason, "stack", reason.stack, "promise", promise)
   // application specific logging, throwing an error, or other logic here
 })
 

@@ -9,8 +9,9 @@ import parseList from '../lib/parseList.js'
 
 import yargs from 'yargs'
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason)
+process.on('unhandledRejection', (reason, event) => {
+  console.log('Unhandled Rejection at: Promise', 
+    "reason", reason, "stack", reason.stack, "promise", promise)
 })
 
 process.on('uncaughtException', function (err) {

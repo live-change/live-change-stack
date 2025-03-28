@@ -407,7 +407,8 @@ class Server {
   }
 
   handleUnhandledRejectionInQuery(reason, promise) {
-    console.error("ERROR IN USER CODE:", reason.stack)
+    console.error("ERROR IN USER CODE:", reason.stack, "REASON:", reason, "PROMISE:", promise)
+    
     let rest = reason.stack
     while(true) {
       const match = rest.match(/\s(userCode:([a-z0-9_.\/-]+):([0-9]+):([0-9]+))\n/i)

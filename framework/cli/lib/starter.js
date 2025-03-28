@@ -29,7 +29,8 @@ import {
 import { DaoCache } from '@live-change/dao'
 
 process.on('unhandledRejection', (reason, p) => {
-  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason)
+  console.error('Unhandled Rejection', 
+    "reason", reason, "stack", reason.stack, "promise", promise)
 })
 
 process.on('uncaughtException', function (err) {
