@@ -31,8 +31,8 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.47",
-    "@live-change/flatten-interval-tree": "^0.9.47"
+    "@live-change/dao": "0.9.47",
+    "@live-change/flatten-interval-tree": "0.9.47"
   },
   "gitHead": "2aa34c0589d115aeaa573bd2cae09bb43a66d162"
 }

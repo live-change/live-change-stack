@@ -63,12 +63,12 @@
 
     </div>
     <div class="flex flex-row gap-2 pt-2 justify-around">
-      <div v-if="audioInputRequest !== 'none' && audioInputs.length > 0"
+      <div v-if="audioInputRequest !== 'none' && model.audioInputs?.length > 0"
            class="flex flex-col items-stretch grow">
         <div class="text-sm mb-1 pl-1">Microphone</div>
         <Dropdown :modelValue="model.audioInput"
                   @update:modelValue="value => updateAudioInput(value)"
-                  :options="audioInputs"
+                  :options="model.audioInputs"
                   optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
@@ -82,12 +82,12 @@
           </template>
         </Dropdown>
       </div>
-      <div v-if="audioOutputRequest !== 'none' && audioOutputs.length > 0"
+      <div v-if="audioOutputRequest !== 'none' && model.audioOutputs?.length > 0"
            class="flex flex-col items-stretch grow">
         <div class="text-sm mb-1 pl-1">Audio output</div>
         <Dropdown :modelValue="model.audioOutput"
                   @update:modelValue="value => updateAudioOutput(value)"
-                  :options="audioOutputs" optionLabel="label"
+                  :options="model.audioOutputs" optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
             <div class="flex flex-row items-center">
@@ -101,12 +101,12 @@
         </Dropdown>
       </div>
 
-      <div v-if="videoInputRequest !== 'none' && videoInputs.length > 0"
+      <div v-if="videoInputRequest !== 'none' && model.videoInputs?.length > 0"
            class="flex flex-col items-stretch grow">
         <div class="text-sm mb-1 pl-1">Camera</div>
         <Dropdown :modelValue="model.videoInput"
                   @update:modelValue="value => updateVideoInput(value)"
-                  :options="videoInputs" optionLabel="label"
+                  :options="model.videoInputs" optionLabel="label"
                   placeholder="Select">
           <template #value="slotProps">
             <div class="flex flex-row items-center">
@@ -240,11 +240,45 @@
 
   globalThis.deviceSelectModel = model
 
+  function restoreSavedDevice(model, deviceType) {
+    const saved = localStorage.getItem(deviceType)
+    const devices = model[deviceType+'s']
+    if(!devices || devices.length === 0) {
+      model[deviceType] = null
+      return
+    }
+    if(saved) {
+      const parsed = JSON.parse(saved)
+      const exists = devices.find(device => device.deviceId === parsed.deviceId)
+        || devices[deviceType].find(device => device.label === parsed.label)
+      if(exists) {
+        model[deviceType] = exists        
+      }
+    } else {
+      if(model[deviceType]) {
+        const exists = devices.find(device => device.deviceId === model[deviceType].deviceId)
+        if(exists) return
+      }
+      model[deviceType] = devices[0]      
+    }
+  }
+
   const devices = ref([])
   async function updateDevices() {
     console.log("UPDATE DEVICES")
     devices.value = await navigator.mediaDevices.enumerateDevices()
     console.log("DEVICES", JSON.stringify(devices.value))
+    const newModel = {
+      ...model.value,
+      audioInputs: devices.value.filter(device => device.kind === 'audioinput').map(fixLabel),
+      audioOutputs: devices.value.filter(device => device.kind === 'audiooutput').map(fixLabel),
+      videoInputs: devices.value.filter(device => device.kind === 'videoinput').map(fixLabel)
+    }
+    console.log("NEW MODEL", newModel)
+    restoreSavedDevice(newModel, 'audioInput')
+    restoreSavedDevice(newModel, 'audioOutput')
+    restoreSavedDevice(newModel, 'videoInput')
+    model.value = newModel
   }
   if(typeof window !== 'undefined') {
     useEventListener(navigator.mediaDevices, 'devicechange', updateDevices)
@@ -263,44 +297,6 @@
     }
     return device
   }
-
-  const audioInputs = computed(() => devices.value.filter(device => device.kind === 'audioinput').map(fixLabel))
-  const audioOutputs = computed(() => devices.value.filter(device => device.kind === 'audiooutput').map(fixLabel))
-  const videoInputs = computed(() => devices.value.filter(device => device.kind === 'videoinput').map(fixLabel))
-
-  watch(audioInputs, (value) => {
-    if(value.length === 0) return
-    if(model.value?.audioInput) {
-      const exists = value.find(device => device.deviceId === model.value.audioInput.deviceId)
-      if(exists) return
-    }
-    model.value = {
-      ...model.value,
-      audioInput: value[0]
-    }
-  }, { immediate: true })
-  watch(audioOutputs, (value) => {
-    if(value.length === 0) return
-    if(model.value?.audioOutput) {
-      const exists = value.find(device => device.deviceId === model.value.audioOutput.deviceId)
-      if(exists) return
-    }
-    model.value = {
-      ...model.value,
-      audioOutput: value[0]
-    }
-  }, { immediate: true })
-  watch(videoInputs, (value) => {
-    if(value.length === 0) return
-    if(model.value?.videoInput) {
-      const exists = value.find(device => device.deviceId === model.value.videoInput.deviceId)
-      if(exists) return
-    }
-    model.value = {
-      ...model.value,
-      videoInput: value[0]
-    }
-  }, { immediate: true })
 
 /*  watch(model.value, (v) => {
     console.trace("MODEL CHANGED", v)
@@ -600,92 +596,37 @@
       ...model.value,
       audioInput: value,
     }
-    console.log("UPDATE AUDIO INPUT", value)
-    if(value && value.deviceId === audioInputs?.value?.[0]?.deviceId) {
-      localStorage.removeItem('audioInput')
-    } else if(value) localStorage.setItem('audioInput', JSON.stringify(value))
   }
   function updateAudioOutput(value) {
     model.value = {
       ...model.value,
       audioOutput: value
     }
-    console.log("UPDATE AUDIO OUTPUT", value)
-    if(value && value.deviceId === audioOutputs?.value?.[0]?.deviceId) {
-      localStorage.removeItem('audioOutput')
-    } else if(value) localStorage.setItem('audioOutput', JSON.stringify(value))
   }
   function updateVideoInput(value) {
     model.value = {
       ...model.value,
       videoInput: value
     }
-    if(value && value.deviceId === videoInputs?.value?.[0]?.deviceId) {
-      localStorage.removeItem('videoInput')
-    } else if(value) localStorage.setItem('videoInput', JSON.stringify(value))
   }
 
-  watch(() => audioInputs.value, value => {
-    const saved = localStorage.getItem('audioInput')
-    if(saved) {
-      const parsed = JSON.parse(saved)
-      const exists = value.find(device => device.deviceId === parsed.deviceId)
-        || value.find(device => device.label === parsed.label)
-      if(exists) {
-        model.value = {
-          ...model.value,
-          audioInput: exists
-        }
-        setTimeout(() => {
-          model.value = {
-            ...model.value,
-            audioInput: exists
-          }
-        }, 23)
-      }
-    }
+  watch(() => model.value.audioInput, (value) => {
+    if(value && value.deviceId === model.audioInputs?.value?.[0]?.deviceId) {
+      localStorage.removeItem('audioInput')
+    } else if(value) localStorage.setItem('audioInput', JSON.stringify(value))
   })
-  watch(() => audioOutputs.value, value => {
-    const saved = localStorage.getItem('audioOutput')
-    if(saved) {
-      const parsed = JSON.parse(saved)
-      const exists = value.find(device => device.deviceId === parsed.deviceId)
-        || value.find(device => device.label === parsed.label)
-      if(exists) {
-        console.log("SET AUDIO OUTPUT", exists)
-        model.value = {
-          ...model.value,
-          audioOutput: exists,
-        }
-        setTimeout(() => {
-          model.value = {
-            ...model.value,
-            audioOutput: exists,
-          }
-        }, 23)
-      }
-    }
+  watch(() => model.value.audioOutput, (value) => {
+    if(value && value.deviceId === model.audioOutputs?.value?.[0]?.deviceId) {
+      localStorage.removeItem('audioOutput')
+    } else if(value) localStorage.setItem('audioOutput', JSON.stringify(value))
   })
-  watch(() => videoInputs.value, value => {
-    const saved = localStorage.getItem('videoInput')
-    if(saved) {
-      const parsed = JSON.parse(saved)
-      const exists = value.find(device => device.deviceId === parsed.deviceId)
-        || value.find(device => device.label === parsed.label)
-      if(exists) {
-        model.value = {
-          ...model.value,
-          videoInput: exists
-        }
-        setTimeout(() => {
-          model.value = {
-            ...model.value,
-            videoInput: exists
-          }
-        }, 23)
-      }
-    }
+  watch(() => model.value.videoInput, (value) => {
+    if(value && value.deviceId === model.videoInputs?.value?.[0]?.deviceId) {
+      localStorage.removeItem('videoInput')
+    } else if(value) localStorage.setItem('videoInput', JSON.stringify(value))
   })
+  
+  
 
 </script>
 

@@ -2,12 +2,12 @@
   <div>
     <OverlayPanel ref="mediaSettingsOverlay">
       <div class="flex flex-col gap-2 pt-2 justify-around" style="min-width: 20rem; max-width: 90vw">
-        <div v-if="audioInputRequest !== 'none' && audioInputs.length > 0"
+        git c<div v-if="audioInputRequest !== 'none' && model.audioInputs?.length > 0"
              class="flex flex-col items-stretch grow">
           <div class="text-sm mb-1 pl-1">Microphone</div>
           <Dropdown :modelValue="model.audioInput"
                     @update:modelValue="value => updateAudioInput(value)"
-                    :options="audioInputs"
+                    :options="model.audioInputs"
                     optionLabel="label"
                     placeholder="Select">
             <template #value="slotProps">
@@ -21,12 +21,12 @@
             </template>
           </Dropdown>
         </div>
-        <div v-if="audioOutputRequest !== 'none' && audioOutputs.length > 0"
+        <div v-if="audioOutputRequest !== 'none' && model.audioOutputs?.length > 0"
              class="flex flex-col items-stretch grow">
           <div class="text-sm mb-1 pl-1">Audio output</div>
           <Dropdown :modelValue="model.audioOutput"
                     @update:modelValue="value => updateAudioOutput(value)"
-                    :options="audioOutputs" optionLabel="label"
+                    :options="model.audioOutputs" optionLabel="label"
                     placeholder="Select">
             <template #value="slotProps">
               <div class="flex flex-row items-center">
@@ -40,12 +40,12 @@
           </Dropdown>
         </div>
 
-        <div v-if="videoInputRequest !== 'none' && videoInputs.length > 0"
+        <div v-if="videoInputRequest !== 'none' && model.videoInputs?.length > 0"
              class="flex flex-col items-stretch grow">
           <div class="text-sm mb-1 pl-1">Camera</div>
           <Dropdown :modelValue="model.videoInput"
                     @update:modelValue="value => updateVideoInput(value)"
-                    :options="videoInputs" optionLabel="label"
+                    :options="model.videoInputs" optionLabel="label"
                     placeholder="Select">
             <template #value="slotProps">
               <div class="flex flex-row items-center">
@@ -119,21 +119,6 @@
       }
     }
   })
-
-  const devices = ref([])
-  async function updateDevices() {
-    console.log("UPDATE DEVICES")
-    devices.value = await navigator.mediaDevices.enumerateDevices()
-    console.log("DEVICES", JSON.stringify(devices.value))
-  }
-  if(typeof window !== 'undefined') {
-    useEventListener(navigator.mediaDevices, 'devicechange', updateDevices)
-    onMounted(updateDevices)
-  }
-
-  const audioInputs = computed(() => devices.value.filter(device => device.kind === 'audioinput'))
-  const audioOutputs = computed(() => devices.value.filter(device => device.kind === 'audiooutput'))
-  const videoInputs = computed(() => devices.value.filter(device => device.kind === 'videoinput'))
 
   const mediaSettingsOverlay = ref()
 
