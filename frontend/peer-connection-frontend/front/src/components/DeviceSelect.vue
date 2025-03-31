@@ -250,7 +250,7 @@
     if(saved) {
       const parsed = JSON.parse(saved)
       const exists = devices.find(device => device.deviceId === parsed.deviceId)
-        || devices[deviceType].find(device => device.label === parsed.label)
+        || devices.find(device => device.label === parsed.label)
       if(exists) {
         model[deviceType] = exists        
       }

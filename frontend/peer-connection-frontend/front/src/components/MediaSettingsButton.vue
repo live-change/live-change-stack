@@ -73,7 +73,6 @@
 
 
   import { defineModel, defineProps, defineEmits, computed, ref, toRefs, onMounted } from 'vue'
-  import { useEventListener } from '@vueuse/core'
 
   const props = defineProps({
     audioInputRequest: {
