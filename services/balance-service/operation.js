@@ -206,10 +206,9 @@ definition.trigger({
 
   queuedBy: 'balance',
   async execute({ balance, causeType, cause, change }, { client, service, triggerService }, emit) {
-    const operation = app.generateUid()
     const balanceData = await getBalance(balance, triggerService)
     if(!config.changePossible(balanceData.available, change)) throw "insufficientFunds"
-    await triggerService({
+    const operation = await triggerService({
       service: definition.name,
       type: 'balance_createOperation',
     }, {

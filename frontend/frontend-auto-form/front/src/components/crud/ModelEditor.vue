@@ -96,7 +96,7 @@
 
   import { editorData } from "@live-change/frontend-auto-form"
   import { computedAsync } from "@vueuse/core"
-import InjectedObjectIndentification from './InjectedObjectIndentification.vue'
+  import InjectedObjectIndentification from './InjectedObjectIndentification.vue'
 
   const editor = computedAsync(async () => {
     try {

@@ -28,7 +28,7 @@ import {
 
 import { DaoCache } from '@live-change/dao'
 
-process.on('unhandledRejection', (reason, p) => {
+process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection', 
     "reason", reason, "stack", reason.stack, "promise", promise)
 })

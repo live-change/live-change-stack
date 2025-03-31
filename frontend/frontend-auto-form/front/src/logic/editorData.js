@@ -1,6 +1,6 @@
 import { useToast } from 'primevue/usetoast'
 import { usePath, live, useApi } from '@live-change/vue3-ssr'
-import { ref, computed, inject } from 'vue'
+import { ref, computed, inject, watch } from 'vue'
 import { synchronized, defaultData } from '@live-change/vue3-components'
 
 export default function editorData(options) {
@@ -155,11 +155,15 @@ export default function editorData(options) {
             toast.add({ severity: 'error', summary: saveDraftErrorToast, detail: e.message ?? e, life: 5000 })
         }
       })
-
       const changed = computed(() =>
-        JSON.stringify(editableSavedData.value ?? {}) !== JSON.stringify(synchronizedData.value.value))
+        JSON.stringify(editableSavedData.value ?? {})
+           !== JSON.stringify({ ...synchronizedData.value.value, [timeField]: undefined })
+      )
+
       const sourceChanged = computed(() =>
-        JSON.stringify(draftData.value.from) !== JSON.stringify(editableSavedData.value))
+        JSON.stringify(draftData.value.from) 
+          !== JSON.stringify({ ...synchronizedData.value.value, [timeField]: undefined })
+      )
 
       async function save() {
         const saveResult = await saveData(synchronizedData.value.value)

@@ -242,14 +242,19 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
       function:  async function(input, output, { tableName }) {
         const table = await input.table(tableName)
         await table.onChange(async (obj, oldObj) => {
-          const id = obj?.id ?? oldObj?.id
+          const id = obj?.id ?? oldObj?.id        
           const typeJson = id.slice(0, id.indexOf(':'))
-          const type = JSON.parse(typeJson)
-          const count = await table.count({ gte: typeJson+':', lte: type+'_\xFF\xFF\xFF\xFF', limit: 1 })
-          if(count > 0) {
-            await output.put({ id: type })
-          } else {
-            await output.delete({ id: type })
+          try {
+            const type = JSON.parse(typeJson)
+            const count = await table.count({ gte: typeJson+':', lte: type+'_\xFF\xFF\xFF\xFF', limit: 1 })
+            if(count > 0) {
+              await output.put({ id: type })
+            } else {
+              await output.delete({ id: type })
+            }
+          } catch(e) {
+            output.debug('typeJson', typeJson, 'id', id) 
+            console.error("Error parsing typeJson", typeJson, e)
           }
         })
       },
@@ -269,12 +274,18 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
         const index = await input.index(indexName)
         await index.onChange(async (obj, oldObj) => {
           const id = obj?.id ?? oldObj?.id
-          const type = id.slice(0, id.indexOf(':'))
-          const count = await index.count({ gte: type+':', lte: type+'_\xFF\xFF\xFF\xFF', limit: 1 })
-          if(count > 0) {
-            await output.put({ id: JSON.parse(type) })
-          } else {
-            await output.delete({ id: JSON.parse(type) })
+          const typeJson = id.slice(0, id.indexOf(':'))
+          try {
+            const type = JSON.parse(typeJson)
+            const count = await index.count({ gte: type+':', lte: typeJson+'_\xFF\xFF\xFF\xFF', limit: 1 })
+            if(count > 0) {
+              await output.put({ id: type })
+            } else {
+              await output.delete({ id: type })
+            }
+          } catch(e) {
+            output.debug('typeJson', typeJson, 'id', id) 
+            console.error("Error parsing typeJson", typeJson, e)
           }
         })
       },

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col-reverse md:flex-row justify-between items-center mt-4">
+  <div class="flex flex-col-reverse md:flex-row justify-between items-center">
     <div class="flex flex-col mt-2 md:mt-0">
       <div v-if="savingDraft" class="text-surface-500 dark:text-surface-300 mr-2 flex flex-row items-center">
         <i class="pi pi-spin pi-spinner mr-2" style="font-size: 1.23rem"></i>
@@ -35,7 +35,7 @@
 
   import Message from "primevue/message"
 
-  import { ref, computed, onMounted, defineProps, defineEmits, toRefs, getCurrentInstance } from 'vue'
+  import { ref, computed, onMounted, defineProps, defineEmits, toRefs, getCurrentInstance, unref } from 'vue'
 
   const props = defineProps({
     editor: {
@@ -73,12 +73,14 @@
   const validationResult = computed(() => {
     const currentValue = {
       ...(editor.value.identifiers),
-      ...(editor.value.value.value),
+      ...unref(editor.value.value),
     }
     const validationResult = validateData(model.value, currentValue, 'validation', appContext,
       props.propName, props.rootValue, true)
     const softValidationResult = validateData(model.value, currentValue, 'softValidation', appContext,
       props.propName, props.rootValue, true)
+    console.log("currentValue", currentValue)
+    console.log("validationResult", validationResult, softValidationResult)
     return validationResult || softValidationResult
   })
 

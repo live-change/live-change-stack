@@ -138,7 +138,7 @@ export function getSetFunction( validators, validationContext, config, context) 
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const eventName = modelName + 'Set'
-  async function execute(properties, { client, service }, emit) {
+  async function execute(properties, { client, service, trigger }, emit) {
     const idParts = extractIdParts(otherPropertyNames, properties)
     const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
     const identifiers = extractIdentifiers(otherPropertyNames, properties)

@@ -53,7 +53,7 @@ definition.event({
   name: "peerOnline",
   async execute({ channelType, channel, session, instance }) {
     const peer = channelType + ':' + channel + ':' + session + ':' + instance
-    await Peer.create({ id: peer, channelType, channel, instance, session })
+    await Peer.create({ id: peer, channelType, channel, instance, sessionType: 'session_Session', session })
   }
 })
 
