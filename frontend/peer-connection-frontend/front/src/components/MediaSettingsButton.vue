@@ -2,7 +2,7 @@
   <div>
     <OverlayPanel ref="mediaSettingsOverlay">
       <div class="flex flex-col gap-2 pt-2 justify-around" style="min-width: 20rem; max-width: 90vw">
-        git c<div v-if="audioInputRequest !== 'none' && model.audioInputs?.length > 0"
+        <div v-if="audioInputRequest !== 'none' && model.audioInputs?.length > 0"
              class="flex flex-col items-stretch grow">
           <div class="text-sm mb-1 pl-1">Microphone</div>
           <Dropdown :modelValue="model.audioInput"

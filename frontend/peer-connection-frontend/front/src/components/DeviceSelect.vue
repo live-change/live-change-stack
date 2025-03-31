@@ -257,7 +257,7 @@
     } else {
       if(model[deviceType]) {
         const exists = devices.find(device => device.deviceId === model[deviceType].deviceId)
-        if(exists) return
+        model[deviceType] = exists
       }
       model[deviceType] = devices[0]      
     }
