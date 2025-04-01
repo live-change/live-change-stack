@@ -15,12 +15,12 @@
                       @submit="handleSubmit" @done="handleAuthenticated" @error="handleError"
                       v-slot="{ data }">
           <div class="flex justify-center flex-col items-center">
-            <div class="p-field mx-1 flex flex-col mb-4">
+            <div class="p-field mx-1 flex flex-col items-center mb-4">
               <label for="code" class="sr-only">Code</label>
               <!-- <InputOtp id="code"  :length="6" class="mb-2"
                          v-model="data.secret"
                          aria-describedby="code-help" :invalid="!!data.secretError" /> -->
-             <InputMask id="code" class="p-inputtext-lg w-[7rem] text-center" mask="999999" slotChar="######" placeholder="Code"
+              <InputMask id="code" class="p-inputtext-lg w-[7rem] text-center" mask="999999" slotChar="######" placeholder="Code"
                          v-model="data.secret"
                          aria-describedby="code-help" :invalid="!!data.secretError" />
               <Message v-if="data.secretError" severity="error" variant="simple">
