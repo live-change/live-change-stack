@@ -1,6 +1,6 @@
 {
   "name": "@live-change/balance-service",
-  "version": "0.9.52",
+  "version": "0.9.53",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/access-control-service": "^0.9.52",
-    "@live-change/framework": "^0.9.52",
-    "@live-change/relations-plugin": "^0.9.52",
-    "@live-change/user-service": "^0.9.52"
+    "@live-change/access-control-service": "^0.9.53",
+    "@live-change/framework": "^0.9.53",
+    "@live-change/relations-plugin": "^0.9.53",
+    "@live-change/user-service": "^0.9.53"
   },
   "gitHead": "1d8135f1ebce405263d84ef8f6d5559eb487466c",
   "type": "module"
