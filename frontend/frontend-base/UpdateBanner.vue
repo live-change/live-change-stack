@@ -31,8 +31,8 @@
   const codeVersion = ref(ENV_VERSION)
 
   const updateAvailable = computed(
-      () => true /* codeVersion.value !== 'unknown'
-        && api.metadata.version.value && api.metadata.version.value !== codeVersion.value */
+      () => codeVersion.value !== 'unknown'
+        && api.metadata.version.value && api.metadata.version.value !== codeVersion.value
   )
   const updateBannerHidden = ref(false)
   function hideUpdateBanner() {
