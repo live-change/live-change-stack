@@ -51,7 +51,7 @@
     "@live-change/vue3-components": "^0.9.55",
     "@live-change/vue3-ssr": "^0.9.55",
     "@primevue/themes": "^4.2.5",
-    "@tailwindcss/vite": "4.0.6",
+    "@tailwindcss/vite": "4.1.0",
     "@unhead/ssr": "^1.6.2",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/compiler-sfc": "^3.4.29",
