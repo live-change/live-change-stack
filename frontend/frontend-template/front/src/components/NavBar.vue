@@ -1,6 +1,6 @@
 <template>
   <div class="bg-surface-0 dark:bg-surface-900 py-1 px-6 shadow flex items-center justify-content-between
-              relative md:sticky top-0 z-5"
+              relative md:sticky top-0 z-20"
        style="min-height: 80px" key="navbar">
 
     <router-link to="/" class="no-underline mr-0 lg:mr-12">
