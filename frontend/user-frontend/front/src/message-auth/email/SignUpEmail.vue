@@ -14,7 +14,7 @@
     </p>
     <div>
       <a :href="linkAddress" class="no-underline">
-        <Button label="Confirm email" class="p-button-lg" />
+        <Button label="Confirm email" class="p-button-lg cursor-pointer" />
       </a>
     </div>
     <p>
