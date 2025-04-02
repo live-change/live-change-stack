@@ -1,6 +1,6 @@
 {
   "name": "@live-change/framework",
-  "version": "0.9.56",
+  "version": "0.9.57",
   "description": "Live Change Framework - ultimate solution for real time mobile/web apps",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
-    "@live-change/dao": "0.9.56",
-    "@live-change/uid": "0.9.56"
+    "@live-change/dao": "^0.9.57",
+    "@live-change/uid": "^0.9.57"
   },
   "gitHead": "1d8135f1ebce405263d84ef8f6d5559eb487466c"
 }
