@@ -126,9 +126,9 @@
   const redirectTime = ref()
   let redirectTimeout
   function doRedirect() {
+    console.log("DO REDIRECT?", localStorage.redirectAfterSignIn)
     if(localStorage.redirectAfterSignIn) {
       const route = JSON.parse(localStorage.redirectAfterSignIn)
-      localStorage.removeItem('redirectAfterSignIn')
       const delay = route?.meta?.afterSignInRedirectDelay ?? userClientConfig?.afterSignInRedirectDelay ?? 10
       delete route.meta
       afterSignIn.value = route
@@ -137,6 +137,7 @@
         redirectTime.value = new Date(Date.now() + delay * 1000)
         redirectTimeout = setTimeout(() => {
           console.log("DO DELAYED REDIRECT AFTER SIGN UP!", route)
+          localStorage.removeItem('redirectAfterSignIn')
           router.push(route)
         }, redirectTime.value - currentTime.value)
       } else {
@@ -147,6 +148,7 @@
             summary: 'Signed up',
             detail: 'Congratulations! You have successfully created your account.'
           })
+          localStorage.removeItem('redirectAfterSignIn')
           router.push(route)
         }, 100)
       }
@@ -160,6 +162,7 @@
       await new Promise(resolve => setTimeout(resolve, 200))
     }
     console.log("DONE WAITING FOR USER!")
+    console.log("FINISHED?", finished)
     if(!finished) doRedirect()
   })
   onUnmounted(() => {
