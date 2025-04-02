@@ -134,14 +134,15 @@ class Api extends DaoProxy {
     //console.log("GENERATE API DEFINITIONS", definitions)
     api.servicesApiDefinitions = definitions
     api.servicesDefinitions.value = definitions
-    let globalViews = {}
-    let globalFetch = (...args) => new Path(...args)
-    let globalActions = {}
-    let globalModels = {}
-    let globalServices = {}
+    let globalViews = api.views || {}
+    let globalFetch = api.fetch || ((...args) => new Path(...args))
+    let globalActions = api.actions || {}
+    let globalModels = api.models || {}
+    let globalServices = api.services || {}
     for(const serviceDefinition of definitions) {
       let fetch = { }
       globalFetch[serviceDefinition.name] = fetch
+      /// generate new fetch
       for(const actionName in serviceDefinition.actions) {
         fetch[actionName] = (params) => [serviceDefinition.name, actionName, params]
         fetch[actionName].definition = serviceDefinition.actions[actionName]
@@ -150,12 +151,22 @@ class Api extends DaoProxy {
         fetch[viewName] = (params) => new Path([serviceDefinition.name, viewName, params])
         fetch[viewName].definition = serviceDefinition.views[viewName]
       }
+      /// delete old fetch entries
+      for(const name in fetch) {
+        if(!serviceDefinition.actions[name] && !serviceDefinition.views[name]) delete fetch[name]
+      }
+      /// generate new actions
       let actions = { }
       globalActions[serviceDefinition.name] = actions
       for(const actionName in serviceDefinition.actions) {
         actions[actionName] = (params) => api.command([serviceDefinition.name, actionName], params)
         actions[actionName].definition = serviceDefinition.actions[actionName]
       }
+      /// delete old actions
+      for(const actionName in actions) {
+        if(!serviceDefinition.actions[actionName]) delete actions[actionName]
+      }
+      /// generate new views
       let views = { }
       globalViews[serviceDefinition.name] = views
       for(const viewName in serviceDefinition.views) {
@@ -163,11 +174,21 @@ class Api extends DaoProxy {
         views[viewName] = (params) => [serviceDefinition.name, viewName, params]
         views[viewName].definition = serviceDefinition.views[viewName]
       }
+      /// delete old views
+      for(const viewName in views) {
+        if(!serviceDefinition.views[viewName]) delete views[viewName]
+      }
+      /// generate new models
       let models = { }
       globalModels[serviceDefinition.name] = models
       for(const modelName in serviceDefinition.models) {
         models[modelName] = serviceDefinition.models[modelName]
       }
+      /// delete old models
+      for(const modelName in models) {
+        if(!serviceDefinition.models[modelName]) delete models[modelName]
+      }
+      /// generate new services
       globalServices[serviceDefinition.name] = {
         actions, views, models, definitions, config: serviceDefinition.clientConfig
       }

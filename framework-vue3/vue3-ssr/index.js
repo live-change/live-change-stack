@@ -11,8 +11,8 @@ function usePath(context) {
   return useApi(context).fetch
 }
 
-function useView(context) {
-  return useApi(context).view
+function useViews(context) {
+  return useApi(context).views
 }
 
 function useActions(context) {
@@ -152,13 +152,13 @@ const api = useApi
 const path = usePath
 const live = useLive
 const fetch = useFetch
-const view = useView
+const view = useViews
 const actions = useActions
 const client = useClient
 const uid = useUid
 
 export {
-  usePath, useLive, useFetch, useApi, useView, useActions, useUid, useClient, useTimeSynchronization,
+  usePath, useLive, useFetch, useApi, useViews, useActions, useUid, useClient, useTimeSynchronization,
   path, live, fetch, api, view, actions, uid, client,
   rangeBuckets, reverseRange,
   inboxReader,

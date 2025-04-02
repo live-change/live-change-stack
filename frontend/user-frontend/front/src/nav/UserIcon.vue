@@ -6,15 +6,15 @@
          cursor-pointer transition-colors transition-duration-150 border-round">
         <Image v-if="myIdentification?.image" :image="myIdentification.image" width="56" height="56"
                class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600 object-cover w-12 max-w-none" />
-        <img v-else-if="ownerData[0] === 'session_Session'" src="/images/empty-user-photo.svg"
+        <img v-else-if="ownerData[0] === 'session_Session'" src="/images/empty-user-photo.svg" width="56" height="56"
              class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600 w-12 max-w-none" />
-        <img v-else :src="identiconUrl"
+        <img v-else :src="identiconUrl" width="56" height="56"
              class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600 w-12 max-w-none" />
       </span>
   </a>
   <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto
-             bg-surface-0 dark:bg-surface-950 dark:border-1 dark:border-surface-800
-             right-0 top-full z-5 shadow">
+              bg-surface-0 dark:bg-surface-950 dark:border-1 dark:border-surface-800
+              right-0 top-full z-5 shadow">
     <loading-zone suspense>
       <template v-slot:loading>
         <div class="flex items-center justify-center top-0 left-0 notifications-loading">
