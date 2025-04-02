@@ -247,13 +247,14 @@
       model[deviceType] = null
       return
     }
+    let savedDevice = null
     if(saved) {
       const parsed = JSON.parse(saved)
-      const exists = devices.find(device => device.deviceId === parsed.deviceId)
-        || devices.find(device => device.label === parsed.label)
-      if(exists) {
-        model[deviceType] = exists        
-      }
+      savedDevice = devices.find(device => device.deviceId === parsed.deviceId)
+        || devices.find(device => device.label === parsed.label)      
+    } 
+    if(savedDevice) {
+      model[deviceType] = savedDevice        
     } else {
       if(model[deviceType]) {
         const exists = devices.find(device => device.deviceId === model[deviceType].deviceId)
