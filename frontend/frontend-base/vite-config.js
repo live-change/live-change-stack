@@ -5,7 +5,8 @@ import { findFreePorts } from 'find-free-ports'
 import path from 'path'
 import vuePlugin from '@vitejs/plugin-vue'
 
-import tailwindcss from '@tailwindcss/vite'
+//import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from './tailwind-vite.ts'
 
 import Markdown from 'unplugin-vue-markdown/vite'
 import MarkdownItAnchor from 'markdown-it-anchor'
@@ -83,7 +84,33 @@ export default async ({ command, mode, version }, options = {
           }
         },
       }),
-      tailwindcss(),
+      tailwindcss({
+        sources: [
+          '@live-change/frontend-base/src',
+          '@live-change/access-control-frontend/src',
+          '@live-change/content-frontend/src',
+          '@live-change/blog-frontend/src',
+          '@live-change/image-frontend/src',
+          '@live-change/security-frontend/src',
+          '@live-change/upload-frontend/src',
+          '@live-change/url-frontend/src',
+          '@live-change/user-frontend/src',
+          '@live-change/wysiwyg-frontend/src',
+          '@live-change/flow-frontend/src',
+          '@live-change/task-frontend/src',
+          '@live-change/balance-frontend/src',
+          '@live-change/billing-frontend/src',
+          '@live-change/survey-frontend/src',
+          '@live-change/peer-connection-frontend/src',
+          '@live-change/video-call-frontend/src',
+          '@live-change/frontend-auto-form/src',
+          '@live-change/db-web/src',          
+        ].map(p => ({
+          base: path.dirname(fileURLToPath(import.meta.resolve(p))),
+          pattern: '**/*.{vue,css,scss,sass,less,styl,md}',
+          negated: false
+        }))
+      }),
       Markdown({
         headEnabled: true,
         markdownItOptions: {
