@@ -1,6 +1,6 @@
 {
   "name": "@live-change/server",
-  "version": "0.9.60",
+  "version": "0.9.61",
   "description": "Live Change Framework - server",
   "main": "index.js",
   "scripts": {
@@ -22,12 +22,12 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao": "^0.9.60",
-    "@live-change/dao-sockjs": "^0.9.60",
-    "@live-change/db-server": "^0.9.60",
-    "@live-change/framework": "^0.9.60",
+    "@live-change/dao": "^0.9.61",
+    "@live-change/dao-sockjs": "^0.9.61",
+    "@live-change/db-server": "^0.9.61",
+    "@live-change/framework": "^0.9.61",
     "@live-change/sockjs": "0.4.1",
-    "@live-change/uid": "^0.9.60",
+    "@live-change/uid": "^0.9.61",
     "dotenv": "^16.4.4",
     "express": "^4.18.2",
     "express-static-gzip": "2.1.7",
