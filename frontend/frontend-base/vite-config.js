@@ -106,11 +106,18 @@ export default async ({ command, mode, version }, options = {
           '@live-change/video-call-frontend/src',
           '@live-change/frontend-auto-form/src',
           '@live-change/db-web/src',          
-        ].map(p => ({
-          base: path.dirname(fileURLToPath(import.meta.resolve(p))),
-          pattern: '**/*.{vue,css,scss,sass,less,styl,md}',
-          negated: false
-        }))
+        ].map(p => {
+          try {
+            return {
+              base: path.dirname(fileURLToPath(import.meta.resolve(p))),
+              pattern: '**/*.{vue,css,scss,sass,less,styl,md}',
+              negated: false
+            }
+          } catch (e) {
+            // ignore import errors
+            return null
+          }  
+        }).filter(Boolean)
       }),
       Markdown({
         headEnabled: true,
