@@ -53,6 +53,7 @@ definition.processor(function(service, app) {
             name: viewName,
             access(params, context) {
               if(!context.client.user) return false
+              if(context.visibilityTest) return true
               return config.userReadAccess ? config.userReadAccess(params, context) : true
             },
             properties: App.rangeProperties,
@@ -60,7 +61,26 @@ definition.processor(function(service, app) {
               return modelRuntime().sortedIndexRangePath('byUser' + sortFieldUc, [client.user], range )
             }
           })
-        }
+        }        
+      }
+
+      if(config.userReadAccess) {
+        const viewName = 'myUser' + modelName
+        service.views[viewName] = new ViewDefinition({
+          name: viewName,
+          async access(params, context) {          
+            if(!context.client.user) return false
+            if(context.visibilityTest) return true
+            const data = await modelRuntime().get(params[modelPropertyName])
+            if(data.user !== context.client.user) return false
+            return config.userReadAccess ? config.userReadAccess(params, context) : true
+          },
+          properties: App.rangeProperties,
+          daoPath(params, { client, context }) {
+            const path = modelRuntime().path(params[modelPropertyName])
+            return path
+          }
+        }) 
       }
 
       if(config.userCreateAccess || config.userWriteAccess) {

@@ -176,6 +176,28 @@ definition.processor(function(service, app) {
         }
       }
 
+      if(config.ownerReadAccess) {
+        const viewName = 'my' + modelName
+        service.views[viewName] = new ViewDefinition({
+          name: viewName,
+          async access(params, context) {          
+            if(context.visibilityTest) return true
+            const data = await modelRuntime().get(params[modelPropertyName])
+            if (data.sessionOrUserType === 'user_User') {
+              if (data.sessionOrUser !== context.client.user) return false
+            } else if (data.sessionOrUserType === 'session_Session') {
+              if (data.sessionOrUser !== context.client.session) return false
+            }
+            return config.userReadAccess ? config.userReadAccess(params, context) : true
+          },
+          properties: App.rangeProperties,
+          daoPath(params, { client, context }) {
+            const path = modelRuntime().path(params[modelPropertyName])
+            return path
+          }
+        }) 
+      }
+
       if(config.ownerCreateAccess || config.ownerWriteAccess) {
         const eventName = modelName + 'Created'
         const actionName = 'createMy' + modelName

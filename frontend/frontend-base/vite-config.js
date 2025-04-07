@@ -6,7 +6,8 @@ import path from 'path'
 import vuePlugin from '@vitejs/plugin-vue'
 
 //import tailwindcss from '@tailwindcss/vite'
-import tailwindcss from './tailwind-vite.ts'
+import { tsImport } from 'tsx/esm/api'
+const tailwindcss = (await tsImport('./tailwindcss-vite.ts', import.meta.url)).default
 
 import Markdown from 'unplugin-vue-markdown/vite'
 import MarkdownItAnchor from 'markdown-it-anchor'
