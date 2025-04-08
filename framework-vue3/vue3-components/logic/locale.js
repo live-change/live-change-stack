@@ -38,7 +38,10 @@ export class Locale {
       nonEmptyObject(this.localeRef.value?.capturedRelativeTime)
       ?? new Intl.RelativeTimeFormat().resolvedOptions()
     )
-    this.timezoneOffset = computed(() => getTimeZoneOffset(new Date(), this.dateTime.value?.timeZone))
+    this.timezoneOffset = computed(() => 
+      getTimeZoneOffset(new Date(), this.dateTime.value?.timeZone)
+      - getTimeZoneOffset(new Date(), undefined) // server timezone offset
+    )
 
   }
 
@@ -157,7 +160,7 @@ export class Locale {
 }
 
 function getTimeZoneOffset(d, tz) {
-  const a = d.toLocaleString("ja", {timeZone: tz}).split(/[/\s:]/)
+  const a = d.toLocaleString("ja", { timeZone: tz }).split(/[/\s:]/)
   a[1]--
   const t1 = Date.UTC.apply(null, a)
   const t2 = new Date(d).setMilliseconds(0)
