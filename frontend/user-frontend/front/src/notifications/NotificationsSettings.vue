@@ -4,8 +4,8 @@
       <div>
         <h1>Notifications settings</h1>
       </div>
-      <pre>{{ settings }}</pre>
-      <pre>{{ clientConfig }}</pre>
+<!--       <pre>{{ settings }}</pre>
+      <pre>{{ clientConfig }}</pre> -->
       <div v-for="notificationType in settings">
         <div>
           <h2>{{ t(`notifications.types.${notificationType.type}.name`) }}</h2>

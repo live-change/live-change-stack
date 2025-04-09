@@ -59,10 +59,15 @@ class Services {
           const definition = module
           this.plugins.push(definition)
         } else {
-          const entryFile = await this.getServiceEntryFile(plugin)
-          debug("PLUGIN", plugin, 'ENTRY FILE', entryFile)
-          const module = await import(entryFile)
-          this.plugins.push(module.default)
+          try {
+            const entryFile = await this.getServiceEntryFile(plugin)
+            debug("PLUGIN", plugin, 'ENTRY FILE', entryFile)
+            const module = await import(entryFile)
+            this.plugins.push(module.default)
+          } catch(e) {
+            console.error("ERROR LOADING PLUGIN", plugin)
+            throw e
+          }
         }
       }
     }
@@ -74,15 +79,20 @@ class Services {
           this.serviceDefinitions.push(definition)
           //console.log("SERVICE DEFINITION", definition, "OF", service)
         } else {
-          const entryFile = await this.getServiceEntryFile(service)
-          debug("SERVICE", service, 'ENTRY FILE', entryFile)
-          const module = await import(entryFile)
-          const definition = module.default
-          if (definition.name !== service.name) {
-            console.error("SERVICE", service, "NAME", service.name, "MISMATCH", definition.name)
-            process.exit(1)
+          try {
+            const entryFile = await this.getServiceEntryFile(service)
+            debug("SERVICE", service, 'ENTRY FILE', entryFile)
+            const module = await import(entryFile)
+            const definition = module.default
+            if (definition.name !== service.name) {
+              console.error("SERVICE", service, "NAME", service.name, "MISMATCH", definition.name)
+              process.exit(1)
+            }
+            this.serviceDefinitions.push(definition)
+          } catch(e) {
+            console.error("ERROR LOADING SERVICE", service)
+            throw e
           }
-          this.serviceDefinitions.push(definition)
         }
       }
     }

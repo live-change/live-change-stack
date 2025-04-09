@@ -1,7 +1,7 @@
 <template>
   <div class="w-full lg:w-6/12 md:w-9/12">
 
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="localeSettings">
       <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Locale settings</div>
 
       <command-form service="localeSettings" action="setOrUpdateMyLocaleSettings"
@@ -54,7 +54,7 @@
   const toast = useToast()
 
   import { useI18n } from 'vue-i18n'
-  const { t, availableLocales, locale, getLocaleMessage } = useI18n()
+  const { t, availableLocales, getLocaleMessage } = useI18n()
 
   function languageLabel(option) {
     console.log("LANGUAGE LABEL", option)
