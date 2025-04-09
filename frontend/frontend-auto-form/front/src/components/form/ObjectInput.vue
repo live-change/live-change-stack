@@ -18,11 +18,12 @@
         }
       }
     }">
-      <ObjectPicker />
+      <ObjectPicker v-model="model" :definition="definition" :properties="properties" />
     </Popover>
 
     <!-- needed to autoload styles: -->
     <Select class="hidden" />
+
   </div>
 </template>
 
@@ -49,7 +50,7 @@
     required: true
   })
 
-  const { value, definition, modelValue } = toRefs(props)
+  const { definition, properties } = toRefs(props)
 
   const objectPickerPopover = ref()
   const selectElement = ref()

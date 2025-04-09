@@ -55,6 +55,7 @@
         </template>
       </range-viewer>
     </div>
+    
     <div v-else class="flex items-start p-6 bg-pink-100 rounded-border border border-pink-300 mb-6">
       <i class="pi pi-times-circle text-pink-900 text-2xl mr-4" />
       <div class="mr-4">
@@ -124,6 +125,12 @@
   })
   const { service, model, identifiers, view } = toRefs(props)
 
+  const identifiersArray = computed(() => {
+    const idents = identifiers.value
+    if(!Array.isArray(idents)) return [idents]
+    return idents
+  })
+
   import AutoObjectIdentification from './AutoObjectIdentification.vue'
 
   const ObjectIdentification = computed(() =>
@@ -157,8 +164,7 @@
     const rangeView = config.view
     if(!path[config.service]) return null
     if(!path[config.service][rangeView]) return null
-    let idents = identifiers.value
-    if(!Array.isArray(idents)) idents = [idents]
+    const idents = identifiersArray.value
     return idents.map(ident => (range) =>  path[config.service][rangeView]({
       ...ident,
       ...(config.reverse ? reverseRange(range) : range),
@@ -208,7 +214,10 @@
     params: {
       serviceName: service.value,
       modelName: model.value,
-      identifiers: Object.values(identifiers.value[0])
+      identifiers: Object.values(identifiersArray.value.reduce((acc, ident) => ({
+        ...acc,
+        ...ident
+      }), {}))
     }
   }))
 

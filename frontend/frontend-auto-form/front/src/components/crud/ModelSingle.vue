@@ -138,13 +138,19 @@
       definition: modelDefinition.value,
     }
   })
+
+  const identifiersArray = computed(() => {
+    const idents = identifiers.value
+    if(!Array.isArray(idents)) return [idents]
+    return idents
+  })
+
   const modelsPaths = computed(() => {
     const config = modelsPathConfig.value
     const readView = config.definition?.crud?.read
     if(!path[config.service]) return null
     if(!path[config.service][readView]) return null
-    let idents = identifiers.value
-    if(!Array.isArray(idents)) idents = [idents]
+    const idents = identifiersArray.value
     return idents.map(ident => path[config.service][readView]({
       ...ident
     }))

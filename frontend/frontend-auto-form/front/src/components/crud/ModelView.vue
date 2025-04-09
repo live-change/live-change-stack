@@ -10,6 +10,8 @@
     <h4>object</h4>
     <pre>{{ object }}</pre>-->
 
+ 
+
     <div v-if="object">
       <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6">
 
