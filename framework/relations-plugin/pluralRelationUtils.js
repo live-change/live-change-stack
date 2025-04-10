@@ -24,7 +24,7 @@ function defineRangeView(config, context, external = true) {
     })
   }
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
-  model.crud.range = viewName
+  model.crud['rangeBy' + joinedOthersPropertyName[0].toUpperCase() + joinedOthersPropertyName.slice(1)] = viewName
   const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   if(viewName === 'companyOwnedProducts') {

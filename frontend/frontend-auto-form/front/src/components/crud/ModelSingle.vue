@@ -15,6 +15,8 @@
       </slot>
     </div>
 
+    <!-- <pre>{{  modelDefinition  }}</pre> -->
+
     <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border" v-if="modelsPaths">
       <div v-for="({ value: object }, index) in (modelsData ?? [])">
         <div v-if="!object" class="text-xl text-surface-800 dark:text-surface-50 my-1 mx-4">
@@ -105,12 +107,12 @@
       type: String,
       required: true,
     },
-    identifiers: {
+    views: {
       type: Object,
       default: () => ({})
     },
   })
-  const { service, model, identifiers } = toRefs(props)
+  const { service, model, views } = toRefs(props)
 
   import AutoObjectIdentification from './AutoObjectIdentification.vue'
 
@@ -127,8 +129,13 @@
   const api = useApi()
   const path = usePath()
 
+  const serviceDefinition = computed(() => {
+    const serviceDefinition = api.metadata.api.value.services.find(s => s.name === service.value)
+    return serviceDefinition
+  })
+
   const modelDefinition = computed(() => {
-    return api.services?.[service.value]?.models?.[model.value]
+    return serviceDefinition.value.models[model.value]
   })
 
   const modelsPathConfig = computed(() => {
@@ -139,20 +146,25 @@
     }
   })
 
-  const identifiersArray = computed(() => {
-    const idents = identifiers.value
-    if(!Array.isArray(idents)) return [idents]
-    return idents
+  const modelsPathRangeConfig = computed(() => {
+    return {
+      service: service.value,
+      model: model.value,
+      //definition: modelDefinition.value,
+      reverse: true,
+      views: views.value.map(view => ({
+        ...view,
+        view: modelDefinition.value?.crud?.[view.name]
+      }))
+    }
   })
-
   const modelsPaths = computed(() => {
-    const config = modelsPathConfig.value
-    const readView = config.definition?.crud?.read
+    const config = modelsPathRangeConfig.value    
     if(!path[config.service]) return null
-    if(!path[config.service][readView]) return null
-    const idents = identifiersArray.value
-    return idents.map(ident => path[config.service][readView]({
-      ...ident
+    const views = config.views
+    const serviceViews = serviceDefinition.value.views
+    return views.map(view => serviceViews[view.view] && path[config.service][view.view]({
+      ...view.identifiers,
     }))
   })
 

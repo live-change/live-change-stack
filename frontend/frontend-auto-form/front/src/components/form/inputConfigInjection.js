@@ -8,7 +8,7 @@ export function provideInputConfig(description, inputConfig) {
   for(let key in description) {
     for(let value of (description[key] instanceof Array ? description[key] : [description[key]])) {
       const provideKey = `input:${key}=${value}`
-      console.log("PROVIDE COMPONENT", provideKey)
+      //console.log("PROVIDE INPUT CONFIG", provideKey)
       provide(provideKey, {
         inputConfig,
         description
@@ -26,9 +26,9 @@ export function injectInputConfig(request, defaultInputConfig, factory) {
 
   for(let key in request) {
     const provideKey = `input:${key}=${request[key]}`
-    console.log("INJECT INPUT CONFIG PROVIDE KEY", provideKey)
+    //console.log("INJECT INPUT CONFIG PROVIDE KEY", provideKey)
     const entry = inject(provideKey, null)
-    console.log("RESOLVED INPUT CONFIG", entry)
+    //console.log("RESOLVED INPUT CONFIG", entry)
     if(!entry) continue
     let isValid = true
     for(let key in entry.description) {
@@ -37,7 +37,7 @@ export function injectInputConfig(request, defaultInputConfig, factory) {
         if(!value.includes(entry.description[key])) isValid = false
       } else if(value !== entry.description[key]) isValid = false
     }
-    console.log("RESOLVED COMPONENT VALID", isValid, filter(entry))
+    //console.log("RESOLVED COMPONENT VALID", isValid, filter(entry))
     if(isValid && filter(entry)) return entry.inputConfig
   }
   return factory ? defaultInputConfig() : defaultInputConfig

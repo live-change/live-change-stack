@@ -1,7 +1,7 @@
 import {
   defineProperties, defineIndex,
   processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl,
-  includeAccessRoles
+  includeAccessRoles, defineGlobalRangeView
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import App from '@live-change/framework'
@@ -47,31 +47,6 @@ function defineView(config, context, external) {
   })
 }
 
-function defineRangeView(config, context, external = true) {
-  const { service, modelRuntime, modelPropertyName, modelName, model } = context
-  const viewName = (config.prefix || '' ) + pluralize(config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
-  if(external) model.crud.range = viewName
-  service.views[viewName] = new ViewDefinition({
-    name: viewName,
-    properties: {
-      ...App.utils.rangeProperties
-    },
-    returns: {
-      type: Array,
-      of: {
-        type: model
-      }
-    },
-    internal: !external,
-    global: config.globalView,
-    access: external && config.readAllAccess,
-    daoPath(properties, { client, context }) {
-      const range = App.extractRange(properties)
-      const path = modelRuntime().rangePath(range)
-      return path
-    }
-  })
-}
 
 function defineCreatedEvent(config, context) {
   const {
@@ -392,7 +367,7 @@ export default function(service, app) {
     }
 
     defineView(config, context, config.readAccess || config.readAccessControl || config.writeAccessControl)
-    defineRangeView(config, context, config.readAllAccess)
+    defineGlobalRangeView(config, context, config.readAllAccess)
     /// TODO: multiple views with limited fields
 
     defineCreatedEvent(config, context)

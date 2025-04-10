@@ -103,7 +103,7 @@
 
   const definitionIf = computed(() => {
     if(definition.value?.if) {
-      if(definition.value?.if.function) {
+      if(definition.value?.if.function) {        
         return eval(`(${definition.value.if.function})`)
       } else {
         throw new Error('Unknown if type' + JSON.stringify(definition.value.if))
@@ -114,6 +114,9 @@
 
   const visible = computed(() => {
     if(!definition.value) return false
+    if(definition.value.type === 'type' && props.propName.endsWith('Type') && !definition.value.showType) {   
+      return false
+    }
     if(definitionIf.value) {
       return definitionIf.value({
         source: definition.value,

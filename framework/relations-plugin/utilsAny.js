@@ -39,15 +39,19 @@ export function generateAnyId(otherPropertyNames, properties) {
       .map(p => JSON.stringify(properties[p])).join(':')
 }
 
-export function defineAnyProperties(model, names) {
+export function defineAnyProperties(model, names, config) {
   const identifiers = {}
   for (let i = 0; i < names.length; i++) {
+    const possibleTypes = config[names[i]+'Types']
+    const possibleTypesNames = possibleTypes && possibleTypes.map(t => t.getTypeName ? t.getTypeName() : t)
     identifiers[names[i]+'Type'] = new PropertyDefinition({
-      type: String,
-      validation: ['nonEmpty']
+      type: 'type',
+      validation: ['nonEmpty'],
+      enum: possibleTypesNames
     })
     identifiers[names[i]] = new PropertyDefinition({
-      type: String,
+      types: possibleTypesNames,
+      type: 'any',
       validation: ['nonEmpty']
     })
   }

@@ -43,7 +43,7 @@ class ModelDefinition {
           indexes[indexName].function = `${this.indexes[indexName].function}`
         }
       }
-    }
+    }  
     const fixed = definitionToJSON(this, true)
     return {
       ...fixed,

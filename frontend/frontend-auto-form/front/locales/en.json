@@ -12,5 +12,12 @@
   },
   "autoform": {
     "addItem": "Add next item"
+  },
+  "objectPicker": {
+    "selectObjectType": "Select object type",
+    "currentType": "Select",
+    "fromService": "from",
+    "modelOption": "{model}",
+    "modelOptionWithService": "{service} - {model}"
   }
 }

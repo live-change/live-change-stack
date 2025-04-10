@@ -15,6 +15,12 @@ function getWhats(relations) {
   return relations.map(x => ensureArray(getWhat(x)))
 }
 
+function getPropertyNames(relation) {
+  if(typeof relation === 'string') return relation[0].toLowerCase() + relation.slice(1)
+  if(relation.propertyNames) return relation.propertyNames
+  return ensureArray(relation.what).map(x => x[0].toLowerCase() + x.slice(1))
+}
+
 export const relationTypes = {
   propertyOf: { singular: true, typed: true, owned: true },
   boundTo: { singular: true, typed: true, owned: false },
@@ -58,10 +64,12 @@ export function getForwardRelations(model, api = useApi()) {
     if(!Array.isArray(relations)) relations = [relations]
     for(const relation of relations) {
       const what = ensureArray(getWhat(relation))
+      const fields = ensureArray(getPropertyNames(relation))
       const result = {
         from: model,
         relation: type,
-        what
+        what,
+        fields
       }
       results.push(result)
     }
@@ -143,65 +151,101 @@ export function prepareObjectRelations(objectType, object, api = useApi()) {
     })
 
     if(anyRelationsTypes.includes(relation)) {
-      const identifiers = []
-      for(const field of fields) {
-        const possibleFieldTypes = (relationConfig[field+'Types'] ?? [])
-          .concat(relationConfig.parentsTypes ?? [])
-        if(possibleFieldTypes.length === 0 || possibleFieldTypes.includes(objectType)) {
-          identifiers.push({
-            [field+'Type']: objectType,
-            [field]: object
-          })
+      const views = []
+      const singular = relationTypes[relation].singular && fields.length < 2
+
+      if(singular) {
+        views.push({
+          name: 'read',
+          identifiers: {
+            [fields[0]+'Type']: objectType,
+            [fields[0]]: object
+          }
+        })
+      } else {
+        for(const field of fields) {      
+          const possibleFieldTypes = (relationConfig[field+'Types'] ?? [])
+            .concat(relationConfig.parentsTypes ?? [])
+          if(possibleFieldTypes.length === 0 || possibleFieldTypes.includes(objectType)) {
+            const name = 'rangeBy' + field[0].toUpperCase() + field.slice(1)
+            if(from.crud?.[name]) views.push({
+              name,
+              identifiers: {
+                [field+'Type']: objectType,
+                [field]: object
+              }
+            })
+          }
         }
       }
+      /* console.error("relation", relation, 'from', from, "type", relationTypes[relation],
+         "what", what, "fields", fields) */
       return {
         model: from.name,
         service: from.serviceName,
         fields,
         relation,
         what,
-        identifiers,
+        views,
         access,
-        singular: relationTypes[relation].singular && what.length < 2
+        singular
       }
     } else {
+      const views = []
       const singular = relationTypes[relation].singular && what.length < 2
-      const typeView = from.crud?.['rangeBy_'+objectType]
-        ? 'rangeBy_'+objectType
-        : undefined
-      const view = relationConfig?.view ?? (singular
-          ? undefined
-          : typeView
-      ) ?? undefined
-      const identifiers = []
+      const name = 'rangeBy_' + objectType
+      const typeView = from.crud?.[name]
+        ? name
+        : undefined        
       if(typeView) {
-        identifiers.push({
-          [model[0].toLowerCase() + model.slice(1)]: object
+        views.push({
+          name: typeView,
+          identifiers: {
+            [model[0].toLowerCase() + model.slice(1)]: object
+          }
         })
       } else {
         for(let i = 0; i < what.length; i++) {
           if(what[i] !== objectType) continue
           const propertyName = relationConfig.propertyNames?.[i]
             ?? model[0].toLowerCase() + model.slice(1)
-          identifiers.push({
-            [propertyName]: object
+          const name = 'rangeBy' + propertyName[0].toUpperCase() + propertyName.slice(1)          
+          if(!from.crud?.[name]) continue
+          views.push({
+            name,            
+            identifiers: {
+              [propertyName]: object
+            }
           })
         }
       }
-      console.log(objectType, "VIEW", view, from, singular)
+      console.log(objectType, "VIEWS", views, "FROM", from, "SINGULAR", singular)
       return {
         model: from.name,
         service: from.serviceName,
         fields,
         relation,
         what,
-        identifiers,
         access,
-        view,
+        views,
         singular
       }
     }
   })
 
   return preparedBackwardRelations
+}
+
+export function getAllPossibleTypes(api = useApi(), filter = () => true,) {  
+  return Object.entries(api.services).map(
+    ([serviceName, service]) => Object.values(service.models).filter(o => filter(o, service, serviceName)).map(
+      model => `${serviceName}_${model.name}`
+    ).flat()
+  ).flat()
+}
+
+export function getAllTypesWithCrud(crud, api = useApi()) {  
+  return getAllPossibleTypes(api, (model, service, serviceName) => {
+    if(model.crud?.[crud]) return true
+  })
 }

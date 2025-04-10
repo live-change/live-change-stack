@@ -38,7 +38,7 @@
 
       <div v-for="preparedRelation of visibleObjectRelations" class="mb-6">
         <ModelSingle :service="preparedRelation.service" :model="preparedRelation.model"
-                   :identifiers="preparedRelation.identifiers">
+                     :views="preparedRelation.views">
           <template #header>
             <div class="text-xl">
               <ObjectIdentification
@@ -56,7 +56,7 @@
 
       <div v-for="preparedRelation of visibleRangeRelations" class="mb-6">
         <ModelList :service="preparedRelation.service" :model="preparedRelation.model"
-                   :identifiers="preparedRelation.identifiers" :view="preparedRelation.view">
+                   :views="preparedRelation.views">
           <template #header>
             <div class="text-xl">
               <ObjectIdentification
@@ -93,7 +93,8 @@
 
     <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border">
 
-      <pre>{{ preparedRelations }}</pre>
+      <pre>visibleRangeRelations = {{ visibleRangeRelations }}</pre>
+      <pre>preparedRelations = {{ preparedRelations }}</pre>
 
       <div v-if="backwardRelations">
         <h4>Backward relations</h4>
@@ -104,9 +105,11 @@
         }}</pre>
       </div>
 
+
+      <pre>accessControlRoles = {{ accessControlRoles }}</pre>
+
     </div>
 
-    <pre>{{ accessControlRoles }}</pre>
 
   </div>
 </template>
@@ -168,7 +171,8 @@
     return api.services?.[service.value]?.models?.[model.value]
   })
 
-  import { getForwardRelations, getBackwardRelations, anyRelationsTypes, prepareObjectRelations } from '../../logic/relations.js'
+  import { getForwardRelations, getBackwardRelations, anyRelationsTypes, prepareObjectRelations } 
+    from '../../logic/relations.js'
   const forwardRelations = computed(() => getForwardRelations(modelDefinition.value, () => true, api))
   const backwardRelations = computed(() => getBackwardRelations(modelDefinition.value,  api))
 
@@ -194,11 +198,14 @@
     return prepareObjectRelations(objectType.value, object.value.to ?? object.value.id, api)
   })
 
-  const visibleRangeRelations = computed(() => preparedRelations.value.filter(preparedRelation => {
-    if(preparedRelation.view && preparedRelation.access.value[preparedRelation.view]) return true
-    if(preparedRelation.access.value.range) return true
-    return false
-  }))
+  const visibleRangeRelations = computed(() => preparedRelations.value.map(preparedRelation => {
+    const accessibleViews = preparedRelation.views.filter(view => preparedRelation.access.value[view.name])
+    if(accessibleViews.length === 0) return null
+    return {
+      ...preparedRelation,
+      views: accessibleViews
+    }
+  }).filter(x => x !== null))
 
   const visibleObjectRelations = computed(() => preparedRelations.value.filter(preparedRelation => {
     if(!preparedRelation.singular) return false

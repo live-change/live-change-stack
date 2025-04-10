@@ -71,10 +71,11 @@ function defineRangeViews(config, context, external = true) {
   for(const combination of identifierCombinations) {
     const propsUpperCase = combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
     const indexName = 'by' + combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
-    const viewName = combination[0][0].toLowerCase() + combination[0].slice(1) +
-        propsUpperCase.slice(1).join('And') + context.partialReverseRelationWord + pluralize(modelName)
-    console.log("DEFINE RANGE VIEW", viewName, combination)
+    const joinedCombinationName = combination[0][0].toLowerCase() + combination[0].slice(1) +
+        propsUpperCase.slice(1).join('And')        
+    const viewName = joinedCombinationName + context.partialReverseRelationWord + pluralize(modelName)   
     const identifiers = createIdentifiersProperties(combination)
+    model.crud['rangeBy' + joinedOthersClassName[0].toUpperCase() + joinedOthersClassName.slice(1)] = viewName
     service.view({
       name: viewName,
       properties: {

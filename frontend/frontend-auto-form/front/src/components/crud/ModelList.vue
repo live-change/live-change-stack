@@ -18,6 +18,9 @@
       </slot>
     </div>
 
+    <!-- <pre>modelsPathRangeConfig = {{ modelsPathRangeConfig }}</pre>
+    <pre>modelsPathRangeFunctions = {{ modelsPathRangeFunctions }}</pre> -->
+
     <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border" v-if="modelsPathRangeFunctions">
       <range-viewer v-for="(modelsPathRangeFunction, index) in modelsPathRangeFunctions"
                     :key="JSON.stringify(modelsPathRangeConfig)+index"
@@ -114,22 +117,18 @@
       type: String,
       required: true,
     },
-    identifiers: {
-      type: Object,
-      default: () => ({})
-    },
-    view: {
-      type: String,
-      default: undefined
+    views: {
+      type: Array,
+      default: () => ([]) // it can be array of identifiers or single identifier
     }
   })
-  const { service, model, identifiers, view } = toRefs(props)
+  const { service, model, views } = toRefs(props)
 
-  const identifiersArray = computed(() => {
-    const idents = identifiers.value
-    if(!Array.isArray(idents)) return [idents]
-    return idents
-  })
+  const viewsArray = computed(() => views.value?.length ? views.value : [{
+    name: 'range',
+    identifiers: {
+    }
+  }])
 
   import AutoObjectIdentification from './AutoObjectIdentification.vue'
 
@@ -146,27 +145,34 @@
   const api = useApi()
   const path = usePath()
 
+  const serviceDefinition = computed(() => {
+    const serviceDefinition = api.metadata.api.value.services.find(s => s.name === service.value)
+    return serviceDefinition
+  })
+
   const modelDefinition = computed(() => {
-    return api.services?.[service.value]?.models?.[model.value]
+    return serviceDefinition.value.models[model.value]
   })
 
   const modelsPathRangeConfig = computed(() => {
     return {
       service: service.value,
       model: model.value,
-      definition: modelDefinition.value,
+      //definition: modelDefinition.value,
       reverse: true,
-      view: modelDefinition.value?.crud?.[view.value ?? 'range']
+      views: viewsArray.value.map(view => ({
+        ...view,
+        view: modelDefinition.value?.crud?.[view.name]
+      }))
     }
   })
   const modelsPathRangeFunctions = computed(() => {
-    const config = modelsPathRangeConfig.value
-    const rangeView = config.view
+    const config = modelsPathRangeConfig.value    
     if(!path[config.service]) return null
-    if(!path[config.service][rangeView]) return null
-    const idents = identifiersArray.value
-    return idents.map(ident => (range) =>  path[config.service][rangeView]({
-      ...ident,
+    const views = config.views
+    const serviceViews = serviceDefinition.value.views
+    return views.map(view => (range) => serviceViews[view.view] && path[config.service][view.view]({
+      ...view.identifiers,
       ...(config.reverse ? reverseRange(range) : range),
     }))
   })
@@ -209,17 +215,19 @@
     }
   }
 
-  const createRoute = computed(() => ({
-    name: 'auto-form:editor',
-    params: {
-      serviceName: service.value,
-      modelName: model.value,
-      identifiers: Object.values(identifiersArray.value.reduce((acc, ident) => ({
-        ...acc,
-        ...ident
-      }), {}))
+  const createRoute = computed(() => {
+    const identifiersObject =  viewsArray?.value[0]?.identifiers
+    if(!identifiersObject) return null
+    const identifiers = Object.values(identifiersObject)
+    return {
+      name: 'auto-form:editor',
+      params: {
+        serviceName: service.value,
+        modelName: model.value,
+        identifiers     
+      }
     }
-  }))
+  })
 
   function deleteObject(event, object) {
     confirm.require({

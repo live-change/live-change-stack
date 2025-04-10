@@ -1,3 +1,5 @@
+import { defineGlobalRangeView } from './utils.js'
+
 import {
   defineAnyProperties, defineAnyIndexes,
   processModelsAnyAnnotation, addAccessControlAnyParents, generateAnyId, defineDeleteByOwnerEvents,
@@ -21,7 +23,7 @@ export default function(service, app) {
     context.relationWord = 'Item'
     context.reverseRelationWord = 'Owned'
 
-    context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
+    context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
     context.model.identifiers = [...Object.keys(context.identifiers), { name: context.modelPropertyName, field: 'id' }]
 
     addAccessControlAnyParents(context)
@@ -40,6 +42,8 @@ export default function(service, app) {
       config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
     /// TODO: multiple views with all properties combinations
     /// TODO: multiple views with limited fields
+
+    defineGlobalRangeView(config, context, config.readAllAccess)
 
     defineCreatedEvent(config, context)
     defineUpdatedEvent(config, context)

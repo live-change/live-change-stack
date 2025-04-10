@@ -1,7 +1,8 @@
 import {
   defineProperties, defineIndexes,
   processModelsAnnotation, addAccessControlParents,
-  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers,
+   defineGlobalRangeView
 } from './utils.js'
 
 import {
@@ -40,6 +41,8 @@ export default function(service, app) {
     defineRangeView(config, context,
       config.readAccess || config.readAccessControl || config.writeAccessControl)
     /// TODO: multiple views with limited fields
+
+    defineGlobalRangeView(config, context, config.readAllAccess)
 
     defineCreatedEvent(config, context)
     defineUpdatedEvent(config, context)

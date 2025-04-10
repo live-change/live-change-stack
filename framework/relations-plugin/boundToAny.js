@@ -19,7 +19,7 @@ export default function(service, app) {
     context.reverseRelationWord = 'Bound'
     context.partialReverseRelationWord = 'Bound'
 
-    defineAnyProperties(context.model, context.otherPropertyNames)
+    context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
     defineAnyTypeIndexes(config, context, context.otherPropertyNames.length === 1)
 

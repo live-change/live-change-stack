@@ -1,10 +1,11 @@
 <template>
   <template v-if="typeof identificationConfig === 'string'">
-    <span><i class="pi pi-box mr-1"></i>{{ objectData[identificationConfig] }}</span>
+    <span>
+      <i class="pi pi-box mr-2" style="font-size: 0.9em;"></i>{{ objectData[identificationConfig] }}
+    </span>    
   </template>
   <template v-else>
-    <span>
-      <i class="pi pi-box mr-1"></i>
+    <span>      
       <strong>{{ objectType }}</strong>: {{ object ?? objectData.to ?? objectData.id }}
     </span>
   </template>

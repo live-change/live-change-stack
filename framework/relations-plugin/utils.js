@@ -12,6 +12,8 @@ export {
   extractObjectData, extractIdentifiers
 } from './dataUtils.js'
 
+import pluralize from 'pluralize'
+
 export function extractIdParts(otherPropertyNames, properties) {
   const idParts = []
   for (const propertyName of otherPropertyNames) {
@@ -244,4 +246,30 @@ export function includeAccessRoles(model, access) {
   if(access.roles) {
     includeAccessRoles(model, access.roles)
   }
+}
+
+export function defineGlobalRangeView(config, context, external = true) {
+  const { service, modelRuntime, modelPropertyName, modelName, model } = context
+  const viewName = (config.prefix || '' ) + pluralize(config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
+  if(external) model.crud.range = viewName
+  service.views[viewName] = new ViewDefinition({
+    name: viewName,
+    properties: {
+      ...App.utils.rangeProperties
+    },
+    returns: {
+      type: Array,
+      of: {
+        type: model
+      }
+    },
+    internal: !external,
+    global: config.globalView,
+    access: external && config.readAllAccess,
+    daoPath(properties, { client, context }) {
+      const range = App.extractRange(properties)
+      const path = modelRuntime().rangePath(range)
+      return path
+    }
+  })
 }

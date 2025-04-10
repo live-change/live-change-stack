@@ -1,3 +1,5 @@
+import { defineGlobalRangeView } from './utils.js'
+
 import {
   defineAnyProperties, defineAnyIndexes,
   processModelsAnyAnnotation, generateAnyId, addAccessControlAnyParents,
@@ -32,7 +34,7 @@ export default function(service, app) {
 
     context.sameIdAsParent = true
 
-    context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
+    context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
     context.model.identifiers = Object.keys(context.identifiers)
 
     addAccessControlAnyParents(context)
@@ -42,6 +44,7 @@ export default function(service, app) {
     defineObjectView(config, context,
       config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl
     )
+
     defineRangeViews(config, context,
       config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl
     )
@@ -55,6 +58,8 @@ export default function(service, app) {
         }
       }
     }
+
+    defineGlobalRangeView(config, context, config.readAllAccess)
 
     defineSetEvent(config, context, generateAnyId)
     defineUpdatedEvent(config, context, generateAnyId)

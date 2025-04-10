@@ -35,7 +35,7 @@ function defineRangeView(config, context, external = true) {
   const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const viewName = joinedOthersPropertyName + context.reverseRelationWord + pluralize(modelName)
-  model.crud.range = viewName
+  model.crud['rangeBy' + joinedOthersClassName] = viewName
   service.view({
     name: viewName,
     properties: {

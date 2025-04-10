@@ -71,6 +71,8 @@ types.Boolean = inputs.switch = {
   fieldComponent: defineAsyncComponent(() => import('./SwitchField.vue')),
 }*/
 
+types.any = inputs.object = inputConfig(() => import('./ObjectInput.vue'))
+
 
 export function provideAutoInputConfiguration() {
   for(let type in types) {

@@ -1,4 +1,4 @@
-import { typeName } from "../utils.js"
+import { typeName, definitionToJSON } from "../utils.js"
 
 class PropertyDefinition {
 
@@ -31,8 +31,9 @@ class PropertyDefinition {
         properties[propName] = this.properties[propName].toJSON()
       }
     }
+    const fixed = definitionToJSON(this, true)
     let json = {
-      ...this,
+      ...fixed,
       type: typeName(this.type),
       properties
     }
@@ -42,7 +43,6 @@ class PropertyDefinition {
     if(this.items) {
       json.items = this.items.toJSON()
     }
-    
     return json
   }
 

@@ -1,7 +1,8 @@
 import {
   defineProperties, defineIndexes,
   processModelsAnnotation, generateId, addAccessControlParents,
-  defineDeleteByOwnerEvents, defineParentDeleteTriggers
+  defineDeleteByOwnerEvents, defineParentDeleteTriggers,
+  defineGlobalRangeView
 } from './utils.js'
 
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
@@ -51,6 +52,9 @@ export default function(service, app) {
         }
       }
     }
+
+    defineGlobalRangeView(config, context, config.readAllAccess)
+
 
     defineSetEvent(config, context, generateId)
     defineUpdatedEvent(config, context, generateId)

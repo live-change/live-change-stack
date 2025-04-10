@@ -16,23 +16,24 @@
     </div>
 
     <form v-if="editor" @submit="handleSave" @reset="handleReset">
-      <div v-for="identifier in modelDefinition.identifiers">
-        <template v-if="identifier.slice(-4) !== 'Type'">
+      <div v-for="identifier in modelDefinition.identifiers">        
+        <template v-if="(identifier.name ?? identifier).slice(-4) !== 'Type'">
           <div v-if="identifiers[identifier]" class="flex flex-col mb-3">        
-            <div class="min-w-[8rem] font-medium">{{ identifier }}</div>
+            <div class="min-w-[8rem] font-medium">{{ identifier.name ?? identifier }}</div>
             <div class="">
               <InjectedObjectIndentification
-                :type="identifiers[identifier+'Type'] ?? modelDefinition.properties[identifier].type"
-                :object="identifiers[identifier]"
+                :type="identifiers[(identifier.field ?? identifier)+'Type']
+                       ?? modelDefinition.properties[identifier.field ?? identifier].type"
+                :object="identifiers[identifier.field ?? identifier]"
               />
             </div>
           </div>      
           <div v-else class="flex flex-col mb-3">
             <auto-field :key="identifier"
-                  v-model="editor.value.value[identifier]"              
-                  :definition="modelDefinition.properties[identifier]"
-                  :label="identifier"
-                  :rootValue="props.rootValue" :propName="identifier"
+                  v-model="editor.value.value[identifier.field ?? identifier]"              
+                  :definition="modelDefinition.properties[identifier.field ?? identifier]"
+                  :label="identifier.name ?? identifier"
+                  :rootValue="props.rootValue" :propName="identifier.field ?? identifier"
                   :i18n="i18n"
                   class="col-span-12" />
           </div>
@@ -67,7 +68,7 @@
     },
     identifiers: {
       type: Object,
-      default: []
+      default: () => ({})
     },
     draft: {
       type: Boolean,

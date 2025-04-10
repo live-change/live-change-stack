@@ -19,7 +19,7 @@ export default function(service, app) {
     context.relationWord = 'Friend'
     context.reverseRelationWord = 'Related'
 
-    context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames)
+    context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
     defineAnyTypeIndexes(config, context, false)
 
