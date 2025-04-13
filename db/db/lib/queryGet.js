@@ -1,6 +1,6 @@
 import { TableWriter, LogWriter } from './queryUpdate.js'
 import { ChangeStream } from './ChangeStream.js'
-
+import { unitRange, rangeIntersection } from './utils.js'
 const maxGetLimit = 256
 
 class ObjectReader extends ChangeStream {
@@ -21,6 +21,12 @@ class ObjectReader extends ChangeStream {
   unobserve(obs) {}
   async get() {
     return await (await this.#table).objectGet(this.#id)
+  }
+  async rangeGet(range) {
+    return await (await this.#table).rangeGet(rangeIntersection(unitRange(this.#id), range))
+  }
+  range(range) {
+    return new RangeReader(this.#table, rangeIntersection(unitRange(this.#id), range))
   }
 }
 
@@ -44,6 +50,19 @@ class RangeReader extends ChangeStream {
   onDelete(cb) {}
   async get() {
     return await (await this.#table).rangeGet(this.#range)
+  }
+
+  async rangeGet(range) {
+    return await (await this.#table).rangeGet(rangeIntersection(this.#range, range))
+  }
+  range(range) {
+    return new RangeReader(this.#table, rangeIntersection(this.#range, range), this.#time)
+  }
+  object(id) {
+    return new ObjectReader(this.#table, id, this.#time)
+  }
+  objectGet(id) {
+    return this.#table.objectGet(id)
   }
 }
 
@@ -73,6 +92,9 @@ class TableReader extends ChangeStream {
     return results
   }
   unobserve(obs) {}
+  rangeGet(range) {
+    return new RangeReader(this.#table, range, this.#time)
+  }
   range(range) {
     return new RangeReader(this.#table, range, this.#time)
   }

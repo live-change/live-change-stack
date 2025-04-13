@@ -31,7 +31,7 @@ class ObjectObserver {
   }
   readPromise() {
     return this.#valuePromise
-  }
+  }  
 }
 
 class RangeObserver {
@@ -119,11 +119,12 @@ class Reader extends ChangeStream {
 class ObjectReader extends Reader {
   #table = null
   #id = null
-
-  constructor(queryReader, table, id) {
+  #tableReader = null
+  constructor(queryReader, table, id, tableReader) {
     super(queryReader)
     this.#table = table
     this.#id = id
+    this.#tableReader = tableReader
   }
   observableFactory() {
     return this.#table.objectObservable(this.#id)
@@ -132,19 +133,29 @@ class ObjectReader extends Reader {
     return this.startObserver((r) => new ObjectObserver(r, cb))
   }
   get() {
-    //console.log("OBJ GET", this.#table.name, this.#id)
     return this.#table.objectGet(this.#id)
+  }
+  async rangeGet(range) {
+    return this.#tableReader.rangeGet(rangeIntersection(unitRange(this.#id), range))
+  }
+  async objectGet(id) {
+    return this.#table.objectGet(id)
+  }
+  object(id) {
+    return this.#tableReader.object(id)
   }
 }
 
 class RangeReader extends Reader {
   #table = null
   #range = null
+  #tableReader = null 
 
-  constructor(queryReader, table, range) {
+  constructor(queryReader, table, range, tableReader) {
     super(queryReader)
     this.#table = table
     this.#range = range
+    this.#tableReader = tableReader
   }
   async observableFactory() {
     return await (await this.#table).rangeObservable(this.#range)
@@ -154,6 +165,15 @@ class RangeReader extends Reader {
   }
   async get() {
     return await (await this.#table).rangeGet(this.#range)
+  }
+  async rangeGet(range) {
+    return await this.#tableReader.rangeGet(rangeIntersection(this.#range, range))
+  }
+  async objectGet(id) {
+    return await this.#table.objectGet(id)
+  }
+  object(id) {
+    return this.#tableReader.object(id)
   }
 }
 
@@ -172,16 +192,19 @@ class TableReader extends Reader {
   onChange(cb) {
     return this.startObserver((r) => new RangeObserver(r, cb))
   }
+  async rangeGet(range) {
+    return await this.#table.rangeGet(range)
+  }
   range(range) {
     return this._queryReader.getExistingReaderOrCreate(this.#prefix+':'+JSON.stringify(range),
-        () => new RangeReader(this._queryReader, this.#table, range))
+        () => new RangeReader(this._queryReader, this.#table, range, this))
   }
   object(id) {
     return this._queryReader.getExistingReaderOrCreate(this.#prefix+'#'+id,
-        () => new ObjectReader(this._queryReader, this.#table, id))
+        () => new ObjectReader(this._queryReader, this.#table, id, this))
   }
-  objectGet(id) {
-    return this.#table.objectGet(id)
+  async objectGet(id) {
+    return await this.#table.objectGet(id)
   }
   async get(range = {}) {
     return await (await this.#table).rangeGet(range)

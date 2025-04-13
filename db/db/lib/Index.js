@@ -6,6 +6,7 @@ import queryGet from './queryGet.js'
 import profileLog from './profileLog.js'
 import nextTick from 'next-tick'
 import { ChangeStream } from './ChangeStream.js'
+import { rangeIntersection } from './utils.js'
 
 
 import Debug from 'debug'
@@ -37,6 +38,19 @@ class ObjectReader extends ChangeStream {
   async get() {
     return await (await this.tableReader.table).objectGet(this.id)
   }
+  async rangeGet(range) {
+    return await (await this.tableReader.table).rangeGet(rangeIntersection(unitRange(this.id), range))
+  }
+  range(range) {
+    return new RangeReader(this.tableReader, unitRange(this.id))
+  }
+  object(id) {  
+    return new ObjectReader(this.tableReader, id)
+  }
+  async objectGet(id) {
+    return await (await this.tableReader.table).objectGet(id)
+  }
+
   dispose() {}
 }
 
@@ -63,8 +77,20 @@ class RangeReader extends ChangeStream {
   async change(obj, oldObj, id, timestamp) {
     for(const callback of this.callbacks) await callback(obj, oldObj, id, timestamp)
   }
+  async rangeGet(range) {
+    return await (await this.tableReader.table).rangeGet(rangeIntersection(this.range, range))
+  }
+  range(range) {
+    return new RangeReader(this.tableReader, rangeIntersection(this.range, range))
+  }
   async get() {
     return await (await this.tableReader.table).rangeGet(this.range)
+  }
+  async objectGet(id) {
+    return await (await this.tableReader.table).objectGet(id)
+  }
+  object(id) {
+    return new ObjectReader(this.tableReader, id)
   }
 }
 
@@ -138,6 +164,9 @@ class TableReader extends ChangeStream {
     for(const callback of this.callbacks) await callback(obj, oldObj, id, timestamp)
     if(profileOp) await profileLog.end(profileOp)
   }
+  async rangeGet(range) {
+    return await this.table.rangeGet(range)
+  }
   range(range) {
     const key = JSON.stringify(range)
     let reader = this.rangeReaders.get(key)
@@ -148,6 +177,9 @@ class TableReader extends ChangeStream {
     }
     return reader
     return new RangeReader(this, range)
+  }
+  async objectGet(id) {
+    return await (await this.table).objectGet(id)
   }
   object(id) {
     let reader = this.objectReaders.get(id)

@@ -60,6 +60,7 @@ if(config.indexed) {
       const reindexerBucket = 128
 
       function indexEntry(parentType, childType, parent, child, property) {
+        output.debug('indexEntry', parentType, childType, parent, child, property)
         const indexPart = [parentType, parent, childType, child]
           .map(v => JSON.stringify(v)).join(':')
         return {
@@ -73,6 +74,7 @@ if(config.indexed) {
       }
 
       function indexEntryByProperty(childType, item, property) {
+        output.debug('indexEntryByProperty', childType, item, property)
         const value = item?.[property.property]
         if(!value) return
         const type = property.type || item[property.property + 'Type']
@@ -261,7 +263,8 @@ if(config.indexed) {
       /// reacting to index that are generated from childByParent index, because it will be updated later.
       await parentByChildIndex.onChange(async (entry, oldEntry) => {
         const anyEntry = entry || oldEntry
-        await propagateChange(!!entry, entry.parentType, entry.parent, entry.childType, entry.child, [anyEntry.property])
+        await propagateChange(!!entry, anyEntry.parentType, anyEntry.parent,
+                              anyEntry.childType, anyEntry.child, [anyEntry.property])
       })
     },
     parameters: {
@@ -270,8 +273,11 @@ if(config.indexed) {
     }
   })
 
+  //*
+
   definition.index({
     name: 'expandedRoles',
+    // index with redundant roles, one role from every source
     async function(input, output, { accessIndexName, publicAccessTableName, pathsIndexName }) {
       const bucketSize = 128
 
@@ -402,6 +408,7 @@ if(config.indexed) {
   })
 
   const roleByOwnerAndObjectIndex = definition.index({
+    // reduces expandedRoles
     name: 'roleByOwnerAndObject',
     async function(input, output, { expandedRolesIndexName }) {
       const expandedRolesIndex = await input.index(expandedRolesIndexName)
@@ -841,5 +848,7 @@ if(config.indexed) {
       }
     }
   })
+
+  //*/
   
 }

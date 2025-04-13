@@ -4,21 +4,44 @@ class ChangeStream {
   onChange() {
     throw new Error("abstract method - not implemented")
   }
-  to(output) {
-    return this.onChange((obj, oldObj, id, timestamp) => output.change(obj, oldObj, id, timestamp))
+  async rangeGet(range) {
+    throw new Error("abstract method - not implemented")
   }
+  range(range) {
+    throw new Error("abstract method - not implemented")
+  }
+  async objectGet(id) {
+    throw new Error("abstract method - not implemented")
+  }
+  object(id) {
+    throw new Error("abstract method - not implemented")
+  }
+  async to(output) {
+    return this.onChange(async (obj, oldObj, id, timestamp) => {
+      if(obj || oldObj) await output.change(obj, oldObj, id, timestamp)
+    })
+    await this.observerPromise
+  }  
   filter(func) {
     const pipe = new ChangeStreamPipe()
-    const observerPromise = this.onChange((obj, oldObj, id, timestamp) =>
-        pipe.change(obj && func(obj) ? obj : null, oldObj && func(oldObj) ? oldObj : null, id, timestamp))
+    const observerPromise = this.onChange(async (obj, oldObj, id, timestamp) => {
+      const newObj = obj && await func(obj)
+      const newOldObj = oldObj && await func(oldObj)
+      if(!(newObj || newOldObj)) return
+      pipe.change(newObj, newOldObj, id, timestamp)
+    })
     pipe.master = this
     pipe.observerPromise = observerPromise
     return pipe
   }
   map(func) {
     const pipe = new ChangeStreamPipe()
-    const observerPromise = this.onChange((obj, oldObj, id, timestamp) =>
-        pipe.change(obj && func(obj), oldObj && func(oldObj), id, timestamp))
+    const observerPromise = this.onChange(async (obj, oldObj, id, timestamp) => {
+      const newObj = obj && await func(obj)
+      const newOldObj = oldObj && await func(oldObj)
+      if(!(newObj || newOldObj)) return
+      pipe.change(newObj, newOldObj, id, timestamp)
+    })
     pipe.master = this
     pipe.observerPromise = observerPromise
     return pipe
@@ -40,6 +63,54 @@ class ChangeStream {
     })
     pipe.master = this
     pipe.observerPromise = observerPromise
+    return pipe
+  }
+  async readInBuckets(bucketCallback, bucketSize = 128) {
+    let position = ''
+    let readed = 0
+    do {
+      const bucket = await this.rangeGet({ gt: position, limit: bucketSize })
+      readed = bucket.length
+      if(!bucket.length) break
+      position = bucket[bucket.length - 1].id
+      await bucketCallback(bucket)
+    } while(readed === bucketSize)
+  }
+  cross(other, selfToRange, otherToRange, bucketSize = 128) { 
+    const pipe = new ChangeStreamPipe()
+    const observerPromise = this.onChange(async (obj, oldObj, id, timestamp) => {     
+      const otherRange = await selfToRange(obj || oldObj)
+      if(!otherRange) return // ignore
+      if(typeof otherRange === 'string') { // single id
+        const otherObj = await other.objectGet(otherRange)
+        await pipe.change([obj, otherObj], [oldObj, otherObj], [id, otherRange], timestamp)
+        return
+      }
+      await other.range(otherRange).readInBuckets(async bucket => {
+        for(const otherObj of bucket) {
+          const otherId = otherObj.id
+          await pipe.change([obj, otherObj], [oldObj, otherObj], [id, otherId], timestamp)
+        }
+      }, bucketSize)
+    })
+    const otherObserverPromise = other.onChange(async (otherObj, oldOtherObj, id, timestamp) => {
+      const selfRange = await otherToRange(otherObj || oldOtherObj)      
+      if(!selfRange) return // ignore
+      const otherId = id
+      if(typeof selfRange === 'string') { // single id
+        const obj = await this.objectGet(selfRange)
+        await pipe.change([obj, otherObj], [obj, oldOtherObj], [selfRange, otherId], timestamp)
+        return
+      }
+      await this.range(selfRange).readInBuckets(async bucket => {
+        for(const obj of bucket) {
+          const id = obj.id
+          await pipe.change([obj, otherObj], [obj, oldOtherObj], [id, otherId], timestamp)
+        }
+      }, bucketSize)    
+    })
+    pipe.master = this
+    pipe.observerPromise = Promise.all([observerPromise, otherObserverPromise])
     return pipe
   }
 }
