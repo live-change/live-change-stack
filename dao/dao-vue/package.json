@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.62"
+    "@live-change/dao": "0.9.62"
   },
   "type": "module",
   "description": "Vue.js integration for live-change dao",
@@ -32,5 +32,5 @@
   "scripts": {
     "compileTests": "webpack test/*.js tests-bundle.js"
   },
-  "gitHead": "1d8135f1ebce405263d84ef8f6d5559eb487466c"
+  "gitHead": "b1b605b7f1fa4fc3de4720afbb401e2cfff080cf"
 }

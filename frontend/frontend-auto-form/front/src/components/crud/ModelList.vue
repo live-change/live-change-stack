@@ -130,7 +130,7 @@
     }
   }])
 
-  import AutoObjectIdentification from './AutoObjectIdentification.vue'
+  import AutoObjectIdentification from './DefaultObjectIdentification.vue'
 
   const ObjectIdentification = computed(() =>
     injectComponent({

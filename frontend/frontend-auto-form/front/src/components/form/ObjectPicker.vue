@@ -76,7 +76,7 @@
 
 <script setup>
   import Select from 'primevue/select'
-  import AutoObjectIdentification from '../crud/AutoObjectIdentification.vue'
+  import AutoObjectIdentification from '../crud/DefaultObjectIdentification.vue'
   import { RangeViewer, injectComponent } from "@live-change/vue3-components"
 
   import { defineProps, defineEmits, toRefs, ref, defineModel, computed, useId } from 'vue'

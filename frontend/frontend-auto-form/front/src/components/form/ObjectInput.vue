@@ -47,7 +47,7 @@
   import Select from 'primevue/select'
   import Popover from 'primevue/popover'
   import ObjectPicker from './ObjectPicker.vue'
-  import AutoObjectIdentification from '../crud/AutoObjectIdentification.vue'
+  import AutoObjectIdentification from '../crud/DefaultObjectIdentification.vue'
   import { injectComponent } from "@live-change/vue3-components"
 
   import { defineProps, defineEmits, toRefs, ref, defineModel, computed } from 'vue'

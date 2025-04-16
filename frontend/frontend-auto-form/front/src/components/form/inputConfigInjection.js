@@ -55,7 +55,7 @@ export function inputConfig(src, config) {
 }
 
 import deepmerge from 'deepmerge'
-export function provideInputConfigByDefinition(definition) {
+export function injectInputConfigByDefinition(definition) {
   let baseConfig
   if(definition?.input && !baseConfig) baseConfig =
     injectInputConfig({ name: definition.input }, null)

@@ -50,7 +50,9 @@ class ObjectReader extends ChangeStream {
   async objectGet(id) {
     return await (await this.tableReader.table).objectGet(id)
   }
-
+  async count(range = {}) {
+    return await (await this.tableReader.table).countGet(rangeIntersection(unitRange(this.id), range))
+  }
   dispose() {}
 }
 
@@ -91,6 +93,9 @@ class RangeReader extends ChangeStream {
   }
   object(id) {
     return new ObjectReader(this.tableReader, id)
+  }
+  async count(range = {}) {
+    return await (await this.tableReader.table).countGet(rangeIntersection(this.range, range))
   }
 }
 
@@ -180,6 +185,9 @@ class TableReader extends ChangeStream {
   }
   async objectGet(id) {
     return await (await this.table).objectGet(id)
+  }
+  async count(range = {}) {
+    return await (await this.table).count(rangeIntersection(this.range, range))
   }
   object(id) {
     let reader = this.objectReaders.get(id)

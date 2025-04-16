@@ -16,6 +16,9 @@ class ChangeStream {
   object(id) {
     throw new Error("abstract method - not implemented")
   }
+  async count(range = {}) {
+    throw new Error("abstract method - not implemented")
+  }
   async to(output) {
     return this.onChange(async (obj, oldObj, id, timestamp) => {
       if(obj || oldObj) await output.change(obj, oldObj, id, timestamp)
@@ -111,6 +114,26 @@ class ChangeStream {
     })
     pipe.master = this
     pipe.observerPromise = Promise.all([observerPromise, otherObserverPromise])
+    return pipe
+  }
+  groupExisting(objectToRange) {
+    const pipe = new ChangeStreamPipe()
+    const observerPromise = this.onChange(async (obj, oldObj, id, timestamp) => {
+      const existingObj = obj || oldObj
+      let range = await objectToRange(existingObj)
+      if(!range) return
+      if(typeof range === 'string') {
+        range = { gte: range, lte: range + '\xFF\xFF\xFF\xFF' }
+      }
+      const count = await this.count(range)
+      if(count) {
+        await pipe.change(existingObj, null, id, timestamp)        
+      } else {
+        await pipe.change(null, existingObj, id, timestamp)
+      }
+    })
+    pipe.master = this
+    pipe.observerPromise = observerPromise
     return pipe
   }
 }

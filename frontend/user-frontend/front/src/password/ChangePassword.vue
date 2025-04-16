@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full lg:w-6/12 md:w-9/12">
+  <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]">
 
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div class="text-center mb-8">

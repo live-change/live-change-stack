@@ -34,6 +34,10 @@ import ModelList from './front/src/components/crud/ModelList.vue'
 export { ModelList }
 import EditorButtons from './front/src/components/crud/EditorButtons.vue'
 export { EditorButtons }
+import DefaultObjectIdentification from './front/src/components/crud/DefaultObjectIdentification.vue'
+export { DefaultObjectIdentification }
+import ObjectPath from './front/src/components/crud/ObjectPath.vue'
+export { ObjectPath }
 import AutoObjectIdentification from './front/src/components/crud/AutoObjectIdentification.vue'
 export { AutoObjectIdentification }
 

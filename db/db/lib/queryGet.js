@@ -28,6 +28,9 @@ class ObjectReader extends ChangeStream {
   range(range) {
     return new RangeReader(this.#table, rangeIntersection(unitRange(this.#id), range))
   }
+  async count(range = {}) {
+    return await this.#table.countGet(rangeIntersection(unitRange(this.#id), range))
+  }
 }
 
 class RangeReader extends ChangeStream {
@@ -61,8 +64,11 @@ class RangeReader extends ChangeStream {
   object(id) {
     return new ObjectReader(this.#table, id, this.#time)
   }
-  objectGet(id) {
-    return this.#table.objectGet(id)
+  async objectGet(id) {
+    return await (await this.#table).objectGet(id)
+  }
+  async count(range = {}) {
+    return await this.#table.countGet(rangeIntersection(this.#range, range))
   }
 }
 
@@ -92,7 +98,7 @@ class TableReader extends ChangeStream {
     return results
   }
   unobserve(obs) {}
-  rangeGet(range) {
+  async rangeGet(range) {
     return new RangeReader(this.#table, range, this.#time)
   }
   range(range) {
@@ -101,14 +107,11 @@ class TableReader extends ChangeStream {
   object(id) {
     return new ObjectReader(this.#table, id, this.#time)
   }
-  objectGet(id) {
-    return this.#table.objectGet(id)
-  }
-  async get(range = {}) {
-    return (await this.#table).rangeGet(range)
+  async objectGet(id) {
+    return await (await this.#table).objectGet(id)
   }
   async count(range = {}) {
-    return (await this.#table).countGet(range)
+    return await (await this.#table).countGet(range)
   }
 }
 

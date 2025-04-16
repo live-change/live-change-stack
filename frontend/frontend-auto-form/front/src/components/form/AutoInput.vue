@@ -41,8 +41,8 @@
 
   const { definition, modelValue, propName } = toRefs(props)
 
-  import { provideInputConfigByDefinition } from './inputConfigInjection.js'
-  const inputConfig = computed(() => provideInputConfigByDefinition(definition.value))
+  import { injectInputConfigByDefinition } from './inputConfigInjection.js'
+  const inputConfig = computed(() => injectInputConfigByDefinition(definition.value))
 
   const definitionIf = computed(() => {
     if(definition.value?.if) {

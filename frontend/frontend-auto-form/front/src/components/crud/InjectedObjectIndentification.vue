@@ -45,7 +45,7 @@
   })
   const { type, object, data, link, inline } = toRefs(props)
 
-  import AutoObjectIdentification from './AutoObjectIdentification.vue'
+  import AutoObjectIdentification from './DefaultObjectIdentification.vue'
 
   import { useApi, usePath, live } from '@live-change/vue3-ssr'
   const api = useApi()

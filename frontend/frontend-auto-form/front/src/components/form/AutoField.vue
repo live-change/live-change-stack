@@ -161,8 +161,8 @@
     && props.modelValue?.length < minLengthValidation.value.length
   )
 
-  import { provideInputConfigByDefinition } from './inputConfigInjection.js'
-  const inputConfig = computed(() => provideInputConfigByDefinition(definition.value))
+  import { injectInputConfigByDefinition } from './inputConfigInjection.js'
+  const inputConfig = computed(() => injectInputConfigByDefinition(definition.value))
 
   const label = computed(() => props.i18n + (props.label || definition.value.label || props.name))
 

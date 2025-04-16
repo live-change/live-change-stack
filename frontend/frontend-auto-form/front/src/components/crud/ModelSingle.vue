@@ -114,7 +114,7 @@
   })
   const { service, model, views } = toRefs(props)
 
-  import AutoObjectIdentification from './AutoObjectIdentification.vue'
+  import AutoObjectIdentification from './DefaultObjectIdentification.vue'
 
   const ObjectIdentification = computed(() =>
     injectComponent({

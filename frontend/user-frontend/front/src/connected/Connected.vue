@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full lg:w-6/12 md:w-9/12">
+  <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]">
 
     <ConfirmPopup v-if="isMounted" />
     <Toast v-if="isMounted" />

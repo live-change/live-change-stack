@@ -10,7 +10,7 @@
     <h4>object</h4>
     <pre>{{ object }}</pre>-->
 
- 
+    <ScopePath :objectType="service + '_' + model" :object="object.to ?? object.id" class="mb-6" />
 
     <div v-if="object">
       <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6">
@@ -127,6 +127,8 @@
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
   import { RangeViewer, injectComponent, InjectComponent } from "@live-change/vue3-components"
 
+  import ScopePath from './ObjectPath.vue'
+
   const props = defineProps({
     service: {
       type: String,
@@ -153,7 +155,7 @@
 
   const emit = defineEmits(['saved', 'draftSaved', 'draftDiscarded', 'saveError', 'created' ])
 
-  import AutoObjectIdentification from './AutoObjectIdentification.vue'
+  import AutoObjectIdentification from './DefaultObjectIdentification.vue'
   const ObjectIdentification = computed(() =>
     injectComponent({
       name: 'ObjectIdentification',

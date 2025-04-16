@@ -86,8 +86,8 @@
     return true
   })
 
-  import { provideInputConfigByDefinition } from './inputConfigInjection.js'
-  const inputConfig = computed(() => provideInputConfigByDefinition(definition.value))
+  import { injectInputConfigByDefinition } from './inputConfigInjection.js'
+  const inputConfig = computed(() => injectInputConfigByDefinition(definition.value))
 
   import { validateData } from "@live-change/vue3-components"
 

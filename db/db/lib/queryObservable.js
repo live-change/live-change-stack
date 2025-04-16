@@ -144,6 +144,9 @@ class ObjectReader extends Reader {
   object(id) {
     return this.#tableReader.object(id)
   }
+  async count(range = {}) {
+    return await this.#table.count(rangeIntersection(unitRange(this.#id), range))
+  }
 }
 
 class RangeReader extends Reader {
@@ -174,6 +177,9 @@ class RangeReader extends Reader {
   }
   object(id) {
     return this.#tableReader.object(id)
+  }
+  async count(range = {}) {
+    return await this.#table.count(rangeIntersection(this.#range, range))
   }
 }
 
