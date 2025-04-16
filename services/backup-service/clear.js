@@ -57,7 +57,7 @@ const clearQuery = `${async (input, output, { tableName, bucket, before }) => {
   const indexReader = await input.index(tableName + '_byTimestamp')
   const tableWriter = await output.table(tableName)
   const range = { limit: bucket, lt: before }
-  const pointers = await indexReader.get(range)
+  const pointers = await indexReader.rangeGet(range)
   for(const pointer of pointers) {
     await tableWriter.delete(pointer.to)
   }
