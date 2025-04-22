@@ -351,8 +351,8 @@ class Store {
     return observable
   }
 
-  rangeGet(range) {
-    if(!range) throw new Error("range not defined")
+  rangeGet(range) {  
+    if(!range) throw new Error("range not defined")      
     return new Promise((resolve, reject) => {
       let keys = []
       let data
@@ -378,6 +378,7 @@ class Store {
               if((!range.lt || found < range.lt) && (!range.lte || found <= range.lte)) {
                 // key in range, skip keys outside range
                 keys.push(found)
+                if(keys.length > 4096 && !range.limit) throw new Error("range limit not defined! too big range!")
               }
               found = cursor.goToPrev()
             }
@@ -393,6 +394,7 @@ class Store {
               if((!range.gt || found > range.gt) && (!range.gte || found >= range.gte)) {
                 // key in range, skip keys outside range
                 keys.push(found)
+                if(keys.length > 4096 && !range.limit) throw new Error("range limit not defined! too big range!")                  
               }
               //console.log("    GO TO NEXT [")
               found = cursor.goToNext()
@@ -464,6 +466,7 @@ class Store {
               if((!range.lt || found < range.lt) && (!range.lte || found <= range.lte)) {
                 // key in range, skip keys outside range
                 keys.push(found)
+                if(keys.length > 4096 && !range.limit) throw new Error("range limit not defined! too big range!")  
               }
               found = cursor.goToPrev()
             }
@@ -479,6 +482,7 @@ class Store {
               if((!range.gt || found > range.gt) && (!range.gte || found >= range.gte)) {
                 // key in range, skip keys outside range
                 keys.push(found)
+                if(keys.length > 4096 && !range.limit) throw new Error("range limit not defined! too big range!")  
               }
               //console.log("    GO TO NEXT [")
               found = cursor.goToNext()
@@ -544,6 +548,7 @@ class Store {
               if((!range.lt || found < range.lt) && (!range.lte || found <= range.lte)) {
                 // key in range, skip keys outside range
                 count ++
+                if(count > 4096 && !range.limit) throw new Error("range limit not defined! too big range!")
               }
               found = cursor.goToPrev()
             }
@@ -559,6 +564,7 @@ class Store {
               if((!range.gt || found > range.gt) && (!range.gte || found >= range.gte)) {
                 // key in range, skip keys outside range
                 count++
+                if(count > 4096 && !range.limit) throw new Error("range limit not defined! too big range!")
               }
               //console.log("    GO TO NEXT [")
               found = cursor.goToNext()

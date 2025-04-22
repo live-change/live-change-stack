@@ -19,7 +19,8 @@
     </div>
 
     <!-- <pre>modelsPathRangeConfig = {{ modelsPathRangeConfig }}</pre>
-    <pre>modelsPathRangeFunctions = {{ modelsPathRangeFunctions }}</pre> -->
+    <pre>modelsPathRangeFunctions = {{ modelsPathRangeFunctions }}</pre>
+    <pre>modelsPathRangeFunctionsResults = {{ modelsPathRangeFunctions.map(x => x({})) }}</pre> -->
 
     <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border" v-if="modelsPathRangeFunctions">
       <range-viewer v-for="(modelsPathRangeFunction, index) in modelsPathRangeFunctions"
@@ -176,6 +177,8 @@
       ...(config.reverse ? reverseRange(range) : range),
     }))
   })
+
+  console.log("modelsPathRangeFunctions", modelsPathRangeFunctions.value)
 
   function objectIdentifiers(object) {
     const identifiers = {}

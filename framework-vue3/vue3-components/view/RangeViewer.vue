@@ -50,7 +50,7 @@
 <script setup>
 
   import ScrollBorder from 'vue3-scroll-border'
-  import { ref, toRefs, defineProps, defineEmits, watch, computed } from 'vue'
+  import { ref, unref, toRefs, defineProps, defineEmits, watch, computed } from 'vue'
   import { rangeBuckets } from '@live-change/vue3-ssr'
 
   const props = defineProps({
@@ -163,7 +163,7 @@
 
   const itemsCount = computed(() => {
     if(!buckets.value) return 0
-    return buckets.value.buckets.reduce((acc, b) => acc + b.data.length, 0)
+    return buckets.value.buckets.reduce((acc, b) => acc + (unref(b.data)?.length ?? 0), 0)
   })
 
   if(props.buckets) {
@@ -199,10 +199,10 @@
     return props.canLoadTop && buckets.value.canLoadTop()
   }
   function canDropTop() {
-    return props.canDropTop && buckets.value.buckets.length > 2
+    return props.canDropTop && buckets.value.buckets && buckets.value.buckets.length > 2
   }
   function canDropBottom() {
-    return props.canDropBottom && buckets.value.buckets.length > 2
+    return props.canDropBottom && buckets.value.buckets && buckets.value.buckets.length > 2
   }
 
 

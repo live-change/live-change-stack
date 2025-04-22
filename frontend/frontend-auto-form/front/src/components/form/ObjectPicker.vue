@@ -45,6 +45,7 @@
             <div @click="selectObject(object)"
                 class="flex flex-row items-center justify-between my-1 py-2 px-4
                   bg-surface-100 dark:bg-surface-900 hover:bg-surface-200 dark:hover:bg-surface-800">
+              <!-- <pre>{{ object }}</pre> -->
               <ObjectIdentification
                 :objectType="selectedTypeService + '_' + selectedTypeModel"
                 :object="object.to ?? object.id"
@@ -79,7 +80,7 @@
   import AutoObjectIdentification from '../crud/DefaultObjectIdentification.vue'
   import { RangeViewer, injectComponent } from "@live-change/vue3-components"
 
-  import { defineProps, defineEmits, toRefs, ref, defineModel, computed, useId } from 'vue'
+  import { defineProps, defineEmits, toRefs, ref, defineModel, computed, useId, inject, unref } from 'vue'
   import pluralize from 'pluralize'
 
   const uid = useId()
@@ -210,28 +211,38 @@
 
   import { useApi, usePath, live, reverseRange } from '@live-change/vue3-ssr'
   const api = useApi()
-  const path = usePath()  
+  const path = usePath()
+
+  const scopePickerConfig = inject(`scopePickerConfig:${definition.value.source}`,
+    inject('scopePickerConfig', {
+      objectsPathRangeConfig: (service, model, definition, modelDefinition) => {
+        const rangeView = modelDefinition?.crud?.[view.value ?? 'range']
+        if(!rangeView) return null
+        if(!path[service]) return null
+        if(!path[service][rangeView]) return null
+        return {
+          service,
+          model,
+          reverse: true,
+          viewPath: (parameters) => path[service][rangeView](parameters),
+          parameters: {}
+        }
+      }
+    })
+  )
 
   const objectsPathRangeConfig = computed(() => {
     if(!selectedTypeParsed.value) return null
     const [service, model] = selectedTypeParsed.value
     const serviceDefinition = api.metadata.api.value.services.find(s => s.name === service)
     const modelDefinition = serviceDefinition.models[model]
-    return {
-      service,
-      model,
-      reverse: true,
-      view: modelDefinition?.crud?.[view.value ?? 'range']
-    }
+    return unref(scopePickerConfig.objectsPathRangeConfig(service, model, definition.value, modelDefinition))
   })
   const objectsPathRangeFunction = computed(() => {
     const config = objectsPathRangeConfig.value
-    if(!config) return null
-    const rangeView = config.view
-    if(!path[config.service]) return null
-    if(!path[config.service][rangeView]) return null    
-    return (range) =>  path[config.service][rangeView]({
-      //...ident,
+    if(!config) return null 
+    return (range) => config.viewPath({
+      ...config.parameters,
       ...(config.reverse ? reverseRange(range) : range),
     })
   })

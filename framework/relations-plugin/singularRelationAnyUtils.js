@@ -370,6 +370,7 @@ function defineResetTrigger(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
   } = context
   const actionName = 'reset' + modelName
+  model.crud.reset = actionName
   const triggerName = `${service.name}_${actionName}`
   service.triggers[triggerName] = [new TriggerDefinition({
     name: triggerName,
@@ -387,7 +388,7 @@ function defineDeleteAction(config, context) {
     service, modelRuntime, modelPropertyName, identifiers, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
   } = context
-  const actionName = 'reset' + modelName
+  const actionName = 'delete' + modelName
   model.crud.delete = actionName
   const sourceAccessControl = config.resetAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(
@@ -414,7 +415,7 @@ function defineDeleteTrigger(config, context) {
     service, modelRuntime, modelPropertyName, identifiers, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
   } = context
-  const actionName = 'reset' + modelName
+  const actionName = 'delete' + modelName
   const triggerName = `${service.name}_${actionName}`
   service.triggers[triggerName] = [new TriggerDefinition({
     name: triggerName,

@@ -6,10 +6,15 @@
     <pre>selectedPaths = {{ selectedPaths }}</pre>
     <pre>selectedPathWithElements = {{ selectedPathWithElements }}</pre> -->
     <div v-for="path in selectedPathsWithElements" :key="path">
-      <Breadcrumb :model="path">
+      <Breadcrumb :model="more ? [...path, 'dupa'] : path">
         <template #item="{ item }">          
-          <AutoObjectIdentification :objectType="item.objectType" :object="item.object" 
-            :link="item.object !== object && item.objectType !== objectType" />
+          <div>
+            <slot v-if="typeof item === 'string'" name="more">
+              more...            
+            </slot>
+            <AutoObjectIdentification v-else :objectType="item.objectType" :object="item.object" 
+              :link="more || (item.object !== object && item.objectType !== objectType)" />
+          </div>
         </template>
       </Breadcrumb>
     </div>
@@ -29,9 +34,13 @@
     object: { 
       type: String,
       required: true
+    },
+    more: {
+      type: Boolean,
+      default: false
     }
   })
-  const { objectType, object } = toRefs(props)
+  const { objectType, object, more } = toRefs(props)
 
   import { usePath, live } from '@live-change/vue3-ssr'
   const path = usePath()
@@ -74,30 +83,35 @@
     return elements
   }
 
-  const scopePathConfig = inject('scopePathConfig', {
-    scopeType: undefined,
-    scope: undefined,
-    scopeSelector: longestByType,
-    pathsPath: (objectType, object, config) => path.scope.objectScopePaths({
-      objectType, object,
-      scopeType: config.scopeType,
-      scope: config.scope
-    }),
-    pathElements: scopePathElements
-  })
+  const objectPathConfig = inject(`objectPathConfig:${objectType.value}`,
+    inject('objectPathConfig', {
+      scopeType: undefined,
+      scope: undefined,
+      scopeSelector: longestByType,
+      pathsPath: (objectType, object, config) => path.scope.objectScopePaths({
+        objectType, object,
+        scopeType: config.scopeType,
+        scope: config.scope
+      }),
+      pathElements: scopePathElements
+    })
+  )
 
-  const pathsPath = computed(() => scopePathConfig.pathsPath(objectType.value, object.value, scopePathConfig))
+  console.log('objectPathConfig', objectPathConfig.value)
+
+
+  const pathsPath = computed(() => objectPathConfig.pathsPath(objectType.value, object.value, objectPathConfig))
 
   const [paths] = await Promise.all([
     live(pathsPath)
   ])
 
   const selectedPaths = computed(() => {
-    return scopePathConfig.scopeSelector(paths.value)
+    return objectPathConfig.scopeSelector(paths.value)
   })
 
   const selectedPathsWithElements = computed(
-    () => selectedPaths.value.map(scopePath => scopePathConfig.pathElements(scopePath))
+    () => selectedPaths.value.map(scopePath => objectPathConfig.pathElements(scopePath))
   )
 
 

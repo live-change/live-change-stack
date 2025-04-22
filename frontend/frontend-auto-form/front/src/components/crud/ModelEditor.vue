@@ -5,6 +5,23 @@
       <h4>definition</h4>
       <pre>{{ modelDefinition }}</pre>
 -->
+    <div v-if="editor && editor.saved?.value?.id" >
+      <ObjectPath :objectType="service + '_' + model" :object="editor?.saved?.value?.id" class="mb-6" />
+    </div>
+    <div v-else-if="editor && !editor.saved?.value">      
+      <div v-for="parentObject in parentObjects">
+        <ObjectPath :objectType="parentObject.objectType" :object="parentObject.object" 
+                    class="mb-6" more>
+          <template #more="slotProps">
+            New {{ model }}
+          </template>
+        </ObjectPath>
+      </div>
+    </div>
+
+    <pre>parentObjects = {{ parentObjects }}</pre>
+    <pre>scopesPath = {{ scopesPath }}</pre>
+    <pre>scopes = {{ scopes }}</pre>
 
     <div class="">
       Service <strong>{{ service }}</strong>
@@ -55,7 +72,9 @@
   import EditorButtons from './EditorButtons.vue'
   import AutoField from "../form/AutoField.vue"
 
-  import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
+  import ObjectPath from './ObjectPath.vue'
+
+  import { ref, computed, onMounted, defineProps, defineEmits, toRefs, inject, provide } from 'vue'
 
   const props = defineProps({
     service: {
@@ -94,6 +113,9 @@
   const modelDefinition = computed(() => {
     return api.services?.[service.value]?.models?.[model.value]
   })
+
+  import { parentObjectsFromIdentifiers } from '../../logic/relations.js'
+  const parentObjects = computed(() => parentObjectsFromIdentifiers(identifiers.value, modelDefinition.value))
 
   import { editorData } from "@live-change/frontend-auto-form"
   import { computedAsync } from "@vueuse/core"
@@ -141,6 +163,35 @@
     }
     emit('saved', saveResult)
   }
+
+  const scopesPath = computed(() => path.scope.objectScopes({
+    objectType: parentObjects.value[0].objectType, /// TODO: support multiple parent objects!
+    object: parentObjects.value[0].object
+  }))
+
+  const [scopes] = await Promise.all([
+    live(scopesPath)
+  ])
+
+  console.log("SCOPES", scopes)
+  provide('scopePickerConfig', {
+    objectsPathRangeConfig: (service, model, definition, modelDefinition) => computed(() => {      
+      const scopeType = scopes.value[0].scopeType // TODO: support multiple scopes!
+      const scope = scopes.value[0].scope
+      return {
+        service,
+        model,
+        reverse: true,
+        viewPath: (range) => path.scope.scopeObjects({
+          scopeType,
+          scope,
+          objectType: `${service}_${model}`,
+          ...range  
+        }),
+        parameters: {}
+      }      
+    })
+  }) 
 
 </script>
 

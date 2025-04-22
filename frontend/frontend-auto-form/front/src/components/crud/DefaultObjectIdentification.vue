@@ -6,7 +6,7 @@
   </template>
   <template v-else>
     <span>      
-      <strong>{{ objectType }}</strong>: {{ object ?? objectData.to ?? objectData.id }}
+      <strong>{{ objectType }}</strong>: {{ object ?? objectData?.to ?? objectData?.id }}
     </span>
   </template>
 </template>
@@ -40,11 +40,12 @@
   const path = usePath()
 
   const serviceAndModel = computed(() => {
+    if(!objectType.value) return null
     const [service, model] = objectType.value.split('_')
     return { service, model }
   })
-  const service = computed(() => serviceAndModel.value.service)
-  const model = computed(() => serviceAndModel.value.model)
+  const service = computed(() => serviceAndModel.value?.service)
+  const model = computed(() => serviceAndModel.value?.model)
 
   const modelDefinition = computed(() => {
     return api.services?.[service.value]?.models?.[model.value]

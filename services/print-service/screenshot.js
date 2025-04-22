@@ -71,7 +71,7 @@ export const screenshotToFileTask = task({
       await page.goto(url)
       task.progress(at++, all, 'waitingForLoading')
       while(true) {
-        const loadingTasksCount = await page.evaluate(() => api.globals.$allLoadingTasks?.length)
+        const loadingTasksCount = await page.evaluate(() => api?.globals?.$allLoadingTasks?.length)
         if(loadingTasksCount === 0) break
         await sleep(100)
       }

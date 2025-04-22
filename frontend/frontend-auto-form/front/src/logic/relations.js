@@ -249,3 +249,25 @@ export function getAllTypesWithCrud(crud, api = useApi()) {
     if(model.crud?.[crud]) return true
   })
 }
+
+export function parentObjectsFromIdentifiers(identifiers, modelDefinition) {
+  console.log("identifiers", identifiers, "modelDefinition", modelDefinition)
+  const results = []
+  for(const [key, value] of Object.entries(identifiers)) {
+    if(key.endsWith('Type')) continue
+    const propertyDefinition = modelDefinition.properties[key]
+    const propertyType = propertyDefinition.type
+    if(propertyType === 'any') {
+      results.push({
+        objectType: identifiers[key + 'Type'],
+        object: value
+      })
+    } else {
+      results.push({
+        objectType: propertyType,
+        object: value
+      })
+    }
+  }
+  return results
+}

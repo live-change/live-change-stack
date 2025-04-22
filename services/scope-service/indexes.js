@@ -6,7 +6,7 @@ const config = definition.config
 import { Scope } from './scopes.js'
 
 //*
-const pathByObjectAndScopeIndex = definition.index({ 
+export const pathByObjectAndScopeIndex = definition.index({ 
   name: 'pathByObjectAndScope',  /// there can be multiple paths for the same scope -> object pairs
   async function(input, output, { scopesTableName, pathsByAncestorDescendantRelationIndexName }) {
     /// Can be optimized by using a ScopeIndexer for indexing scope using range changes    
@@ -44,7 +44,7 @@ const pathByObjectAndScopeIndex = definition.index({
 })
 
 //*
-const pathByScopeAndObjectIndex = definition.index({
+export const pathByScopeAndObjectIndex = definition.index({
   name: 'pathByScopeAndObject',
   async function(input, output, { pathByObjectAndScopeIndexName }) {
     await (await input.index(pathByObjectAndScopeIndexName))
@@ -68,7 +68,7 @@ const pathByScopeAndObjectIndex = definition.index({
 })
 
 //*
-const scopeByObjectIndex = definition.index({
+export const scopeByObjectIndex = definition.index({
   name: 'scopeByObject',
   async function(input, output, { pathByObjectAndScopeIndexName }) {
     await (await input.index(pathByObjectAndScopeIndexName))
@@ -86,12 +86,12 @@ const scopeByObjectIndex = definition.index({
 //*/
 
 //*
-const objectByScopeIndex = definition.index({
+export const objectByScopeIndex = definition.index({
   name: 'objectByScope',
   async function(input, output, { scopeByObjectIndexName }) {
     await (await input.index(scopeByObjectIndexName))
       .map(({ id, objectType, object, scopeType, scope }) => ({
-        id:  [objectType, object, scopeType, scope].map(v => JSON.stringify(v)).join(':'),
+        id:  [scopeType, scope, objectType, object].map(v => JSON.stringify(v)).join(':'),
         scopeType, scope, objectType, object
       }))
       .to(output)
@@ -132,5 +132,97 @@ definition.view({
       allParams.slice(0, allParams.findIndex(p => p === undefined)),
       range
     )
+  }
+})
+
+definition.view({
+  name: 'objectScopes',
+  properties: {
+    objectType: {
+      type: 'type'
+    },
+    object: {
+      type: 'any'
+    },
+    scopeType: {
+      type: 'type'
+    },
+    ...App.rangeProperties
+  },
+  accessControl: {
+    roles: config.objectScopeRoles
+  },
+  daoPath(params, { client, service }, method) {
+    const { objectType, object, scopeType } = params
+    const range = App.extractRange(params)
+    if(!range.limit || range.limit > 1000) range.limit = 1000
+    const allParams = [objectType, object, scopeType]    
+    const path = scopeByObjectIndex.rangePath(
+      allParams.slice(0, allParams.findIndex(p => p === undefined)),
+      range
+    )
+    return path
+  }
+})
+
+definition.view({
+  name: 'scopeObjects',
+  properties: {
+    scopeType: {
+      type: 'type'
+    },
+    scope: {
+      type: 'any'
+    },
+    objectType: {
+      type: 'type'
+    },
+    ...App.rangeProperties
+  },
+  accessControl: {
+    roles: config.scopeObjectRoles,
+    objects: ({ scopeType, scope }) => {
+      return [{ objectType: scopeType, object: scope }]
+    }
+  },
+  daoPath(params, { client, service }, method) {
+    const { scopeType, scope, objectType } = params    
+    const range = App.extractRange(params)
+    if(!range.limit || range.limit > 1000) range.limit = 1000
+    const allParams = [scopeType, scope, objectType]
+    const path = ['database', 'query', service.databaseName, `(${
+      async (input, output, { indexName, scopeType, scope, objectType }) => {
+        const index = await input.index(indexName)
+        const prefixParts = objectType ? [scopeType, scope, objectType] : [scopeType, scope]        
+        const prefix = prefixParts.map(v => JSON.stringify(v)).join(':')
+        const range = {
+          gte: prefix + ':',
+          lte: prefix + '_\xFF\xFF\xFF\xFF'
+        }
+        output.debug('range', range)
+        await index
+          .range(range)
+          .map(async (indexObj, id, timestamp) => {
+            if(!indexObj) return null
+            const anyIndexObj = indexObj
+            const tableName = anyIndexObj.objectType
+            const table = input.table(tableName)
+            const result = await table.objectGet(anyIndexObj.object)
+            return {          
+              ...result,
+              to: result.id,
+              id: anyIndexObj.id,
+              //from: anyIndexObj
+            }
+          })
+          .to(output)
+      }
+    })`, { indexName: 'scope_objectByScope', scopeType, scope, objectType }]
+    /* const path = objectByScopeIndex.rangePath(
+      allParams.slice(0, allParams.findIndex(p => p === undefined)),
+      range
+    ) */
+    console.log('path', path)
+    return path
   }
 })

@@ -3,7 +3,6 @@
 <!--    <h4>definition</h4>
     <pre>{{ modelDefinition }}</pre>-->
 
-
     <div class="bg-surface-0 dark:bg-surface-900 w-full p-4 shadow-sm rounded-border mb-2">
       <slot name="header">
         <div class="">
@@ -215,7 +214,7 @@
     params: {
       serviceName: service.value,
       modelName: model.value,
-      identifiers: Object.values(objectIdentifiers(identifiers.value[0]))
+      identifiers: Object.values(objectIdentifiers(views.value[0].identifiers))
     }
   }))
 
@@ -226,7 +225,12 @@
       object,
       acceptClass: "p-button-danger",
       accept: async () => {
-        await api.actions[service.value][modelDefinition.value.crud.delete]({
+        console.log("deleteObject", object)
+        console.log("objectIdentifiers", objectIdentifiers(object))
+        console.log("modelDefinition", modelDefinition.value)      
+        const method = api.actions[service.value][modelDefinition.value.crud.reset]
+           || api.actions[service.value][modelDefinition.value.crud.delete]
+        await method({
           ...objectIdentifiers(object)
         });
         toast.add({ severity: "info", summary: model.value + " deleted", life: 1500 });
