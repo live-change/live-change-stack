@@ -161,19 +161,7 @@ interface TaskDefinition {
    * create action for task, action will return object with task property,
    * @param action - true, or action name
    */
-  action?: string | true
-
-  /**
-   * check if action is accessible for certain user
-   * @param props
-   * @param context
-   */
-  actionAccess?: (props, context) => boolean
-
-  /**
-   * action access control settings
-   */
-  actionAccessControl?: Object
+  action?: string | true | { name: string } // TODO: create ActionDefinition type
 
 }
 
@@ -419,37 +407,37 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     serviceDefinition.trigger({
       name: definition.trigger === true ? definition.name : definition.trigger,
       properties: definition.properties,
-      returnsTask: true,
+      returnsTask: definition.name,
       returns: {
         type: Task
       },
       async execute(props, context, emit) {
         const startResult =
-          await startTask(taskFunction, props, 'trigger', context.id)
-        return {
-          task: startResult.task
-        }
+          await startTask(taskFunction, props, 'trigger', context.reaction.id)
+        return startResult.task
       }
     })
   }
 
   if(definition.action) {
+    const name = 
+      (definition.action === true && definition.name)
+      || (typeof definition.action === 'string' && definition.action)
+      || (typeof definition.action === 'object' && definition.action.name)
+      || definition.name    
     serviceDefinition.action({
-      name: definition.action === true ? definition.name : definition.action,
+      name,
       properties: definition.properties,
-      returnsTask: true,
-      access: definition.actionAccess,
-      accessControl: definition.actionAccessControl,
+      returnsTask: definition.name,
       returns: {
         type: Task
       },
       async execute(props, context, emit) {
         const startResult =
-          await startTask(taskFunction, { ...props, client: context.client }, 'command', context.id)
-        return {
-          task: startResult.task
-        }
-      }
+          await startTask(taskFunction, { ...props, client: context.client }, 'command', context.command.id)
+        return startResult.task
+      },
+      ...(typeof definition.action === 'object' && definition.action)
     })
   }
 

@@ -29,6 +29,8 @@ class TriggerHandler {
       action: this,
       service: this.service,
       client: trig.client,
+      reaction: trig,
+      // TODO: add trigger information to the context, it can be renamed to "reaction"
       trigger: (trigger, data) => this.service.trigger({
         causeType: 'trigger',
         cause: trig.id,
