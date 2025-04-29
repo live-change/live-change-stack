@@ -1,6 +1,6 @@
 {
   "name": "@live-change/timer-service",
-  "version": "0.9.70",
+  "version": "0.9.71",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.70"
+    "@live-change/framework": "^0.9.71"
   },
   "gitHead": "b1b605b7f1fa4fc3de4720afbb401e2cfff080cf"
 }
