@@ -1,7 +1,11 @@
+import App from '@live-change/framework'
+const app = App.app()
 import definition from './definition.js'
 
 const User = definition.model({
   name: "User",
+  entity: {    
+  },
   properties: {
     roles: {
       type: Array,
@@ -11,6 +15,10 @@ const User = definition.model({
     }
   },
   indexes: {
+    byRole: {
+      property: ['roles'],
+      multi: true
+    }
   }
 })
 
@@ -97,6 +105,27 @@ definition.view({
   },
   daoPath({ session }) {
     return AuthenticatedUser.path(session)
+  }
+})
+
+definition.view({
+  name: 'usersByRole',
+  internal: true,
+  properties: {
+    role: {
+      type: String,
+      validation: ['nonEmpty']      
+    },
+    ...App.rangeProperties
+  },
+  returns: {
+    type: User
+  },
+  daoPath(params) {
+    const { role } = params
+    const range = App.extractRange(params)
+    if(!range.limit || range.limit > 128) range.limit = 128
+    return User.sortedIndexRangePath('byRole', role, range)
   }
 })
 
