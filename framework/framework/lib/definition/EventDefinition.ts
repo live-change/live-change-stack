@@ -1,9 +1,20 @@
-import PropertyDefinition from "./PropertyDefinition.js"
+import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
 
-class TriggerDefinition {
+type EventParameters = Record<string, any>
 
-  constructor(definition) {
+export interface EventDefinitionSpecification {
+  name: string
+  properties: Record<string, PropertyDefinitionSpecification>
+  returns: PropertyDefinitionSpecification,
+  execute: (parameters: EventParameters) => any
+}
+
+class EventDefinition<T extends EventDefinitionSpecification> {
+  [key: string]: any
+
+  constructor(definition: T) {
     this.properties = {}
+    // @ts-ignore
     for(let key in definition) this[key] = definition[key]
     if(definition.properties) {
       for (let propName in definition.properties) {
@@ -34,6 +45,12 @@ class TriggerDefinition {
     }
   }
 
+  event(params) {
+    return {
+      type: this.name,
+      ...params
+    }
+  }
 }
 
-export default TriggerDefinition
+export default EventDefinition

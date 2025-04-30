@@ -1,7 +1,17 @@
 import PropertyDefinition from "./PropertyDefinition.js"
+import type { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
+import type { IndexDefinitionSpecification } from "./IndexDefinition.js"
 import { crudChanges, definitionToJSON } from "../utils.js"
 
-class ModelDefinition {
+export interface ModelDefinitionSpecification {
+  name: string
+  properties: Record<string, PropertyDefinitionSpecification>
+  indexes: Record<string, IndexDefinitionSpecification>
+  onChange: (() => void)[]
+}
+
+class ModelDefinition<T extends ModelDefinitionSpecification> {
+  [key: string]: any
 
   constructor(definition, serviceName) {
     this.serviceName = serviceName
@@ -55,7 +65,7 @@ class ModelDefinition {
   computeChanges( oldModelParam ) {
     let oldModel = JSON.parse(JSON.stringify(oldModelParam))
     oldModel.indexes = oldModel.indexes || {}
-    let changes = []
+    let changes: Record<string, any>[] = []
     const json = this.toJSON()
     changes.push(...crudChanges(oldModel.properties || {}, json.properties || {},
         "Property", "property", { model: this.name }))

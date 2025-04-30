@@ -1,9 +1,17 @@
-import PropertyDefinition from "./PropertyDefinition.js"
+import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
 
-class ViewDefinition {
+export interface TriggerDefinitionSpecification {
+  name: string
+  properties: Record<string, PropertyDefinitionSpecification>
+  returns: PropertyDefinitionSpecification
+}
 
-  constructor(definition) {
+class TriggerDefinition<T extends TriggerDefinitionSpecification> {
+  [key: string]: any
+
+  constructor(definition: T) {
     this.properties = {}
+    // @ts-ignore
     for(let key in definition) this[key] = definition[key]
     if(definition.properties) {
       for (let propName in definition.properties) {
@@ -36,4 +44,4 @@ class ViewDefinition {
 
 }
 
-export default ViewDefinition
+export default TriggerDefinition

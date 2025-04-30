@@ -1,6 +1,8 @@
 class ForeignModelDefinition {
+  serviceName: string
+  name: string
 
-  constructor(serviceName, modelName) {
+  constructor(serviceName: string, modelName: string) {
     this.serviceName = serviceName
     this.name = modelName
   }

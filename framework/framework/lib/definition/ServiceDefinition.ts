@@ -1,10 +1,10 @@
-import ModelDefinition from "./ModelDefinition.js"
+import ModelDefinition, { ModelDefinitionSpecification } from "./ModelDefinition.js"
 import ForeignModelDefinition from "./ForeignModelDefinition.js"
-import IndexDefinition from "./IndexDefinition.js"
+import IndexDefinition, { IndexDefinitionSpecification } from "./IndexDefinition.js"
 import ForeignIndexDefinition from "./ForeignIndexDefinition.js"
 import ActionDefinition from "./ActionDefinition.js"
-import TriggerDefinition from "./TriggerDefinition.js"
-import ViewDefinition from "./ViewDefinition.js"
+import TriggerDefinition, { TriggerDefinitionSpecification } from "./TriggerDefinition.js"
+import ViewDefinition, { ViewDefinitionSpecification } from "./ViewDefinition.js"
 import EventDefinition from "./EventDefinition.js"
 import defaultValidators from '../utils/validators.js'
 import { crudChanges } from "../utils.js"
@@ -70,8 +70,16 @@ function createForeignIndexProxy(definition, model) {
   })
 }
 
-class ServiceDefinition {
-  constructor(definition) {
+
+
+interface ServiceDefinitionSpecification {
+
+}
+
+class ServiceDefinition<T extends ServiceDefinitionSpecification> {
+  [key: string]: any
+
+  constructor(definition: T) {
     this.models = {}
     this.foreignModels = {}
     this.indexes = {}
@@ -89,10 +97,11 @@ class ServiceDefinition {
     this.endpoints = []
     this.validators = { ...defaultValidators }
     this.clientSideFilters = []
+    // @ts-ignore
     for(let key in definition) this[key] = definition[key]
   }
 
-  model(definition) {
+  model<T extends ModelDefinitionSpecification>(definition: T) {
     if(this.models[definition.name]) throw new Error('model ' + definition.name + ' already exists')
     const model = new ModelDefinition(definition, this.name)
     this.models[model.name] = model
@@ -132,14 +141,14 @@ class ServiceDefinition {
     return event
   }
 
-  view(definition) {
+  view<T extends ViewDefinitionSpecification>(definition: T) {
     if(this.views[definition.name]) throw new Error('view ' + definition.name + ' already exists')
     const view = new ViewDefinition(definition)
     this.views[view.name] = view
     return view
   }
 
-  trigger(definition) {
+  trigger<T extends TriggerDefinitionSpecification>(definition: T) {
     const trigger = new TriggerDefinition(definition)
     //if(this.triggers[trigger.name]) throw new Error('trigger ' + trigger.name + ' already exists')
     this.triggers[trigger.name] = [ ...(this.triggers[trigger.name] || []) , trigger ]
@@ -220,7 +229,7 @@ class ServiceDefinition {
 
   computeChanges( oldModuleParam ) {
     let oldModule = JSON.parse(JSON.stringify(oldModuleParam))
-    let changes = []
+    let changes: Record<string, any>[] = []
     changes.push(...crudChanges(oldModule.models || {}, this.models || {},
         "Model", "model", { }))
     changes.push(...crudChanges(oldModule.indexes || {}, this.indexes || {},

@@ -1,7 +1,8 @@
-
 class ForeignIndexDefinition {
+  serviceName: string
+  indexName: string
 
-  constructor(serviceName, indexName) {
+  constructor(serviceName: string, indexName: string) {
     this.serviceName = serviceName
     this.indexName = indexName
   }

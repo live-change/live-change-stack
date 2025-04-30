@@ -51,7 +51,7 @@
     setTimeout(() => {
       if (afterGoogleAccessGained.value) {
         localStorage.removeItem('afterGoogleAccessGained')
-        router.push(afterGoogleAccessGained.value)
+        router.push(JSON.parse(afterGoogleAccessGained.value))
       }
     }, redirectTime - Date.now())
   })

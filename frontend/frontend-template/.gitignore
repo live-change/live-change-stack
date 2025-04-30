@@ -12,3 +12,13 @@ kubeconfig
 package-deps.json
 front/components.d.ts
 build-stats
+dist
+*.iml
+.vscode
+.history
+.idea
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

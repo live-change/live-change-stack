@@ -1,8 +1,17 @@
 import { typeName, definitionToJSON } from "../utils.js"
 
-class PropertyDefinition {
+export interface PropertyDefinitionSpecification {
+  type: string
+  of?: PropertyDefinitionSpecification
+  items?: PropertyDefinitionSpecification
+  properties?: Record<string, PropertyDefinitionSpecification>
+}
 
-  constructor(definition) {
+class PropertyDefinition<T extends PropertyDefinitionSpecification> {
+  [key: string]: any
+
+  constructor(definition: T) {
+    // @ts-ignore
     for(let key in definition) this[key] = definition[key]
     if(definition.properties) {
       for (let propName in definition.properties) {
@@ -24,7 +33,7 @@ class PropertyDefinition {
   }
 
   toJSON() {
-    let properties = undefined
+    let properties: Record<string, any> | undefined = undefined
     if(this.properties) {
       properties = {}
       for (let propName in this.properties) {
@@ -47,7 +56,7 @@ class PropertyDefinition {
   }
 
   computeChanges( oldProperty, params, name) {
-    let changes = []
+    let changes: Record<string, any>[] = []
     let typeChanged = false
     if(typeName(this.type) !== typeName(oldProperty.type)) typeChanged = true
     if((this.of && typeName(this.of.type)) !== (oldProperty.of && typeName(oldProperty.of.type)))

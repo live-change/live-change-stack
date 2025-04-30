@@ -1,8 +1,19 @@
 
-class IndexDefinition {
+export interface IndexDefinitionSpecification {
+  name: string
+  properties: Record<string, PropertyDefinition>
+  function: (...args: any[]) => any
+  search: boolean
+  storage: any
+  multi: boolean,
+}
 
-  constructor(definition) {
+class IndexDefinition<T extends IndexDefinitionSpecification> {
+  [key: string]: any
+
+  constructor(definition: T) {
     this.properties = {}
+    // @ts-ignore
     for(let key in definition) this[key] = definition[key]
   }
 
@@ -16,7 +27,7 @@ class IndexDefinition {
   computeChanges( oldIndexParam ) {
     let oldIndex = JSON.parse(JSON.stringify(oldIndexParam))
     oldIndex.indexes = oldIndex.indexes || {}
-    let changes = []
+    let changes: Record<string, any>[] = []
     if(oldIndex.function !== `${this.function}`) {
       changes.push({ operation: "deleteIndex", name: this.name })
       changes.push({ operation: "createIndex", name: this.name, index: this.toJSON() })

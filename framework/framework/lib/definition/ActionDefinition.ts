@@ -1,9 +1,26 @@
-import PropertyDefinition from "./PropertyDefinition.js"
+import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
+import { ExecutionContext } from "./types.js"
 
-class EventDefinition {
+type ActionParameters = Record<string, any>
 
-  constructor(definition) {
+export interface ActionContext extends ExecutionContext {
+  action: any
+  emit: (event: any) => void
+}
+
+export interface ActionDefinitionSpecification {  
+  name: string
+  properties: Record<string, PropertyDefinitionSpecification>
+  returns: PropertyDefinitionSpecification,
+  execute: (parameters: ActionParameters, context: ActionContext, emit: (event: any) => void) => any
+}
+
+class ActionDefinition<T extends ActionDefinitionSpecification> {
+  [key: string]: any
+  
+  constructor(definition: T) {
     this.properties = {}
+    // @ts-ignore
     for(let key in definition) this[key] = definition[key]
     if(definition.properties) {
       for (let propName in definition.properties) {
@@ -34,12 +51,6 @@ class EventDefinition {
     }
   }
 
-  event(params) {
-    return {
-      type: this.name,
-      ...params
-    }
-  }
 }
 
-export default EventDefinition
+export default ActionDefinition
