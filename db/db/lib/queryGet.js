@@ -99,7 +99,7 @@ class TableReader extends ChangeStream {
   }
   unobserve(obs) {}
   async rangeGet(range) {
-    return new RangeReader(this.#table, range, this.#time)
+    return (await this.#table).rangeGet(range)
   }
   range(range) {
     return new RangeReader(this.#table, range, this.#time)
