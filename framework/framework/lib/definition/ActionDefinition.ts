@@ -1,18 +1,17 @@
+import { AccessSpecification } from "../processors/accessMethod.js"
 import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
-import { ExecutionContext } from "./types.js"
+import type { ActionContext } from "./types.js"
 
-type ActionParameters = Record<string, any>
-
-export interface ActionContext extends ExecutionContext {
-  action: any
-  emit: (event: any) => void
-}
+export type ActionParameters = Record<string, any>
 
 export interface ActionDefinitionSpecification {  
   name: string
   properties: Record<string, PropertyDefinitionSpecification>
   returns: PropertyDefinitionSpecification,
-  execute: (parameters: ActionParameters, context: ActionContext, emit: (event: any) => void) => any
+  execute: (parameters: ActionParameters, context: ActionContext, emit: (event: any) => void) => any,
+  access: AccessSpecification,
+  skipValidation: boolean,
+  validation: (parameters: ActionParameters, context: ActionContext) => Promise<any>
 }
 
 class ActionDefinition<T extends ActionDefinitionSpecification> {

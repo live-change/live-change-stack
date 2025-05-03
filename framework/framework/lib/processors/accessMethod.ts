@@ -1,4 +1,10 @@
-export default function getAccessMethod(access) {
+import { ActionContext, ViewContext } from "../definition/types.js"
+
+export type AccessFunction = (params: Record<string, any>, context: ViewContext | ActionContext) => boolean
+
+export type AccessSpecification = AccessFunction | string[] | 'internal'
+
+export default function getAccessMethod(access: AccessSpecification) {
   if(typeof access == 'function') {
     return access
   } else if(Array.isArray(access)) {

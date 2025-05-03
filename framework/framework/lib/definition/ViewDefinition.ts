@@ -1,14 +1,17 @@
 import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
 
-import type { ExecutionContext } from "./types.js"
+import type { ViewContext } from "./types.js"
+
+import type { AccessSpecification } from "../processors/accessMethod.js"
 
 export interface ViewDefinitionSpecificationBase {
   name: string
   properties: Record<string, PropertyDefinitionSpecification>
   returns: PropertyDefinitionSpecification
-}
-
-export interface ViewContext extends ExecutionContext {  
+  internal: boolean,
+  access: AccessSpecification,
+  skipValidation: boolean,
+  validation: (parameters: Record<string, any>, context: ViewContext) => Promise<any>
 }
 
 export interface ViewDefinitionSpecificationObservable extends ViewDefinitionSpecificationBase {

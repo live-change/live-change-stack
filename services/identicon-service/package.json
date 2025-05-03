@@ -21,8 +21,8 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.9.74",
-    "@live-change/relations-plugin": "^0.9.74",
+    "@live-change/framework": "0.9.74",
+    "@live-change/relations-plugin": "0.9.74",
     "identicon.js": "2.3.3",
     "jdenticon": "3.1.1"
   },

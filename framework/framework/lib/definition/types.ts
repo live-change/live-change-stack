@@ -6,7 +6,16 @@ export interface ClientContext {
   roles: string[]
 }
 
-export interface ExecutionContext {
+export interface ContextBase {
   client: ClientContext
-  service: any
+  service: any,
+  visibilityTest: boolean
+}
+
+export interface ViewContext extends ContextBase {
+  view: any,
+}
+
+export interface ActionContext extends ContextBase {
+  action: any
 }

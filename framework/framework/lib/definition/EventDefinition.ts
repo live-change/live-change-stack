@@ -1,6 +1,6 @@
 import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
 
-type EventParameters = Record<string, any>
+export type EventParameters = Record<string, any>
 
 export interface EventDefinitionSpecification {
   name: string

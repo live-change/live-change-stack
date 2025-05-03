@@ -36,6 +36,10 @@ import Debug from 'debug'
 
 const debug = Debug('framework')
 
+
+import * as utils from './lib/utils.js'
+import * as validation from './lib/utils/validation.js'
+
 class App {
 
   constructor(config = {}) {
@@ -82,7 +86,24 @@ class App {
     this.startedServices = {}
     this.triggerRoutes = {}
     this.globalViews = {}
+
   }
+
+  static app() {
+    if(!globalThis.liveChangeFrameworkApp) {
+      globalThis.liveChangeFrameworkApp = new App()
+    }
+    return globalThis.liveChangeFrameworkApp
+  }
+
+  static utils = utils
+  static validation = validation
+  static rangeProperties = utils.rangeProperties
+  static encodeIdentifier = utils.encodeIdentifier
+  static extractRange = utils.extractRange
+  static isomorphic = utils.isomorphic
+  static computeDefaults = utils.computeDefaults
+  static computeUpdates = utils.computeUpdates
 
   createServiceDefinition( definition ) {
     const sourceConfig = this.config && this.config.services && this.config.services.find

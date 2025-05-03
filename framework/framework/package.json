@@ -22,8 +22,11 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
-    "@live-change/dao": "^0.9.74",
-    "@live-change/uid": "^0.9.74"
+    "@live-change/dao": "0.9.74",
+    "@live-change/uid": "0.9.74",
+    "typedoc": "0.28.3",
+    "typedoc-plugin-markdown": "^4.6.3",
+    "typedoc-plugin-rename-defaults": "^0.7.3"
   },
   "gitHead": "b1b605b7f1fa4fc3de4720afbb401e2cfff080cf"
 }

@@ -1,9 +1,9 @@
 
 export interface IndexDefinitionSpecification {
   name: string
-  properties: Record<string, PropertyDefinition>
+  property: string | string[]
   function: (...args: any[]) => any
-  search: boolean
+  parameters: Record<string, any>
   storage: any
   multi: boolean,
 }

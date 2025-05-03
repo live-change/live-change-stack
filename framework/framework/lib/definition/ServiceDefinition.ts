@@ -72,7 +72,7 @@ function createForeignIndexProxy(definition, model) {
 
 
 
-interface ServiceDefinitionSpecification {
+export interface ServiceDefinitionSpecification {
 
 }
 

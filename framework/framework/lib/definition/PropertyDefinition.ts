@@ -1,10 +1,18 @@
 import { typeName, definitionToJSON } from "../utils.js"
 
+export interface ValidationSpecificationObject {
+  name: string
+  [key: string]: any
+}
+
+export type ValidationSpecification = ValidationSpecificationObject | string
+
 export interface PropertyDefinitionSpecification {
   type: string
   of?: PropertyDefinitionSpecification
   items?: PropertyDefinitionSpecification
-  properties?: Record<string, PropertyDefinitionSpecification>
+  properties?: Record<string, PropertyDefinitionSpecification>,
+  validation: ValidationSpecification[]
 }
 
 class PropertyDefinition<T extends PropertyDefinitionSpecification> {

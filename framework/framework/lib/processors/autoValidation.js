@@ -24,6 +24,10 @@ export default function(service, app) {
           if(!action.skipValidation) {
             await validate(args[0], validators, { source: action, action, service, app, ...context })
           }
+          if(typeof action.validation === 'function') {
+            const result = await action.validation(args[0], { source: action, action, service, app, ...context })
+            if(result) throw result            
+          }
           return oldExec.apply(action, args)
         }
       }
@@ -31,25 +35,35 @@ export default function(service, app) {
   }
   for(let viewName in service.views) {
     const view = service.views[viewName]
-    if(view.skipValidation) continue
+    if(view.skipValidation && !view.validation) continue
     const validators = getValidators(view, service, view)
     if(Object.keys(validators).length > 0) {
       if (view.observable) {
         const oldObservable = view.observable
         view.observable = async (...args) => {
           const context = args[1]
-          return validate(args[0], validators, { source: view, view, service, app, ...context }).then(() =>
-              oldObservable.apply(view, args)
-          )
+          if(!view.skipValidation) {
+            await validate(args[0], validators, { source: view, view, service, app, ...context })
+          }
+          if(typeof view.validation === 'function') {
+            const result = await view.validation(args[0], { source: view, view, service, app, ...context })
+            if(result) throw result            
+          }
+          return oldObservable.apply(view, args)
         }
       }
       if(view.get) {
         const oldGet = view.get
         view.get = async (...args) => {
           const context = args[1]
-          return validate(args[0], validators, { source: view, view, service, app, ...context }).then(() =>
-              oldGet.apply(view, args)
-          )
+          if(!view.skipValidation) {
+            await validate(args[0], validators, { source: view, view, service, app, ...context })
+          }
+          if(typeof view.validation === 'function') {
+            const result = await view.validation(args[0], { source: view, view, service, app, ...context })
+            if(result) throw result            
+          }
+          return oldGet.apply(view, args)          
         }
       }
     }

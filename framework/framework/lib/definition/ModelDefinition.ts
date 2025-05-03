@@ -1,12 +1,24 @@
 import PropertyDefinition from "./PropertyDefinition.js"
 import type { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
-import type { IndexDefinitionSpecification } from "./IndexDefinition.js"
 import { crudChanges, definitionToJSON } from "../utils.js"
+
+export interface ModelIndexDefinitionSpecification {  
+  property?: string | string[]
+  function?: (...args: any[]) => any
+  parameters?: Record<string, any>  
+  storage?: any
+  multi?: boolean,
+}
+
+export interface ModelPropertyDefinitionSpecification {
+  type: string,
+  index: ModelIndexDefinitionSpecification
+}
 
 export interface ModelDefinitionSpecification {
   name: string
-  properties: Record<string, PropertyDefinitionSpecification>
-  indexes: Record<string, IndexDefinitionSpecification>
+  properties: Record<string, ModelPropertyDefinitionSpecification>
+  indexes: Record<string, ModelIndexDefinitionSpecification>
   onChange: (() => void)[]
 }
 
