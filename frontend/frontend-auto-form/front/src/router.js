@@ -9,6 +9,12 @@ export function autoFormRoutes(config = {}) {
     }),
 
     route({
+      name: 'auto-form:actions', path: prefix + '/actions/:serviceName?', meta: { },
+      component: () => import("./pages/Actions.vue"),
+      props: true
+    }),
+
+    route({
       name: 'auto-form:editor', path: prefix + '/editor/:serviceName/:modelName/:identifiers*', meta: { },
       component: () => import("./pages/Editor.vue"),
       props: true
@@ -23,6 +29,12 @@ export function autoFormRoutes(config = {}) {
     route({
       name: 'auto-form:list', path: prefix + '/models/:serviceName/:modelName', meta: { },
       component: () => import("./pages/List.vue"),
+      props: true
+    }),
+
+    route({
+      name: 'auto-form:action', path: prefix + '/action/:serviceName/:actionName', meta: { },
+      component: () => import("./pages/Action.vue"),
       props: true
     }),
 

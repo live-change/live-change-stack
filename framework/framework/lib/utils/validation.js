@@ -23,6 +23,33 @@ function getValidators(source, service) {
           else validators[propName] = [validator]
       }
     }
+    if(prop.type === Object) {
+      validators = {
+        ...validators,
+        ...Object.fromEntries(
+          Object.entries(getValidators(prop, service))
+            .map(([key, value]) => [propName + '.' + key, value])
+        )
+      }
+    }
+    if(prop.type === Array) {
+      const elementType = prop.of ?? prop.items
+      if(elementType?.type === Object) {
+        validators = {
+          ...validators,
+          ...Object.fromEntries(
+            Object.entries(getValidators(prop, service))
+              .map(([key, value]) => [propName + '.' + key, value])
+          )
+        }
+      } 
+      if(elementType?.validation) {  
+        validators[propName + '.#'] = validators[propName + '.#'] || []
+        for(let validation of elementType.validation) {
+          validators[propName + '.#'].push(getValidator(validation, context))            
+        }
+      }
+    }
   }
   return validators
 }
@@ -32,23 +59,39 @@ async function validate(props, validators, context) {
   let propPromises = {}
   for(let propName in validators) {
     let propValidators = validators[propName]
-    let promises = []
-    for(let validator of propValidators) {
-      //console.log("PROPS",props, propName)
-      promises.push(validator(props[propName], { ...context, props, propName }))
+    const path = propName.split('.')
+    function validateProperty(data, pathIndex, propNameAccumulator = '') {
+      console.log('  '.repeat(pathIndex), "VALIDATE PROPERTY", pathIndex, propNameAccumulator)
+      if(pathIndex === path.length) {
+        const promises = (propPromises[propNameAccumulator] || [])
+        for(let validator of propValidators) {          
+          promises.push(validator(data, { ...context, props, propName: propNameAccumulator }))
+        }
+        propPromises[propNameAccumulator] = promises
+      } else {
+        if(path[pathIndex] === '#') {
+          for(let i = 0; i < data.length; i++) {
+            validateProperty(data[i], pathIndex + 1, 
+              propNameAccumulator + (propNameAccumulator ? '.' : '') + i)
+          }
+        } else {
+          const deeper = data?.[path[pathIndex]] ?? null
+          if(deeper === null) return
+          validateProperty(deeper, pathIndex + 1, 
+            propNameAccumulator + (propNameAccumulator ? '.' : '') + path[pathIndex])
+        }
+      }
     }
-    propPromises[propName] = Promise.all(promises)
+    validateProperty(props, 0)
   }
   let propErrors = {}
-  for(let propName in validators) {
-    let errors = (await propPromises[propName]).filter(e=>!!e)
-    //console.log("EERRS",propName, errors)
+  for(const [propName, promises] of Object.entries(propPromises)) {
+    let errors = (await Promise.all(promises)).filter(x=> !!x)
     if(errors.length > 0) {
-      //console.log("ERRS", propName)
       propErrors[propName] = errors[0]
     }
   }
-  //console.log("PROP ERRORS", propErrors)
+  console.log("PROP ERRORS", propErrors)
   if(Object.keys(propErrors).length > 0) throw { properties: propErrors }
 }
 

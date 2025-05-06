@@ -28,7 +28,7 @@
     "node_modules/@live-change/framework/**/*.ts", "node_modules/@live-change/framework/**/*.js",
     "node_modules/@live-change/cli/**/*.ts", "node_modules/@live-change/cli/**/*.js",
     "node_modules/@live-change/relations-plugin/**/*.ts", "node_modules/@live-change/relations-plugin/**/*.js",
-    "node_modules/@live-change/server/**/*.ts", "node_modules/@live-change/server/**/*.js",
+    "node_modules/@live-change/server/**/*.ts", "node_modules/@live-change/server/**/*.js"
   ],
   "exclude": ["node_modules/@types", "node_modules/**/*.d.ts", "**/*.test.js", "**/CMakeFiles/**"]
 }
