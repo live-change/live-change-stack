@@ -81,7 +81,7 @@
 
   function handleClick() {
     if(saveRoute.value) {
-      localStorage.afterGoogleAccessGained = savedRoute
+      localStorage.afterGoogleAccessGained = JSON.stringify(savedRoute)
     }
   }
 
