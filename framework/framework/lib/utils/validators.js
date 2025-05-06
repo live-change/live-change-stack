@@ -1,6 +1,6 @@
 import { mergeDeep } from "../utils.js"
 
-function nonEmpty(value) {
+export function nonEmpty(value) {
   if(!value) return 'empty'
   if(typeof value == 'string') {
     if(!value.trim()) return 'empty'
@@ -14,7 +14,7 @@ function nonEmpty(value) {
   }
 }
 
-function getField(context, fieldName) {
+export function getField(context, fieldName) {
   const propPath = context.propName ? context.propName.split('.') : []
   propPath.pop()
   let path
