@@ -108,7 +108,7 @@ if(config.indexed) {
         async reindex() {
           let position = ''
           while(true) {
-            const bucket = await this.table.get({
+            const bucket = await this.table.rangeGet({
               gt: position,
               limit: reindexerBucket
             })
@@ -156,7 +156,7 @@ if(config.indexed) {
         if(oldParentProperty && !parentProperty) removeParentProperty(oldParentProperty)
         if(parentProperty) addParentProperty(parentProperty)
       })
-      const initialParentsState = await accessParentTable.get({})
+      const initialParentsState = await accessParentTable.rangeGet({})
       const propertiesByChildType = new Map()
       for(const parentProperty of initialParentsState) {
         const properties = propertiesByChildType.get(parentProperty.childType) || []
@@ -284,7 +284,7 @@ if(config.indexed) {
       async function iterate(source, prefix, cb) {
         let position = prefix + ':'
         while(true) {
-          const bucket = await source.get({
+          const bucket = await source.rangeGet({
             gt: position,
             lte: prefix + '_\xFF\xFF\xFF\xFF',
             limit: bucketSize

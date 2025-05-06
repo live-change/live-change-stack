@@ -148,7 +148,8 @@ class Connection extends EventEmitter {
           return reject(err)
         }
         if (resp.type === 'error') {
-          console.error("ERROR", resp.error, "ON REQUEST", msg, "WITH SETTINGS", settings)
+          if(false && !settings.suppressErrorLogging) 
+            console.error("ERROR", resp.error, "ON REQUEST", msg, "WITH SETTINGS", settings)
           reject(resp.error)
           return false
         }

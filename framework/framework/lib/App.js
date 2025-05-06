@@ -37,8 +37,8 @@ import Debug from 'debug'
 const debug = Debug('framework')
 
 
-import * as utils from './lib/utils.js'
-import * as validation from './lib/utils/validation.js'
+import * as utils from './utils.js'
+import * as validation from './utils/validation.js'
 
 class App {
 
