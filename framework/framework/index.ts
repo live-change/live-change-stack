@@ -27,8 +27,8 @@ export {
 }
 
 // Export all types from definition files
-export type { ActionDefinitionSpecification, ActionParameters } from './lib/definition/ActionDefinition.js'
-export type { EventDefinitionSpecification, EventParameters } from './lib/definition/EventDefinition.js'
+export type { ActionDefinitionSpecification } from './lib/definition/ActionDefinition.js'
+export type { EventDefinitionSpecification } from './lib/definition/EventDefinition.js'
 export type { IndexDefinitionSpecification } from './lib/definition/IndexDefinition.js'
 export type { ModelDefinitionSpecification, ModelIndexDefinitionSpecification, ModelPropertyDefinitionSpecification } from './lib/definition/ModelDefinition.js'
 export type { PropertyDefinitionSpecification, ValidationSpecification, ValidationSpecificationObject } from './lib/definition/PropertyDefinition.js'
@@ -37,3 +37,5 @@ export type { TriggerDefinitionSpecification } from './lib/definition/TriggerDef
 export type { ClientContext, ContextBase, ViewContext, ActionContext } from './lib/definition/types.js'
 export type { ServiceDefinitionSpecification } from './lib/definition/ServiceDefinition.js'
 export type { AccessSpecification, AccessFunction } from './lib/processors/accessMethod.js'
+export type { EventDefinitionSpecification as EventDefinitionSpecificationAC } from './lib/definition/EventDefinition.js'
+export type * from './lib/definition/types.js'

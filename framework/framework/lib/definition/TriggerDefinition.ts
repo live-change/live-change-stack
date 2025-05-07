@@ -1,9 +1,15 @@
 import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
 
+import { TriggerParameters, TriggerContext } from "./types.js"
+
 export interface TriggerDefinitionSpecification {
   name: string
   properties: Record<string, PropertyDefinitionSpecification>
-  returns: PropertyDefinitionSpecification
+  returns?: PropertyDefinitionSpecification,
+  waitForEvents?: boolean
+  skipValidation?: boolean
+  validation?: (parameters: TriggerParameters, context: TriggerContext) => Promise<any>
+  execute: (parameters: TriggerParameters, context: TriggerContext, emit: (event: any) => void) => any,
 }
 
 class TriggerDefinition<T extends TriggerDefinitionSpecification> {

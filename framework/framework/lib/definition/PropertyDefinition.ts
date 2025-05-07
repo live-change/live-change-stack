@@ -7,12 +7,15 @@ export interface ValidationSpecificationObject {
 
 export type ValidationSpecification = ValidationSpecificationObject | string
 
+type PropertyDefinitionSpecificationType = string | StringConstructor | NumberConstructor | BooleanConstructor
+ | DateConstructor | ObjectConstructor | ArrayConstructor
+
 export interface PropertyDefinitionSpecification {
-  type: string
+  type: PropertyDefinitionSpecificationType
   of?: PropertyDefinitionSpecification
   items?: PropertyDefinitionSpecification
   properties?: Record<string, PropertyDefinitionSpecification>,
-  validation: ValidationSpecification[]
+  validation?: ValidationSpecification[]
 }
 
 class PropertyDefinition<T extends PropertyDefinitionSpecification> {

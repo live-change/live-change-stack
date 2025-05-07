@@ -1,17 +1,16 @@
 import { AccessSpecification } from "../processors/accessMethod.js"
 import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
-import type { ActionContext } from "./types.js"
-
-export type ActionParameters = Record<string, any>
+import type { ActionContext, ActionParameters } from "./types.js"
 
 export interface ActionDefinitionSpecification {  
   name: string
   properties: Record<string, PropertyDefinitionSpecification>
-  returns: PropertyDefinitionSpecification,
+  returns?: PropertyDefinitionSpecification,
   execute: (parameters: ActionParameters, context: ActionContext, emit: (event: any) => void) => any,
-  access: AccessSpecification,
-  skipValidation: boolean,
-  validation: (parameters: ActionParameters, context: ActionContext) => Promise<any>
+  access?: AccessSpecification,
+  skipValidation?: boolean,
+  validation?: (parameters: ActionParameters, context: ActionContext) => Promise<any>
+  waitForEvents?: boolean
 }
 
 class ActionDefinition<T extends ActionDefinitionSpecification> {

@@ -2,7 +2,7 @@ import ModelDefinition, { ModelDefinitionSpecification } from "./ModelDefinition
 import ForeignModelDefinition from "./ForeignModelDefinition.js"
 import IndexDefinition, { IndexDefinitionSpecification } from "./IndexDefinition.js"
 import ForeignIndexDefinition from "./ForeignIndexDefinition.js"
-import ActionDefinition from "./ActionDefinition.js"
+import ActionDefinition, { ActionDefinitionSpecification } from "./ActionDefinition.js"
 import TriggerDefinition, { TriggerDefinitionSpecification } from "./TriggerDefinition.js"
 import ViewDefinition, { ViewDefinitionSpecification } from "./ViewDefinition.js"
 import EventDefinition from "./EventDefinition.js"
@@ -127,9 +127,9 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
     return createForeignIndexProxy(this, index)
   }
 
-  action(definition) {
+  action<T extends ActionDefinitionSpecification>(definition: T) {
     if(this.actions[definition.name]) throw new Error('action ' + definition.name + ' already exists')
-    const action = new ActionDefinition(definition)
+    const action = new ActionDefinition<T>(definition)
     this.actions[action.name] = action
     return action
   }
@@ -143,7 +143,7 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
 
   view<T extends ViewDefinitionSpecification>(definition: T) {
     if(this.views[definition.name]) throw new Error('view ' + definition.name + ' already exists')
-    const view = new ViewDefinition(definition)
+    const view = new ViewDefinition<T>(definition)
     this.views[view.name] = view
     return view
   }

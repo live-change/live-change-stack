@@ -1,11 +1,10 @@
 import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
 
-export type EventParameters = Record<string, any>
+import type { EventParameters } from "./types.js"
 
 export interface EventDefinitionSpecification {
   name: string
   properties: Record<string, PropertyDefinitionSpecification>
-  returns: PropertyDefinitionSpecification,
   execute: (parameters: EventParameters) => any
 }
 
@@ -21,9 +20,6 @@ class EventDefinition<T extends EventDefinitionSpecification> {
         const propDefn = definition.properties[propName]
         this.createAndAddProperty(propName, propDefn)
       }
-    }
-    if(definition.returns) {
-      this.returns = new PropertyDefinition(definition.returns)
     }
   }
 
