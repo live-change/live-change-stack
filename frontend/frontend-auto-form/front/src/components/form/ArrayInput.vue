@@ -47,7 +47,8 @@
       </div>
       <auto-input :modelValue="value" :definition="definition.of || definition.items"
                    @update:modelValue="value => updateItem(index, value)"
-                  :rootValue="props.rootValue" :propName="props.propName + '.' + index"
+                  :rootValue="props.rootValue" :errors="props.errors"
+                  :propName="props.propName + '.' + index"
                   :i18n="i18n" />
     </div>
     <div>
@@ -79,6 +80,10 @@
       default: () => ({})
     },
     rootValue: {
+      type: Object,
+      default: () => ({})
+    },
+    errors: {
       type: Object,
       default: () => ({})
     },

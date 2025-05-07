@@ -5,8 +5,9 @@
                 @update:modelValue="value => updateModelProperty(property, value)"
                 :definition="definition.properties[property]"
                 :label="property"
-                :rootValue="props.rootValue" :propName="(propName ? propName + '.' : '') + property"
-                :i18n="i18n"
+                :rootValue="props.rootValue" :errors="props.errors"
+                :propName="(propName ? propName + '.' : '') + property"
+                :i18n="i18n"                
                 class="col-span-12" />
   </div>
 </template>
@@ -38,10 +39,14 @@
       items: {
         type: String
       }
+    },
+    errors: {
+      type: Object,
+      default: () => ({})
     }
   })
 
-  const { modelValue, definition, propName, editableProperties } = toRefs(props)
+  const { modelValue, definition, propName, editableProperties, errors } = toRefs(props)
 
   const emit = defineEmits(['update:modelValue'])
 
@@ -57,7 +62,6 @@
     //console.log("UPDATE MODEL", data)
     emit('update:modelValue', data)
   }
-
 
 </script>
 

@@ -10,7 +10,7 @@
                   :class="props.inputClass" :style="props.inputStyle"
                   :attributes="props.inputAttributes"
                   :propName="props.propName"
-                  :rootValue="props.rootValue"
+                  :rootValue="props.rootValue" :errors="props.errors"
                   @update:modelValue="value => emit('update:modelValue', value)"
                   :id="uid"
                   :i18n="i18n" />
@@ -81,6 +81,10 @@
       type: Object,
       default: () => ({})
     },
+    errors: {
+      type: Object,
+      default: () => ({})
+    },
     propName: {
       type: String,
       default: ''
@@ -99,7 +103,7 @@
 
   const emit = defineEmits(['update:modelValue'])
 
-  const { error, definition, modelValue } = toRefs(props)
+  const { error, definition, modelValue, errors } = toRefs(props)
 
   const definitionIf = computed(() => {
     if(definition.value?.if) {
@@ -129,12 +133,8 @@
 
   import { validateData } from "@live-change/vue3-components"
   const appContext = getCurrentInstance().appContext
-  const validationResult = computed(() => {
-    const validationResult = validateData(definition.value, modelValue.value, 'validation', appContext,
-      props.propName, props.rootValue, true)
-    const softValidationResult = validateData(definition.value, modelValue.value, 'softValidation', appContext,
-      props.propName, props.rootValue, true)
-    return validationResult || softValidationResult || error.value
+  const validationResult = computed(() => { 
+    return errors.value?.[props.propName] || error.value
   })
 
   function findValidation(name) {
@@ -189,6 +189,7 @@
     inputClass: [props.inputClass, { 'p-invalid': !!validationResult.value }],
     inputStyle: props.inputStyle,
     rootValue: props.rootValue,
+    errors: props.errors,
     propName: props.propName,
   }))
 

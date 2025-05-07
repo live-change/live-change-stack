@@ -66,22 +66,17 @@
   const savingDraft = computed(() => editor.value.savingDraft?.value)
   const sourceChanged = computed(() => editor.value.sourceChanged?.value)
   const saving = computed(() => editor.value.saving?.value)
-
+  const propertiesErrors = computed(() => editor.value.propertiesErrors?.value)
+  
   const appContext = getCurrentInstance().appContext
 
   import { validateData } from "@live-change/vue3-components"
   const validationResult = computed(() => {
-    const currentValue = {
-      ...(editor.value.identifiers),
-      ...unref(editor.value.value),
+    const errors = propertiesErrors.value
+    if(errors && Object.keys(errors).length > 0) {
+      return errors
     }
-    const validationResult = validateData(model.value, currentValue, 'validation', appContext,
-      props.propName, props.rootValue, true)
-    const softValidationResult = validateData(model.value, currentValue, 'softValidation', appContext,
-      props.propName, props.rootValue, true)
-    console.log("currentValue", currentValue)
-    console.log("validationResult", validationResult, softValidationResult)
-    return validationResult || softValidationResult
+    return null
   })
 
 </script>

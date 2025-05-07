@@ -4,7 +4,8 @@
     <auto-input :modelValue="modelValue" :definition="definition" :name="props.name"
                  :class="props.inputClass" :style="props.inputStyle"
                  :properties="props.inputAttributes"
-                 :rootValue="props.rootValue" :propName="props.propName"
+                 :rootValue="props.rootValue" :errors="props.errors"
+                  :propName="props.propName"
                  @update:modelValue="value => emit('update:modelValue', value)"
                 :i18n="props.i18n + props.propName.split('.').pop() + '.'" />
     <Message v-if="typeof validationResult == 'string'" severity="error" variant="simple" size="small">
@@ -48,6 +49,10 @@
       default: () => ({})
     },
     rootValue: {
+      type: Object,
+      default: () => ({})
+    },
+    errors: {
       type: Object,
       default: () => ({})
     },

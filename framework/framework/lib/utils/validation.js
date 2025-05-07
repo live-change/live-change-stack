@@ -61,7 +61,7 @@ async function validate(props, validators, context) {
     let propValidators = validators[propName]
     const path = propName.split('.')
     function validateProperty(data, pathIndex, propNameAccumulator = '') {
-      console.log('  '.repeat(pathIndex), "VALIDATE PROPERTY", pathIndex, propNameAccumulator)
+      //console.log('  '.repeat(pathIndex), "VALIDATE PROPERTY", pathIndex, propNameAccumulator)
       if(pathIndex === path.length) {
         const promises = (propPromises[propNameAccumulator] || [])
         for(let validator of propValidators) {          

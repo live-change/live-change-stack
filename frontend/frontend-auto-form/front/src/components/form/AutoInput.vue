@@ -27,6 +27,10 @@
       type: Object,
       default: () => ({})
     },
+    errors: {
+      type: Object,
+      default: () => ({})
+    },
     propName: {
       type: String,
       default: ''
@@ -85,6 +89,7 @@
         propName: props.propName,
         fieldName,
         rootValue: props.rootValue,
+        errors: props.errors,
         t, d, n, rt, te
       })
     }
@@ -98,6 +103,7 @@
     modelValue: modelValue.value,
     definition: definition.value,
     rootValue: props.rootValue,
+    errors: props.errors,
     propName: props.propName,
     i18n: props.i18n
   }))

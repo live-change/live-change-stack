@@ -60,6 +60,7 @@
         :definition="modelDefinition"
         v-model="editor.value.value"
         :rootValue="editor.value.value"
+        :errors="editor.propertiesErrors"
         :i18n="i18n" />
       <EditorButtons :editor="editor" reset-button />
     </form>

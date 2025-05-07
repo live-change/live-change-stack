@@ -1,7 +1,9 @@
 import { useToast } from 'primevue/usetoast'
 import { usePath, live, useApi } from '@live-change/vue3-ssr'
-import { ref, computed, inject, watch } from 'vue'
+import { ref, computed, inject, watch, getCurrentInstance } from 'vue'
 import { synchronized, defaultData } from '@live-change/vue3-components'
+
+import { propertiesValidationErrors } from './validation.js'
 
 function cyrb128(str) {
   let h1 = 1779033703, h2 = 3144134277,
@@ -54,10 +56,13 @@ export default function editorData(options) {
     onSaveError = () => {},
     onCreated = (createResult) => {},
 
-    toast = useToast(),
-    path = usePath(),
-    api = useApi(),
-    workingZone = inject('workingZone')
+
+    appContext = getCurrentInstance().appContext,
+
+    toast = useToast(options.appContext),
+    path = usePath(options.appContext),
+    api = useApi(options.appContext),
+    workingZone = inject('workingZone', options.appContext),
 
   } = options
 
@@ -123,27 +128,39 @@ export default function editorData(options) {
     ))
     const source = computed(() => editableDraftData.value || editableSavedData.value || defaultData(model))
 
+    const propertiesServerErrors = ref({})
+    const lastUploadedData = ref(null)
+
     let savePromise = null
     const saving = ref(false)
     async function saveData(data){
       const requestData = {
         ...(updateDataProperty ? { [updateDataProperty]: data } : data),
         ...identifiers
-      }
+      }    
       if(savePromise) await savePromise // wait for previous save
       saving.value = true
       savePromise = (async () => {
+        propertiesServerErrors.value = {}
+        lastUploadedData.value = JSON.parse(JSON.stringify(data))
+        console.log("SAVE DATA", requestData)
         try {
           if(createOrUpdateAction) {
-            return createOrUpdateAction(requestData)
+            return await createOrUpdateAction(requestData)
           }
           if(savedData.value) {
-            return updateAction(requestData)
+            return await updateAction(requestData)
           } else {
             const createResult = await createAction(requestData)
             await onCreated(createResult)
             return createResult
           }
+        } catch(e) {
+          console.log("SAVE ERROR", e)
+          if(e.properties) {
+            propertiesServerErrors.value = e.properties
+          }
+          throw e
         } finally {
           saving.value = false
           savePromise = null
@@ -183,11 +200,14 @@ export default function editorData(options) {
         JSON.stringify(editableSavedData.value ?? {})
            !== JSON.stringify({ ...synchronizedData.value.value, [timeField]: undefined })
       )
-
       const sourceChanged = computed(() =>
         JSON.stringify(draftData.value.from) 
           !== JSON.stringify({ ...synchronizedData.value.value, [timeField]: undefined })
       )
+
+      const propertiesErrors = computed(() => propertiesValidationErrors(
+        synchronizedData.value.value, identifiers, model, lastUploadedData.value,
+         propertiesServerErrors.value, appContext))
 
       async function save() {
         const saveResult = await saveData(synchronizedData.value.value)
@@ -203,7 +223,7 @@ export default function editorData(options) {
         await discardPromise
         onDraftDiscarded()
         if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: discardedDraftToast, life: 1500 })
-      }
+      }    
 
       async function reset() {
         const discardPromise = removeDraftAction(draftIdentifiers)
@@ -225,6 +245,7 @@ export default function editorData(options) {
         discardDraft,
         model,
         isNew,
+        propertiesErrors,
         resetOnError: false,
         draftChanged: synchronizedData.changed,
         saveDraft: synchronizedData.save,
@@ -255,6 +276,10 @@ export default function editorData(options) {
         }
       })
 
+      const propertiesErrors = computed(() => propertiesValidationErrors(
+        synchronizedData.value.value, identifiers, model, lastUploadedData.value,
+         propertiesServerErrors.value, appContext))
+
       async function reset() {
         synchronizedData.value.value = editableSavedData.value || defaultData(model)
         if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: resetToast, life: 1500 })
@@ -269,6 +294,7 @@ export default function editorData(options) {
         saving: synchronizedData.saving,
         saved: savedData,
         savedPath: savedDataPath,
+        propertiesErrors,
         reset,
         model,
       }
