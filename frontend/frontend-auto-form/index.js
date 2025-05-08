@@ -10,6 +10,8 @@ export * from './front/src/components/form/inputConfigInjection.js'
 import editorData from './front/src/logic/editorData.js'
 export { editorData }
 
+import actionData from './front/src/logic/actionData.js'
+export { actionData }
 
 import AutoView from './front/src/components/view/AutoView.vue'
 import AutoViewField from './front/src/components/view/AutoViewField.vue'

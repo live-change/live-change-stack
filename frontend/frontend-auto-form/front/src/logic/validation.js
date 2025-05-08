@@ -1,22 +1,23 @@
 import { validateData } from "@live-change/vue3-components"
 
-export function propertiesValidationErrors(rootValue, identifiers, model, lastData, propertiesServerErrors, appContext) {
+export function propertiesValidationErrors(rootValue, parameters, definition, lastData, propertiesServerErrors, appContext) {
   const currentValue = {
-    ...identifiers,
+    ...parameters,
     ...rootValue,
   }
 
-  console.log("propertiesValidationErrors", rootValue, identifiers, model, 
+  console.log("propertiesValidationErrors", rootValue, parameters, definition, 
     lastData, propertiesServerErrors, appContext)
 
-  const validationResult = validateData(model, currentValue, 'validation', appContext,
+  const validationResult = validateData(definition, currentValue, 'validation', appContext,
     '', rootValue, true)
 
-  const softValidationResult = validateData(model, currentValue, 'softValidation', appContext,
+  const softValidationResult = validateData(definition, currentValue, 'softValidation', appContext,
     '', rootValue, true)
 
   const serverValidationResult = {}
   if(propertiesServerErrors) {
+    console.log("propertiesServerErrors", propertiesServerErrors, lastData, rootValue)
     for(const propPathString in propertiesServerErrors) {
       const propPath = propPathString.split('.')
       let last = lastData

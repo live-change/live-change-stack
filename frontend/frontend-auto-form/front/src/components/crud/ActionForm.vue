@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="actionFormData">
     <div class="text-xl mb-2">
       Service <strong>{{ service }}</strong>
     </div>
@@ -7,32 +7,42 @@
       Action <strong>{{ action }}</strong>
     </div>
 
-    <pre>actionDefinition = {{ actionDefinition }}</pre>
-
-    <form @submit="handleSubmit">
+    <form @submit="handleSubmit" @reset="handleReset">
       <div class="flex flex-col gap-4">
         <auto-editor
-          :definition="actionDefinition"
-          v-model="formData"
-          :rootValue="formData"
+          :definition="actionFormData.action.definition"
+          v-model="actionFormData.value"
+          :rootValue="actionFormData.value"
+          :errors="actionFormData.propertiesErrors"
           :i18n="i18n"
         />
 
-        <div class="flex justify-end mt-4">
+        <div class="flex justify-end mt-4 gap-2">
+          <Button
+            type="reset"
+            :label="'Reset'"
+            :icon="'pi pi-times'"
+            :disabled="actionFormData.submitting"
+            severity="danger"
+          />
           <Button 
             type="submit"
-            :label="submitting ? 'Executing...' : 'Execute'" 
-            :icon="submitting ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
-            :disabled="submitting"
+            :label="actionFormData.submitting ? 'Executing...' : 'Execute'" 
+            :icon="actionFormData.submitting ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
+            :disabled="actionFormData.submitting"
             severity="success"
           />
         </div>
       </div>
     </form>
+
+<!--     <pre>propertiesErrors = {{ actionFormData.propertiesErrors }}</pre>
+    <pre>definition = {{ actionFormData.action.definition }}</pre> -->
   </div>
 </template>
 
 <script setup>
+
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
   import Button from 'primevue/button'
   import AutoEditor from '../form/AutoEditor.vue'
@@ -53,47 +63,32 @@
       default: ''
     }
   })
+
   const { service, action, i18n } = toRefs(props)
 
-  const emit = defineEmits(['done'])
+  const emit = defineEmits(['done', 'error'])
 
   import { useApi } from '@live-change/vue3-ssr'
   const api = useApi()
 
-  const actionDefinition = computed(() => {
-    const svc = api.metadata.api.value.services.find(s => s.name === service.value)
-    return svc?.actions?.[action.value]
+  import { actionData } from '@live-change/frontend-auto-form'
+
+  const actionFormData = await actionData({
+    service: service.value,
+    action: action.value,
+    i18n: i18n.value
   })
 
-  const formData = ref({})
-  const submitting = ref(false)
-
-  async function handleSubmit(event) {
-    event.preventDefault()
-    if (submitting.value) return
-
-    submitting.value = true
-    try {
-      const actionMethod = api.actions[service.value][action.value]
-      if (!actionMethod) {
-        throw new Error(`Action ${action.value} not found in service ${service.value}`)
-      }
-
-      const result = await actionMethod(formData.value)
-      emit('done', result)
-      toast.add({ severity: 'success', summary: 'Action executed successfully', life: 1500 })
-    } catch (error) {
-      console.error('Action execution error:', error)
-      toast.add({ 
-        severity: 'error', 
-        summary: 'Error executing action', 
-        detail: error.message || 'Unknown error', 
-        life: 5000 
-      })
-    } finally {
-      submitting.value = false
-    }
+  const handleSubmit = (ev) => {
+    ev.preventDefault()
+    actionFormData.submit()
   }
+
+  const handleReset = (ev) => {
+    ev.preventDefault()
+    actionFormData.reset()
+  }
+
 </script>
 
 <style scoped>
