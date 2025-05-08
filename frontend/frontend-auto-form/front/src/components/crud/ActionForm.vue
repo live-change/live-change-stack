@@ -17,22 +17,28 @@
           :i18n="i18n"
         />
 
-        <div class="flex justify-end mt-4 gap-2">
+        <ActionButtons
+          :actionFormData="actionFormData"
+          :resetButton="true"
+          :i18n="i18n"
+        />
+
+       <!--  <div class="flex justify-end mt-4 gap-2">
           <Button
             type="reset"
             :label="'Reset'"
             :icon="'pi pi-times'"
             :disabled="actionFormData.submitting"
             severity="danger"
-          />
+          />          
           <Button 
             type="submit"
-            :label="actionFormData.submitting ? 'Executing...' : 'Execute'" 
-            :icon="actionFormData.submitting ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
+            :label="actionFormData.submitting === true ? 'Executing...' : 'Execute'" 
+            :icon="actionFormData.submitting === true ? 'pi pi-spin pi-spinner' : 'pi pi-play'"
             :disabled="actionFormData.submitting"
             severity="success"
           />
-        </div>
+        </div> -->
       </div>
     </form>
 
@@ -46,6 +52,7 @@
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
   import Button from 'primevue/button'
   import AutoEditor from '../form/AutoEditor.vue'
+  import ActionButtons from './ActionButtons.vue'
   import { useToast } from 'primevue/usetoast'
   const toast = useToast()
 
