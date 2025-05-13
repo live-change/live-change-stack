@@ -159,7 +159,7 @@ export function defineCreateAction(config, context) {
     waitForEvents: true,
     execute: () => { throw new Error("not generated yet") }
   })
-  const validators = App.validation.getValidators(action, service, action)
+  const validators = App.validation.getValidators(action, service)
   const validationContext = { source: action, action }
   action.execute = getCreateFunction( validators, validationContext, config, context)
   service.actions[actionName] = action
@@ -179,7 +179,7 @@ export function defineCreateTrigger(config, context) {
     waitForEvents: true,
     execute:  () => { throw new Error("not generated yet") }
   })
-  const validators = App.validation.getValidators(trigger, service, trigger)
+  const validators = App.validation.getValidators(trigger, service)
   const validationContext = { source: trigger, trigger }
   trigger.execute = getCreateFunction( validators, validationContext, config, context)
 }
@@ -233,7 +233,7 @@ export function defineUpdateAction(config, context) {
     waitForEvents: true,
     execute: () => { throw new Error("not generated yet") }
   })
-  const validators = App.validation.getValidators(action, service, action)
+  const validators = App.validation.getValidators(action, service)
   const validationContext = { source: action, action }
   action.execute = getUpdateFunction( validators, validationContext, config, context)
   service.actions[actionName] = action
@@ -258,7 +258,7 @@ export function defineUpdateTrigger(config, context) {
     waitForEvents: true,
     execute: () => { throw new Error("not generated yet") }
   })
-  const validators = App.validation.getValidators(trigger, service, trigger)
+  const validators = App.validation.getValidators(trigger, service)
   const validationContext = { source: trigger, trigger }
   trigger.execute = getUpdateFunction( validators, validationContext, config, context)
   service.triggers[triggerName] = [trigger]
