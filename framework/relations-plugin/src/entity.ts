@@ -4,23 +4,28 @@ import {
 
 import {
   defineView, defineCreatedEvent, defineUpdatedEvent, defineDeletedEvent, defineCreateAction,
-  defineUpdateAction, defineDeleteAction, defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger
+  defineUpdateAction, defineDeleteAction, defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
+  ModelDefinitionSpecificationWithEntity,
+  EntityConfig,
+  EntityContext
 } from './entityUtils.js'
+import { AccessControlSettings, ModelDefinitionSpecificationExtended } from './types.js'
+import { AccessSpecification, ModelDefinitionSpecification } from '@live-change/framework'
 
-const annotation = 'entity'
-
+export type { EntityConfig, ModelDefinitionSpecificationWithEntity } from './entityUtils.js'
 
 export default function(service, app) {
   if (!service) throw new Error("no service")
   if (!app) throw new Error("no app")
 
   for(let modelName in service.models) {
-    const model = service.models[modelName]
-    const config = model[annotation]
+    const model: ModelDefinitionSpecificationWithEntity = 
+      service.models[modelName] as ModelDefinitionSpecificationWithEntity
+    const config:EntityConfig = model.entity
     if(!config) continue
 
-    if (model[annotation + 'Processed']) throw new Error("duplicated processing of " + annotation + " processor")
-    model[annotation + 'Processed'] = true
+    if (model.entityProcessed) throw new Error("duplicated processing of entity processor")
+    model.entityProcessed = true
 
     const originalModelProperties = { ...model.properties }
     const modelProperties = Object.keys(model.properties)
@@ -45,13 +50,13 @@ export default function(service, app) {
     //console.log("PPP", others)
     const objectType = service.name + '_' + modelName
 
-    const context = {
+    const context: EntityContext = {
       service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
-      modelName, writeableProperties, annotation, objectType
+      modelName, writeableProperties, annotation: 'entity', objectType
     }
 
     defineView(config, context, config.readAccess || config.readAccessControl || config.writeAccessControl)
-    defineGlobalRangeView(config, context, config.readAllAccess)
+    defineGlobalRangeView(config, context, !!config.readAllAccess)
     /// TODO: multiple views with limited fields
 
     defineCreatedEvent(config, context)

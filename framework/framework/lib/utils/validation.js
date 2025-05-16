@@ -1,11 +1,11 @@
 function getValidator(validation, context) {
   if(typeof validation == 'string') {
     let validator = context.service.validators[validation]
-    if(!validator) throw new Error(`Validator ${validation} not found`)
+    if(!validator) throw new Error(`Validator ${validation} not found in service ${context.service.name}`)
     return validator({}, context)
   } else {
     let validator = context.service.validators[validation.name]
-    if(!validator) throw new Error(`Validator ${validation.name} not found`)
+    if(!validator) throw new Error(`Validator ${validation.name} not found in service ${context.service.name}`)
     return validator(validation, context)
   }
 }

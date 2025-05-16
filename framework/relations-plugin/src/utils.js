@@ -250,7 +250,12 @@ export function includeAccessRoles(model, access) {
 
 export function defineGlobalRangeView(config, context, external = true) {
   const { service, modelRuntime, modelPropertyName, modelName, model } = context
-  const viewName = (config.prefix || '' ) + pluralize(config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
+  const alreadyPlural = pluralize.isPlural(modelPropertyName)  
+  const prefix = (config.prefix || '') + (alreadyPlural ? 'all' : '')
+  const viewName =      
+     prefix
+     + pluralize(prefix ? modelName : modelPropertyName) 
+     + (config.suffix || '')
   if(external) model.crud.range = viewName
   service.views[viewName] = new ViewDefinition({
     name: viewName,

@@ -55,7 +55,6 @@ export default function(service, app) {
 
     defineGlobalRangeView(config, context, config.readAllAccess)
 
-
     defineSetEvent(config, context, generateId)
     defineUpdatedEvent(config, context, generateId)
     defineTransferredEvent(config, context, generateId)

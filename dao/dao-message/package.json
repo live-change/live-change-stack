@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.79",
+    "@live-change/dao": "0.9.79",
     "debug": "^4.3.4",
     "supports-color": "^9.4.0"
   },

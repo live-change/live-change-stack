@@ -2,7 +2,8 @@ import {
   ViewContext, ViewDefinitionSpecificationObservable, ViewDefinitionSpecificationDaoPath,
     ViewDefinitionSpecificationFetch, 
   ActionDefinitionSpecification, 
-  TriggerDefinitionSpecification 
+  TriggerDefinitionSpecification,
+  ModelDefinitionSpecification
 } from "@live-change/framework"
 
 export type AccessControlSettings = string | string[] | {
@@ -34,3 +35,22 @@ export interface ActionDefinitionSpecificationAC extends ActionDefinitionSpecifi
 export interface TriggerDefinitionSpecificationAC extends TriggerDefinitionSpecification {
   accessControl?: AccessControlSettings
 }
+
+export interface CrudSettings {
+  read?: string
+  create?: string
+  update?: string
+  delete?: string
+}
+
+export interface Identifier {
+  name: string
+  field: string
+}
+
+export interface ModelDefinitionSpecificationExtended extends ModelDefinitionSpecification {
+  crud: CrudSettings,
+  identifiers: Identifier[]
+}
+
+

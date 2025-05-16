@@ -4,15 +4,52 @@ import {
   includeAccessRoles, defineGlobalRangeView
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
-import App, { ServiceDefinition } from '@live-change/framework'
+import App, { AccessSpecification, ModelDefinitionSpecification, PropertyDefinitionSpecification, ServiceDefinition } from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } from "@live-change/framework"
 import pluralize from 'pluralize'
 
 import { ServiceDefinitionSpecification } from "@live-change/framework"
-import { ActionDefinitionSpecificationAC, ViewDefinitionSpecificationAC, TriggerDefinitionSpecificationAC } from "./types.js"
+import { ActionDefinitionSpecificationAC, ViewDefinitionSpecificationAC, TriggerDefinitionSpecificationAC,
+         ModelDefinitionSpecificationExtended, AccessControlSettings } from "./types.js"
 import { EventDefinitionSpecification } from "@live-change/framework"
+
+export interface EntityConfig {
+  readAccessControl?: AccessControlSettings
+  writeAccessControl?: AccessControlSettings
+  createAccessControl?: AccessControlSettings
+  updateAccessControl?: AccessControlSettings
+  deleteAccessControl?: AccessControlSettings
+
+  readAllAccess?: AccessSpecification
+  readAccess?: AccessSpecification
+  writeAccess?: AccessSpecification
+  createAccess?: AccessSpecification
+  updateAccess?: AccessSpecification
+  deleteAccess?: AccessSpecification
+
+  writeableProperties?: string[]
+}
+
+export interface ModelDefinitionSpecificationWithEntity extends ModelDefinitionSpecificationExtended {
+  entity: EntityConfig
+  entityProcessed: boolean
+}
+
+export interface EntityContext {
+  service: ServiceDefinitionSpecification
+  modelName: string
+  modelPropertyName: string
+  model: ModelDefinitionSpecificationWithEntity
+  originalModelProperties: Record<string, PropertyDefinitionSpecification>
+  modelProperties: string[]
+  writeableProperties: string[]
+  objectType: string
+  app: App,
+  modelRuntime: any,
+  annotation: 'entity'
+}
 
 
 export function entityAccessControl({service, modelName, modelPropertyName}, accessControl) {
