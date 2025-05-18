@@ -1,6 +1,6 @@
 {
   "name": "@live-change/agreement-service",
-  "version": "0.9.82",
+  "version": "0.9.83",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/access-control-service": "0.9.82",
-    "@live-change/framework": "0.9.82",
-    "@live-change/relations-plugin": "0.9.82",
-    "@live-change/user-service": "0.9.82"
+    "@live-change/access-control-service": "^0.9.83",
+    "@live-change/framework": "^0.9.83",
+    "@live-change/relations-plugin": "^0.9.83",
+    "@live-change/user-service": "^0.9.83"
   },
   "gitHead": "b1b605b7f1fa4fc3de4720afbb401e2cfff080cf",
   "type": "module"
