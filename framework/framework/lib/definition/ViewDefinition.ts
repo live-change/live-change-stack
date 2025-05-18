@@ -8,10 +8,11 @@ export interface ViewDefinitionSpecificationBase {
   name: string
   properties: Record<string, PropertyDefinitionSpecification>
   returns: PropertyDefinitionSpecification
-  internal: boolean,
-  access: AccessSpecification,
-  skipValidation: boolean,
-  validation: (parameters: Record<string, any>, context: ViewContext) => Promise<any>
+  internal?: boolean,
+  global?: boolean,
+  access?: AccessSpecification,
+  skipValidation?: boolean,
+  validation? : (parameters: Record<string, any>, context: ViewContext) => Promise<any>
 }
 
 export interface ViewDefinitionSpecificationObservable extends ViewDefinitionSpecificationBase {

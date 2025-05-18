@@ -1,6 +1,6 @@
 import {
   defineProperties, defineIndex,
-  processModelsAnnotation, extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl,
+  extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl,
   includeAccessRoles, defineGlobalRangeView
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
@@ -38,7 +38,7 @@ export interface ModelDefinitionSpecificationWithEntity extends ModelDefinitionS
 }
 
 export interface EntityContext {
-  service: ServiceDefinitionSpecification
+  service: ServiceDefinition<ServiceDefinitionSpecification>
   modelName: string
   modelPropertyName: string
   model: ModelDefinitionSpecificationWithEntity

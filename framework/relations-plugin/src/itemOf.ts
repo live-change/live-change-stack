@@ -2,7 +2,8 @@ import {
   defineProperties, defineIndexes,
   processModelsAnnotation, addAccessControlParents,
   defineDeleteByOwnerEvents, defineParentDeleteTriggers, defineParentCopyTriggers,
-   defineGlobalRangeView
+  defineGlobalRangeView,
+  RelationConfig
 } from './utils.js'
 
 import {
@@ -17,15 +18,38 @@ import {
   defineSortIndex,
   defineCopyAction, defineCopyOnParentCopyTrigger
 } from './pluralRelationUtils.js'
+import App, { AccessSpecification, ServiceDefinition, ServiceDefinitionSpecification } from '@live-change/framework'
+import { AccessControlSettings } from './types.js'
 
-export default function(service, app) {
-  processModelsAnnotation(service, app, 'itemOf', false, (config, context) => {
+export interface ItemOfConfig extends RelationConfig {
+  readAccess?: AccessSpecification
+  writeAccess?: AccessSpecification
+  createAccess?: AccessSpecification
+  updateAccess?: AccessSpecification
+  deleteAccess?: AccessSpecification
+  copyAccess?: AccessSpecification
+  readAllAccess?: AccessSpecification
+
+  readAccessControl?: AccessControlSettings
+  writeAccessControl?: AccessControlSettings
+  createAccessControl?: AccessControlSettings
+  updateAccessControl?: AccessControlSettings
+  deleteAccessControl?: AccessControlSettings
+  copyAccessControl?: AccessControlSettings
+  readAllAccessControl?: AccessControlSettings
+}
+
+export default function(service: ServiceDefinition<ServiceDefinitionSpecification>, app: any) {
+  processModelsAnnotation<ItemOfConfig>(service, app, 'itemOf', false, (config, context) => {
 
     context.relationWord = 'Item'
     context.reverseRelationWord = 'Owned'
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
-    context.model.identifiers = [...Object.keys(context.identifiers), { name: context.modelPropertyName, field: 'id' }]
+    context.model.identifiers = [
+      ...Object.keys(context.identifiers).map(name => ({ name, field: name })), 
+      { name: context.modelPropertyName, field: 'id' }
+    ]
 
     addAccessControlParents(context)
     defineIndexes(context.model, context.otherPropertyNames.map(p => p[0].toLowerCase() + p.slice(1)), context.others)
@@ -42,7 +66,7 @@ export default function(service, app) {
       config.readAccess || config.readAccessControl || config.writeAccessControl)
     /// TODO: multiple views with limited fields
 
-    defineGlobalRangeView(config, context, config.readAllAccess)
+    defineGlobalRangeView(config, context, !!config.readAllAccess)
 
     defineCreatedEvent(config, context)
     defineUpdatedEvent(config, context)

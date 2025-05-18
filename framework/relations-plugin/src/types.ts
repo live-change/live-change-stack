@@ -6,10 +6,13 @@ import {
   ModelDefinitionSpecification
 } from "@live-change/framework"
 
-export type AccessControlSettings = string | string[] | {
+export type PreparedAccessControlSettings = {
   roles: string | string[]
   objects?: (properties: any) => any[]
+  objParams?: { names: string[], types: string[] }
 }
+
+export type AccessControlSettings = string | string[] | PreparedAccessControlSettings
 export interface ViewDefinitionSpecificationObservableAC extends ViewDefinitionSpecificationObservable {
   accessControl?: AccessControlSettings
 }
@@ -41,6 +44,7 @@ export interface CrudSettings {
   create?: string
   update?: string
   delete?: string
+  range?: string
 }
 
 export interface Identifier {
@@ -53,4 +57,9 @@ export interface ModelDefinitionSpecificationExtended extends ModelDefinitionSpe
   identifiers: Identifier[]
 }
 
+export interface ModelDefinitionSpecificationWithAccessControl extends ModelDefinitionSpecificationExtended {
+  accessControlParents?: (what: { object: string }) => Promise<{ objectType: string, object: any }[]>
+  accessControlParentsSource?: { property: string, type: string }[]
+  accessRoles?: string[]
+}
 

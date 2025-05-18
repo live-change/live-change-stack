@@ -170,7 +170,7 @@ class TableReader extends ChangeStream {
     if(profileOp) await profileLog.end(profileOp)
   }
   async rangeGet(range) {
-    return await this.table.rangeGet(range)
+    return await (await this.table).rangeGet(range)
   }
   range(range) {
     const key = JSON.stringify(range)

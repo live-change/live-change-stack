@@ -1,11 +1,13 @@
-import App from "@live-change/framework"
+import App, { AccessSpecification, ServiceDefinition } from "@live-change/framework"
 const app = App.app()
 import { allCombinations } from "./combinations.js"
 import {
   registerParentDeleteTriggers, registerParentCopyTriggers
 } from "./changeTriggers.js"
 import {
-  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
+  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition,
+  ServiceDefinitionSpecification,
+  PropertyDefinitionSpecification
 } from "@live-change/framework"
 
 export {
@@ -13,8 +15,10 @@ export {
 } from './dataUtils.js'
 
 import pluralize from 'pluralize'
+import { ModelDefinitionSpecificationWithEntity } from "./entityUtils.js"
+import { AccessControlSettings, ModelDefinitionSpecificationWithAccessControl, PreparedAccessControlSettings } from "./types.js"
 
-export function extractIdParts(otherPropertyNames, properties) {
+export function extractIdParts(otherPropertyNames: string[], properties: Record<string, any>) {
   const idParts = []
   for (const propertyName of otherPropertyNames) {
     idParts.push(properties[propertyName])
@@ -23,13 +27,15 @@ export function extractIdParts(otherPropertyNames, properties) {
 }
 
 
-export function generateId(otherPropertyNames, properties) {
+export function generateId(otherPropertyNames: string[], properties: Record<string, any>) {
   return otherPropertyNames.length > 1
       ? otherPropertyNames.map(p => JSON.stringify(properties[p])).join(':')
       : properties[otherPropertyNames[0]]
 }
 
-export function defineProperties(model, types, names) {
+export function defineProperties(model: ModelDefinitionSpecificationWithAccessControl,
+                                 types: string[], names: string[])
+                                 : Record<string, PropertyDefinition<PropertyDefinitionSpecification>> {
   const identifiers = {}
   for (let i = 0; i < types.length; i++) {
     identifiers[names[i]] = new PropertyDefinition({
@@ -43,14 +49,16 @@ export function defineProperties(model, types, names) {
   return identifiers
 }
 
-export function defineIndex(model, what, props, multi = undefined) {
+export function defineIndex(model: ModelDefinitionSpecificationWithAccessControl,
+                            what: string, props: string[], multi = undefined) {
   console.log("DEFINE INDEX", model.name, what, props)
-  model.indexes['by' + what] = new IndexDefinition({
+  model.indexes['by' + what] = {
     property: props,
     multi
-  })
+  }
 }
-export function defineIndexes(model, props, types) {
+export function defineIndexes(model: ModelDefinitionSpecificationWithAccessControl,
+                              props: Record<string, any>, types: string[]) {
   console.log("DEFINE INDEXES!", model.name, props, types)
   const propCombinations = allCombinations(Object.keys(props)) /// combinations of indexes
   for(const propCombination of propCombinations) {
@@ -79,7 +87,47 @@ export function defineIndexes(model, props, types) {
   }
 }
 
-export function processModelsAnnotation(service, app, annotation, multiple, cb) {
+export interface RelationConfig {
+  what: string | string[]
+  propertyNames?: string[]
+  writeableProperties?: string[]
+  prefix?: string
+  suffix?: string
+  globalView?: boolean
+  readAllAccess?: AccessSpecification
+  sortBy?: string[],
+  customDeleteTrigger?: boolean, /// TODO: check if this is needed
+  customParentCopyTrigger?: boolean /// TODO: check if this is needed
+}
+
+export interface ModelDefinitionSpecificationWithRelation extends ModelDefinitionSpecificationWithAccessControl {  
+}
+
+interface RelationContext {
+  service: ServiceDefinition<ServiceDefinitionSpecification>
+  app: App
+  model: ModelDefinitionSpecificationWithRelation
+  originalModelProperties: Record<string, PropertyDefinitionSpecification>
+  modelProperties: string[]
+  modelPropertyName: string
+  modelName: string
+  modelRuntime: any
+  annotation: string
+  objectType: string
+  parentsTypes: string[]
+  otherPropertyNames: string[]
+  joinedOthersPropertyName: string
+  joinedOthersClassName: string
+  writeableProperties: string[]
+  others: any[],
+  reverseRelationWord?: string
+  relationWord?: string,
+  identifiers?: Record<string, PropertyDefinition<PropertyDefinitionSpecification>>
+}
+
+export function processModelsAnnotation<PreparedConfig extends RelationConfig>
+     (service: ServiceDefinition<ServiceDefinitionSpecification>, app: App, annotation: string, multiple: boolean,
+     cb: (config: PreparedConfig, context: RelationContext) => void) {
   if (!service) throw new Error("no service")
   if (!app) throw new Error("no app")
 
@@ -134,7 +182,7 @@ export function processModelsAnnotation(service, app, annotation, multiple, cb) 
         const joinedOthersClassName = otherNames.join('And')
         const objectType = service.name + '_' + modelName
 
-        const context = {
+        const context: RelationContext = {
           service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName,
           others, annotation, objectType, parentsTypes: others
@@ -146,7 +194,7 @@ export function processModelsAnnotation(service, app, annotation, multiple, cb) 
   }
 }
 
-export function addAccessControlParents(context) {
+export function addAccessControlParents(context: RelationContext) {
   const { modelRuntime } = context
   context.model.accessControlParents = context.model.accessControlParents ?? (async (what) => {
     const id = what.object
@@ -169,29 +217,31 @@ export function addAccessControlParents(context) {
   )
 }
 
-export function prepareAccessControl(accessControl, names, types) {
+
+export function prepareAccessControl(accessControl: AccessControlSettings, names: string[], types: string[]) {
   if(typeof accessControl == 'object') {
-    accessControl.objects = accessControl.objects ?? ((params) => names.map((name, index) => ({
+    const ac = accessControl as PreparedAccessControlSettings
+    ac.objects = ac.objects ?? ((params) => names.map((name, index) => ({
       objectType: types[index],
       object: params[name]
     })))
-    accessControl.objParams = { names, types }
+    ac.objParams = { names, types }
   }
 }
 
-export function cloneAndPrepareAccessControl(accessControl, names, types) {
+export function cloneAndPrepareAccessControl(accessControl: AccessControlSettings, names: string[], types: string[]) {
   if(!accessControl) return accessControl
   if(Array.isArray(accessControl)) {
-    accessControl = { roles: accessControl}
+    accessControl = { roles: accessControl }
   }
-  const newAccessControl = { ...accessControl }
+  const newAccessControl: PreparedAccessControlSettings = { ...(accessControl as PreparedAccessControlSettings) }
   prepareAccessControl(newAccessControl, names, types)
   return newAccessControl
 }
 
-export function defineDeleteByOwnerEvents(config, context, generateId) {
+export function defineDeleteByOwnerEvents(config: RelationConfig, context: RelationContext) {
   const {
-    service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
+    service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames,
   } = context
   for(const propertyName of otherPropertyNames) {
     const eventName = modelName + 'DeleteByOwner'
@@ -224,15 +274,16 @@ export function defineDeleteByOwnerEvents(config, context, generateId) {
   }
 }
 
-export function defineParentDeleteTriggers(config, context) {
+export function defineParentDeleteTriggers(config: RelationConfig, context: RelationContext) {
   registerParentDeleteTriggers(context, config)
 }
 
-export function defineParentCopyTriggers(config, context) {
+export function defineParentCopyTriggers(config: RelationConfig, context: RelationContext) {
   registerParentCopyTriggers(context, config)
 }
 
-export function includeAccessRoles(model, access) {
+export function includeAccessRoles(model: ModelDefinitionSpecificationWithAccessControl, 
+                                   access: AccessControlSettings | AccessControlSettings[]) {
   if(!access) return
   if(!model.accessRoles) model.accessRoles = []
   if(typeof access === 'string' && !model.accessRoles.find(role => role === access)) {
@@ -242,13 +293,23 @@ export function includeAccessRoles(model, access) {
     for(const element of access) {
       includeAccessRoles(model, element)
     }
-  }
-  if(access.roles) {
-    includeAccessRoles(model, access.roles)
+  } else if((access as PreparedAccessControlSettings).roles) {
+    includeAccessRoles(model, (access as PreparedAccessControlSettings).roles)
   }
 }
 
-export function defineGlobalRangeView(config, context, external = true) {
+export function defineGlobalRangeView(config: {
+  prefix?: string
+  suffix?: string
+  globalView?: boolean
+  readAllAccess?: AccessSpecification
+}, context: {
+  service: ServiceDefinition<ServiceDefinitionSpecification>
+  modelRuntime: any
+  modelPropertyName: string
+  modelName: string
+  model: ModelDefinitionSpecificationWithAccessControl
+}, external:boolean = true) {
   const { service, modelRuntime, modelPropertyName, modelName, model } = context
   const alreadyPlural = pluralize.isPlural(modelPropertyName)  
   const prefix = (config.prefix || '') + (alreadyPlural ? 'all' : '')
@@ -265,13 +326,13 @@ export function defineGlobalRangeView(config, context, external = true) {
     returns: {
       type: Array,
       of: {
-        type: model
+        type: service.name + '_' + modelName
       }
     },
     internal: !external,
     global: config.globalView,
-    access: external && config.readAllAccess,
-    daoPath(properties, { client, context }) {
+    access: external ? (config.readAllAccess ?? undefined) : undefined,
+    daoPath(properties, { client, service }) {
       const range = App.extractRange(properties)
       const path = modelRuntime().rangePath(range)
       return path

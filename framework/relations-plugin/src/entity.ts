@@ -9,8 +9,6 @@ import {
   EntityConfig,
   EntityContext
 } from './entityUtils.js'
-import { AccessControlSettings, ModelDefinitionSpecificationExtended } from './types.js'
-import { AccessSpecification, ModelDefinitionSpecification } from '@live-change/framework'
 
 export type { EntityConfig, ModelDefinitionSpecificationWithEntity } from './entityUtils.js'
 
