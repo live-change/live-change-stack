@@ -167,6 +167,7 @@ export function processModelsAnnotation<PreparedConfig extends RelationConfig>
           config = { what: config }
         }
 
+        // @ts-ignore
         console.log("MODEL " + modelName + " IS " + annotation + " " + config.what ?? '')
 
         const what = (Array.isArray(config.what) ? config.what : [config.what])

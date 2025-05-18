@@ -61,9 +61,9 @@ export default function(service: ServiceDefinition<ServiceDefinitionSpecificatio
     }
 
     defineSingleView(config, context,
-      config.readAccess || config.readAccessControl || config.writeAccessControl)
+      !!(config.readAccess || config.readAccessControl || config.writeAccessControl))
     defineRangeView(config, context,
-      config.readAccess || config.readAccessControl || config.writeAccessControl)
+      !!(config.readAccess || config.readAccessControl || config.writeAccessControl))
     /// TODO: multiple views with limited fields
 
     defineGlobalRangeView(config, context, !!config.readAllAccess)
