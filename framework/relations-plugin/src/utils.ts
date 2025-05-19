@@ -122,7 +122,9 @@ interface RelationContext {
   others: any[],
   reverseRelationWord?: string
   relationWord?: string,
+  partialReverseRelationWord?: string,
   identifiers?: Record<string, PropertyDefinition<PropertyDefinitionSpecification>>
+  sameIdAsParent?: boolean
 }
 
 export function processModelsAnnotation<PreparedConfig extends RelationConfig>

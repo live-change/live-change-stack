@@ -1,5 +1,6 @@
 import {
-  defineProperties, defineIndex, processModelsAnnotation
+  defineProperties, defineIndex, processModelsAnnotation,
+  RelationConfig
 } from './utils.js'
 
 import {
@@ -12,9 +13,30 @@ import {
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger, defineCopyTrigger,
   defineSortIndex,
 } from './pluralRelationUtils.js'
+import { AccessSpecification } from '@live-change/framework'
+import { AccessControlSettings } from './types.js'
+
+export interface RelatedToConfig extends RelationConfig {
+  readAccess?: AccessSpecification
+  writeAccess?: AccessSpecification
+  createAccess?: AccessSpecification
+  updateAccess?: AccessSpecification
+  deleteAccess?: AccessSpecification
+  copyAccess?: AccessSpecification
+  readAllAccess?: AccessSpecification
+
+  readAccessControl?: AccessControlSettings
+  writeAccessControl?: AccessControlSettings
+  createAccessControl?: AccessControlSettings
+  updateAccessControl?: AccessControlSettings
+  deleteAccessControl?: AccessControlSettings
+  copyAccessControl?: AccessControlSettings
+  readAllAccessControl?: AccessControlSettings
+}
+
 
 export default function(service, app) {
-  processModelsAnnotation(service, app, 'relatedTo', true, (config, context) => {
+  processModelsAnnotation<RelatedToConfig>(service, app, 'relatedTo', true, (config, context) => {
 
     context.relationWord = 'Friend'
     context.reverseRelationWord = 'Related'
@@ -29,10 +51,10 @@ export default function(service, app) {
     }
 
     defineSingleView(config, context,
-      config.readAccess || config.readAccessControl || config.writeAccessControl
+      !!(config.readAccess || config.readAccessControl || config.writeAccessControl)
     )
     defineRangeView(config, context,
-      config.readAccess || config.readAccessControl || config.writeAccessControl
+      !!(config.readAccess || config.readAccessControl || config.writeAccessControl)
     )
     /// TODO: multiple views with limited fields
 

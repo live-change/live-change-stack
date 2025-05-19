@@ -2,7 +2,8 @@ import {
   defineProperties, defineIndexes,
   processModelsAnnotation, generateId, addAccessControlParents,
   defineDeleteByOwnerEvents, defineParentDeleteTriggers,
-  defineGlobalRangeView
+  defineGlobalRangeView,
+  RelationConfig
 } from './utils.js'
 
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
@@ -21,9 +22,37 @@ import {
   defineDeleteTrigger,
   defineDeleteAction
 } from './singularRelationUtils.js'
+import { AccessSpecification } from '@live-change/framework'
+import { AccessControlSettings } from './types.js'
 
+export interface PropertyOfConfig extends RelationConfig {
+  readAccess?: AccessSpecification
+  writeAccess?: AccessSpecification
+  listAccess?: AccessSpecification
+  setAccess?: AccessSpecification
+  updateAccess?: AccessSpecification
+  setOrUpdateAccess?: AccessSpecification
+  resetAccess?: AccessSpecification
+  readAllAccess?: AccessSpecification
+
+  readAccessControl?: AccessControlSettings
+  writeAccessControl?: AccessControlSettings
+  listAccessControl?: AccessControlSettings
+  setAccessControl?: AccessControlSettings
+  updateAccessControl?: AccessControlSettings
+  resetAccessControl?: AccessControlSettings
+  setOrUpdateAccessControl?: AccessControlSettings
+  views?: {
+    type: 'range' | 'object'
+    internal?: boolean
+    readAccess?: AccessSpecification,
+    readAccessControl?: AccessControlSettings,
+    fields?: string[]
+  }[]
+}
+  
 export default function(service, app) {
-  processModelsAnnotation(service, app, 'propertyOf', false, (config, context) => {
+  processModelsAnnotation<PropertyOfConfig>(service, app, 'propertyOf', false, (config, context) => {
 
     context.relationWord = 'Property'
     context.reverseRelationWord = 'Owned'
@@ -32,16 +61,18 @@ export default function(service, app) {
     context.sameIdAsParent = true
 
     context.identifiers = defineProperties(context.model, context.others, context.otherPropertyNames)
-    context.model.identifiers = Object.keys(context.identifiers)
+    context.model.identifiers = [
+      ...Object.keys(context.identifiers).map(name => ({ name, field: name })), 
+      { name: context.modelPropertyName, field: 'id' }
+    ]
 
     addAccessControlParents(context)
     defineIndexes(context.model, context.otherPropertyNames, context.others)
 
     defineObjectView({ ...config }, context,
-      config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
+      !!(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl))
     defineRangeViews(config, context,
-      config.listAccess || config.readAccess || config.listAccessControl
-    )
+      !!(config.listAccess || config.readAccess || config.listAccessControl))
 
     if(config.views) {
       for(const view of config.views) {
@@ -53,7 +84,7 @@ export default function(service, app) {
       }
     }
 
-    defineGlobalRangeView(config, context, config.readAllAccess)
+    defineGlobalRangeView(config, context, !!config.readAllAccess)
 
     defineSetEvent(config, context, generateId)
     defineUpdatedEvent(config, context, generateId)
@@ -75,7 +106,7 @@ export default function(service, app) {
       defineUpdateAction(config, context)
     }
 
-    if((config.setAccess && config.updateAccess) || config.writeAccess
+    if((config.setAccess && config.updateAccess && config.setOrUpdateAccess) || config.writeAccess
       || config.setOrUpdateAccessControl || config.writeAccessControl) {
       defineSetOrUpdateAction(config, context)
     }

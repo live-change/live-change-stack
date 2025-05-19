@@ -1,6 +1,7 @@
 import {
   defineProperties, defineIndex,
-  processModelsAnnotation, generateId
+  processModelsAnnotation, generateId,
+  RelationConfig
 } from './utils.js'
 
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
@@ -19,9 +20,37 @@ import {
   defineDeleteAction,
   defineDeleteTrigger
 } from './singularRelationUtils.js'
+import { AccessSpecification } from '@live-change/framework'
+import { AccessControlSettings } from './types.js'
+
+export interface BoundToConfig extends RelationConfig {
+  readAccess?: AccessSpecification
+  writeAccess?: AccessSpecification
+  listAccess?: AccessSpecification
+  setAccess?: AccessSpecification
+  updateAccess?: AccessSpecification
+  setOrUpdateAccess?: AccessSpecification
+  resetAccess?: AccessSpecification
+  readAllAccess?: AccessSpecification
+
+  readAccessControl?: AccessControlSettings
+  writeAccessControl?: AccessControlSettings
+  listAccessControl?: AccessControlSettings
+  setAccessControl?: AccessControlSettings
+  updateAccessControl?: AccessControlSettings
+  resetAccessControl?: AccessControlSettings
+  setOrUpdateAccessControl?: AccessControlSettings
+  views?: {
+    type: 'range' | 'object'
+    internal?: boolean
+    readAccess?: AccessSpecification,
+    readAccessControl?: AccessControlSettings,
+    fields?: string[]
+  }[]
+}
 
 export default function(service, app) {
-  processModelsAnnotation(service, app, 'boundTo', false, (config, context) => {
+  processModelsAnnotation<BoundToConfig>(service, app, 'boundTo', false, (config, context) => {
 
     context.relationWord = 'Friend'
     context.reverseRelationWord = 'Bound'
@@ -31,10 +60,10 @@ export default function(service, app) {
     defineIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
 
     defineObjectView({ ...config, access: config.readAccess }, context,
-      config.readAccess || config.readAccessControl || config.writeAccessControl
+      !!(config.readAccess || config.readAccessControl || config.writeAccessControl)
     )
     defineRangeViews(config, context,
-      config.listAccess || config.readAccess || config.listAccessControl
+      !!(config.listAccess || config.readAccess || config.listAccessControl)
     )
 
     if(config.views) {
