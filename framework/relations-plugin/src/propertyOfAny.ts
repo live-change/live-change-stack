@@ -24,9 +24,41 @@ import {
   defineDeleteTrigger,
   defineDeleteAction
 } from './singularRelationAnyUtils.js'
+import { AccessSpecification } from '@live-change/framework'
+import { AnyRelationConfig } from './utilsAny.js'
+import { AccessControlSettings } from './types.js'
+
+export interface PropertyOfAnyConfig extends AnyRelationConfig {
+  readAccess?: AccessSpecification
+  writeAccess?: AccessSpecification
+  readAllAccess?: AccessSpecification
+  setAccess?: AccessSpecification
+  updateAccess?: AccessSpecification
+  setOrUpdateAccess?: AccessSpecification
+  resetAccess?: AccessSpecification
+  singleAccess?: AccessSpecification
+  listAccess?: AccessSpecification
+
+  readAccessControl?: AccessControlSettings
+  writeAccessControl?: AccessControlSettings
+  readAllAccessControl?: AccessControlSettings
+  setAccessControl?: AccessControlSettings
+  updateAccessControl?: AccessControlSettings
+  setOrUpdateAccessControl?: AccessControlSettings
+  resetAccessControl?: AccessControlSettings
+  singleAccessControl?: AccessControlSettings
+  listAccessControl?: AccessControlSettings
+
+  views?: {
+    type: 'range' | 'object'
+    internal?: boolean
+    fields?: string[]
+  }[]
+
+}
 
 export default function(service, app) {
-  processModelsAnyAnnotation(service, app, 'propertyOfAny', false, (config, context) => {
+  processModelsAnyAnnotation<PropertyOfAnyConfig>(service, app, 'propertyOfAny', false, (config, context) => {
 
     context.relationWord = 'Property'
     context.reverseRelationWord = 'Owned'
@@ -35,18 +67,20 @@ export default function(service, app) {
     context.sameIdAsParent = true
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
-    context.model.identifiers = Object.keys(context.identifiers)
+    context.model.identifiers = [
+      ...Object.keys(context.identifiers).map(name => ({ name, field: name }))      
+    ]
 
     addAccessControlAnyParents(context)
     defineAnyIndexes(context.model, context.otherPropertyNames, false)
     defineAnyTypeIndexes(config, context, context.otherPropertyNames.length === 1)
 
     defineObjectView(config, context,
-      config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl
+      !!(config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl)
     )
 
     defineRangeViews(config, context,
-      config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl
+      !!(config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl)
     )
 
     if(config.views) {
@@ -59,13 +93,13 @@ export default function(service, app) {
       }
     }
 
-    defineGlobalRangeView(config, context, config.readAllAccess)
+    defineGlobalRangeView(config, context, !!config.readAllAccess)
 
     defineSetEvent(config, context, generateAnyId)
     defineUpdatedEvent(config, context, generateAnyId)
     defineTransferredEvent(config, context, generateAnyId)
     defineResetEvent(config, context, generateAnyId)
-    defineDeleteByOwnerEvents(config, context, generateAnyId)
+    defineDeleteByOwnerEvents(config, context)
 
     defineSetTrigger(config, context)
     defineUpdateTrigger(config, context)

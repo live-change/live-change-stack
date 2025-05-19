@@ -5,7 +5,7 @@ import {
   registerParentDeleteTriggers, registerParentCopyTriggers
 } from "./changeTriggers.js"
 import {
-  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition,
+  PropertyDefinition, ViewDefinition,  EventDefinition,
   ServiceDefinitionSpecification,
   PropertyDefinitionSpecification
 } from "@live-change/framework"

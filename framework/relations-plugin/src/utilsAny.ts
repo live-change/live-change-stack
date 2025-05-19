@@ -1,10 +1,11 @@
-import App from "@live-change/framework"
+import App, { AccessSpecification, PropertyDefinitionSpecification, ServiceDefinition, ServiceDefinitionSpecification } from "@live-change/framework"
 const app = App.app()
 import {
-  PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
+  PropertyDefinition, EventDefinition,
 } from "@live-change/framework"
 import { allCombinations } from "./combinations.js"
 import { registerParentDeleteTriggers } from "./changeTriggers.js"
+import { ModelDefinitionSpecificationWithAccessControl } from "./types.js"
 
 
 export function extractTypeAndIdParts(otherPropertyNames, properties) {
@@ -62,10 +63,10 @@ export function defineAnyProperties(model, names, config) {
 }
 
 export function defineAnyIndex(model, what, props) {
-  model.indexes['by' + what] = new IndexDefinition({
+  model.indexes['by' + what] = {
     property: props.map(prop => [prop+'Type', prop]).flat(),
     hash: true
-  })
+  }
 }
 
 export function defineAnyIndexes(model, props, fullIndex = true) {
@@ -77,7 +78,50 @@ export function defineAnyIndexes(model, props, fullIndex = true) {
   }
 }
 
-export function processModelsAnyAnnotation(service, app, annotation, multiple, cb) {
+export interface AnyRelationConfig {
+  what: string | string[]
+  propertyNames?: string[]
+  writeableProperties?: string[]
+  prefix?: string
+  suffix?: string
+  globalView?: boolean
+  readAllAccess?: AccessSpecification
+  sortBy?: string[],
+  customDeleteTrigger?: boolean, /// TODO: check if this is needed
+  customParentCopyTrigger?: boolean /// TODO: check if this is needed
+}
+
+export interface ModelDefinitionSpecificationWithAnyRelation extends ModelDefinitionSpecificationWithAccessControl {  
+}
+
+interface AnyRelationContext {
+  service: ServiceDefinition<ServiceDefinitionSpecification>
+  app: App
+  model: ModelDefinitionSpecificationWithAnyRelation
+  originalModelProperties: Record<string, PropertyDefinitionSpecification>
+  modelProperties: string[]
+  modelPropertyName: string
+  modelName: string
+  modelRuntime: any
+  annotation: string,
+  otherPropertyNames: string[]
+  joinedOthersPropertyName: string
+  joinedOthersClassName: string
+  writeableProperties: string[]
+  others: any[],
+  objectType: string
+  parentsTypes: string[]
+  otherPossibleTypes: string[][],
+  reverseRelationWord?: string,
+  relationWord?: string,
+  partialReverseRelationWord?: string,
+  identifiers?: Record<string, PropertyDefinition<PropertyDefinitionSpecification>>
+  sameIdAsParent?: boolean
+}
+
+export function processModelsAnyAnnotation<PreparedConfig extends AnyRelationConfig>
+        (service: ServiceDefinition<ServiceDefinitionSpecification>, app: App, annotation: string, multiple: boolean,
+        cb: (config: PreparedConfig, context: AnyRelationContext) => void) {
   if (!service) throw new Error("no service")
   if (!app) throw new Error("no app")
 
@@ -137,12 +181,13 @@ export function processModelsAnyAnnotation(service, app, annotation, multiple, c
         const joinedOthersClassName = others.join('And')
         const objectType = service.name + '_' + modelName
 
-        const parentsTypes = Array.from(new Set(
+        const parentsTypes: string[] = Array.from(new Set(
           (config.parentsTypes || [])
             .concat(otherPossibleTypes.filter(x => !!x).flat()
         )))
 
-        const context = {
+        const context: AnyRelationContext = {
+          annotation,
           service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
           objectType, parentsTypes, otherPossibleTypes
@@ -241,7 +286,7 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
   const tableName = service.name + '_' + model.name
   if(useId) { // don't use indexes - only object id's - good for propertyOfAny with one parent
     if(context.otherPossibleTypes[0]?.length) return // types defined in definition - no need for index
-    model.indexes[context.otherPropertyNames[0]+'Types'] = new IndexDefinition({
+    model.indexes[context.otherPropertyNames[0]+'Types'] = {
       //property: [propertyName+'Type'],
       function:  async function(input, output, { tableName }) {
         const table = await input.table(tableName)
@@ -263,7 +308,7 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
         })
       },
       parameters: { tableName: tableName }
-    })
+    }
     return
   }
   for(let i = 0; i < context.otherPropertyNames.length; i++) {
@@ -272,7 +317,7 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
     if(propertyTypes.length !== 0) continue // types defined in definition - no need for index
     const srcIndexName = 'by' + propertyName[0].toUpperCase() + propertyName.slice(1)
     if(!model.indexes[srcIndexName]) throw new Error("Parent index not defined: " + srcIndexName)
-    model.indexes[propertyName+'Types'] = new IndexDefinition({
+    model.indexes[propertyName+'Types'] = {
       //property: [propertyName+'Type'],
       function:  async function(input, output, { indexName }) {
         const index = await input.index(indexName)
@@ -294,6 +339,6 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
         })
       },
       parameters: { indexName: tableName + '_' + srcIndexName }
-    })
+    }
   }
 }

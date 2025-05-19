@@ -21,7 +21,7 @@
     "skipLibCheck": true,
     "noImplicitAny": false
   },
-  "files": ["src/index.js"],
+  "files": ["src/index.ts"],
   "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": ["node_modules/@types", "node_modules/**/*.d.ts", "**/*.test.js", "**/CMakeFiles/**"]
 }

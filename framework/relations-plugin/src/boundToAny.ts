@@ -1,6 +1,7 @@
 import {
   defineAnyProperties, defineAnyIndex,
-  processModelsAnyAnnotation, generateAnyId, defineAnyTypeIndexes
+  processModelsAnyAnnotation, generateAnyId, defineAnyTypeIndexes,
+  AnyRelationConfig
 } from './utilsAny.js'
 
 import { defineSetEvent, defineUpdatedEvent, defineTransferredEvent, defineResetEvent } from './propertyEvents.js'
@@ -11,9 +12,40 @@ import {
   defineSetTrigger, defineUpdateTrigger, defineSetOrUpdateTrigger, defineResetTrigger
 } from './singularRelationAnyUtils.js'
 import { defineDeleteAction, defineDeleteTrigger } from './singularRelationAnyUtils.js'
+import { AccessSpecification } from '@live-change/framework'
+import { AccessControlSettings } from './types.js'
+
+export interface BoundToAnyConfig extends AnyRelationConfig {
+  readAccess?: AccessSpecification
+  writeAccess?: AccessSpecification
+  readAllAccess?: AccessSpecification
+  setAccess?: AccessSpecification
+  updateAccess?: AccessSpecification
+  setOrUpdateAccess?: AccessSpecification
+  resetAccess?: AccessSpecification
+  singleAccess?: AccessSpecification
+  listAccess?: AccessSpecification
+
+  readAccessControl?: AccessControlSettings
+  writeAccessControl?: AccessControlSettings
+  readAllAccessControl?: AccessControlSettings
+  setAccessControl?: AccessControlSettings
+  updateAccessControl?: AccessControlSettings
+  setOrUpdateAccessControl?: AccessControlSettings
+  resetAccessControl?: AccessControlSettings
+  singleAccessControl?: AccessControlSettings
+  listAccessControl?: AccessControlSettings
+
+  views?: {
+    type: 'range' | 'object'
+    internal?: boolean
+    fields?: string[]
+  }[]
+  
+}
 
 export default function(service, app) {
-  processModelsAnyAnnotation(service, app, 'boundToAny', false, (config, context) => {
+  processModelsAnyAnnotation<BoundToAnyConfig>(service, app, 'boundToAny', false, (config, context) => {
 
     context.relationWord = 'Friend'
     context.reverseRelationWord = 'Bound'
@@ -24,10 +56,10 @@ export default function(service, app) {
     defineAnyTypeIndexes(config, context, context.otherPropertyNames.length === 1)
 
     defineObjectView(config, context,
-      config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl
+      !!(config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl)
     )
     defineRangeViews(config, context,
-      config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl
+      !!(config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl)
     )
 
     if(config.views) {

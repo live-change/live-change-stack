@@ -1,9 +1,6 @@
-import { defineGlobalRangeView } from './utils.js'
-
 import {
-  defineAnyProperties, defineAnyIndexes,
-  processModelsAnyAnnotation, addAccessControlAnyParents, generateAnyId, defineDeleteByOwnerEvents,
-  defineParentDeleteTrigger, defineAnyTypeIndexes
+  defineAnyProperties, defineAnyIndex, processModelsAnyAnnotation, defineAnyTypeIndexes,
+  AnyRelationConfig
 } from './utilsAny.js'
 
 import {
@@ -16,18 +13,34 @@ import {
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
   defineSortIndex
 } from './pluralRelationAnyUtils.js'
+import { AccessSpecification } from '@live-change/framework'
+import { AccessControlSettings } from './types.js'
+
+export interface RelatedToAnyConfig extends AnyRelationConfig {
+  readAccess?: AccessSpecification
+  writeAccess?: AccessSpecification
+  createAccess?: AccessSpecification
+  updateAccess?: AccessSpecification
+  deleteAccess?: AccessSpecification
+  copyAccess?: AccessSpecification
+  readAllAccess?: AccessSpecification
+
+  readAccessControl?: AccessControlSettings
+  writeAccessControl?: AccessControlSettings
+  createAccessControl?: AccessControlSettings
+  updateAccessControl?: AccessControlSettings
+  deleteAccessControl?: AccessControlSettings
+  copyAccessControl?: AccessControlSettings
+}
 
 export default function(service, app) {
-  processModelsAnyAnnotation(service, app, 'itemOfAny',false, (config, context) => {
+  processModelsAnyAnnotation<RelatedToAnyConfig>(service, app, 'relatedToAny',true, (config, context) => {
 
-    context.relationWord = 'Item'
-    context.reverseRelationWord = 'Owned'
+    context.relationWord = 'Friend'
+    context.reverseRelationWord = 'Related'
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
-    context.model.identifiers = [...Object.keys(context.identifiers), { name: context.modelPropertyName, field: 'id' }]
-
-    addAccessControlAnyParents(context)
-    defineAnyIndexes(context.model, context.otherPropertyNames)
+    defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
     defineAnyTypeIndexes(config, context, false)
 
     if(config.sortBy) {
@@ -37,19 +50,17 @@ export default function(service, app) {
     }
 
     defineSingleView(config, context,
-      config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
+      !!(config.readAccess || config.readAccessControl || config.writeAccessControl)
+    )
     defineRangeView(config, context,
-      config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl)
-    /// TODO: multiple views with all properties combinations
+      !!(config.readAccess || config.readAccessControl || config.writeAccessControl)
+    )
     /// TODO: multiple views with limited fields
-
-    defineGlobalRangeView(config, context, config.readAllAccess)
 
     defineCreatedEvent(config, context)
     defineUpdatedEvent(config, context)
     defineTransferredEvent(config, context)
     defineDeletedEvent(config, context)
-    defineDeleteByOwnerEvents(config, context, generateAnyId)
 
     defineCreateTrigger(config, context)
     defineUpdateTrigger(config, context)
@@ -66,7 +77,5 @@ export default function(service, app) {
     if(config.deleteAccess || config.writeAccess || config.deleteAccessControl || config.writeAccessControl) {
       defineDeleteAction(config, context)
     }
-
-    if(!config.customDeleteTrigger) defineParentDeleteTrigger(config, context)
   })
 }

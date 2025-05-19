@@ -32,6 +32,11 @@ export function defineUpdaterProperties() {
   }
 }
 
+export interface SaveAuthorConfig {
+  saveAuthor?: boolean
+  saveUpdater?: boolean
+}
+
 export default function(service, app) {
   for(let modelName in service.models) {
     const model = service.models[modelName]
