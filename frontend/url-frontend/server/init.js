@@ -1,4 +1,4 @@
-const {createUser} = require("@live-change/user-frontend/server/init-functions.js");
+const {createUser} = require("@live-change/user-service/init-functions.js");
 const App = require('@live-change/framework')
 const app = App.app()
 

@@ -4,11 +4,13 @@
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test tape tests/*.js"
+    "test": "NODE_ENV=test tape tests/*.js",
+    "build": "tsc --allowJs && copyfiles node_modules/@live-change/framework/package.json dist && copyfiles node_modules/@live-change/cli/package.json dist && copyfiles node_modules/@live-change/server/package.json dist",
+    "runBuilt": "cross-env NODE_ENV=production node dist/bin/server.js --verbose serve --slowStart --dbRoot db-test.db"
   },
   "bin": {
-    "livechangedb": "./bin/server.js",
-    "lcdbd": "./bin/server.js"
+    "livechangedb": "./dist/bin/server.js",
+    "lcdbd": "./dist/bin/server.js"
   },
   "repository": {
     "type": "git",

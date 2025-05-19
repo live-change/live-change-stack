@@ -1,4 +1,4 @@
-import { createUser } from "@live-change/user-frontend/server/init-functions.js"
+import { createUser } from "@live-change/user-service/init-functions.js"
 import App from '@live-change/framework'
 const app = App.app()
 

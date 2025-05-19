@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowSyntheticDefaultImports": true,
+
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM"],
+
+    /* Linting */
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "dist",
+    "checkJs": false,
+    "esModuleInterop": true,    // Enable interop for ES modules
+    "resolveJsonModule": true,  // Allow importing JSON files
+    "skipLibCheck": true,
+    "noImplicitAny": false
+  },
+  "files": ["bin/server.js"],
+  "include": [
+    "index.ts", "index.js",
+    "lib/**/*.ts", "lib/**/*.js",    
+    "node_modules/@live-change/framework/**/*.ts", "node_modules/@live-change/framework/**/*.js",
+    "node_modules/@live-change/cli/**/*.ts", "node_modules/@live-change/cli/**/*.js",    
+    "node_modules/@live-change/server/**/*.ts", "node_modules/@live-change/server/**/*.js"
+  ],
+  "exclude": ["node_modules/@types", "node_modules/**/*.d.ts", "**/*.test.js", "**/CMakeFiles/**"]
+}
+
