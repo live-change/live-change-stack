@@ -11,16 +11,22 @@ RUN npm install -g node-lmdb
 RUN npm install -g subleveldown
 RUN npm install -g typescript
 
-COPY package.json .
-RUN npm install -g @live-change/db-server@`echo "console.log(require('./package.json').version)" | node`
 RUN npm install -g @live-change/db-client@`echo "console.log(require('./package.json').version)" | node`
-RUN rm package.json
 
-RUN cd /usr/local/lib/node_modules/@live-change/db-server/node_modules/@live-change/db-admin/; npm run build
-RUN cd /usr/local/lib/node_modules/@live-change/db-server/; npm run build
+# APP
+RUN mkdir -p /app
+WORKDIR /app
+COPY package.json package.json
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc yarn install
+RUN cd node_modules/@live-change/db-admin/; npm run build
+COPY /bin bin
+COPY /lib lib
+COPY index.js index.js
+COPY tsconfig.json tsconfig.json
+RUN npm run build
 
 EXPOSE 9417
 
 RUN mkdir /data
 
-CMD lcdbd --verbose serve --dbRoot /data
+CMD /app/bin/server.js --verbose serve --dbRoot /data
