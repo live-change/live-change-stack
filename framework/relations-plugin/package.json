@@ -25,5 +25,10 @@
     "@live-change/framework": "0.9.84",
     "pluralize": "^8.0.0"
   },
+  "devDependencies": {
+    "typedoc": "0.28.3",
+    "typedoc-plugin-markdown": "^4.6.3",
+    "typedoc-plugin-rename-defaults": "^0.7.3"
+  },
   "gitHead": "b1b605b7f1fa4fc3de4720afbb401e2cfff080cf"
 }
