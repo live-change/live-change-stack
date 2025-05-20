@@ -1,6 +1,6 @@
 {
   "entryPoints": ["index.ts"],
-  "out": "docs",
+  "out": "../../docs/docs/framework",
   "includeVersion": true,
   "excludePrivate": true,
   "excludeInternal": true,
