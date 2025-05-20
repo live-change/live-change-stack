@@ -30,7 +30,7 @@ jobs:
         with:
           node-version: 22
           cache: yarn
-          cache-dependency-path: 'docs/yarn.lock'
+          cache-dependency-path: 'yarn.lock'
 
       - name: Install Deps
         run: yarn install --frozen-lockfile

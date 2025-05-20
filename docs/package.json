@@ -5,8 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "generate:framework": "cd ../framework/framework && typedoc",
-    "generate:relations": "cd ../framework/relations-plugin && typedoc",
+    "generate:framework": "cd ../framework/framework && ../../docs/node_modules/.bin/typedoc",
+    "generate:relations": "cd ../framework/relations-plugin && ../../docs/node_modules/.bin/typedoc",
     "generate:all": "yarn generate:framework && yarn generate:relations",
     "make:public": "mkdir -p docs/.vuepress/public/md && cp -r docs/framework docs/.vuepress/public/md/framework && cp -r docs/relations docs/.vuepress/public/md/relations",
     "build": "yarn generate:all && yarn make:public && vuepress build docs",
@@ -19,6 +19,9 @@
     "@vuepress/theme-default": "2.0.0-rc.88",
     "sass-embedded": "^1.86.0",
     "vue": "^3.5.13",
-    "vuepress": "2.0.0-rc.20"
+    "vuepress": "2.0.0-rc.20",
+    "typedoc": "0.28.3",
+    "typedoc-plugin-markdown": "^4.6.3",
+    "typedoc-plugin-rename-defaults": "^0.7.3"
   }
 }
