@@ -11,8 +11,11 @@ permissions:
   contents: write
 
 jobs:
-  deploy-gh-pages:
+  deploy-gh-pages:    
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docs
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,11 +31,9 @@ jobs:
           cache: yarn
 
       - name: Install Deps
-        working-directory: docs
         run: yarn install --frozen-lockfile
 
       - name: Build Docs
-        working-directory: docs
         env:
           NODE_OPTIONS: --max_old_space_size=8192
         run: |-

@@ -4,3 +4,4 @@ docs/relations
 docs/framework
 docs/.vuepress/public/md
 docs/.vuepress/dist
+!yarn.lock
