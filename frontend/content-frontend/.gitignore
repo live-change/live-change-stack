@@ -1,0 +1,10 @@
+.env
+yarn.lock
+node_modules
+front/dist
+e2e/output
+stats.html
+*.db
+storage
+build-stats
+front/components.d.ts

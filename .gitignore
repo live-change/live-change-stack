@@ -1,0 +1,13 @@
+*.log
+*/node_modules
+node_modules
+counter-service
+.idea
+lerna-debug.log
+yarn.lock
+*/front/components.d.ts
+.nx
+**/.nx
+*.iml
+.history
+.vscode
