@@ -90,6 +90,7 @@ class ScriptContext {
 
   getOrCreateFunction(code, filename) {
     const cleanCode = code.replace(/\n +/g, "\n")
+    //if(!globalThis.compiledFunctions) globalThis.compiledFunctions = {}
     //console.log("COMPILED FUNCTIONS", `\n[\n  ${Object.keys(globalThis.compiledFunctions).join(',\n  ')},\n]`)
     /*if(!(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[cleanCode]) {
       console.log("############# compiled function not found: ", code)

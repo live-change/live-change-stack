@@ -255,7 +255,10 @@ export function parentObjectsFromIdentifiers(identifiers, modelDefinition) {
   const results = []
   for(const [key, value] of Object.entries(identifiers)) {
     if(key.endsWith('Type')) continue
+    const identifierDefinition = (modelDefinition.identifiers ?? []).find(i => i.name === key)
+    if(identifierDefinition && identifierDefinition.field === 'id') continue
     const propertyDefinition = modelDefinition.properties[key]
+    if(!propertyDefinition) continue
     const propertyType = propertyDefinition.type
     if(propertyType === 'any') {
       results.push({

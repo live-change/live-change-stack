@@ -5,24 +5,24 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "generate:framework": "cd ../framework/framework && ../../docs/node_modules/.bin/typedoc",
-    "generate:relations": "cd ../framework/relations-plugin && ../../docs/node_modules/.bin/typedoc",
+    "generate:framework": "cd ../framework/framework && typedoc",
+    "generate:relations": "cd ../framework/relations-plugin && typedoc",
     "generate:all": "yarn generate:framework && yarn generate:relations",
     "make:public": "mkdir -p docs/.vuepress/public/md && cp -r docs/framework docs/.vuepress/public/md/framework && cp -r docs/relations docs/.vuepress/public/md/relations",
     "build": "yarn generate:all && yarn make:public && vuepress build docs",
     "clean-dev": "vuepress dev docs --clean-cache",
     "dev": "vuepress dev docs",
-    "update-package": "yarn dlx vp-update"
+    "update-package": "yarn dlx vp-update",
+    "deploy": "yarn build && touch docs/.vuepress/dist/.nojekyll && gh-pages -d docs/.vuepress/dist"
   },
   "devDependencies": {
     "@vuepress/bundler-vite": "2.0.0-rc.20",
     "@vuepress/theme-default": "2.0.0-rc.88",
     "sass-embedded": "^1.86.0",
     "vue": "^3.5.13",
-    "vuepress": "2.0.0-rc.20",
-    "typescript": "5.4.5",
-    "typedoc": "0.28.3",
-    "typedoc-plugin-markdown": "^4.6.3",
-    "typedoc-plugin-rename-defaults": "^0.7.3"
+    "vuepress": "2.0.0-rc.20"
+  },
+  "dependencies": {
+    "gh-pages": "^6.3.0"
   }
 }

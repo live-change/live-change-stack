@@ -33,15 +33,16 @@
     </div>
 
     <form v-if="editor" @submit="handleSave" @reset="handleReset">
-      <div v-for="identifier in modelDefinition.identifiers">        
+      <div v-for="identifier in modelDefinition.identifiers">                
         <template v-if="(identifier.name ?? identifier).slice(-4) !== 'Type'">
-          <div v-if="identifiers[identifier]" class="flex flex-col mb-3">        
+          <div v-if="identifiers[identifier.name ?? identifier]" class="flex flex-col mb-3">        
             <div class="min-w-[8rem] font-medium">{{ identifier.name ?? identifier }}</div>
             <div class="">
-              <InjectedObjectIndentification
-                :type="identifiers[(identifier.field ?? identifier)+'Type']
-                       ?? modelDefinition.properties[identifier.field ?? identifier].type"
-                :object="identifiers[identifier.field ?? identifier]"
+              <InjectedObjectIndentification v-if="identifiers[(identifier.name ?? identifier)+'Type']
+                       ?? modelDefinition.properties[identifier.field ?? identifier]?.type"
+                :type="identifiers[(identifier.name ?? identifier)+'Type']
+                       ?? modelDefinition.properties[identifier.field ?? identifier]?.type"
+                :object="identifiers[identifier.name ?? identifier]"
               />
             </div>
           </div>      

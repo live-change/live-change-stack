@@ -5,6 +5,8 @@ import * as utils from './utils.js'
 
 let lastUid = 0
 
+export const sourceSymbol = Symbol("source")
+
 class Observation {
   constructor(connection, what, pushed) {
     this.what = what
@@ -23,10 +25,15 @@ class Observation {
       this.connection.sendObserve(this)
     }
     //process.nextTick(() => { // next tick will replay events through all layer to the client - it's waste of resources
-      for(let { signal, args} of this.receivedSignals) {
+      for(let { signal, args } of this.receivedSignals) {
+        if(signal === "set" && args[0]) args[0][sourceSymbol] = this.what
         if(typeof observable == 'function') observable(signal, ...args)
         else if(observable.notify) observable.notify(signal, ...args)
         else observable[signal](...args)
+        if(signal === "set" && observable.getValue) {
+          const value = observable.getValue()
+          if(value) value[sourceSymbol] = this.what
+        }
       }
     //})
   }
@@ -93,12 +100,17 @@ class Observation {
   }
   handleNotifyMessage({ signal, args }) {
     if(this.disposed) return
+    if(signal === "set" && args[0]) args[0][sourceSymbol] = this.what      
     this.receivedSignals.push({ signal, args })
     for(let observable of this.observables) {
-      utils.nextTick(function(){
+      utils.nextTick(() => {
         if(typeof observable == 'function') observable(signal, ...args)
           else if(observable.notify) observable.notify(signal, ...args)
-            else observable[signal](...args)
+            else observable[signal](...args)        
+        if(signal === "set" && observable.getValue) {
+          const value = observable.getValue()
+          if(value) value[sourceSymbol] = this.what
+        }
       })
     }
   }

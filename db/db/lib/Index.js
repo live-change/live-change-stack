@@ -535,10 +535,12 @@ class Index extends Table {
     this.scriptContext = this.database.createScriptContext({
       /// TODO: script available routines
     })
+    console.log("COMPILE INDEX CODE", this.code)
     const queryFunction = this.scriptContext.getOrCreateFunction(this.code,
       `userCode:${this.database.name}/indexes/${this.name}`)
     if(typeof queryFunction != 'function') {
       console.error("INDEX CODE", this.code)
+      console.error("QUERY FUNCTION", typeof queryFunction, queryFunction)
       throw new Error("Index code is not a function")
     }
     this.codeFunction = (input, output) => queryFunction(input, output, this.params)

@@ -28,7 +28,12 @@
               class="ml-2"
             />
           </div>
-          <Button label="Access" icon="pi pi-key" class="p-button mb-6" @click="showAccessControl" />
+          <div class="flex flex-row flex-wrap justify-between align-items-top gap-2">
+            <Button label="Access" icon="pi pi-key" class="p-button mb-6" @click="showAccessControl" />
+            <router-link :to="editRoute">
+              <Button label="Edit" icon="pi pi-pencil" class="p-button mb-6" />
+            </router-link>
+          </div>
         </div>
 
         <AutoView :value="object" :root-value="object" :i18n="i18n" :attributes="attributes"
@@ -221,6 +226,16 @@
     accessControlDialog.value = true
   }
   const accessControlRoles = computed(() => modelDefinition.value?.accessRoles ?? [])
+
+  const editRoute = computed(() => ({
+    name: 'auto-form:editor',
+    params: {
+      serviceName: service.value,
+      modelName: model.value,
+      identifiers: Object.values(identifiers.value)
+    }
+  }))
+
 
 </script>
 
