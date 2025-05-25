@@ -45,6 +45,8 @@ export { AutoObjectIdentification }
 
 export * from './front/src/router.js'
 
+export * from './front/src/logic/schema.js'
+
 import en from "./front/locales/en.json"
 const locales = { en }
 export { locales }
