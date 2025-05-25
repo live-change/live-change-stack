@@ -75,8 +75,9 @@ async function update(changes, service, app, force) {
 
     if(index.function) {
       const functionCode = `(${index.function})`
-      ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[functionCode] = index.function
-      await dao.request(['database', 'createIndex'], database, indexName, functionCode, { ...(index.parameters || {}) }, index.storage ?? {})
+      ;(globalThis.compiledFunctionsCandidates = globalThis.compiledFunctionsCandidates || {})[functionCode] = index.function
+      await dao.request(['database', 'createIndex'], database, indexName, functionCode, 
+        { ...(index.parameters || {}) }, index.storage ?? {})
     } else {
       if(!table) throw new Error("only function indexes are possible without table")
       if(index.multi) {
@@ -118,7 +119,7 @@ async function update(changes, service, app, force) {
           })
         }
         const functionCode = `(${func})`
-        ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[functionCode] = func
+        ;(globalThis.compiledFunctionsCandidates = globalThis.compiledFunctionsCandidates || {})[functionCode] = func
         await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
           functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
       } else {
@@ -137,7 +138,7 @@ async function update(changes, service, app, force) {
             output.change(obj && mapper(obj), oldObj && mapper(oldObj)) )
         }
         const functionCode = `(${func})`
-        ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[functionCode] = func
+        ;(globalThis.compiledFunctionsCandidates = globalThis.compiledFunctionsCandidates || {})[functionCode] = func
         await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
           functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
       }

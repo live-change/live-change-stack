@@ -1,5 +1,5 @@
 import { ref, onUnmounted, getCurrentInstance, unref, reactive, isRef, shallowRef, watch, computed } from 'vue'
-import { collectPointers, ExtendedObservableList } from '@live-change/dao'
+import { collectPointers, ExtendedObservableList, sourceSymbol } from '@live-change/dao'
 import nodeDebug from 'debug'
 const debug = nodeDebug('dao-vue3')
 debug.log = console.log.bind(console)
@@ -29,8 +29,8 @@ async function fetch(api, path) {
   const paths = [ path ]
   const preFetchPaths = await api.get({ paths })
   debug("PRE FETCH DATA", preFetchPaths)
-  /*console.log("PATHS", paths)
-  return null*/
+  //console.log("PATHS", paths)
+  //return null
   for(const path of preFetchPaths) {
     if(path.error) {
       throw new Error(''
@@ -50,6 +50,7 @@ async function fetch(api, path) {
       )
     }
     const data = JSON.parse(JSON.stringify(res.data))
+    if(data) data[sourceSymbol] = what
     if(data && more) {
       if(Array.isArray(data)) {
         for(let i = 0; i < data.length; i ++) {
@@ -150,7 +151,10 @@ async function live(api, path, onUnmountedCb) {
   const fetchPromises = []
   function bindResult(what, more, actions, object, property, onError) {
     if(!what) throw new Error("what parameter required!")
-    const observable = api.observable(what)
+  //  debugger;
+    const observable = api.observable(what)    
+    console.log("OBSERVABLE", JSON.stringify(observable.getValue()), "K", observable.getValue() && Object.keys(observable.getValue()),
+                 "WHAT", what, "SOURCE", observable.getValue()?.[sourceSymbol])
     const errorObserver = { error: onError }
     let dispose
     if((more && more.some(m => m.to)) || actions) {
@@ -251,9 +255,11 @@ async function live(api, path, onUnmountedCb) {
             const activated = reactive(data)
             return activated
           }
+          if(data) data[sourceSymbol] = what
           return data
         }
       )
+      if(extendedObservable.getValue()) extendedObservable.getValue()[sourceSymbol] = what
       extendedObservable.bindProperty(object, property)
       observable.observe(errorObserver)
       dispose = () => {

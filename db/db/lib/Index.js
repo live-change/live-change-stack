@@ -541,6 +541,7 @@ class Index extends Table {
     if(typeof queryFunction != 'function') {
       console.error("INDEX CODE", this.code)
       console.error("QUERY FUNCTION", typeof queryFunction, queryFunction)
+      process.exit(1)
       throw new Error("Index code is not a function")
     }
     this.codeFunction = (input, output) => queryFunction(input, output, this.params)

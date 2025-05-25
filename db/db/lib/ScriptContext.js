@@ -90,17 +90,22 @@ class ScriptContext {
 
   getOrCreateFunction(code, filename) {
     const cleanCode = code.replace(/\n +/g, "\n")
-    //if(!globalThis.compiledFunctions) globalThis.compiledFunctions = {}
-    //console.log("COMPILED FUNCTIONS", `\n[\n  ${Object.keys(globalThis.compiledFunctions).join(',\n  ')},\n]`)
-    /*if(!(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[cleanCode]) {
-      console.log("############# compiled function not found: ", code)
-      for(const key of Object.keys(globalThis.compiledFunctions)) {
-        console.log(`compiled func |${cleanCode}| == |${key}| => ${cleanCode == key}`)
+    if(!globalThis.compiledFunctions) globalThis.compiledFunctions = {}
+    const compiledFunction = globalThis.compiledFunctions[cleanCode]
+    if(compiledFunction) {
+      /* console.log("found compiled function!", cleanCode) */
+      if(typeof compiledFunction != 'function') {
+        console.error("compiled function is not a function!", cleanCode)
+        process.exit(1)
       }
-    }*/
-    const queryFunction = (globalThis.compiledFunctions = globalThis.compiledFunctions || {})[cleanCode]
-      ?? this.run(code, filename)
-    ;(globalThis.compiledFunctions = globalThis.compiledFunctions || {})[cleanCode] = queryFunction
+      return compiledFunction
+    }
+    const queryFunction = this.run(code, filename)
+    if(typeof queryFunction != 'function') {
+      console.error("compiled query function is not a function!", cleanCode)
+      process.exit(1)
+    }
+    globalThis.compiledFunctions[cleanCode] = queryFunction
     return queryFunction
   }
 }

@@ -1,6 +1,7 @@
 import Debug from 'debug'
 const debug = Debug('reactive-dao:cache')
 import ObservableValue from "./ObservableValue.js"
+import { sourceSymbol } from "./ReactiveConnection.js"
 
 class DaoPrerenderCache {
 
@@ -22,9 +23,12 @@ class DaoPrerenderCache {
         }
       }
     }
-    for(const [what, observable] of this.observables.entries()) {
+    for(const [cacheKey, observable] of this.observables.entries()) {
       if(observable.isDisposed()) {
-        observable.set(this.cache.get(what))
+        observable.set(this.cache.get(cacheKey))
+        if(this.extendedCache.has(cacheKey)) {
+          observable.restore(this.extendedCache.get(cacheKey))
+        }
       }
     }
     this.observables.clear()
@@ -40,14 +44,21 @@ class DaoPrerenderCache {
     }
     if(this.mode === 'save') {
       observable = new ObservableValue()
-      this.get(what).then(value => observable.set(value)).catch(error => observable.error(error))
+      this.get(what).then(value => {
+        if(value) value[sourceSymbol] = what
+        observable.set(value)      
+      }).catch(error => observable.error(error))
     } else {
       observable = this.dao.observable(what)
     }
     this.observables.set(cacheKey, observable)
     if(this.cache.has(cacheKey)) observable.restore(this.cache.get(cacheKey))
     if(this.extendedCache.has(cacheKey)) {
-      observable.restore(this.extendedCache.get(cacheKey))
+      const data = this.extendedCache.get(cacheKey)
+      if(data) {
+        data[sourceSymbol] = what
+      }
+      observable.restore(data)
       return observable
       // do not save extended values
     }
@@ -112,8 +123,11 @@ class DaoPrerenderCache {
         }
       })
     }
-
-    return promise
+    
+    return promise.then(data => {
+      if(data) data[sourceSymbol] = what
+      return data
+    })
   }
 
   set(what, value) {

@@ -240,7 +240,10 @@ class Connection extends EventEmitter {
       type: 'get',
       what: what
     }
-    return this.sendRequest(msg)
+    return this.sendRequest(msg).then(data => {
+      if(data) data[sourceSymbol] = what
+      return data
+    })
   }
   getMore(what, more) {
     const msg={
