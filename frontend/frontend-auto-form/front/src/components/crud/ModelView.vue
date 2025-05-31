@@ -1,15 +1,6 @@
 <template>
   <div>
 
-<!--    <h4>identifiers</h4>
-    <pre>{{ identifiers }}</pre>
-
-    <h4>definition</h4>
-    <pre>{{ modelDefinition }}</pre>
-
-    <h4>object</h4>
-    <pre>{{ object }}</pre>-->
-
     <div v-if="object">
       <ObjectPath :objectType="service + '_' + model" :object="object.to ?? object.id" class="mb-6" />
 
@@ -39,6 +30,15 @@
         <AutoView :value="object" :root-value="object" :i18n="i18n" :attributes="attributes"
                   :definition="modelDefinition" />
 
+      </div>
+
+      <div v-if="connectedActions" class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6">
+        <div v-for="action of connectedActions" class="mb-6">
+          <pre>{{ action }}</pre>
+          <router-link :to="actionRoute(action)">
+            <Button :label="action.label" icon="pi pi-play" class="p-button mb-6" />
+          </router-link>
+        </div>
       </div>
 
       <div v-for="preparedRelation of visibleObjectRelations" class="mb-6">
@@ -98,7 +98,7 @@
 
     <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border">
 
-      <pre>visibleRangeRelations = {{ visibleRangeRelations }}</pre>
+<!--       <pre>visibleRangeRelations = {{ visibleRangeRelations }}</pre>
       <pre>preparedRelations = {{ preparedRelations }}</pre>
 
       <div v-if="backwardRelations">
@@ -109,9 +109,13 @@
             )
         }}</pre>
       </div>
+      <pre>accessControlRoles = {{ accessControlRoles }}</pre> -->
+      
+    <pre>identifiers = {{ identifiers }}</pre>
 
+    <pre>definition = {{ modelDefinition }}</pre>
 
-      <pre>accessControlRoles = {{ accessControlRoles }}</pre>
+    <pre>object = {{ object }}</pre>
 
     </div>
 
@@ -178,6 +182,24 @@
     return api.services?.[service.value]?.models?.[model.value]
   })
 
+  const connectedActions = computed(() => {
+    const srcActions = modelDefinition.value?.connectedActions
+    if(!srcActions) return null
+    return Object.values(srcActions).map(action => {      
+      const config = {
+        service: service.value,
+        ...action        
+      }
+      const actionDefinition = api.getServiceDefinition(config.service).actions[config.name]
+      const label = actionDefinition.label ?? action.label ?? actionDefinition.name 
+      return {
+        ...config,
+        definition: actionDefinition,
+        label
+      }
+    })
+  })
+
   import { getForwardRelations, getBackwardRelations, anyRelationsTypes, prepareObjectRelations } 
     from '../../logic/relations.js'
   const forwardRelations = computed(() => getForwardRelations(modelDefinition.value, () => true, api))
@@ -205,14 +227,18 @@
     return prepareObjectRelations(objectType.value, object.value.to ?? object.value.id, api)
   })
 
-  const visibleRangeRelations = computed(() => preparedRelations.value.map(preparedRelation => {
-    const accessibleViews = preparedRelation.views.filter(view => preparedRelation.access.value[view.name])
-    if(accessibleViews.length === 0) return null
-    return {
-      ...preparedRelation,
-      views: accessibleViews
-    }
-  }).filter(x => x !== null))
+  const visibleRangeRelations = computed(() => preparedRelations.value
+    .filter(preparedRelation => !preparedRelation.singular)
+    .map(preparedRelation => {
+      const accessibleViews = preparedRelation.views.filter(view => preparedRelation.access.value[view.name])
+      if(accessibleViews.length === 0) return null
+      return {
+        ...preparedRelation,
+        views: accessibleViews
+      }
+    })
+    .filter(x => x !== null)
+  )
 
   const visibleObjectRelations = computed(() => preparedRelations.value.filter(preparedRelation => {
     if(!preparedRelation.singular) return false
@@ -236,6 +262,33 @@
     }
   }))
 
+  function actionRoute(action) {
+    const myType = service.value + '_' + model.value
+    const parameterName = action.objectParameter ?? 
+      Object.entries(action.definition.properties).find(([key, value]) => value.type === myType)?.[0] ??
+      Object.keys(action.definition.properties)?.[0]
+
+    if(parameterName) {
+      const parametersJson = JSON.stringify({
+        [parameterName]: object.value.to ?? object.value.id
+      })
+      return {
+        name: 'auto-form:actionParameters',
+        params: {
+          serviceName: action.service,
+          actionName: action.name,
+          parametersJson
+        }
+      }
+    }
+    return {
+      name: 'auto-form:action',
+      params: {
+        serviceName: action.service,
+        actionName: action.name
+      }
+    }
+  }
 
 </script>
 

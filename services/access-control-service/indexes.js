@@ -60,7 +60,7 @@ if(config.indexed) {
       const reindexerBucket = 128
 
       function indexEntry(parentType, childType, parent, child, property) {
-        output.debug('indexEntry', parentType, childType, parent, child, property)
+        //output.debug('indexEntry', parentType, childType, parent, child, property)
         const indexPart = [parentType, parent, childType, child]
           .map(v => JSON.stringify(v)).join(':')
         return {
@@ -74,7 +74,7 @@ if(config.indexed) {
       }
 
       function indexEntryByProperty(childType, item, property) {
-        output.debug('indexEntryByProperty', childType, item, property)
+        //output.debug('indexEntryByProperty', childType, item, property)
         const value = item?.[property.property]
         if(!value) return
         const type = property.type || item[property.property + 'Type']
@@ -118,14 +118,14 @@ if(config.indexed) {
         }
 
         async index(item, oldItem) {
-          output.debug("!!!", item, oldItem, this.properties)
+          //output.debug("!!!", item, oldItem, this.properties)
           for(const property of this.removedProperties) {
             await output.remove(indexEntryByProperty(this.childType, item, property))
           }
           for(const property of this.properties) {
             const newEntry = indexEntryByProperty(this.childType, item, property)
             const oldEntry = indexEntryByProperty(this.childType, oldItem, property)
-            output.debug('<-->', newEntry, oldEntry)
+            //output.debug('<-->', newEntry, oldEntry)
             if(newEntry || oldEntry) await output.change(newEntry, oldEntry)
           }
         }

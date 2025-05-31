@@ -530,12 +530,12 @@ class Index extends Table {
     return this.startPromise
   }
   async startIndexInternal() {
-    console.error("STARTING INDEX", this.name, "IN DATABASE", this.database.name)
+    debug("STARTING INDEX", this.name, "IN DATABASE", this.database.name)
     debug("EXECUTING INDEX CODE", this.name)
     this.scriptContext = this.database.createScriptContext({
       /// TODO: script available routines
     })
-    console.log("COMPILE INDEX CODE", this.code)
+    debug("COMPILE INDEX CODE", this.code)
     const queryFunction = this.scriptContext.getOrCreateFunction(this.code,
       `userCode:${this.database.name}/indexes/${this.name}`)
     if(typeof queryFunction != 'function') {

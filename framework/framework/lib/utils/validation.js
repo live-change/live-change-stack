@@ -91,7 +91,7 @@ async function validate(props, validators, context) {
       propErrors[propName] = errors[0]
     }
   }
-  console.log("PROP ERRORS", propErrors)
+  //console.log("PROP ERRORS", propErrors)
   if(Object.keys(propErrors).length > 0) throw { properties: propErrors }
 }
 

@@ -2,9 +2,14 @@ import App from '@live-change/framework'
 const app = App.app()
 
 import definition from './definition.js'
+import config from './config.js'
 
 const taskProperties = {
   name: {
+    type: String,
+    validation: ['nonEmpty']
+  },
+  service: {
     type: String,
     validation: ['nonEmpty']
   },
@@ -21,7 +26,11 @@ const taskProperties = {
     type: String,
   },
   state: {
-    type: String
+    type: String,
+    enum: [
+      'created', 'pending', 'running', 'retrying', 'done',
+      'failed', 'canceled', 'fallback', 'fallbackDone', 'interrupted'
+    ]
   },
   startedAt: {
     type: Date
@@ -45,6 +54,9 @@ const taskProperties = {
           type: Date
         },
         error: {
+          type: String
+        },
+        stack: {
           type: String
         }
       }
@@ -86,6 +98,84 @@ const Task = definition.model({
     },
     byState: {
       property: ['state']
+    },
+    byName: {
+      property: ['name']
+    },
+    byNameAndState: {
+      property: ['name', 'state']
+    },
+    independentTasks: {
+      function: async function(input, output, { tableName }) {
+        const table = await input.table(tableName)
+        table.map(async (obj) => {
+          if(obj.causeType === tableName) return null
+          return { id: obj.id, to: obj.id }
+        }).to(output)
+      },
+      parameters: {
+        tableName: definition.name + '_Task'
+      }
+    },
+    independentTasksByName: {
+      function: async function(input, output, { tableName }) {
+        const table = await input.table(tableName)
+        table.map(async (obj) => {
+          if(obj.causeType === tableName) return null
+          return { id: `"${obj.name}"_${obj.id}`, to: obj.id }
+        }).to(output)
+      },
+      parameters: {
+        tableName: definition.name + '_Task'
+      }
+    },
+    independentTasksByState: {
+      function: async function(input, output, { tableName }) {
+        const table = await input.table(tableName)
+        table.map(async (obj) => {
+          if(obj.causeType === tableName) return null
+          return { id: `"${obj.state}"_${obj.id}`, to: obj.id }
+        }).to(output)
+      },
+      parameters: {
+        tableName: definition.name + '_Task'
+      }
+    },
+    independentTasksByNameAndState: {
+      function: async function(input, output, { tableName }) {
+        const table = await input.table(tableName)
+        table.map(async (obj) => {
+          if(obj.causeType === tableName) return null
+          return { id: `"${obj.name}"_${obj.state}"_${obj.id}`, to: obj.id }
+        }).to(output)
+      },
+      parameters: {
+        tableName: definition.name + '_Task'
+      }
+    },
+    taskNames: {
+      function: async function(input, output, { indexName }) {
+        const index = await input.index(indexName)
+        index
+          .groupExisting(async (entry) => entry.id.slice(0, entry.id.indexOf('_')+1))
+          .map((entry => ({ id: entry.id.slice(1, entry.id.indexOf('_')-1) })))
+          .to(output)
+      },
+      parameters: {
+        indexName: definition.name + '_Task_byName'
+      }
+    }, 
+    independentTaskNames: {
+      function: async function(input, output, { indexName }) {
+        const index = await input.index(indexName)  
+        index
+          .groupExisting(async (entry) => entry.id.slice(0, entry.id.indexOf('_')+1))
+          .map((entry => ({ id: entry.id.slice(1, entry.id.indexOf('_')-1) })))
+          .to(output)
+      },
+      parameters: {
+        indexName: definition.name + '_Task_independentTasksByName'
+      }
     },
     runningRootsByName: {
       property: ['name'],
@@ -152,6 +242,9 @@ definition.view({
     },
     hash: {
       type: String
+    },
+    expireDate: {
+      type: Date
     }
   },
   returns: {
@@ -161,7 +254,8 @@ definition.view({
     }
   },
   async daoPath({ causeType, cause, hash }) {
-    return Task.indexRangePath('byCauseAndHash', [causeType, cause, hash], { limit: 23 })
+    /// TODO: add expireDate to range
+    return Task.indexRangePath('byCauseAndHash', [causeType, cause, hash], { limit: 23, reverse: true })
   }
 })
 
@@ -178,6 +272,16 @@ definition.view({
     },
     ...App.rangeProperties
   },
+  accessControl: {
+    roles: config.taskReaderRoles,
+    objects({ rootType, root }) {
+      console.log("OBJECTS", rootType, root)
+      return [{
+        objectType: rootType,
+        object: root
+      }]
+    }
+  },
   returns: {
     type: Task
   },
@@ -190,19 +294,65 @@ definition.view({
 })
 
 definition.view({
+  name: 'independentTasks',
+  internal: true,
+  properties: {  
+    ...App.rangeProperties,
+    name: {
+      type: String
+    },
+    state: {
+      type: String
+    }
+  },
+  returns: {
+    type: Task
+  },
+  access: ['admin'],
+  async daoPath(props) {
+    const range = App.extractRange(props)
+    const { name, state } = props
+    console.log("PROPS", props)
+    const [index, rangePath] = name && state  
+      ? ['independentTasksByNameAndState', [name, state]]
+      : name
+        ? ['independentTasksByName', [name]]
+        : state
+          ? ['independentTasksByState', [state]]
+          : ['independentTasks', []]
+    return Task.indexRangePath(index, rangePath, range)
+  }
+})
+
+definition.view({
+  name: 'taskNames',
+  properties: {
+    ...App.rangeProperties
+  },
+  returns: {
+    type: String
+  },
+  access: ['admin'],
+  async daoPath(props) {
+    const range = App.extractRange(props)
+    return ['database', 'indexRange', app.databaseName, definition.name + '_Task_taskNames', range]
+  }
+})
+
+definition.view({
   name: 'runningTaskRootsByName',
   internal: true,
   global: true,
   properties: {
     name: {
-      type: String,
-      validation: ['nonEmpty']
+      type: String
     },
     ...App.rangeProperties
   },
   returns: {
     type: Task
   },
+  access: ['admin'],
   async daoPath(props) {
     const { name } = props
     const range = App.extractRange(props)

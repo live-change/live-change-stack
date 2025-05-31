@@ -38,6 +38,12 @@ export function autoFormRoutes(config = {}) {
       props: true
     }),
 
+    route({
+      name: 'auto-form:actionParameters', path: prefix + '/action/:serviceName/:actionName/:parametersJson', meta: { },
+      component: () => import("./pages/Action.vue"),
+      props: true
+    }),
+
   ]
 }
 

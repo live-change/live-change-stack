@@ -170,8 +170,9 @@ export default (definition) => {
           await disposeParents()
           node.parents = objectData ? await Promise.all(parentsSources.map(parentSource => {
             const parentType = parentSource.type || objectData[parentSource.property + 'Type']
-            const property = objectData[parentSource.property]
-            const parents = Array.isArray(property) ? property : [ property ]
+            if(!parentType) return []
+            const property = objectData[parentSource.property]                        
+            const parents = (Array.isArray(property) ? property : [ property ]).filter(p => !!p)
             return parents.map(parent => treeNode(parentType, parent))
           }).flat()) : []
           obsv = true

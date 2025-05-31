@@ -8,7 +8,7 @@ class ForeignModelDefinition {
   }
 
   getTypeName() {
-    return this.serviceName+':'+this.name
+    return this.serviceName+'_'+this.name
   }
 
   toJSON() {

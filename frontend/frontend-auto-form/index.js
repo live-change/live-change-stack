@@ -45,6 +45,10 @@ export { AutoObjectIdentification }
 
 export * from './front/src/router.js'
 
+import DataWithSchema from './front/src/components/schema/DataWithSchema.vue'
+export { DataWithSchema }
+import SchemaFromDefinition from './front/src/components/schema/SchemaFromDefinition.vue'
+export { SchemaFromDefinition }
 export * from './front/src/logic/schema.js'
 
 import en from "./front/locales/en.json"

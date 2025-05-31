@@ -1,18 +1,14 @@
 <template>
   <div class="w-full lg:w-8/12 md:w-11/12">
     <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border">
-      <div class="text-xl mb-2">
-        Service <strong>{{ serviceName }}</strong>
-      </div>
-      <div class="text-2xl mb-4">
-        Action <strong>{{ actionName }}</strong>
-      </div>
 
       <ActionForm 
         :service="serviceName" 
-        :action="actionName"
+        :action="actionName"        
+        :parameters="parameters"
         @done="handleDone"
       />
+
     </div>
   </div>
 </template>
@@ -29,9 +25,14 @@
     actionName: {
       type: String,
       required: true
+    },
+    parametersJson: {
+      type: String
     }
   })
-  const { serviceName, actionName } = toRefs(props)
+  const { serviceName, actionName, parametersJson } = toRefs(props)
+  
+  const parameters = computed(() => parametersJson.value ? JSON.parse(parametersJson.value) : {})
 
   import { useApi } from '@live-change/vue3-ssr'
   const api = useApi()

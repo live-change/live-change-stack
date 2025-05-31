@@ -11,7 +11,7 @@ export default async function actionData(options) {
   if(!options) throw new Error('options must be provided')
 
   const {
-    parameters,
+    parameters = {},
     initialValue = {},
 
     service: serviceName,    
@@ -50,7 +50,10 @@ export default async function actionData(options) {
   if(!service) throw new Error('service must be defined in options')
   const action = service.actions[actionName]  
   if(!action) throw new Error('action must be defined in options')
-  
+
+  const editableProperties = (action.definition.editableProperties ?? Object.keys(action.definition.properties))
+    .filter(key => !parameters[key])
+
   let draftIdParts = []
   let idKey = null
   for(const [parameterName, parameter] of Object.entries(parameters || {})) {
@@ -152,7 +155,6 @@ export default async function actionData(options) {
       const result = await submitData(synchronizedData.value.value)
       if(result === Error) return // silent return on error, because it's handled in onError
       if(draftData.value) await removeDraftAction(draftIdentifiers)
-      onDone(result)
       if(toast && doneToast) toast.add({ severity: 'success', summary: doneToast, life: 1500 })
     }
 
@@ -179,6 +181,7 @@ export default async function actionData(options) {
     return {
       parameters,
       initialValue,
+      editableProperties,
       value: synchronizedData.value,
       changed,
       submit,
@@ -200,7 +203,6 @@ export default async function actionData(options) {
     async function submit() {
       const result = await submitData(formData.value)
       if(result === Error) return // silent return on error, because it's handled in onError
-      onSaved(result)
       if(toast && doneToast) toast.add({ severity: 'success', summary: doneToast, life: 1500 })
     }
 
@@ -214,8 +216,9 @@ export default async function actionData(options) {
     }
 
     return {
-      parameters,
+      parameters,    
       initialValue,
+      editableProperties,
       value: formData,
       changed,
       submit,

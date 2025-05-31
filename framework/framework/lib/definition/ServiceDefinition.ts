@@ -7,7 +7,7 @@ import TriggerDefinition, { TriggerDefinitionSpecification } from "./TriggerDefi
 import ViewDefinition, { ViewDefinitionSpecification } from "./ViewDefinition.js"
 import EventDefinition from "./EventDefinition.js"
 import defaultValidators from '../utils/validators.js'
-import { crudChanges } from "../utils.js"
+import { crudChanges, definitionToJSON } from "../utils.js"
 
 function createModelProxy(definition, model) {
   return new Proxy(model, {
@@ -208,7 +208,7 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
     for(let key in this.views) views[key] = this.views[key].toJSON()
     let triggers = {}
     for(let key in this.triggers) triggers[key] = this.triggers[key].map(t=>t.toJSON())
-    return {
+    let json = {
       ...this,
       _runtime: undefined,
       models,
@@ -220,6 +220,8 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
       events,
       triggers
     }
+    const fixed = definitionToJSON(json, true)
+    return fixed
   }
 
   callTrigger(trigger, data) {

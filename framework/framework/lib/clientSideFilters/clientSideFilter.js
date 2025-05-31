@@ -8,10 +8,12 @@ export default function clientSideFilter(service, definition, app) {
     const view = service.views[viewName]
 
   }
-  for(let modelName in service.models) {
-    const view = service.views[viewName]
+  */
 
-  }*/
+  for(let modelName in definition.models) {
+    const model = definition.models[modelName]
+    if(model.indexes) delete model.indexes
+  }
 
   delete definition.events
   delete definition.triggers

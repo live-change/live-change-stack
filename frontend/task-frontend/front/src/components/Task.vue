@@ -5,24 +5,23 @@
         <i :class="['pi', icon, taskColor]" style="font-size: 1rem" />
         <div :class="['ml-2']">{{ label }}</div>
       </div>
-      <div v-if="task?.progress && task?.state !== 'done'" class="w-32 mr-4 grow" style="max-width: 50vw">
+      <div v-if="taskData?.progress && taskData?.state !== 'done'" class="w-32 mr-4 grow" style="max-width: 50vw">
         <ProgressBar :value="Math.floor((100 * taskData.progress.current / taskData.progress.total))" />
       </div>
-      <div v-if="task?.retries?.length && taskData.retries.length < taskData.maxRetries" class="mr-4">
+      <div v-if="taskData?.retries?.length && taskData.retries.length < taskData.maxRetries" class="mr-4">
         <i class="pi pi-replay" />
         {{ taskData.retries.length }} / {{ taskData.maxRetries }}
       </div>
-      <div>{{ task?.state !== 'done' ? (task?.progress?.action || task?.state) : 'done' }}</div>
+      <div>{{ taskData?.state !== 'done' ? (taskData?.progress?.action || taskData?.state) : 'done' }}</div>
     </div>
-    <div v-for="retry in task?.retries" class="ml-6 flex flex-row justify-between text-red-800">
+    <div v-for="retry in taskData?.retries" class="ml-6 flex flex-row justify-between text-red-800">
       {{ retry.error }} at {{ d(retry.failedAt, 'shortestTime')}}
     </div>
-<!--    <pre>{{ taskData.progress }}</pre>-->
     <div v-if="taskResultComponent && taskData.result" class="m-2">
-      <component :is="taskResultComponent" :task="task" :result="taskData.result" :taskType="taskType" />
+      <component :is="taskResultComponent" :task="taskData" :result="taskData.result" :taskType="taskType" />
     </div>
     <div class="ml-6">
-      <Task v-for="task in childTasks" :key="taskData.id" :task="task" :tasks="allTasks" :taskTypes="taskTypes" />
+      <Task v-for="task in childTasks" :key="taskId" :task="task" :tasks="allTasks" :taskTypes="taskTypes" />
     </div>
   </div>
 </template>
@@ -70,7 +69,11 @@
   
   const allTasks = computed(() => tasks.value || loadedTasks.value)
 
-  const taskData = computed(() => allTasks.value && allTasks.value.find(m => (m.to ?? m.id) === taskId.value))
+  const taskData = computed(() => 
+    typeof task.value === 'object' 
+      ? task.value
+      : (allTasks.value && allTasks.value.find(m => (m.to ?? m.id) === taskId.value))
+  )
 
   const taskType = computed(() => taskTypes.value[taskData.value?.type || taskData.value?.name] || {})
 
@@ -105,6 +108,7 @@
 
   const taskColor = computed(() => {
     console.log("TD", taskData.value, "AT", allTasks.value)
+    console.trace('taskColor', taskData.value)
     switch(taskData.value?.state) {
       case 'failed': return 'text-red-600'
       default: {}

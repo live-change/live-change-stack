@@ -125,6 +125,7 @@ class ChangeStream {
       if(typeof range === 'string') {
         range = { gte: range, lte: range + '\xFF\xFF\xFF\xFF' }
       }
+      range.limit = 1
       const count = await this.count(range)
       if(count) {
         await pipe.change(existingObj, null, id, timestamp)        

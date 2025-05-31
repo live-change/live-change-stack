@@ -16,9 +16,10 @@ function flatMap(source, fun) {
   return out
 }
 
-function getPropertyValues(source, property) {
+function getPropertyValues(source, property) {  
   if(Array.isArray(source)) {
-    return flatMap(markMany(source), v => getPropertyValues(v, property))
+    const values = flatMap(markMany(source), v => getPropertyValues(v, property))    
+    return values
   } else {
     if(source === undefined) return []
     if(source === null) return []
@@ -52,7 +53,10 @@ function cross(lists) {
   }
   let out = new Array(count)
   out.many = many
-  if(count > 1 && !many) throw new Error("more than one result for non array fields")
+  if(count > 1 && !many) {
+    console.log("ERROR WHEN CROSSING", lists.map(l => JSON.stringify(l, null, 2)+' many:'+(!!l.many)).join('\n'))
+    throw new Error("more than one result for non array fields")
+  }
   for(let i = 0; i < count; i++) {
     let res = new Array(lists.length)
     let a = i
@@ -67,75 +71,84 @@ function cross(lists) {
 }
 
 function collect(source, schema, getSource) {
-  if(typeof schema == 'string') {
-    return [schema]
-  } else if(typeof schema != 'object') {
-    return [schema]
-  } else if(Array.isArray(schema)) {
-    let partValues = new Array(schema.length)
-    for(let i = 0; i < schema.length; i++) {
-      partValues[i] = collect(source, schema[i], getSource)
-    }
-    return cross(partValues)
-  } else {
-    if(schema.source) {
-      const sourcePointers = collect(source, schema.source, getSource)
-      return flatMap( sourcePointers, ptr => {
-        const source = getSource(ptr)
-        const results = collect(source, schema.schema, getSource)
-        return results
-      })
-    } else if(schema.nonEmpty) {
-      const collected = collect(source, schema.nonEmpty, getSource)
-      const result = collected.filter(x=>!!x)
-      result.many = collected.many
-      return result
-    } else if(schema.identity) {
-      if(typeof source == 'undefined' || source === null) return []
-      return Array.isArray(source) ? markMany(source) : [source]
-    } else if(schema.array) {
-      return [ collect(source, schema.array, getSource) ]
-    } else if(schema.property) {
-      if(typeof source == 'undefined' || source === null) return []
-      if(Array.isArray(schema.property)) {
-        let values = getNestedPropertyValues(source, schema.property)
-        return values
-      } else {
-        let values = getPropertyValues(source, schema.property)
-        return values
+  try {
+    if(typeof schema == 'string') {
+      return [schema]
+    } else if(typeof schema != 'object') {
+      return [schema]
+    } else if(Array.isArray(schema)) {
+      let partValues = new Array(schema.length)
+      for(let i = 0; i < schema.length; i++) {
+        partValues[i] = collect(source, schema[i], getSource)
       }
-    } else if(schema.switch) {
-      const values = collect(source, schema.value, getSource)
-      return flatMap(values, v => {
-        const found = schema.switch[v]
-        if(found) return collect(source, found, getSource)
-        if(schema.default) return collect(source, schema.default, getSource)
-        return []
-      })
-    } else if(schema.static) {
-      return [schema.static]
+      return cross(partValues)
     } else {
-      let objectSchema = schema.object ? schema.object : schema
-      let propValues = []
-      let propId = 0
-      for(let key in objectSchema) {
-        let values = collect(source, objectSchema[key], getSource)
-        propValues[propId] = values
-        propId++
-      }
-      let crossed = cross(propValues)
-      let results = new Array(crossed.length)
-      for(let i = 0; i < crossed.length; i++) {
-        let result = {}
-        let j = 0
-        for(let key in objectSchema) {
-          result[key] = crossed[i][j++]
+      if(schema.source) {
+        const sourcePointers = collect(source, schema.source, getSource)
+        return flatMap( sourcePointers, ptr => {
+          const source = getSource(ptr)
+          const results = collect(source, schema.schema, getSource)
+          return results
+        })
+      } else if(schema.nonEmpty) {
+        const collected = collect(source, schema.nonEmpty, getSource)
+        const result = collected.filter(x=>!!x)
+        result.many = collected.many
+        return result
+      } else if(schema.identity) {
+        if(typeof source == 'undefined' || source === null) return []
+        return Array.isArray(source) ? markMany(source) : [source]
+      } else if(schema.array) {
+        return [ collect(source, schema.array, getSource) ]
+      } else if(schema.property) {
+        if(typeof source == 'undefined' || source === null) return []
+        if(Array.isArray(schema.property)) {
+          let values = getNestedPropertyValues(source, schema.property)
+          return values
+        } else {
+          let values = getPropertyValues(source, schema.property)
+          return values
         }
-        results[i] = result
+      } else if(schema.switch) {
+        const values = collect(source, schema.value, getSource)
+        return flatMap(values, v => {
+          const found = schema.switch[v]
+          if(found) return collect(source, found, getSource)
+          if(schema.default) return collect(source, schema.default, getSource)
+          return []
+        })
+      } else if(schema.static) {
+        return [schema.static]
+      } else if(schema.or) {
+        const resultsFromOr = schema.or.map(orSchema => collect(source, orSchema, getSource))
+        return resultsFromOr.find(r => r.length > 0) || []
+      } else {
+        let objectSchema = schema.object ? schema.object : schema
+        let propValues = []
+        let propId = 0
+        for(let key in objectSchema) {
+          let values = collect(source, objectSchema[key], getSource)
+          propValues[propId] = values.filter(Boolean)
+          propValues[propId].many = values.many
+          propId++
+        }      
+        let crossed = cross(propValues)
+        let results = new Array(crossed.length)
+        for(let i = 0; i < crossed.length; i++) {
+          let result = {}
+          let j = 0
+          for(let key in objectSchema) {
+            result[key] = crossed[i][j++]
+          }
+          results[i] = result
+        }
+        results.many = crossed.many
+        return results
       }
-      results.many = crossed.many
-      return results
     }
+  } catch(e) {
+    console.log("ERROR WHEN COLLECTING", source, JSON.stringify(schema, null, 2), e)
+    throw e
   }
 }
 

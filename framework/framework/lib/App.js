@@ -265,7 +265,7 @@ class App {
     })
     const routes = await this.dao.get(['database', 'tableRange', this.databaseName, 'triggerRoutes',
       { gte: trigger.type+'=', lte: trigger.type+'=\xFF\xFF\xFF\xFF' }])
-    console.log("TRIGGER ROUTES", trigger.type, '=>', routes)
+    console.log("TRIGGER ROUTES", trigger.type, '=>', routes.map(r => r.service).join(', '))
     let promises = []
     for(const route of routes) {
       promises.push(this.triggerService({ ...trigger, service: route.service }, { ...data }, true))

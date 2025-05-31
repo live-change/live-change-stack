@@ -29,7 +29,7 @@ async function fetch(api, path) {
   const paths = [ path ]
   const preFetchPaths = await api.get({ paths })
   debug("PRE FETCH DATA", preFetchPaths)
-  //console.log("PATHS", paths)
+  //console.log("PATHS", preFetchPaths)
   //return null
   for(const path of preFetchPaths) {
     if(path.error) {
@@ -153,8 +153,8 @@ async function live(api, path, onUnmountedCb) {
     if(!what) throw new Error("what parameter required!")
   //  debugger;
     const observable = api.observable(what)    
-    console.log("OBSERVABLE", JSON.stringify(observable.getValue()), "K", observable.getValue() && Object.keys(observable.getValue()),
-                 "WHAT", what, "SOURCE", observable.getValue()?.[sourceSymbol])
+/*     console.log("OBSERVABLE", JSON.stringify(observable.getValue()), "K", observable.getValue() && Object.keys(observable.getValue()),
+                 "WHAT", what, "SOURCE", observable.getValue()?.[sourceSymbol]) */
     const errorObserver = { error: onError }
     let dispose
     if((more && more.some(m => m.to)) || actions) {
@@ -254,12 +254,13 @@ async function live(api, path, onUnmountedCb) {
           if(data && typeof data == 'object') {
             const activated = reactive(data)
             return activated
+            data[sourceSymbol] = what
           }
-          if(data) data[sourceSymbol] = what
           return data
         }
       )
-      if(extendedObservable.getValue()) extendedObservable.getValue()[sourceSymbol] = what
+      const value = extendedObservable.getValue()
+      if(value && typeof value == 'object') value[sourceSymbol] = what
       extendedObservable.bindProperty(object, property)
       observable.observe(errorObserver)
       dispose = () => {

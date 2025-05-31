@@ -1,3 +1,17 @@
+export function taskAdminRoutes(config = {}) {
+  const { prefix = '/', route = (r) => r } = config
+  return [
+
+    route({
+      name: 'task:admin', path: prefix, meta: { },
+      component: () => import("./pages/TaskAdmin.vue"),
+      props: true
+    }),
+
+  ]
+}
+
+
 import {
   createMemoryHistory,
   createRouter as _createRouter,

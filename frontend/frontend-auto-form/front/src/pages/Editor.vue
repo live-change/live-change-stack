@@ -8,7 +8,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border">
 
       <ModelEditor :service="serviceName" :model="modelName" :identifiers="identifiersObject" draft
-                   @created="handleCreated"/>
+                   @created="handleCreated" @saved="handleSaved" />
 
     </div>
   </div>
@@ -83,7 +83,7 @@
     //console.log("newIdentifiers", newIdentifiers)
     if(JSON.stringify(identifiers.value) !== JSON.stringify(newIdentifiers)) {
       router.push({
-        name: 'auto-form:editor',
+        name: 'auto-form:view',
         params: {
           serviceName: serviceName.value,
           modelName: modelName.value,
@@ -91,6 +91,17 @@
         }
       })
     }
+  }
+
+  function handleSaved(id) {
+    router.push({
+      name: 'auto-form:view',
+      params: {
+        serviceName: serviceName.value,
+        modelName: modelName.value,
+        identifiers: identifiers.value
+      }
+    })
   }
 
 </script>

@@ -84,13 +84,13 @@
     live(livePathWithDomain),
     live(livePathWithoutDomain)
   ])
-  console.log("OK!", domainUrls.value, globalUrls.value)
+  //console.log("OK!", domainUrls.value, globalUrls.value)
   const url = computed(() => {
     if(domainUrls.value.length > 0) return domainUrls.value[0]
     if(globalUrls.value.length > 0) return globalUrls.value[0]
     return null
   })
-  console.log("RESOLVED", url.value)
+  //console.log("RESOLVED", url.value)
   const accessible = computed(() => {
     if(!(requiredRoles?.value?.length)) return true
     if(!url.value) return undefined

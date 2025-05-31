@@ -35,7 +35,6 @@ class ApiServer {
       allAuthenticators.push(...auth.filter(a => !!a))
     }
     for(const service of this.config.services) {
-      //console.log("SERIVCE AUTH", service.name, service.authenticators)
       if(service.authenticators) {
         allAuthenticators.push(...service.authenticators.filter(a => !!a))
       }

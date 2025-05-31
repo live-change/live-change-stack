@@ -36,20 +36,25 @@ async function triggerOnTaskStateChange(taskObject, causeType, cause) {
   })
 }
 
-async function createOrReuseTask(taskDefinition, props, causeType, cause) {
+async function createOrReuseTask(taskDefinition, props, causeType, cause, expire) {
   const propertiesJson = JSON.stringify(props)
   const hash = crypto
     .createHash('sha256')
     .update(taskDefinition.name + ':' + propertiesJson)
     .digest('hex')
 
+  const expireDate = (expire ?? taskDefinition.expire) ? new Date(Date.now() - taskDefinition.expire) : null
+
   const similarTasks = await app.serviceViewGet('task', 'tasksByCauseAndHash', {
     causeType,
     cause,
-    hash
+    hash,
+    expireDate
   })
+
   const oldTask = similarTasks.find(similarTask => similarTask.name === taskDefinition.name
-    && JSON.stringify(similarTask.properties) === propertiesJson)
+    && JSON.stringify(similarTask.properties) === propertiesJson 
+    && (!expireDate || new Date(similarTask.startedAt).getTime() > expireDate.getTime()))
 
   const taskObject = oldTask
     ? await app.serviceViewGet('task', 'task', { task: oldTask.to || oldTask.id })
@@ -59,6 +64,7 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause) {
       properties: props,
       hash,
       state: 'created',
+      service: taskDefinition.service,
       retries: [],
       maxRetries: taskDefinition.maxRetries ?? 5
     }
@@ -76,8 +82,8 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause) {
   return taskObject
 }
 
-async function startTask(taskFunction, props, causeType, cause){
-  const taskObject = await createOrReuseTask(taskFunction.definition, props, causeType, cause)
+async function startTask(taskFunction, props, causeType, cause, expire){
+  const taskObject = await createOrReuseTask(taskFunction.definition, props, causeType, cause, expire)
   const context = {
     causeType,
     cause,
@@ -126,6 +132,11 @@ interface TaskDefinition {
   returns?: Object,
 
   /**
+   * Task expiration time in milliseconds
+   */
+  expire?: number,
+
+  /**
    * Task execution function
    * @param props - task properties/parameters
    * @param context - task context
@@ -163,6 +174,11 @@ interface TaskDefinition {
    */
   action?: string | true | { name: string } // TODO: create ActionDefinition type
 
+  /**
+   * Task service name
+   */
+  service?: string
+
 }
 
 type TaskFunction = (props, context: TaskExecuteContext, emit, reportProgress) => Promise<any>
@@ -170,6 +186,7 @@ type TaskFunction = (props, context: TaskExecuteContext, emit, reportProgress) =
 export default function task(definition:TaskDefinition, serviceDefinition) {
   if(!definition) throw new Error('Task definition is not defined')
   if(!serviceDefinition) throw new Error('Service definition is not defined')
+  definition.service = serviceDefinition.name
   const taskFunction = async (props, context,
                               emit = events => app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {}),
                               reportProgress = (current, total, selfProgress) => {}) => {
@@ -178,8 +195,8 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         app.emitEvents(serviceDefinition.name, Array.isArray(events) ? events : [events], {})
     }
 
-    let taskObject = context.taskObject
-      ?? await createOrReuseTask(definition, props, context.causeType, context.cause)
+    let taskObject = context.taskObject ?? 
+      await createOrReuseTask(definition, props, context.causeType, context.cause, context.expire)
 
     if(!taskObject?.state) throw new Error('Task object state is not defined in ' + taskObject)
     if(!taskObject?.id) throw new Error('Task object id is not defined in '+taskObject)
@@ -218,9 +235,11 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     function updateProgress() {
       if(progressUpdateTimer) clearTimeout(progressUpdateTimer)
       const current = selfProgress.current + subtasksProgress.reduce(
-        (sum, progress: { current: number, total: number, factor: number }) => sum + progress.current * (progress.factor ?? 1), 0)
+        (sum, progress: { current: number, total: number, factor: number }) => 
+          sum + progress.current * (progress.factor ?? 1), 0)
       const total = selfProgress.total + subtasksProgress.reduce(
-        (sum, progress: { current: number, total: number, factor: number }) => sum + progress.total * (progress.factor ?? 1), 0)
+        (sum, progress: { current: number, total: number, factor: number }) => 
+          sum + progress.total * (progress.factor ?? 1), 0)
       reportProgress(current, total, selfProgress.action)
 
       if(lastProgressUpdate + progressThrottleTime > Date.now()) { // ignore this update, do it later
@@ -243,7 +262,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         ...context,
         task: {
           id: taskObject.id,
-          async run(taskFunction: TaskFunction, props, progressFactor = 1) {
+          async run(taskFunction: TaskFunction, props, progressFactor = 1, expire = undefined) {
             if(typeof taskFunction !== 'function') {
               console.log("TASK FUNCTION", taskFunction)
               throw new Error('Task function is not a function')
@@ -258,7 +277,8 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
                 taskObject: undefined,
                 task: taskObject.id,
                 causeType: 'task_Task',
-                cause: taskObject.id
+                cause: taskObject.id,
+                expire
               },
               (events) => app.emitEvents(serviceDefinition.name,
                 Array.isArray(events) ? events : [events], {}),
@@ -307,20 +327,21 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       } catch(error) {
         console.error("TASK ERROR", error.message, error.stack)
         /*console.log("RETRIES", taskObject.retries?.length, maxRetries)*/
-        if((taskObject.retries?.length || 0) >= taskObject.maxRetries - 1) {
+        if((taskObject.retries?.length || 0) >= taskObject.maxRetries - 1 || error.taskNoRetry) {
           await updateTask({
-            state: definition.fallback ? 'fallback' : 'failed',
+            state: (definition.fallback && !error.taskNoFallback) ? 'fallback' : 'failed',
             doneAt: new Date(),
             error: /*error.stack ??*/ error.message ?? error,
             retries: [...(taskObject.retries || []), {
               startedAt: taskObject.startedAt,
               failedAt: new Date(),
-              error: /*error.stack ??*/ error.message ?? error
+              error: /*error.stack ??*/ error.message ?? error,
+              stack: error.stack
             }]
           })
           console.error("TASK", taskObject.id, "OF TYPE", definition.name,
             "WITH PARAMETERS", props, "FAILED WITH ERROR", error.stack ?? error.message ?? error)
-          if(definition.fallback) {
+          if(definition.fallback && !error.taskNoFallback) {
             await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
             let result
             if(typeof definition.fallback !== 'function') {
@@ -343,7 +364,8 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             retries: [...(taskObject.retries || []), {
               startedAt: taskObject.startedAt,
               failedAt: new Date(),
-              error:/* error.stack ?? */error.message ?? error
+              error: error.message ?? error,
+              stack: error.stack
             }]
           })
           await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retriesCount)))
@@ -368,6 +390,9 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     return taskObject.result
   }
 
+  serviceDefinition.tasks = serviceDefinition.tasks || {}
+  serviceDefinition.tasks[definition.name] = definition
+
   serviceDefinition.afterStart(async () => {
     setTimeout(async () => {
       let gt = undefined
@@ -386,6 +411,22 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             cause: task.cause,
             taskObject,
           }
+          /// mark started subtasks as interrupted
+          const subtasks = await app.serviceViewGet('task', 'tasksByRoot', {
+            rootType: 'task_Task',
+            root: taskObject.to ?? taskObject.id
+          })
+          console.log("SUBTASKS", subtasks)
+          for(const subtask of subtasks) {
+            if(subtask.state === 'running' && (subtask.to ?? subtask.id) !== (taskObject.to ?? taskObject.id)) {         
+              await app.triggerService({ service: 'task', type: 'task_updateTask' }, {
+                task: subtask.to ?? subtask.id,
+                causeType: subtask.causeType,
+                cause: subtask.cause,
+                state: 'interrupted'
+              })
+            }
+          }          
           const promise = taskFunction(taskObject.properties, context)
           /// run async = ignore promise
           await new Promise(resolve => setTimeout(resolve, 1000)) // wait a second
@@ -413,7 +454,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       },
       async execute(props, context, emit) {
         const startResult =
-          await startTask(taskFunction, props, 'trigger', context.reaction.id)
+          await startTask(taskFunction, props, 'trigger', context.reaction.id, props.taskExpire)
         return startResult.task
       }
     })
@@ -433,8 +474,12 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         type: Task
       },
       async execute(props, context, emit) {
+        const client = {
+          ...context.client,
+          sessionKey: undefined
+        }
         const startResult =
-          await startTask(taskFunction, { ...props, client: context.client }, 'command', context.command.id)
+          await startTask(taskFunction, { ...props, client }, 'command', context.command.id, undefined)
         return startResult.task
       },
       ...(typeof definition.action === 'object' && definition.action)
@@ -442,8 +487,8 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
   }
 
   taskFunction.definition = definition
-  taskFunction.start = async (props, causeType, cause) => {
-    return await startTask(taskFunction, props, causeType, cause)
+  taskFunction.start = async (props, causeType, cause, expire = undefined) => {
+    return await startTask(taskFunction, props, causeType, cause, expire)
   }
   return taskFunction
 

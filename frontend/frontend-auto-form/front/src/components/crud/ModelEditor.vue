@@ -26,10 +26,17 @@
     <div class="">
       Service <strong>{{ service }}</strong>
     </div>
-    <div class="text-2xl mb-6">
-      <span v-if="isNew">Create </span>
-      <span v-else>Edit </span>
-      <strong>{{ model }}</strong>
+    <div class="flex flex-row flex-wrap justify-between align-items-top">
+      <div class="text-2xl mb-6">
+        <span v-if="isNew">Create </span>
+        <span v-else>Edit </span>
+        <strong>{{ model }}</strong>
+      </div>
+      <div v-if="!isNew" class="flex flex-row flex-wrap justify-between align-items-top gap-2">
+        <router-link :to="viewRoute">
+          <Button label="View" icon="pi pi-eye" class="p-button mb-6" />
+        </router-link>
+      </div>
     </div>
 
     <form v-if="editor" @submit="handleSave" @reset="handleReset">
@@ -162,9 +169,19 @@
     console.log("SAVED", saveResult, isNew.value, editor.value.isNew)
     if(saveResult && isNew.value && editor.value.isNew) {
       emit('created', saveResult)
-    }
-    emit('saved', saveResult)
+    } else {
+      emit('saved', saveResult)
+    }    
   }
+
+  const viewRoute = computed(() => ({
+    name: 'auto-form:editor',
+    params: {
+      serviceName: service.value,
+      modelName: model.value,
+      identifiers: Object.values(identifiers.value)
+    }
+  }))
 
   const scopesPath = computed(() => path.scope.objectScopes({
     objectType: parentObjects.value[0].objectType, /// TODO: support multiple parent objects!

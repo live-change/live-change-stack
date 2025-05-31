@@ -47,13 +47,13 @@ export async function createApp(config, api, App, createRouter, host, headers, r
   })
 
   app.use(ConfirmationService)
-  app.provide(PrimeVueConfirmSymbol, app.config.globalProperties.$confirm)
+  //app.provide(PrimeVueConfirmSymbol, app.config.globalProperties.$confirm)
 
   app.use(ToastService)
-  app.provide(PrimeVueToastSymbol, app.config.globalProperties.$toast)
+  //app.provide(PrimeVueToastSymbol, app.config.globalProperties.$toast)
 
   app.use(DialogService)
-  app.provide(PrimeVueDialogSymbol, app.config.globalProperties.$dialog)
+  //app.provide(PrimeVueDialogSymbol, app.config.globalProperties.$dialog)
 
   const oldCommand = api.command
   api.command = async (...args) => {
