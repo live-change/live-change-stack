@@ -342,10 +342,12 @@
 
   const selectedConstraints = ref({ video: false, audio: false })
   watchEffect(() => {
-    const video = limitedMedia.value === 'audio' ? false :
-        { deviceId: model.value?.videoInput?.deviceId, ...constraints.value.video }
-    const audio = limitedMedia.value === 'video' ? false :
-      { deviceId: model.value?.audioInput?.deviceId, ...constraints.value.audio }
+    const video = videoInputRequest.value === 'none' ? false :
+      (limitedMedia.value === 'audio' ? false :
+        { deviceId: model.value?.videoInput?.deviceId, ...constraints.value.video })
+    const audio = audioInputRequest.value === 'none' ? false :
+      (limitedMedia.value === 'video' ? false :
+        { deviceId: model.value?.audioInput?.deviceId, ...constraints.value.audio })  
     console.log("SELECTED CONSTRAINTS", {
       video: selectedConstraints.value.video?.deviceId,
       audio: selectedConstraints.value.audio?.deviceId
