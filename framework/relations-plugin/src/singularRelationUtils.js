@@ -16,27 +16,33 @@ import { extractTypeAndIdParts } from './utilsAny.js'
 import { allCombinations } from './combinations.js'
 import pluralize from 'pluralize'
 
-export function createIdentifiersProperties(keys, types) {
+export function createIdentifiersProperties(keys, types, idField) {
   const identifiers = {}
   if(keys) for(let i = 0; i < keys.length; i++) {
     const key = keys[i]
     identifiers[key] = {
       type: types?.[i] || String,
-      validation: ['nonEmpty']
+      validation: idField ? [{ name: 'ifEmpty', prop: idField, then: ['nonEmpty'] }] : ['nonEmpty']
     }
+  }
+  if(idField) identifiers[idField] = {
+    type: String,
+    validation: keys.map(key => ({ name: 'ifEmpty', prop: key, then: ['nonEmpty'] }))
   }
   return identifiers
 }
 
 export function defineObjectView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
-    modelName, others, model } = context
-  const viewProperties = createIdentifiersProperties(otherPropertyNames, others)
+    modelName, others, model, modelPropertyName } = context
+  const viewProperties = createIdentifiersProperties(otherPropertyNames, others, modelPropertyName)
   const viewName = config.name
     || ((config.prefix ? config.prefix + modelName : modelName[0].toLowerCase() + modelName.slice(1)) + (config.suffix || ''))
   model.crud.read = viewName
   const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
-  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, 
+    otherPropertyNames.concat(modelPropertyName), 
+    others.concat(model))
   service.view({
     name: viewName,
     properties: {
@@ -50,8 +56,12 @@ export function defineObjectView(config, context, external = true) {
     access: external && (config.readAccess || config.writeAccess),
     accessControl,
     daoPath(properties, { client, context }) {
-      const idParts = extractIdParts(otherPropertyNames, properties)
-      const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
+      const idProp = modelPropertyName ? properties[modelPropertyName] : null
+      if(idProp) {
+        const path = config.fields ? modelRuntime().limitedPath(idProp, config.fields) : modelRuntime().path(idProp)
+        return path
+      }
+      const id = idProp ? idProp : idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
       return path
     }

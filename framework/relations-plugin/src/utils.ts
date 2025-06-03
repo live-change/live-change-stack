@@ -230,7 +230,7 @@ export function prepareAccessControl(accessControl: AccessControlSettings, names
     ac.objects = ac.objects ?? ((params) => names.map((name, index) => ({
       objectType: types[index],
       object: params[name]
-    })))
+    })).filter(obj => obj.object))
     ac.objParams = { names, types }
   }
 }
