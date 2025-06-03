@@ -81,7 +81,7 @@ class Api extends DaoProxy {
           const software = this.softwareVersion
           const api = this.apiVersion
           if(!api) return
-          if(!software) return
+          if(!software || software === 'unknown') return false
           return api != software
         },
         client() {

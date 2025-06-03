@@ -86,7 +86,7 @@ export function defineRangeViews(config, context, external = true) {
       accessControl,
       daoPath(params, { client, context }) {
         const owner = []
-        for (const key of combination) owner.push(params[ownerPropertyNames[key]])
+        for (const key of combination) owner.push(params[otherPropertyNames[key]])
         return modelRuntime().sortedIndexRangePath(indexName, owner, App.extractRange(params) )
       }
     })
@@ -109,7 +109,7 @@ export function defineRangeViews(config, context, external = true) {
       .map(t => t.split('_').pop())
       .map(t => t[0].toLowerCase() + t.slice(1))
     const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, parametersNames, typeCombination)
-    const indexName = 'by'+typeNames.join('And')
+    const indexName = 'ownedBy'+typeNames.join('And')
     const viewName = typeNames.join('And') + context.partialReverseRelationWord + pluralize(modelName)
     model.crud['rangeBy_'+typeCombination.join('And')] = viewName
     //console.log("DEFINE TYPE RANGE VIEW", viewName, typeCombination)

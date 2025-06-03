@@ -45,7 +45,7 @@
   })
   const { type, object, data, link, inline } = toRefs(props)
 
-  import AutoObjectIdentification from './DefaultObjectIdentification.vue'
+  import DefaultObjectIdentification from './DefaultObjectIdentification.vue'
 
   import { useApi, usePath, live } from '@live-change/vue3-ssr'
   const api = useApi()
@@ -64,7 +64,7 @@
       type: type.value,
       service: service.value,
       model: model.value
-    }, AutoObjectIdentification)
+    }, DefaultObjectIdentification)
   )
 
   const modelDefinition = computed(() => {

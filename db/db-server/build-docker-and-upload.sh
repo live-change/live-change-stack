@@ -1,7 +1,7 @@
 #!/bin/bash
 VERSION=`echo "console.log(require('./package.json').version)" | node`
-#PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
-PLATFORMS="linux/amd64"
+PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
+#PLATFORMS="linux/amd64"
 echo building docker image for version $VERSION
 docker buildx build --debug \
   --platform $PLATFORMS \

@@ -85,12 +85,25 @@
     filter: viewFilter.value
   }))
 
+  import { useApi } from '@live-change/vue3-ssr'
+  const api = useApi()
+
   const viewComponent = computed(() => {
     const type = definition.value.type ?? 'Object'
-    const defaultComponent = (type === 'Object')
-      ? defineAsyncComponent(() => import('./ObjectView.vue'))
-      : defineAsyncComponent(() => import('./JsonView.vue'))
-    return injectComponent(viewComponentRequest.value, defineAsyncComponent(() => import('./JsonView.vue')))
+    let defaultComponent = undefined
+    if(type.indexOf('_') > 0) {
+      const [service, model] = type.split('_')
+      const modelDefinition = api.getServiceDefinition(service)?.models[model]
+      if(modelDefinition) {
+        defaultComponent = defineAsyncComponent(() => import('../crud/InjectedObjectIndentification.vue'))
+      }
+    }
+    if(!defaultComponent) {
+      defaultComponent = (type === 'Object')
+        ? defineAsyncComponent(() => import('./ObjectView.vue'))
+        : defineAsyncComponent(() => import('./JsonView.vue'))
+    }
+    return injectComponent(viewComponentRequest.value, defaultComponent)
   })
 
   const viewClass = computed(() => [definition.value?.view?.class, props.class])
@@ -102,6 +115,8 @@
     ...(definition.value?.view?.attributes),
     ...(props.attributes),
     value: value.value,
+    type: definition.value.type,
+    object: value.value,
     definition: definition.value,
     class: viewClass.value,
     style: viewStyle.value,

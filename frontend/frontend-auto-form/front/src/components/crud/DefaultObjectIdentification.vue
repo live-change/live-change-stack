@@ -1,8 +1,22 @@
 <template>
-  <template v-if="typeof identificationConfig === 'string'">
+  <template v-if="identificationParts.length > 0">
     <span>
-      <i :class="[icon, 'mr-2']" style="font-size: 0.9em;"></i>{{ objectData[identificationConfig] }}
-    </span>    
+      <i v-if="modelDefinition.icon" :class="[modelDefinition.icon, 'mr-2']" style="font-size: 0.9em;"></i>
+      <template v-for="(part, index) in identificationParts">
+        <i v-if="part.icon" :class="[part.icon, 'mr-2']" style="font-size: 0.9em;"></i>
+        <span :class="{ 'mr-2': index < identificationParts.length - 1 }">
+          <span v-if="part.isObject">
+            <InjectedObjectIndentification :type="part.type" :object="objectData[part.field]" />
+          </span>
+          <span v-else-if="part.field">
+            {{ objectData[part.field] }}
+          </span>
+          <span v-else>
+            {{ part.text ?? '' }}
+          </span>
+        </span>
+      </template>
+    </span>
   </template>
   <template v-else>
     <span>      
@@ -13,7 +27,7 @@
 
 <script setup>
 
-  import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
+  import { ref, computed, onMounted, defineProps, defineEmits, toRefs, defineAsyncComponent } from 'vue'
 
   const props = defineProps({
     objectType: {
@@ -69,6 +83,42 @@
       [modelName[0].toLowerCase() + modelName.slice(1)]: object.value
     })
   })
+
+  function getDefinitionProperty(path) {
+    const parts = path.split('.')
+    let current = modelDefinition.value
+    for(const part of parts) {
+      if(part === '*') {
+        return current?.items ?? current?.of
+      } else {
+        current = current?.properties?.[part]
+      }
+    }
+    return current
+  }
+
+  const identificationParts = computed(() => {
+    const config = identificationConfig.value
+    if(!config) return []
+    const configArray = Array.isArray(config) ? config : [config]
+    return configArray.map(fieldConfig => {      
+      if(typeof fieldConfig === 'string') {
+        const field = getDefinitionProperty(fieldConfig)
+        if(field) {
+          const isObject = field.type.indexOf('_') > 0          
+          return { field: fieldConfig, isObject, type: field.type }
+        } else {
+          return { text: fieldConfig }
+        }
+      } else if(typeof fieldConfig === 'object') {
+        return fieldConfig
+      } else {
+        throw new Error('Unknown identification config: ' + JSON.stringify(fieldConfig))
+      }
+    })
+  })
+
+  const InjectedObjectIndentification = defineAsyncComponent(() => import('./InjectedObjectIndentification.vue'))
 
   const loadedObjectData = await live(objectDataPath)
   const objectData = computed(() => data.value || loadedObjectData.value)

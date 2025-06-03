@@ -50,13 +50,14 @@ export function defineProperties(model: ModelDefinitionSpecificationWithAccessCo
 }
 
 export function defineIndex(model: ModelDefinitionSpecificationWithAccessControl,
-                            what: string, props: string[], multi = undefined) {
+                            what: string, props: string[], multi = undefined, prefix = 'by') {
   console.log("DEFINE INDEX", model.name, what, props)
-  model.indexes['by' + what] = {
+  model.indexes[prefix + what] = {
     property: props,
     multi
   }
 }
+
 export function defineIndexes(model: ModelDefinitionSpecificationWithAccessControl,
                               props: Record<string, any>, types: string[]) {
   console.log("DEFINE INDEXES!", model.name, props, types)
@@ -77,13 +78,15 @@ export function defineIndexes(model: ModelDefinitionSpecificationWithAccessContr
   }
   const multiPropsTypes = Object.keys(propsByType).filter(type => propsByType[type].length > 1)
   const typeCombinations = allCombinations(multiPropsTypes)
+  //console.log("TYPE COMBINATIONS", typeCombinations)
   for(const typeCombination of typeCombinations) {
     const typeNames = typeCombination.map(t => {
       const type = t.split('_')[1]
       return type[0].toUpperCase() + type.slice(1)
     })
-    const typeProps = typeCombination.map(type => propsByType[type])
-    defineIndex(model, typeNames.join('And'), typeProps, true)
+    const typeProps = typeCombination.map(type => propsByType[type].map(prop => props[prop]))
+    // console.log("DEFINE TYPE INDEX", typeNames.join('And'), typeProps, props)
+    defineIndex(model, typeNames.join('And'), typeProps, true, 'ownedBy')
   }
 }
 

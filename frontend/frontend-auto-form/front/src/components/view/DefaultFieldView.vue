@@ -1,5 +1,5 @@
 <template>
-  <div class="field" :class="fieldClass" :style="fieldStyle">
+  <div class="field flex flex-col" :class="fieldClass" :style="fieldStyle">
     <slot name="label"
           v-bind="{ uid, value, definition, viewClass, viewStyle, attributes, propName, rootValue, i18n }">
       <label :for="uid" class="font-medium text-lg">{{ t( label ) }}</label>

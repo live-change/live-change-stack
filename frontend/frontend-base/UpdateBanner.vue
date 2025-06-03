@@ -28,12 +28,7 @@
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
 
-  const codeVersion = ref(ENV_VERSION)
-
-  const updateAvailable = computed(
-      () => codeVersion.value !== 'unknown'
-        && api.metadata.version.value && api.metadata.version.value !== codeVersion.value
-  )
+  const updateAvailable = computed(() => api.metadata.versionMismatch.value)
   const updateBannerHidden = ref(false)
   function hideUpdateBanner() {
     updateBannerHidden.value = true

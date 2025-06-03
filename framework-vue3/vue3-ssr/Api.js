@@ -72,6 +72,7 @@ class Api extends DaoProxy {
     const versionMismatch = computed(() => {
       if(!version) return
       if(!softwareVersion) return
+      if(softwareVersion.value === 'unknown') return false
       return version.value !== softwareVersion.value
     })
     const client = computed(() => api?.value?.client)
