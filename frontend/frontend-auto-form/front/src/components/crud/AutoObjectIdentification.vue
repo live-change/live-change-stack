@@ -98,7 +98,7 @@
       params: {
         serviceName: service.value,
         modelName: model.value,
-        identifiers: Object.values(objectIdentifiers(objectData.value))
+        id: objectData.value?.to ?? objectData.value?.id
       }
     }
   })

@@ -15,13 +15,19 @@ export function autoFormRoutes(config = {}) {
     }),
 
     route({
-      name: 'auto-form:editor', path: prefix + '/editor/:serviceName/:modelName/:identifiers*', meta: { },
-      component: () => import("./pages/Editor.vue"),
+      name: 'auto-form:create', path: prefix + '/create/:serviceName/:modelName/:identifiers*', meta: { },
+      component: () => import("./pages/Create.vue"),
       props: true
     }),
 
     route({
-      name: 'auto-form:view', path: prefix + '/view/:serviceName/:modelName/:identifiers*', meta: { },
+      name: 'auto-form:edit', path: prefix + '/edit/:serviceName/:modelName/:id', meta: { },
+      component: () => import("./pages/Edit.vue"),
+      props: true
+    }),
+
+    route({
+      name: 'auto-form:view', path: prefix + '/view/:serviceName/:modelName/:id', meta: { },
       component: () => import("./pages/View.vue"),
       props: true
     }),

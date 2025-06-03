@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.86",
-    "@live-change/relations-plugin": "^0.9.86",
+    "@live-change/framework": "0.9.86",
+    "@live-change/relations-plugin": "0.9.86",
     "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0"
   },

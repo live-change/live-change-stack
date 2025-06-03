@@ -19,9 +19,9 @@
       </div>
     </div>
 
-    <pre>parentObjects = {{ parentObjects }}</pre>
+<!--     <pre>parentObjects = {{ parentObjects }}</pre>
     <pre>scopesPath = {{ scopesPath }}</pre>
-    <pre>scopes = {{ scopes }}</pre>
+    <pre>scopes = {{ scopes }}</pre> -->
 
     <div class="">
       Service <strong>{{ service }}</strong>
@@ -171,19 +171,19 @@
       emit('created', saveResult)
     } else {
       emit('saved', saveResult)
-    }    
+    }
   }
 
-  const viewRoute = computed(() => ({
-    name: 'auto-form:editor',
+  const viewRoute = computed(() => editor.value?.saved && ({
+    name: 'auto-form:view',
     params: {
       serviceName: service.value,
       modelName: model.value,
-      identifiers: Object.values(identifiers.value)
+      id: editor.value.saved?.value?.to ?? editor.value.saved?.value?.id
     }
   }))
 
-  const scopesPath = computed(() => path.scope.objectScopes({
+  const scopesPath = computed(() => parentObjects.value[0] && path.scope.objectScopes({
     objectType: parentObjects.value[0].objectType, /// TODO: support multiple parent objects!
     object: parentObjects.value[0].object
   }))

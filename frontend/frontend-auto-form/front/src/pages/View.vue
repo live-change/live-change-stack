@@ -1,7 +1,7 @@
 <template>
   <div class="w-full lg:w-8/12 md:w-11/12">
 
-    <ModelView :service="serviceName" :model="modelName" :identifiers="identifiersObject" />
+    <ModelView :service="serviceName" :model="modelName" :id="id" />
 
   </div>
 </template>
@@ -21,37 +21,12 @@
       type: String,
       required: true,
     },
-    identifiers: {
-      type: Array,
-      default: []
+    id: {
+      type: String,
+      required: true,
     }
   })
-  const { serviceName, modelName, identifiers } = toRefs(props)
-
-  import { useApi, usePath, live } from '@live-change/vue3-ssr'
-  const api = useApi()
-  const path = usePath()
-
-  const modelDefinition = computed(() => {
-    const service = api.services[serviceName.value]
-    if(!service) return null
-    const model = service.models[modelName.value]
-    if(!model) return null
-    return model
-  })
-
-  const identifiersObject = computed(() => {
-    const result = {}
-    for(const [i, identifier] of Object.entries(identifiers.value)) {
-      const identifierDefinition = modelDefinition.value.identifiers[i]
-      if(typeof identifierDefinition === 'string') {
-        result[identifierDefinition] = identifier
-      } else {
-        result[identifierDefinition.name] = identifier
-      }
-    }
-    return result
-  })
+  const { serviceName, modelName, id } = toRefs(props)
 
 </script>
 

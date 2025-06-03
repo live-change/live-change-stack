@@ -11,12 +11,12 @@
         </div>
         <div class="flex flex-row flex-wrap justify-between align-items-top">
           <div class="text-2xl mb-6">
-            <strong>{{ model }}</strong>
+            <strong class="mr-2">{{ model }}</strong>
             <ObjectIdentification
               :objectType="service + '_' + model"
               :object="object.to ?? object.id"
               :data="object"
-              class="ml-2"
+              class=""
             />
           </div>
           <div class="flex flex-row flex-wrap justify-between align-items-top gap-2">
@@ -111,7 +111,7 @@
       </div>
       <pre>accessControlRoles = {{ accessControlRoles }}</pre> -->
       
-    <pre>identifiers = {{ identifiers }}</pre>
+    <pre>id = {{ id }}</pre>
 
     <pre>definition = {{ modelDefinition }}</pre>
 
@@ -147,9 +147,9 @@
       type: String,
       required: true,
     },
-    identifiers: {
-      type: Object,
-      default: () => ({})
+    id: {
+      type: String,
+      required: true,
     },
     attributes: {
       type: Object,
@@ -160,7 +160,7 @@
       default: ''
     }
   })
-  const { service, model, identifiers, attributes, i18n } = toRefs(props)
+  const { service, model, id, attributes, i18n } = toRefs(props)
 
   const emit = defineEmits(['saved', 'draftSaved', 'draftDiscarded', 'saveError', 'created' ])
 
@@ -210,7 +210,7 @@
   const viewDataPromise = viewData({
     service: service.value,
     model: model.value,
-    identifiers: identifiers.value,
+    id: id.value,
     path, api
   })
 
@@ -254,11 +254,11 @@
   const accessControlRoles = computed(() => modelDefinition.value?.accessRoles ?? [])
 
   const editRoute = computed(() => ({
-    name: 'auto-form:editor',
+    name: 'auto-form:edit',
     params: {
       serviceName: service.value,
       modelName: model.value,
-      identifiers: Object.values(identifiers.value)
+      id: id.value
     }
   }))
 
