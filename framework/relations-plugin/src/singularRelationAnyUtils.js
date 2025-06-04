@@ -190,6 +190,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
       type: eventName,
       identifiers, data
     })
+    return id
   }
 }
 
@@ -268,6 +269,7 @@ function getSetOrUpdateFunction( validators, validationContext, config, context)
       type: eventName,
       identifiers, data
     })
+    return id
   }
 }
 
@@ -340,6 +342,7 @@ function getResetFunction(config, context) {
       type: eventName,
       identifiers
     })
+    return id
   }
 }
 

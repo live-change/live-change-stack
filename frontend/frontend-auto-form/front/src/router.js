@@ -15,7 +15,7 @@ export function autoFormRoutes(config = {}) {
     }),
 
     route({
-      name: 'auto-form:create', path: prefix + '/create/:serviceName/:modelName/:identifiers*', meta: { },
+      name: 'auto-form:create', path: prefix + '/create/:serviceName/:modelName/:identifiersWithNames*', meta: { },
       component: () => import("./pages/Create.vue"),
       props: true
     }),

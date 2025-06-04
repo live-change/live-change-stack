@@ -193,6 +193,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
       identifiers,
       data
     })
+    return id
   }
 }
 
@@ -278,6 +279,7 @@ function getDeleteFunction( validators, validationContext, config, context) {
       type: eventName,
       [modelPropertyName]: id
     })
+    return id
   }
 }
 

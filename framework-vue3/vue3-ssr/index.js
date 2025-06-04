@@ -53,6 +53,21 @@ async function rangeBuckets(pathFunction, options, app = getCurrentInstance()) {
   }
 }
 
+async function rangeBucketsRaw(pathFunction, options, app = getCurrentInstance()) {
+  const lc = useApi(app?.appContext)
+  const extendedPathFunction = (range) => pathFunction(range, lc.fetch)
+  const buckets = new RangeBuckets(lc, extendedPathFunction, options)
+  if(app) {
+    onUnmounted(() => {
+      buckets.dispose()
+    })
+  } else {
+    console.error("live fetch outside component instance - possible memory leak")
+  }
+  await buckets.wait()
+  return buckets
+}
+
 function reverseRange(range) {
   return {
     gt: range.lt,
@@ -160,7 +175,7 @@ const uid = useUid
 export {
   usePath, useLive, useFetch, useApi, useViews, useActions, useUid, useClient, useTimeSynchronization,
   path, live, fetch, api, view, actions, uid, client,
-  rangeBuckets, reverseRange,
+  rangeBuckets, rangeBucketsRaw, reverseRange,
   inboxReader,
   serviceDefinition
 }

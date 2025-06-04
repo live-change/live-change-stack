@@ -146,12 +146,12 @@
   async function createBuckets() {
     try {
       return await rangeBuckets(
-          (range, p) => pathFunction.value(range, p),
-          {
-            bucketSize: bucketSize.value,
-            initialPosition: initialPosition.value,
-            softClose: softClose.value
-          }
+        (range, p) => pathFunction.value(range, p),
+        {
+          bucketSize: bucketSize.value,
+          initialPosition: initialPosition.value,
+          softClose: softClose.value
+        }
       )
     } catch(e) {
       console.error("Error creating buckets", e)
@@ -218,6 +218,7 @@
   }
 
   async function loadBottom() {
+    console.log("LOAD BOTTOM!!!")
     if(!props.canLoadBottom) return
     if(!buckets.value.canLoadBottom()) return
     emit('loadBottom')
@@ -254,6 +255,13 @@
 
 </script>
 
-<style scoped>
-
+<style>
+/*   .load-sensor {
+    visibility: visible !important;
+    border: 2px solid red !important;
+  }
+  .drop-sensor {
+    visibility: visible !important;
+    border: 1px solid blue !important;
+  } */
 </style>

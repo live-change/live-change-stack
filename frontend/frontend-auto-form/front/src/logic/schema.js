@@ -39,24 +39,25 @@ export function schemaFromDefinition(definition, data, type, appContext = getCur
         properties[key] = {
           type: 'string',
           enum: prop.enum,
-          description: `Type of ${keyWithoutType}`          
+          enumDescriptions: prop.enumDescriptions,
+          description: `Type of ${keyWithoutType}`,
         }
         properties[keyWithoutType] = {
           type: 'string',          
-          description: `Id of Object with type defined in ${key}`          
+          description: `Id of Object with type defined in ${key}`,                
         }
       }
     }
     return {
       type: 'object',
       properties,
-      description: definition.description
+      description: definition.description,
     }      
   } else if(type === 'Array') {
     const schema = {
       type: 'array',        
       items: schemaFromDefinition(definition.items ?? definition.of, data?.[0], undefined, appContext),
-      description: definition.description
+      description: definition.description,
     }    
     if(data) {
       for(const item of data) {
@@ -67,7 +68,9 @@ export function schemaFromDefinition(definition, data, type, appContext = getCur
   } else if(type === 'String') {
     return {
       type: 'string',
-      description: definition.description
+      description: definition.description,
+      enum: definition.enum,
+      enumDescriptions: definition.enumDescriptions
     }
   } else if(type === 'Number') {
     return {

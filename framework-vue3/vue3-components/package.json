@@ -24,7 +24,8 @@
     "@live-change/vue3-ssr": "0.9.86",
     "debug": "^4.3.4",
     "mitt": "3.0.1",
-    "vue": "^3.5.12"
+    "vue": "^3.5.12",
+    "vue3-scroll-border": "0.1.7"
   },
   "gitHead": "b1b605b7f1fa4fc3de4720afbb401e2cfff080cf"
 }

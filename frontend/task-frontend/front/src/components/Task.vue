@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="text-lg flex flex-row justify-between flex-wrap" :class="taskColor">
+    <div class="text-lg flex flex-row justify-between flex-wrap items-center" :class="taskColor">
       <div class="flex flex-row items-center mr-4">
         <i :class="['pi', icon, taskColor]" style="font-size: 1rem" />
         <div :class="['ml-2']">{{ label }}</div>

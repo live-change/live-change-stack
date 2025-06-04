@@ -189,11 +189,11 @@
 
   function editRoute(object) {
     return {
-      name: 'auto-form:editor',
+      name: 'auto-form:edit',
       params: {
         serviceName: service.value,
         modelName: model.value,
-        identifiers: Object.values(objectIdentifiers(object))
+        id: object.to ?? object.id
       }
     }
   }
@@ -204,17 +204,17 @@
       params: {
         serviceName: service.value,
         modelName: model.value,
-        identifiers: Object.values(objectIdentifiers(object))
+        id: object.to ?? object.id
       }
     }
   }
 
   const createRoute = computed(() => ({
-    name: 'auto-form:editor',
+    name: 'auto-form:create',
     params: {
       serviceName: service.value,
       modelName: model.value,
-      identifiers: Object.values(objectIdentifiers(views.value[0].identifiers))
+      identifiersWithNames: Object.entries(objectIdentifiers(views.value[0].identifiers)).flat()
     }
   }))
 

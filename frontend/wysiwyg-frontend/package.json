@@ -78,7 +78,7 @@
     "vue-meta": "^3.0.0-alpha.9",
     "vue-prism-editor": "2.0.0-alpha.2",
     "vue-router": "^4.5.0",
-    "vue3-scroll-border": "0.1.6"
+    "vue3-scroll-border": "0.1.7"
   },
   "devDependencies": {
     "@live-change/codeceptjs-helper": "0.9.86",

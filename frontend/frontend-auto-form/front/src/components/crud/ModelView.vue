@@ -32,12 +32,18 @@
 
       </div>
 
-      <div v-if="connectedActions" class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6">
-        <div v-for="action of connectedActions" class="mb-6">
-          <pre>{{ action }}</pre>
-          <router-link :to="actionRoute(action)">
-            <Button :label="action.label" icon="pi pi-play" class="p-button mb-6" />
-          </router-link>
+      <div v-if="connectedActions" 
+              class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6">
+        <div class="text-xl mb-3">
+          Actions
+        </div>
+        <div class="flex flex-row flex-wrap gap-2">
+          <div v-for="action of connectedActions" class="mb-0">
+            <!-- <pre>{{ action }}</pre> -->
+            <router-link :to="actionRoute(action)">
+              <Button :label="action.label" icon="pi pi-play" class="p-button mb-0" />
+            </router-link>
+          </div>
         </div>
       </div>
 
@@ -191,6 +197,7 @@
         ...action        
       }
       const actionDefinition = api.getServiceDefinition(config.service).actions[config.name]
+      if(!actionDefinition) throw new Error("Action " + config.service + "_" + config.name + " definition not found")
       const label = actionDefinition.label ?? action.label ?? actionDefinition.name 
       return {
         ...config,

@@ -161,6 +161,7 @@ export function getSetFunction( validators, validationContext, config, context) 
       type: eventName,
       identifiers, data
     })
+    return id
   }
   return execute
 }
@@ -237,6 +238,7 @@ export function getUpdateFunction( validators, validationContext, config, contex
       type: eventName,
       identifiers, data
     })
+    return id
   }
 }
 
@@ -314,6 +316,7 @@ export function getSetOrUpdateFunction( validators, validationContext, config, c
       type: eventName,
       identifiers, data
     })
+    return id
   }
 }
 
@@ -389,6 +392,7 @@ export function getResetFunction( validators, validationContext, config, context
         [modelPropertyName]: id
       }
     })
+    return id
   }
 }
 

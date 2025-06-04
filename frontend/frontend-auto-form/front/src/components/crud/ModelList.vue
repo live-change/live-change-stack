@@ -27,7 +27,7 @@
                     :key="JSON.stringify(modelsPathRangeConfig)+index"
                     :pathFunction="modelsPathRangeFunction"
                     :canLoadTop="false" canDropBottom
-                    loadBottomSensorSize="4000px" dropBottomSensorSize="3000px">
+                    loadBottomSensorSize="4000px" dropBottomSensorSize="7000px">
         <template #empty>
           <div class="text-xl text-surface-800 dark:text-surface-50 my-1 mx-4">
             No <strong>{{ pluralize(model[0].toLowerCase() +  model.slice(1)) }}</strong> found.
@@ -43,7 +43,7 @@
                 class="text-xl"
               />
             </router-link>
-            <div class="flex flex-row">
+            <div class="flex flex-row ml-4">
               <router-link :to="viewRoute(object)" class="no-underline">
                 <Button icon="pi pi-eye" severity="primary" label="View" class="mr-2" />
               </router-link>
@@ -70,9 +70,11 @@
       </div>
     </div>
 
-    <div v-if="modelDefinition.crud?.create" class="mt-2 flex flex-row justify-end mr-2">
-      <router-link :to="createRoute" class="no-underline2">
-        <Button icon="pi pi-plus" :label="'Create new '+model" />
+    <div v-if="modelDefinition.crud?.create" class="mt-2 flex flex-row justify-end mr-2 gap-2">
+      <router-link v-for="createButton in createButtons" :key="JSON.stringify(createButton.identifiers)"
+                   :to="createButton.route" class="no-underline2">
+        <Button v-if="createButton.as" icon="pi pi-plus" :label="'Create new '+model + ' as '+createButton.as" />
+        <Button v-else icon="pi pi-plus" :label="'Create new '+model" />
       </router-link>
     </div>
 
@@ -218,18 +220,57 @@
     }
   }
 
-  const createRoute = computed(() => {
-    const identifiersObject = viewsArray?.value[0]?.identifiers
-    if(!identifiersObject) return null
-    const identifiers = Object.values(identifiersObject)
+  function createRoute(identifiersObject) {
+    const identifiersWithNames = Object.entries(identifiersObject).flat()
     return {
       name: 'auto-form:create',
       params: {
         serviceName: service.value,
         modelName: model.value,
-        identifiers
+        identifiersWithNames
       }
     }
+  }
+
+  const createButtons = computed(() => {
+    const model = modelDefinition.value
+    const results = []
+    for(const view of viewsArray.value) {
+      const identifiersObject = view?.identifiers
+      if(!identifiersObject) continue
+      
+      const identifierNames = Object.keys(identifiersObject)
+      const fieldParameters = identifierNames.filter(name => model.properties[name])
+      const otherParameters = identifierNames.filter(name => !model.properties[name])      
+
+      if(otherParameters.length > 0) {
+        const viewName = model.crud[view.name]
+        const viewDefinition = serviceDefinition.value.views[viewName]
+        for(const otherParameter of otherParameters) {
+          const otherParameterType = viewDefinition.properties[otherParameter].type
+          const modelParameters = Object.entries(model.properties)
+            .filter(([name, property]) => otherParameterType === property.type)
+          for(const [name, property] of modelParameters) {
+            const newIdentifiersObject = {
+              [name]: identifiersObject[otherParameter]
+            }
+            results.push({
+              identifiers: newIdentifiersObject,              
+              as: name,
+              route: createRoute(newIdentifiersObject)
+            })
+          }
+        }
+      } else {
+        results.push({ 
+          identifiers: identifiersObject,
+          route: createRoute(identifiersObject)
+        })
+      }
+      
+      
+    }
+    return results
   })
 
   function deleteObject(event, object) {

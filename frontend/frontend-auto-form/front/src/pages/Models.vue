@@ -73,7 +73,7 @@
 
   function createRoute(serviceName, model) {
     return {
-      name: 'auto-form:editor',
+      name: 'auto-form:create',
       params: {
         serviceName,
         modelName: model.name

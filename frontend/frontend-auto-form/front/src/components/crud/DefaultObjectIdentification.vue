@@ -6,10 +6,10 @@
         <i v-if="part.icon" :class="[part.icon, 'mr-2']" style="font-size: 0.9em;"></i>
         <span :class="{ 'mr-2': index < identificationParts.length - 1 }">
           <span v-if="part.isObject">
-            <InjectedObjectIndentification :type="part.type" :object="objectData[part.field]" />
+            <InjectedObjectIndentification :type="part.type" :object="part.value" />
           </span>
           <span v-else-if="part.field">
-            {{ objectData[part.field] }}
+            {{ part.value }}
           </span>
           <span v-else>
             {{ part.text ?? '' }}
@@ -97,6 +97,20 @@
     return current
   }
 
+  const InjectedObjectIndentification = defineAsyncComponent(() => import('./InjectedObjectIndentification.vue'))
+
+  const loadedObjectData = await live(objectDataPath)
+  const objectData = computed(() => data.value || loadedObjectData.value)
+
+  function getObjectData(path) {
+    const parts = path.split('.')
+    let current = objectData.value
+    for(const part of parts) {
+      current = current[part]
+    }
+    return current
+  }
+
   const identificationParts = computed(() => {
     const config = identificationConfig.value
     if(!config) return []
@@ -105,7 +119,7 @@
       if(typeof fieldConfig === 'string') {
         const field = getDefinitionProperty(fieldConfig)
         if(field) {
-          const isObject = field.type.indexOf('_') > 0          
+          const isObject = field.type.indexOf('_') > 0                    
           return { field: fieldConfig, isObject, type: field.type }
         } else {
           return { text: fieldConfig }
@@ -115,13 +129,17 @@
       } else {
         throw new Error('Unknown identification config: ' + JSON.stringify(fieldConfig))
       }
+    }).map(part => {
+      if(part.type === 'any') {
+        part.type = getObjectData(part.field + 'Type')
+        part.isObject = (part.type && part.type.indexOf('_') > 0) || false
+      }
+      if(part.field) {
+        part.value = getObjectData(part.field)
+      }      
+      return part
     })
   })
-
-  const InjectedObjectIndentification = defineAsyncComponent(() => import('./InjectedObjectIndentification.vue'))
-
-  const loadedObjectData = await live(objectDataPath)
-  const objectData = computed(() => data.value || loadedObjectData.value)
 
 
   const icon = computed(() => {
