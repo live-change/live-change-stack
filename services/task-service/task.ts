@@ -52,6 +52,9 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause, expire
     expireDate
   })
 
+  console.log("HASH", hash)
+  console.log("SIMILAR TASKS", similarTasks)
+
   const oldTask = similarTasks.find(similarTask => similarTask.name === taskDefinition.name
     && JSON.stringify(similarTask.properties) === propertiesJson 
     && (!expireDate || new Date(similarTask.startedAt).getTime() > expireDate.getTime()))
@@ -172,7 +175,7 @@ interface TaskDefinition {
    * create action for task, action will return object with task property,
    * @param action - true, or action name
    */
-  action?: string | true | { name: string } // TODO: create ActionDefinition type
+  action?: { name: string } // TODO: create ActionDefinition type
 
   /**
    * Task service name
@@ -293,7 +296,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             updateProgress()
             return result
           },
-          async progress(current, total, action, opts) {
+          async progress(current, total, action, opts) { // throttle this
             selfProgress = {
               ...opts,
               current, total, action
@@ -314,6 +317,65 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             cause: taskObject.id,
             ...trigger
           }, props, returnArray)
+        },
+        async triggerTask(trigger, data, progressFactor = 1) {
+          const tasks = await app.trigger({
+            causeType: 'task_Task',
+            cause: taskObject.id,
+            ...trigger
+          }, data)
+          const fullProgressSum = tasks.length * progressFactor     
+          const task = this     
+          const taskWatchers = tasks.map(task => {
+            const observable = Task.observable(task)
+            if(!observable) {
+              console.error("SUBTASK OBSERVABLE NOT FOUND", task)
+              throw new Error("SUBTASK OBSERVABLE NOT FOUND")
+            }
+            const watcher: any = {          
+              observable,
+              observer(signal, value) {
+                if(signal !== 'set') return
+                if(value) {                
+                  if(value.progress) {
+                    watcher.progress = value.progress
+                    updateProgress()
+                  }
+                  if(value.state === 'done') {              
+                    watcher.resolve(value.result)
+                  } else if(value.state === 'failed') {
+                    watcher.reject(value)
+                  }
+                }
+              },
+              progress: {
+                current: 0,
+                total: 1,
+                factor: progressFactor/tasks.length
+              },
+              run(resolve, reject) { 
+                watcher.resolve = resolve
+                watcher.reject = reject
+                //console.log("SUBTASK WATCHER", watcher, "TASK OBSERVABLE", watcher.observable)
+                subtasksProgress.push(watcher.progress)
+                watcher.observable.observe(watcher.observer)                              
+              }
+            }
+            return watcher
+          })          
+          
+          const promises = taskWatchers.map(watcher => new Promise((resolve, reject) => watcher.run(resolve, reject)))
+          await Promise.all(promises)
+          //console.log("TASK WATCHERS PROMISES FULLFILLED", taskWatchers)
+          const results = taskWatchers.map(watcher => {
+            //console.log("WATCHER OBSERVABLE", watcher.observable)
+            watcher.observable.getValue().result
+          })
+          for(const watcher of taskWatchers) {
+            //console.log("UNOBSERVING WATCHER", watcher)
+            watcher.observable.unobserve(watcher.observer)
+          }          
+          return results
         }
       }
       try {
@@ -444,6 +506,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
 
   const Task = serviceDefinition.foreignModel('task', 'Task')
 
+
   if(definition.trigger) {
     serviceDefinition.trigger({
       name: definition.trigger === true ? definition.name : definition.trigger,
@@ -454,18 +517,34 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       },
       async execute(props, context, emit) {
         const startResult =
-          await startTask(taskFunction, props, 'trigger', context.reaction.id, props.taskExpire)
+          await startTask(taskFunction, props, 
+            context.reaction.causeType ?? 'trigger', 
+            context.reaction.cause ?? context.reaction.id, 
+            props.taskExpire) // Must be done that way, so subtasks can be connected to the parent task
         return startResult.task
       }
     })
+  } else {  
+    serviceDefinition.trigger({
+      name: 'runTask_'+serviceDefinition.name+'_'+definition.name,
+      properties: definition.properties,
+      returnsTask: definition.name,
+      returns: {
+        type: Task
+      },
+      async execute(props, context, emit) {
+        const startResult =
+          await startTask(taskFunction, props, 
+            context.reaction.causeType ?? 'trigger', 
+            context.reaction.cause ?? context.reaction.id, 
+            props.taskExpire) // Must be done that way, so subtasks can be connected to the parent task
+        return startResult.task
+      }
+    })  
   }
 
-  if(definition.action) {
-    const name = 
-      (definition.action === true && definition.name)
-      || (typeof definition.action === 'string' && definition.action)
-      || (typeof definition.action === 'object' && definition.action.name)
-      || definition.name    
+  if(definition.action) {    
+    const name = definition.action.name || definition.name    
     serviceDefinition.action({
       name,
       properties: definition.properties,
@@ -484,6 +563,8 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       },
       ...(typeof definition.action === 'object' && definition.action)
     })
+
+
   }
 
   taskFunction.definition = definition

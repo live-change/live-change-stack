@@ -631,6 +631,29 @@ class App {
     return await view.get(params, { internal: true, roles: ['admin'] })
   }
 
+  async cachedTask(taskDescription, expireAfter, task) {
+    const taskDescriptionHash = crypto.createHash('sha256').update(taskDescription).digest('hex')
+    let cacheEntry = await this.dao.get(['database', 'tableObject', this.databaseName, 'cache', taskDescriptionHash])
+    if(!cacheEntry || cacheEntry.createdAt < new Date(Date.now() - expireAfter).toISOString()) {
+      const result = await task()
+      const expiresAt = new Date(Date.now() + expireAfter).toISOString()
+      cacheEntry = {
+        id: taskDescriptionHash,
+        createdAt: new Date().toISOString(),
+        expiresAt: expiresAt > cacheEntry.expiresAt ? expiresAt : cacheEntry.expiresAt,
+        result
+      }
+      await this.dao.request(['database', 'put'], this.databaseName, 'cache', cacheEntry)
+    } else { // extend cache entry expiration
+      const newExpiresAt = new Date(new Date(cacheEntry.createdAt).getTime() + expireAfter).toISOString()
+      if(cacheEntry.expiresAt < newExpiresAt) {
+        cacheEntry.expiresAt = newExpiresAt
+        await this.dao.request(['database', 'put'], this.databaseName, 'cache', cacheEntry)
+      }
+    }
+    return cacheEntry.result
+  }
+
 }
 
 export default App

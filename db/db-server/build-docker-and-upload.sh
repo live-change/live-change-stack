@@ -5,6 +5,7 @@ PLATFORMS="linux/amd64,linux/arm64,linux/arm/v7"
 echo building docker image for version $VERSION
 docker buildx build --debug \
   --platform $PLATFORMS \
+  --network=host \
   -t livechange/db-server:$VERSION \
   -t livechange/db-server:latest \
   --push \

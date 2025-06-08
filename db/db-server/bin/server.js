@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import path from 'path'
 import fs from 'fs'
-import service from "os-service"
 import Server from '../lib/Server.js'
 import { client as WSClient } from "@live-change/dao-websocket"
 import ReactiveDao from '@live-change/dao'
@@ -69,14 +68,6 @@ function storeOptions(yargs, defaults = {}) {
   })
 }
 
-function serviceOptions(yargs) {
-  yargs.option('serviceName', {
-    describe: 'name of service',
-    type: 'string',
-    default: 'liveChangeDb'
-  })
-}
-
 const argv = yargs(process.argv.slice(2)) // eslint-disable-line
     .command('create', 'create database root', (yargs) => {
       storeOptions(yargs)
@@ -84,42 +75,8 @@ const argv = yargs(process.argv.slice(2)) // eslint-disable-line
     .command('serve', 'start server', (yargs) => {
       serverOptions(yargs)
       storeOptions(yargs)
-      yargs.option('service',{
-        describe: 'run as service',
-        type: 'boolean'
-      })
     }, (argv) => {
-      if(argv.service) {
-        if(argv.verbose) {
-          console.info('running as service!')
-        }
-        service.run (function () {
-          service.stop (0);
-        })
-      }
       serve(argv)
-    })
-    .command('install', 'install system service', (yargs) => {
-      serviceOptions(yargs)
-      serverOptions(yargs)
-      storeOptions(yargs, { dbRoot: '/var/db/liveChangeDb' })
-    }, async (argv) => {
-      const programArgs = ["serve", '--service',
-        '--port', argv.port, '--host', argv.host,
-        '--dbRoot', argv.dbRoot, '--backend', argv.backend]
-      if(argv.verbose) console.info(`creating system service ${argv.serviceName}`)
-      await fs.promises.mkdir(argv.dbRoot, {recursive:true})
-      service.add (argv.serviceName, {programArgs}, function(error){
-        if(error) console.trace(error);
-      })
-    })
-    .command('uninstall', 'remove system service', (yargs) => {
-      serviceOptions(yargs)
-    }, (argv) => {
-      if(argv.verbose) console.info(`removing system service ${argv.serviceName}`)
-      service.remove (argv.serviceName, function(error){
-        if(error) console.trace(error);
-      })
     })
     .option('verbose', {
       alias: 'v',

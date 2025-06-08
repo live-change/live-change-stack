@@ -11,15 +11,17 @@ import { crudChanges, definitionToJSON } from "../utils.js"
 
 function createModelProxy(definition, model) {
   return new Proxy(model, {
-    get(target, prop, receiver) {
-      const runtime  = definition._runtime
+    get(target, prop, receiver) {    
+      const runtime  = definition._runtime      
       if(runtime) {
         const modelRuntime = runtime.models[model.name]
         if(modelRuntime[prop]) {
           return Reflect.get(modelRuntime, prop, receiver)
         }
       }
-      return Reflect.get(target, prop, receiver)
+      const resutlt = Reflect.get(target, prop, receiver)
+      if(!resutlt) console.warn("Model runtime used before created", model.name)
+      return resutlt
     }
   })
 }

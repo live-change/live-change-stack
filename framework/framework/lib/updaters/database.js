@@ -10,6 +10,17 @@ async function update(changes, service, app, force) {
   const dao = app.dao
   const database = app.databaseName
 
+  if(!app.noCache) {
+    dao.request(['database', 'createTable'], database, 'cache').catch(e => 'ok')
+    dao.request(['database', 'createIndex'], database, 'cache_byTimestamp', `${
+      async (input, output) => {
+        await input.table('cache').onChange((obj, oldObj) => {
+          if(obj && !oldObj) output.change({ id: obj.expiresAt+'_'+obj.id, to: obj.id }, null)
+        })
+      }
+    }`, {}).catch(e => 'ok')
+  }
+
   if(!app.shortEvents) {
     dao.request(['database', 'createTable'], database, 'eventConsumers').catch(e => 'ok')
     dao.request(['database', 'createTable'], database, 'eventReports').catch(e => 'ok')
@@ -60,6 +71,36 @@ async function update(changes, service, app, force) {
     requestTimeout: 10 * 60 * 1000 // 10 minutes?
   }
 
+  async function doCreateIndexIfNotExists(indexName, functionCode, parameters, storage) {
+    try {
+      await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
+        functionCode, parameters, storage)
+    } catch(e) {
+      if((e.message ?? e).toString().includes("already exists")) {
+        const indexConfig = await dao.get(['database', 'indexConfig', database, indexName])
+        const indexConfigClean = JSON.stringify({
+          ...indexConfig,
+          uid: undefined,
+          sources: undefined
+        })
+        const requiredConfig = JSON.stringify({          
+          code: functionCode,
+          parameters          
+        })
+        const match = indexConfigClean === requiredConfig        
+        if(!match) {
+          console.log("INDEXES NOT MATCHING, DELETING AND RECREATING", indexConfigClean, requiredConfig)
+          await dao.request(['database', 'deleteIndex'], database, indexName)
+          return await doCreateIndexIfNotExists(indexName, functionCode, parameters, storage)
+        } else {          
+          console.log("INDEXES MATCHING, SKIPPING")
+          return 'ok'
+        }
+      }      
+      throw e
+    }
+  }
+
   async function createIndex(table, indexName, index) {
     if(table) {
       indexName = table + '_' + indexName
@@ -76,8 +117,7 @@ async function update(changes, service, app, force) {
     if(index.function) {
       const functionCode = `(${index.function})`
       ;(globalThis.compiledFunctionsCandidates = globalThis.compiledFunctionsCandidates || {})[functionCode] = index.function
-      await dao.request(['database', 'createIndex'], database, indexName, functionCode, 
-        { ...(index.parameters || {}) }, index.storage ?? {})
+      await doCreateIndexIfNotExists(indexName, functionCode, { ...(index.parameters || {}) }, index.storage ?? {}) 
     } else {
       if(!table) throw new Error("only function indexes are possible without table")
       if(index.multi) {
@@ -120,8 +160,7 @@ async function update(changes, service, app, force) {
         }
         const functionCode = `(${func})`
         ;(globalThis.compiledFunctionsCandidates = globalThis.compiledFunctionsCandidates || {})[functionCode] = func
-        await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
-          functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
+        await doCreateIndexIfNotExists(indexName, functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
       } else {
         if(!table) throw new Error("only function indexes are possible without table")
         const properties = (Array.isArray(index.property) ? index.property : [index.property]).map(p => p.split('.'))
@@ -139,8 +178,7 @@ async function update(changes, service, app, force) {
         }
         const functionCode = `(${func})`
         ;(globalThis.compiledFunctionsCandidates = globalThis.compiledFunctionsCandidates || {})[functionCode] = func
-        await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
-          functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
+        await doCreateIndexIfNotExists(indexName, functionCode, { properties, table, hash: index.hash }, index.storage ?? {})
       }
     }
 
