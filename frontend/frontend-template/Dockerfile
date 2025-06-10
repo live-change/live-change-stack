@@ -49,4 +49,4 @@ COPY docker/start-service.sh /start-service.sh
 COPY docker/app.initd.sh /etc/init.d/app
 
 #CMD /start-service.sh
-CMD node dist/server/start.js ssrServer --withApi --withServices --updateServices --enableSessions --createDb
+CMD node --inspect=0.0.0.0:9229 --max-old-space-size=512 dist/server/start.js ssrServer --withApi --withServices --updateServices --enableSessions --createDb

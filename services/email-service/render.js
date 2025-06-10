@@ -11,7 +11,7 @@ import { ObservableValue } from '@live-change/dao'
 import definition from './definition.js'
 import config from './config.js'
 
-import { runWithBrowser } from './browser.js'
+import { runWithPage } from './browser.js'
 
 const publicDir = config.publicDir || 'front/public/'
 
@@ -173,12 +173,10 @@ async function processImageAttachments(images, url) {
 
 async function renderEmailWithBrowser(url) {
   
-  return await runWithBrowser(async (browser) => {
-    const page = await browser.newPage()
+  const email =await runWithPage(async (page) => {    
     console.log("RENDER EMAIL WITH BROWSER", url)
     await page.goto(url)
-
-    const email = await page.evaluate(() => {
+    return await page.evaluate(() => {
       const ALLOWED_CSS_PROPERTIES = new Set([
         'background',
         'background-blend-mode',
@@ -397,27 +395,27 @@ async function renderEmailWithBrowser(url) {
 
       return email
     })
-
-    // process element to remove unwanted attributes and extract images using jsdom
-    const dom = new JSDOM(email.html)
-    const images = new Map()
-    const messageElements = dom.window.document.querySelectorAll("[data-html]")
-    for(let messageElement of messageElements) {
-      processElement(messageElement, images)
-    }
-    email.html = dom.serialize()
-    dom.window.close()
-
-    console.log("IMAGES", Array.from(images.entries()))
-    const imageAttachments = await processImageAttachments(images, url)
-  
-    email.attachments = email.attachments || []
-    email.attachments.push(...imageAttachments)
-  
-    console.log("EMAIL", email)
-
-    return email
   })
+
+  // process element to remove unwanted attributes and extract images using jsdom
+  const dom = new JSDOM(email.html)
+  const images = new Map()
+  const messageElements = dom.window.document.querySelectorAll("[data-html]")
+  for(let messageElement of messageElements) {
+    processElement(messageElement, images)
+  }
+  email.html = dom.serialize()
+  dom.window.close()
+
+  console.log("IMAGES", Array.from(images.entries()))
+  const imageAttachments = await processImageAttachments(images, url)
+
+  email.attachments = email.attachments || []
+  email.attachments.push(...imageAttachments)
+
+  console.log("EMAIL", email)
+
+  return email
 }
 
 export { renderEmailWithJuice, renderEmailWithBrowser }

@@ -17,7 +17,7 @@ RUN npm install -g @live-change/db-client@`echo "console.log(require('./package.
 RUN mkdir -p /app
 WORKDIR /app
 COPY package.json package.json
-RUN --mount=type=secret,id=npmrc,target=/root/.npmrc yarn install --verbose --network-timeout 3600000
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc yarn install --verbose --network-timeout 36000000
 RUN cd node_modules/@live-change/db-admin/; npm run build
 COPY /bin bin
 COPY /lib lib
@@ -29,4 +29,4 @@ EXPOSE 9417
 
 RUN mkdir /data
 
-CMD /app/bin/server.js --verbose serve --dbRoot /data
+CMD /app/dist/bin/server.js --verbose serve --dbRoot /data

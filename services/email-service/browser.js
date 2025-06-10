@@ -17,11 +17,13 @@ async function newBrowser() {
   console.log("New browser", config)
   //process.exit(0)
   if(config.browser.webSocketDebuggerUrl) {
-    const browser = await chromium.connect({ wsEndpoint: config.browser.webSocketDebuggerUrl })
+    //const browser = await chromium.connect({ wsEndpoint: config.browser.webSocketDebuggerUrl }, { timeout: 60000 })
+    const browser = await chromium.connect(config.browser.webSocketDebuggerUrl, { timeout: 10000 })
     return browser
   } else if(config.browser.url) {
     const browserInfo = await got.post(config.browser.url + '/json/version').json()
-    const browser = await chromium.connect({ wsEndpoint: browserInfo.webSocketDebuggerUrl })
+    //const browser = await chromium.connect({ wsEndpoint: browserInfo.webSocketDebuggerUrl } { timeout: 60000 })
+    const browser = await chromium.connect(browserInfo.webSocketDebuggerUrl, { timeout: 10000 })
     return browser
   } if(config.browser.host) {
     const ip = await dns.resolve4(config.browser.host)
@@ -30,7 +32,7 @@ async function newBrowser() {
     const browserInfo = await got.post(browserInfoUrl).json()
     console.log("Browser info", browserInfo)
     try {
-      const browser = await chromium.connectOverCDP(browserInfo.webSocketDebuggerUrl)
+      const browser = await chromium.connectOverCDP(browserInfo.webSocketDebuggerUrl,  { timeout: 10000 })
       return browser
     } catch (error) {
       console.error("Failed to connect to browser", error)
@@ -51,6 +53,22 @@ export async function runWithBrowser(func) {
       const result = await func(browser)
       return result
     } finally {
+      await browser.close()
+    }
+  })
+}
+
+export async function runWithPage(func) {
+  return await browserQueue.add(async () => {
+    const browser = await newBrowser()
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    try {
+      const result = await func(page)
+      return result
+    } finally {
+      await page.close()
+      await context.close()
       await browser.close()
     }
   })
