@@ -33,7 +33,8 @@ definition.processor(function(service, app) {
           : []
       model.itemOfAny = {
         ...config,
-        to: ['sessionOrUser', ...extendedWith]
+        to: ['sessionOrUser', ...extendedWith],
+        sessionOrUserTypes: ['session_Session', 'user_User']
       }
 
       service.trigger({

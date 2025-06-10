@@ -35,9 +35,14 @@ definition.processor(function(service, app) {
           ? (Array.isArray(config.extendedWith) ? config.extendedWith : [config.extendedWith])
           : []
 
-      model.propertyOfAny = {
-        ...config,
-        to: ['contactOrUser', ...extendedWith]
+      model.propertyOfAny = {        
+        to: ['contactOrUser', ...extendedWith],
+        ...(definition.config.contactTypes ? {
+          contactOrUserTypes: ['user_User'].concat(definition.config.contactTypes
+              .map(c => `${c}_${c[0].toUpperCase() + c.slice(1)}`)
+            )
+        } : {}),
+        ...config
       }
 
       const transferEventName = modelName + 'Transferred'

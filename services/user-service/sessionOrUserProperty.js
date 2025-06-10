@@ -36,7 +36,8 @@ definition.processor(function(service, app) {
           : []
       model.propertyOfAny = {
         ...config,
-        to: ['sessionOrUser', ...extendedWith]
+        to: ['sessionOrUser', ...extendedWith],
+        sessionOrUserTypes: ['session_Session', 'user_User']
       }
 
       modelProperties.push(...extendedWith.map(p => [p, p+'Type']).flat())

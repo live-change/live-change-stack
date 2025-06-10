@@ -28,6 +28,12 @@ definition.processor(function(service, app) {
 
       if(model.itemOfAny) throw new Error("model " + modelName + " already have owner")
       model.itemOfAny = {
+        to: ['contactOrUser', ...extendedWith],
+        ...(definition.config.contactTypes ? {
+          contactOrUserTypes: ['user_User'].concat(definition.config.contactTypes
+              .map(c => `${c}_${c[0].toUpperCase() + c.slice(1)}`)
+            )
+        } : {}),
         ...config
       }
 
