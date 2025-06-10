@@ -290,9 +290,26 @@ export default function starter(servicesConfig = null, args = {}) {
         type: 'string',
         default: '*'
       })
+      startOptions(yargs)
     }, async (argv) => {
       await setupApp({...argv, uidBorders: '[]'})
       await changes(argv)
+    })
+    .command('update', 'apply changes', (yargs) => {      
+      yargs.option('service', {
+        describe: 'service that will be described',
+        type: 'string',
+        default: '*'
+      })
+      yargs.option('force', {
+        describe: 'force update',
+        type: 'boolean',
+        default: false
+      })
+      startOptions(yargs)
+    }, async (argv) => {
+      await setupApp({...argv, uidBorders: '[]'})
+      await update(argv)
     })
     .option('verbose', {
       alias: 'v',
@@ -308,7 +325,7 @@ export async function changes(argv) {
   await services.loadServices()
   await services.processDefinitions()
   async function printChanges(service) {
-    const oldServiceJson = app.getOldServiceDefinition(service.name)
+    const oldServiceJson = await app.getOldServiceDefinition(service.name)
     const changes = service.computeChanges(oldServiceJson)
     console.log("Service", service.name)
     for(const change of changes) {
@@ -323,6 +340,42 @@ export async function changes(argv) {
     const service = services.serviceDefinitions.find(s => s.name === argv.service)
     if(service) {
       await printChanges(service)
+    } else {
+      console.error("Service", argv.service, "not found")
+    }
+  }
+  process.exit(0)
+}
+
+
+export async function update(argv) {
+  if(globalServicesConfig) argv.services = globalServicesConfig
+  const services = new Services(argv.services)
+  await services.loadServices()
+  await services.processDefinitions()
+  await (app.dao.request(['database', 'createTable'], app.databaseName, 'services').catch(e => 'ok'))
+  async function applyChanges(serviceDefinition) {
+    if(!serviceDefinition.processed) {
+      app.processServiceDefinition(serviceDefinition)
+      serviceDefinition.processed = true
+    }
+    const oldServiceJson = await app.getOldServiceDefinition(serviceDefinition.name)
+    const changes = serviceDefinition.computeChanges(oldServiceJson)
+    console.log("#### UPDATE SERVICE", serviceDefinition.name)
+    await app.applyChanges(changes, serviceDefinition, undefined, Boolean(argv.force))
+
+    console.log("#### UPDATED SERVICE", serviceDefinition.name)
+    await app.dao.request(['database', 'put'], app.databaseName, 'services',
+      { id: serviceDefinition.name , ...serviceDefinition })
+  }
+  if(argv.service === '*') {
+    for(const serviceDefinition of services.serviceDefinitions) {
+      await applyChanges(serviceDefinition)
+    }
+  } else {
+    const service = services.serviceDefinitions.find(s => s.name === argv.service)
+    if(service) {
+      await applyChanges(service)
     } else {
       console.error("Service", argv.service, "not found")
     }
