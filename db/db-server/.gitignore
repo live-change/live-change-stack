@@ -5,3 +5,4 @@ node_modules
 profile.log
 link-deps-4-build.sh
 dist
+prepare-builder.sh
