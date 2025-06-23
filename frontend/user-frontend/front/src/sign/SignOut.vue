@@ -27,14 +27,23 @@
   const { signOut } = actions().user
 
   if(typeof window != 'undefined') {
-    workingZone.addPromise('signOut', (async () => {
-      await signOut({})
-      while(api.client.value.user) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-      console.log("ROUTER", router)
-      router.push({ name: 'user:signOutFinished' })
-    })())
+    onMounted(() => {
+      workingZone.addPromise('signOut', (async () => {
+        try {
+          await signOut({})
+        } catch(e) {
+          if(e !== 'notSignedIn') {
+            console.error("SIGN OUT ERROR", e)
+            throw e
+          }
+        }
+        while(api.client.value.user) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        console.log("ROUTER", router)
+        router.push({ name: 'user:signOutFinished' })
+      })())
+    })
   }
 </script>
 

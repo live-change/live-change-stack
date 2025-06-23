@@ -31,8 +31,19 @@ class Log {
     await this.data.put(log)
   }
 
-  async clear(before) {
-    await this.data.rangeDelete({ lt: before })
+  async clear(before, maxCount = Infinity) {
+    let count = 0
+    let allCount = 0
+    let last = 0
+    do {
+      const limit = Math.min(4096, maxCount - allCount)
+      const result = await this.data.rangeDelete({ lt: before, limit })    
+      count = result.count
+      last = result.last
+      allCount += count
+      await new Promise(resolve => setTimeout(resolve, 100))
+    } while(count > 0 && allCount < maxCount)
+    return { count: allCount, last }
   }
 
   objectGet(key) {

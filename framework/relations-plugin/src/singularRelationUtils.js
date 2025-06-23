@@ -62,7 +62,8 @@ export function defineObjectView(config, context, external = true) {
         const path = config.fields ? modelRuntime().limitedPath(idProp, config.fields) : modelRuntime().path(idProp)
         return path
       }
-      const id = idProp ? idProp : idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
+      const idParts = extractIdParts(otherPropertyNames, properties)
+      const id = idParts.length > 1 ? idParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
       return path
     }

@@ -16,7 +16,12 @@ export async function removeOldEvents(before) {
   if(app.splitEvents) {
     throw new Error("removeOldEvents not supported in split events mode")
   } else {
-    await app.dao.request(['database', 'clearLog'], app.databaseName, 'events', before)
+    let limit = 2048
+    let result
+    do {
+      result = await app.dao.request(['database', 'clearLog'], app.databaseName, 'events', before, limit)
+      limit = result.count
+    } while(result.count > 0 && result.last < before)
   }
 }
 

@@ -227,13 +227,13 @@ function localRequests(server, scriptContext) {
       if(!log) throw new Error("logNotFound")
       return log.putOld(object)
     },
-    clearLog: (dbName, logName, before) => {
+    clearLog: (dbName, logName, before, maxCount) => {
       if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound '+dbName)
       const log = db.log(logName)
       if(!log) throw new Error("logNotFound")
-      return log.clear(before)
+      return log.clear(before, maxCount || Infinity)
     },
     query: (dbName, code, params) => {
       if(dbName === 'system') throw new Error("system database is not writable")
@@ -365,13 +365,13 @@ function remoteRequests(server) {
       if(!log) throw new Error("logNotFound")
       return server.masterDao.request(['database', 'putOldLog'], dbName, logName, object )
     },
-    clearLog: (dbName, logName, before) => {
+    clearLog: (dbName, logName, before, maxCount) => {
       if(dbName === 'system') throw new Error("system database is not writable")
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       const log = db.log(logName)
       if(!log) throw new Error("logNotFound")
-      return server.masterDao.request(['database', 'clearLog'], dbName, logName, before )
+      return server.masterDao.request(['database', 'clearLog'], dbName, logName, before, maxCount)
     },
     query: (dbName, code, params) => {
       if(!dbName) throw new Error("databaseNameRequired")

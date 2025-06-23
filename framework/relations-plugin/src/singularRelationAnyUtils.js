@@ -8,7 +8,8 @@ import {
 } from './utilsAny.js'
 import {
   extractObjectData,
-  cloneAndPrepareAccessControl as cloneAndPrepareSingleAccessControl
+  cloneAndPrepareAccessControl as cloneAndPrepareSingleAccessControl,
+  propertiesWithoutDefaults
 } from './utils.js'
 import { allCombinations } from "./combinations.js"
 import { fireChangeTriggers } from "./changeTriggers.js"

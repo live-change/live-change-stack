@@ -74,10 +74,10 @@ export default function(service, app) {
       if(trigger.skipValidation && !trigger.validation) continue
       const validators = getValidators(trigger, service, trigger)
       if(Object.keys(validators).length > 0) {
-        console.log("T VALIDATION", trigger.name, validators)
+        //console.log("T VALIDATION", trigger.name, validators)
         const oldExecute = trigger.execute
         trigger.execute = async (...args) => {
-          console.log("VALIDATION", trigger.name)
+         // console.log("VALIDATION", trigger.name)
           const context = args[1]
           if(!trigger.skipValidation) {
             await validate(args[0], validators, { source: trigger, trigger, service, app, ...context })
