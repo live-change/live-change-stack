@@ -9,7 +9,8 @@ import {
   extractIdParts,
   prepareAccessControl,
   cloneAndPrepareAccessControl,
-  defineIndex
+  defineIndex,
+  propertiesWithoutDefaults
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import { extractTypeAndIdParts } from './utilsAny.js'
@@ -254,7 +255,7 @@ export function defineUpdateAction(config, context) {
   const action = new ActionDefinition({
     name: actionName,
     properties: {
-      ...(model.properties)
+      ...propertiesWithoutDefaults(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
     accessControl,
@@ -280,7 +281,7 @@ export function defineUpdateTrigger(config, context) {
   const trigger = new TriggerDefinition({
     name: triggerName,
     properties: {
-      ...(model.properties)
+      ...propertiesWithoutDefaults(model.properties)
     },
     skipValidation: true,
     queuedBy: otherPropertyNames,
@@ -332,7 +333,7 @@ export function defineSetOrUpdateAction(config, context) {
   const action = new ActionDefinition({
     name: actionName,
     properties: {
-      ...(model.properties)
+      ...propertiesWithoutDefaults(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
     accessControl,
@@ -358,7 +359,7 @@ export function defineSetOrUpdateTrigger(config, context) {
   const trigger = new TriggerDefinition({
     name: triggerName,
     properties: {
-      ...(model.properties)
+      ...propertiesWithoutDefaults(model.properties)
     },
     skipValidation: true,
     queuedBy: otherPropertyNames,

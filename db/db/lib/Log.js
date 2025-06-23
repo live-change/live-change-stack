@@ -6,6 +6,7 @@ class Log {
     this.database = database
     this.name = name
     this.configObservable = new ReactiveDao.ObservableValue(config)
+    this.configObservable.observe(() => {}) // prevent dispose and clear
 
     this.data = database.store(config.uid + '.log', {...config, ...config.data})
 

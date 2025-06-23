@@ -6,8 +6,8 @@ export function propertiesValidationErrors(rootValue, parameters, definition, la
     ...rootValue,
   }
 
-  console.log("propertiesValidationErrors", rootValue, parameters, definition, 
-    lastData, propertiesServerErrors, appContext)
+  /* console.log("propertiesValidationErrors", rootValue, parameters, definition, 
+    lastData, propertiesServerErrors, appContext) */
 
   const validationResult = validateData(definition, currentValue, 'validation', appContext,
     '', rootValue, true)
@@ -17,7 +17,7 @@ export function propertiesValidationErrors(rootValue, parameters, definition, la
 
   const serverValidationResult = {}
   if(propertiesServerErrors) {
-    console.log("propertiesServerErrors", propertiesServerErrors, lastData, rootValue)
+    //console.log("propertiesServerErrors", propertiesServerErrors, lastData, rootValue)
     for(const propPathString in propertiesServerErrors) {
       const propPath = propPathString.split('.')
       let last = lastData
@@ -32,9 +32,9 @@ export function propertiesValidationErrors(rootValue, parameters, definition, la
     }
   }
 
-  console.log("currentValue", currentValue)
+/*   console.log("currentValue", currentValue)
   console.log("validationResult", validationResult, softValidationResult)
-  console.log("serverValidationResult", serverValidationResult)
+  console.log("serverValidationResult", serverValidationResult) */
 
   return {
     ...softValidationResult?.propertyErrors,

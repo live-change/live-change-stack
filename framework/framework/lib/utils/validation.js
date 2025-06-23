@@ -69,14 +69,14 @@ async function validate(props, validators, context) {
         }
         propPromises[propNameAccumulator] = promises
       } else {
+        if(data === null) return
         if(path[pathIndex] === '#') {
           for(let i = 0; i < data.length; i++) {
             validateProperty(data[i], pathIndex + 1, 
               propNameAccumulator + (propNameAccumulator ? '.' : '') + i)
           }
         } else {
-          const deeper = data?.[path[pathIndex]] ?? null
-          if(deeper === null) return
+          const deeper = data?.[path[pathIndex]]
           validateProperty(deeper, pathIndex + 1, 
             propNameAccumulator + (propNameAccumulator ? '.' : '') + path[pathIndex])
         }

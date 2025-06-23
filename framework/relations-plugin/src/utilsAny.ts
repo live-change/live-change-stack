@@ -302,12 +302,12 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
               await output.delete({ id: type })
             }
           } catch(e) {
-            output.debug('typeJson', typeJson, 'id', id) 
-            console.error("Error parsing typeJson", typeJson, e)
+            console.debug("Error parsing typeJson", typeJson, e, 'in id', id, "from table", tableName)
+            console.error("Error parsing typeJson", typeJson, e, 'in id', id, "from table", tableName)
           }
         })
       },
-      parameters: { tableName: tableName }
+      parameters: { tableName: tableName, }
     }
     return
   }
@@ -324,17 +324,17 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
         await index.onChange(async (obj, oldObj) => {
           const id = obj?.id ?? oldObj?.id
           const typeJson = id.slice(0, id.indexOf(':'))
-          try {
+          try {           
             const type = JSON.parse(typeJson)
-            const count = await index.count({ gte: type+':', lte: typeJson+'_\xFF\xFF\xFF\xFF', limit: 1 })
+            const count = await index.count({ gte: typeJson+':', lte: typeJson+'_\xFF\xFF\xFF\xFF', limit: 1 })
             if(count > 0) {
               await output.put({ id: type })
             } else {
               await output.delete({ id: type })
             }
           } catch(e) {
-            output.debug('typeJson', typeJson, 'id', id) 
-            console.error("Error parsing typeJson", typeJson, e)
+            output.debug("Error parsing typeJson", typeJson, e, 'in id', id, "from index", indexName)
+            console.error("Error parsing typeJson", typeJson, e, 'in id', id, "from index", indexName)
           }
         })
       },

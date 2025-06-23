@@ -7,7 +7,8 @@ import {
   extractIdentifiers,
   extractObjectData,
   prepareAccessControl,
-  cloneAndPrepareAccessControl
+  cloneAndPrepareAccessControl,
+  propertiesWithoutDefaults
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import pluralize from 'pluralize'
@@ -215,7 +216,7 @@ function defineUpdateAction(config, context) {
         type: model,
         validation: ['nonEmpty']
       },
-      ...(model.properties)
+      ...propertiesWithoutDefaults(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
     accessControl,
@@ -244,7 +245,7 @@ function defineUpdateTrigger(config, context) {
         type: model,
         validation: ['nonEmpty']
       },
-      ...(model.properties)
+      propertiesWithoutDefaults
     },
     skipValidation: true,
     //queuedBy: otherPropertyNames,

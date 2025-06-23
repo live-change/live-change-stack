@@ -6,7 +6,7 @@
         <i v-if="part.icon" :class="[part.icon, 'mr-2']" style="font-size: 0.9em;"></i>
         <span :class="{ 'mr-2': index < identificationParts.length - 1 }">
           <span v-if="part.isObject">
-            <InjectedObjectIndentification :type="part.type" :object="part.value" />
+            <InjectedObjectIndentification :type="part.type" :object="part.value" link="" />
           </span>
           <span v-else-if="part.field">
             {{ part.value }}

@@ -1,13 +1,20 @@
 <template>
 
   <ConfirmPopup v-if="isMounted" />
+  
 
   <PathEditor v-model="path"
               @update:read="v => { read = v; version++ }"
               @update:write="v => write = v"
               @update:remove="v => remove = v" />
 
-<!--  <p>{{ path }}</p>-->
+  <div v-if="isIndex">
+    <h4>Index code:</h4>  
+    <pre style="white-space: pre-wrap;">{{  indexCode  }}</pre>
+    <h4>Index config:</h4>
+    <pre style="white-space: pre-wrap;">{{  indexConfigWithoutCode  }}</pre>
+  </div>
+  
 
   <working-zone>
 
@@ -44,6 +51,9 @@
   import DataRangeView from "./DataRangeView.vue"
   import DataView from "./DataView.vue"
   import CreateObject from "./CreateObject.vue"
+  import CodeEditor from "./CodeEditor.vue"
+
+  import { dbViewSugar } from "./dbSugar.js"
 
   const props = defineProps({
     dbApi: {
@@ -105,5 +115,40 @@
   const read = ref()
   const write = ref()
   const remove = ref()
+
+  const { dbApi } = props
+  
+  import { useApi } from "@live-change/vue3-ssr"
+  const dao = useApi().source
+  import { live } from "@live-change/dao-vue3"
+
+  const readResult = computed(() => read.value && eval(read.value.result)({}, dbViewSugar))
+
+  const isIndex = computed(() => readResult.value?.[0] === 'indexRange')  
+  const dbName = computed(() => readResult.value?.[1])
+  const indexName = computed(() => readResult.value?.[2])
+
+
+  const indexCodePath = computed(() => isIndex.value ? {
+    what: [dbApi, 'indexCode', dbName.value, indexName.value],
+  } : null)
+  const indexConfigPath = computed(() => isIndex.value ? {
+    what: [dbApi, 'indexConfig', dbName.value, indexName.value],    
+  } : null)
+
+  const [indexCode, indexConfig] = await Promise.all([
+    live(dao, indexCodePath),
+    live(dao, indexConfigPath)
+  ])
+
+  const indexConfigWithoutCode = computed(() => {
+    const config = indexConfig.value
+    if(!config) return null
+    return {
+      ...config,
+      code: undefined
+    }
+  })
+
 
 </script>

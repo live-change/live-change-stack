@@ -96,14 +96,14 @@ class ScriptContext {
       /* console.log("found compiled function!", cleanCode) */
       if(typeof compiledFunction != 'function') {
         console.error("compiled function is not a function!", cleanCode)
-        process.exit(1)
+        process.exit(20)
       }
       return compiledFunction
     }
     const queryFunction = this.run(code, filename)
     if(typeof queryFunction != 'function') {
       console.error("compiled query function is not a function!", cleanCode)
-      process.exit(1)
+      process.exit(21)
     }
     globalThis.compiledFunctions[cleanCode] = queryFunction
     return queryFunction

@@ -68,4 +68,27 @@ export default function(service, app) {
       }
     }
   }
+  for(let triggerName in service.triggers) {
+    const triggers = service.triggers[triggerName]
+    for(let trigger of triggers) {
+      if(trigger.skipValidation && !trigger.validation) continue
+      const validators = getValidators(trigger, service, trigger)
+      if(Object.keys(validators).length > 0) {
+        console.log("T VALIDATION", trigger.name, validators)
+        const oldExecute = trigger.execute
+        trigger.execute = async (...args) => {
+          console.log("VALIDATION", trigger.name)
+          const context = args[1]
+          if(!trigger.skipValidation) {
+            await validate(args[0], validators, { source: trigger, trigger, service, app, ...context })
+          }
+          if(typeof trigger.validation === 'function') {
+            const result = await trigger.validation(args[0], { source: trigger, trigger, service, app, ...context })
+            if(result) throw result            
+          }
+          return oldExecute.apply(trigger, args)
+        }
+      }
+    }
+  }
 }

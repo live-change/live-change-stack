@@ -251,9 +251,9 @@ class Database {
         console.error("DELETINGww INDEX", name)
         delete this.config.indexes[name]
         this.indexesListObservable.remove(name)
-        if(this.onAutoRemoveIndex && config) this.onAutoRemoveIndex(name, config.uid)
+        if(this.onAutoRemoveIndex && config) this.onAutoRemoveIndex(name, config.uid)        
+        await this.saveConfig(this.config)        
         console.error("DELETED INDEX", name)
-        await this.saveConfig(this.config)
         throw error
       }
       this.indexes.set(name, index)

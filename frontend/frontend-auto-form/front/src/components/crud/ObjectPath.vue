@@ -6,7 +6,15 @@
     <pre>selectedPaths = {{ selectedPaths }}</pre>
     <pre>selectedPathWithElements = {{ selectedPathWithElements }}</pre> -->
     <div v-for="path in selectedPathsWithElements" :key="path">
-      <Breadcrumb :model="more ? [...path, 'dupa'] : path">
+      <Breadcrumb :model="more ? [...path, 'dupa'] : path"
+       :pt="{      
+        list: {
+          class: 'text-sm flex flex-row flex-wrap gap-2 first:negative-margin-left pl-[1.5rem]'
+        },
+        item: {
+          class: 'first:ml-[-1.5rem]'
+        }
+       }">
         <template #item="{ item }">          
           <div>
             <slot v-if="typeof item === 'string'" name="more">

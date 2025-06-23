@@ -428,13 +428,13 @@ class Server {
         const database = this.databases.get(databaseName)
         if(objectDir !== 'indexes') {
           console.error(`unknown object dir ${objectDir}, something is wrong, exiting...`)
-          process.exit(1)
+          process.exit(2)
         }
         const indexName = pathParts[2]
         if(!database) {
           if(this.initializingDatabase.name !== databaseName) {
             console.error('error in non existing database?!', databaseName)
-            process.exit(1)
+            process.exit(3)
           }
           console.error('error when initializing database', databaseName)
           this.initializingDatabase.handleUnhandledRejectionInIndex(indexName, reason, promise)

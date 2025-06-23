@@ -275,7 +275,7 @@ definition.view({
   accessControl: {
     roles: config.taskReaderRoles,
     objects({ rootType, root }) {
-      console.log("OBJECTS", rootType, root)
+      //console.log("OBJECTS", rootType, root)
       return [{
         objectType: rootType,
         object: root
@@ -312,7 +312,7 @@ definition.view({
   async daoPath(props) {
     const range = App.extractRange(props)
     const { name, state } = props
-    console.log("PROPS", props)
+    //console.log("PROPS", props)
     const [index, rangePath] = name && state  
       ? ['independentTasksByNameAndState', [name, state]]
       : name

@@ -43,6 +43,9 @@ async function prepareParameter(parameter, prop, service) {
       return parameter
     }
   }
+  if(prop.default && typeof parameter === 'undefined') {
+    return prop.default
+  }
   return parameter
 }
 
@@ -53,6 +56,12 @@ async function prepareParameters(parameters, definition, service) {
     let prop = definition[propName]
     out[propName] = prop ? await prepareParameter(parameters[propName], prop, service) : parameters[propName]
     //console.log("PREP PROP", propName, prop, parameters[propName], out[propName])
+  }
+  for(let propName in definition) {
+    let prop = definition[propName]
+    if(prop.default && typeof out[propName] === 'undefined') {
+      out[propName] = prop.default
+    }
   }
   return out
 }

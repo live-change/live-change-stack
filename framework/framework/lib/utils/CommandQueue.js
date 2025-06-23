@@ -84,8 +84,14 @@ class CommandQueue {
         }
       }
       if(!handled) {
-        console.error(`Command handler ${this.tableName} for type ${command.type} not found`)
-        throw new Error("notHandled")
+        console.error(`Command handler ${this.tableName} for type ${command.type} not found`)        
+        const result = await this.connection.request(['database', 'update'], this.database, this.tableName, command.id, [
+          {
+            op: 'merge', property: null,
+            value: { state: 'failed', error: `Command was not handled` }
+          }
+        ])        
+        return Promise.resolve(result)
       }
       return Promise.resolve(result).then(async result => {
         const finished = new Date()

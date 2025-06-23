@@ -52,8 +52,8 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause, expire
     expireDate
   })
 
-  console.log("HASH", hash)
-  console.log("SIMILAR TASKS", similarTasks)
+  //console.log("HASH", hash)
+  //console.log("SIMILAR TASKS", similarTasks)
 
   const oldTask = similarTasks.find(similarTask => similarTask.name === taskDefinition.name
     && JSON.stringify(similarTask.properties) === propertiesJson 
@@ -227,7 +227,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         })
 
         taskObject = await app.serviceViewGet('task', 'task', { task: taskObject.id })
-        //console.log("UPDATED TASK", taskObject, result)
+        console.log("UPDATED TASK", taskObject, result)
       })
     }
 
@@ -387,8 +387,6 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         })
         await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
       } catch(error) {
-        console.error("TASK ERROR", error.message, error.stack)
-        /*console.log("RETRIES", taskObject.retries?.length, maxRetries)*/
         if((taskObject.retries?.length || 0) >= taskObject.maxRetries - 1 || error.taskNoRetry) {
           await updateTask({
             state: (definition.fallback && !error.taskNoFallback) ? 'fallback' : 'failed',
@@ -430,6 +428,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
               stack: error.stack
             }]
           })
+          console.log("RETRYING TASK", taskObject.id, "IN", 1000 * Math.pow(2, retriesCount), "ms")   
           await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retriesCount)))
         }
         await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
@@ -441,7 +440,9 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     }
 
     while(taskObject.state !== 'done' && taskObject.state !== 'failed') {
+      console.log("RUNNING TASK", definition.name, "STATE", taskObject.state, "OBJECT", taskObject)
       await runTask()
+      console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
      // console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
     }
 

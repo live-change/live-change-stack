@@ -11,7 +11,8 @@ import {
 } from './utilsAny.js'
 import {
   extractObjectData, extractIdentifiers, extractIdParts,
-  cloneAndPrepareAccessControl as cloneAndPrepareSingleAccessControl
+  cloneAndPrepareAccessControl as cloneAndPrepareSingleAccessControl,
+  propertiesWithoutDefaults
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 
@@ -106,7 +107,7 @@ function getCreateFunction( validators, validationContext, config, context) {
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
     const data = extractObjectData(writeableProperties, properties,
       App.computeDefaults(model, properties, { client, service } ))
-    await App.validation.validate({ ...identifiers, ...data }, validators,
+    const result = await App.validation.validate({ ...identifiers, ...data }, validators,
       validationContext)
     await fireChangeTriggers(context, objectType, identifiers, id, null, data, trigger)
     emit({
@@ -183,9 +184,9 @@ function getUpdateFunction( validators, validationContext, config, context) {
     const entity = await modelRuntime().get(id)
     if(!entity) throw 'not_found'
     const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
-    const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
-    console.log("UPDATE MATCH", entityTypeAndIdParts, '===', typeAndIdParts,
-      '=>', JSON.stringify(entityTypeAndIdParts) === JSON.stringify(typeAndIdParts))
+    const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)    
+    /* console.log("UPDATE MATCH", entityTypeAndIdParts, '===', typeAndIdParts,
+      '=>', JSON.stringify(entityTypeAndIdParts) === JSON.stringify(typeAndIdParts)) */
     if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts)) {
       throw 'not_authorized'
     }
@@ -194,6 +195,16 @@ function getUpdateFunction( validators, validationContext, config, context) {
       extractObjectData(writeableProperties, properties, entity),
       App.computeUpdates(model, { ...entity, ...properties }, { client, service })
     )
+    if(entityTypeAndIdParts[0] == 'task_Task' && data.retries.length == 0 && entity.retries.length > 0)  {
+      console.log("TASK UPDATE!!!!!!!!")
+      console.log("CURRENT STATE:", entity)
+      console.log("UPDATE:", properties)
+      console.log("IDENTIFIERS:", identifiers)
+      console.log("EXTRACTED ENTITY DATA:", extractObjectData(writeableProperties, properties, entity))
+      console.log("COMPUTED UPDATES:", App.computeUpdates(model, { ...entity, ...properties }, { client, service }))
+      console.log("DATA:", data)
+      debugger
+    }
     await App.validation.validate({ ...identifiers, ...data, [modelPropertyName]: id }, validators,
       validationContext)
     await fireChangeTriggers(context, objectType, identifiers, id,
@@ -226,7 +237,7 @@ function defineUpdateAction(config, context) {
         type: model,
         validation: ['nonEmpty']
       },
-      ...(model.properties)
+      ...propertiesWithoutDefaults(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
     accessControl,
@@ -256,7 +267,7 @@ function defineUpdateTrigger(config, context) {
         type: model,
         validation: ['nonEmpty']
       },
-      ...(model.properties)
+      ...propertiesWithoutDefaults(model.properties)
     },
     access: config.updateAccess || config.writeAccess,
     skipValidation: true,

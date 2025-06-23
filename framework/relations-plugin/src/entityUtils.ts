@@ -1,7 +1,8 @@
 import {
   defineProperties, defineIndex,
   extractIdParts, extractIdentifiers, extractObjectData, prepareAccessControl,
-  includeAccessRoles, defineGlobalRangeView
+  includeAccessRoles, defineGlobalRangeView,
+  propertiesWithoutDefaults
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import App, { AccessSpecification, ModelDefinitionSpecification, PropertyDefinitionSpecification, ServiceDefinition } from '@live-change/framework'
@@ -258,7 +259,7 @@ export function defineUpdateAction(config, context) {
   const action = new ActionDefinition({
     name: actionName,
     properties: {
-      ...(model.properties),
+      ...propertiesWithoutDefaults(model.properties),
       [modelPropertyName]: {
         type: modelPropertyName
       }
@@ -286,7 +287,7 @@ export function defineUpdateTrigger(config, context) {
   const trigger = new TriggerDefinition({
     name: triggerName,
     properties: {
-      ...(model.properties),
+      ...propertiesWithoutDefaults(model.properties),
       [modelPropertyName]: {
         type: modelPropertyName
       }

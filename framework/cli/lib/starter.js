@@ -134,14 +134,6 @@ export function ssrServerOptions(yargs) {
     describe: 'front ssr entry file',
     type: 'string'
   })
-  yargs.option('version', {
-    describe: 'server version',
-    type: 'string'
-  })
-  yargs.option('versionFile', {
-    describe: 'server version file',
-    type: 'string'
-  })
   yargs.option('plugin', {
     describe: 'start in plugin mode - without ssr, and with vite mode plugin',
     type: 'boolean'
@@ -487,9 +479,6 @@ export async function server(argv, dev) {
   const manifest = (dev || argv.spa)
       ? null
       : JSON.parse(fs.readFileSync((path.resolve(ssrRoot, 'dist/client/.vite/ssr-manifest.json'))))
-
-  if(!argv.version) argv.version = process.env.VERSION
-  if(argv.versionFile) argv.version = await readFile(argv.versionFile, 'utf8')
 
   if(!argv.withApi) {
     const apiServerHost = (argv.apiHost === '0.0.0.0' ? 'localhost' : argv.apiHost) + ':' + argv.apiPort

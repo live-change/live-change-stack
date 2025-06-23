@@ -24,6 +24,7 @@ class Table {
     this.database = database
     this.name = name
     this.configObservable = new ReactiveDao.ObservableValue(config)
+    this.configObservable.observe(() => {}) // prevent dispose and clear
 
     this.data = database.store(config.uid + '.data', { ...config, ...config.data })
     this.opLog = database.store(config.uid + '.opLog', { ...config, ...config.opLog })

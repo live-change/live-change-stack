@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "sourceMap": true,
     "composite": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",

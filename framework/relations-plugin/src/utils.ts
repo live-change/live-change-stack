@@ -18,6 +18,32 @@ import pluralize from 'pluralize'
 import { ModelDefinitionSpecificationWithEntity } from "./entityUtils.js"
 import { AccessControlSettings, ModelDefinitionSpecificationWithAccessControl, PreparedAccessControlSettings } from "./types.js"
 
+export function definitionWithoutDefaults(definition: PropertyDefinitionSpecification) {
+  const newDefinition = { ...definition }
+  if(newDefinition.default) {
+    delete newDefinition.default
+  }
+  if(newDefinition.of) {
+    newDefinition.of = definitionWithoutDefaults(newDefinition.of)
+  }
+  if(newDefinition.items) {
+    newDefinition.items = definitionWithoutDefaults(newDefinition.items)
+  }
+  if(newDefinition.properties) {
+    newDefinition.properties = propertiesWithoutDefaults(newDefinition.properties)
+  }
+  return newDefinition
+}
+
+export function propertiesWithoutDefaults(properties: Record<string, any>) {
+  const newProperties = {}
+  for(const key in properties) {
+    const property = properties[key]
+    newProperties[key] = definitionWithoutDefaults(property)
+  }
+  return newProperties
+}
+
 export function extractIdParts(otherPropertyNames: string[], properties: Record<string, any>) {
   const idParts = []
   for (const propertyName of otherPropertyNames) {

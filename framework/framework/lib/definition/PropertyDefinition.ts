@@ -16,6 +16,7 @@ export interface PropertyDefinitionSpecification {
   items?: PropertyDefinitionSpecification
   properties?: Record<string, PropertyDefinitionSpecification>,
   validation?: ValidationSpecification[]
+  default?: any
 }
 
 class PropertyDefinition<T extends PropertyDefinitionSpecification> {

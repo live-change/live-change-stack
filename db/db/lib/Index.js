@@ -224,7 +224,7 @@ class TableReader extends ChangeStream {
     if(this.opLogObservable && this.opLogObservable.list && this.opLogObservable.list.length < opLogBatchSize) {
       console.error("SHOULD NOT READ NOT FINISHED OPLOG", this.opLogObservable.list)
       console.trace("READ OP LOG TOO EARLY!!!")
-      process.exit(1)
+      process.exit(10)
     }
     //console.log("DO READ OPLOG", key)
     if(this.opLogObservable) {
@@ -283,7 +283,7 @@ class TableReader extends ChangeStream {
       await this.opLogPromise
       if(this.opLogPromise != null) {
         console.trace("IMPOSIBBLE!")
-        process.exit(1)
+        process.exit(11)
       }
       //console.log("FB", this.opLogBuffer && this.opLogBuffer.length)
       if (this.opLogBuffer && this.opLogBuffer.length) return this.opLogBuffer[0].id
@@ -521,6 +521,7 @@ class Index extends Table {
     super(database, name, config)
     this.database = database
     this.codeObservable = new ReactiveDao.ObservableValue(code)
+    this.codeObservable.observe(() => {}) // prevent dispose and clear
     this.params = params
     this.code = code
     this.startPromise = null
@@ -541,7 +542,7 @@ class Index extends Table {
     if(typeof queryFunction != 'function') {
       console.error("INDEX CODE", this.code)
       console.error("QUERY FUNCTION", typeof queryFunction, queryFunction)
-      process.exit(1)
+      process.exit(15)
       throw new Error("Index code is not a function")
     }
     this.codeFunction = (input, output) => queryFunction(input, output, this.params)

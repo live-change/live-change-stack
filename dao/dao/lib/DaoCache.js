@@ -217,6 +217,7 @@ class DaoCache extends EventEmitter {
     this.missesPerMinute = this.missesCounter
     this.hitsCounter = 0
     this.missesCounter = 0
+    if(this.hitsPerMinute+this.missesPerMinute === 0) return
     console.log(`CACHE STATS hit rate ${this.hitsPerMinute/(this.hitsPerMinute+this.missesPerMinute)*100}%\n`+
         `  hits=${this.hitsPerMinute} misses=${this.missesPerMinute}`+
         ` cacheSize=${this.cachedCount} stats=${this.cacheState.size}`)
