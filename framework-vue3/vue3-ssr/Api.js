@@ -313,6 +313,27 @@ class Api extends DaoProxy {
   getServiceDefinition(serviceName) {
     return this.metadata.api.value.services.find(s => s.name === serviceName)
   }
+  getViewDefinition(serviceName, viewName) {
+    return this.metadata.api.value.services.find(s => s.name === serviceName)?.views[viewName]
+  }
+  getModelDefinition(serviceName, modelName) {
+    return this.metadata.api.value.services.find(s => s.name === serviceName)?.models[modelName]
+  }
+  getActionDefinition(serviceName, actionName) {
+    return this.metadata.api.value.services.find(s => s.name === serviceName)?.actions[actionName]
+  }
+  getServiceClient(serviceName) {
+    return this.metadata.api.value.services.find(s => s.name === serviceName)?.clientConfig
+  }
+  getActionMethod(serviceName, actionName) {
+    const serviceDefinition = this.getServiceDefinition(serviceName)
+    if(!serviceDefinition) return () => { throw new Error("Service not accessible: "+serviceName) }
+    const actionDefinition = serviceDefinition?.actions?.[actionName]
+    //console.log("ACTION DEFINITION", serviceName, actionName, actionDefinition, 'IN', serviceDefinition?.actions)
+    if(!actionDefinition) return () => { throw new Error("Action not accessible: "+serviceName+"."+actionName) }
+    return (params) => this.command([serviceDefinition.name, actionName], params)
+  }
+
 
   uploadFile(purpose, fileName, blob, id) {
     if (!id) id = this.uidGenerator()
