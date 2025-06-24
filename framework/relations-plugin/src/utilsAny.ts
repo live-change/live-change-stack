@@ -79,7 +79,7 @@ export function defineAnyIndexes(model, props, fullIndex = true) {
 }
 
 export interface AnyRelationConfig {
-  what: string | string[]
+  what?: string | string[]
   propertyNames?: string[]
   writeableProperties?: string[]
   prefix?: string

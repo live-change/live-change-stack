@@ -53,8 +53,8 @@ export interface Identifier {
 }
 
 export interface ModelDefinitionSpecificationExtended extends ModelDefinitionSpecification {
-  crud: CrudSettings,
-  identifiers: Identifier[]
+  crud?: CrudSettings,
+  identifiers?: Identifier[]
 }
 
 export interface ModelDefinitionSpecificationWithAccessControl extends ModelDefinitionSpecificationExtended {

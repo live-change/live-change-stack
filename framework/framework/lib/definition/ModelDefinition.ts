@@ -11,8 +11,8 @@ export interface ModelIndexDefinitionSpecification {
 }
 
 export interface ModelPropertyDefinitionSpecification {
-  type: string,
-  index: ModelIndexDefinitionSpecification
+  type?: any,
+  index?: ModelIndexDefinitionSpecification
 }
 
 export interface ModelDefinitionSpecification {
