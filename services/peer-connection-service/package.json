@@ -1,6 +1,6 @@
 {
   "name": "@live-change/peer-connection-service",
-  "version": "0.9.100",
+  "version": "0.9.101",
   "description": "",
   "main": "index.js",
   "type": "module",
