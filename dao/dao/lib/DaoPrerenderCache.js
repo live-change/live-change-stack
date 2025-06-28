@@ -122,7 +122,7 @@ class DaoPrerenderCache {
       })
     }
     
-    return promise.then(data => {
+    return Promise.resolve(promise).then(data => {
       if(data && typeof data === 'object') data[sourceSymbol] = what
       return data
     })
