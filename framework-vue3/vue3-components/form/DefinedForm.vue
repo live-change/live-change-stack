@@ -683,8 +683,6 @@
     created() {
       this.initForm()
       this.state = 'ready'
-
-      globalThis.form = this
     },
     unmounted() {
     },
