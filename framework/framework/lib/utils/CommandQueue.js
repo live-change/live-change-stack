@@ -88,7 +88,7 @@ class CommandQueue {
         const result = await this.connection.request(['database', 'update'], this.database, this.tableName, command.id, [
           {
             op: 'merge', property: null,
-            value: { state: 'failed', error: `Command was not handled` }
+            value: { state: 'failed', error: `${this.tableName.slice(0, -1)} ${command.type} was not handled` }
           }
         ])        
         return Promise.resolve(result)

@@ -229,6 +229,7 @@ function prefixRange({ gt, lt, gte, lte, limit, reverse }, prefix, from = "") {
     if(id.length > from.length) {
       if(id.slice(0, from.length) !== from) {
         console.error("ID:", id, "does not start with", from)
+        console.trace('id does not match prefix')
         throw new Error("id does not match prefix")
       }
       id = id.slice(from.length)

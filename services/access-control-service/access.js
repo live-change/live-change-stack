@@ -206,8 +206,14 @@ export default (definition) => {
 
   function accessPath(client, objects) {
     for(const obj of objects) {
-      if(!obj.objectType) throw new Error('No objectType for accessControl accessPath')
-      if(!obj.object) throw new Error('No object for accessControl accessPath')
+      if(!obj.objectType) {
+        console.error("NO OBJECT TYPE FOR ACCESS CONTROL ACCESS PATH", obj, 'IN', objects)
+        throw new Error('No objectType for accessControl accessPath')
+      }
+      if(!obj.object) {
+        console.error("NO OBJECT FOR ACCESS CONTROL ACCESS PATH", obj, 'IN', objects)
+        throw new Error('No object for accessControl accessPath')
+      }
     }
     return ['database', 'queryObject', app.databaseName, `(${
       async (input, output, {

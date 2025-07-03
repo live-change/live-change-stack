@@ -13,7 +13,7 @@ class Action {
     let preparedParams = await prepareParameters(parameters, this.definition.properties, this.service)
     //console.log("PREP PARAMS", preparedParams)
 
-    let resultPromise = this.definition.execute({
+    let resultPromise = (async () => this.definition.execute({
       ...parameters,
       ...preparedParams
     }, {
@@ -33,7 +33,7 @@ class Action {
         client: command.client,
         ...trigger
       }, data, returnArray)
-    }, emit)
+    }, emit))()
 
     resultPromise = resultPromise.then(async result => {
       let processedResult = await processReturn(result, this.definition.returns, this.service)

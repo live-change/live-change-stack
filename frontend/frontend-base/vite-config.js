@@ -48,7 +48,7 @@ const ssrTransformCustomDir = () => {
 
 let version = process.env.VERSION ?? 'unknown'
 
-export default async ({ command, mode, version }, options = {
+export default async ({ command, mode, version, isSsrBuild, isPreview }, options = {
   ssrDisabledDirectives: ['ripple', 'styleclass', 'badge', 'shared-element', 'lazy']
 }) => {
   //console.log("VITE CONFIG", command, mode, process.argv)
@@ -180,6 +180,14 @@ export default async ({ command, mode, version }, options = {
           /node_modules/
         ]
       },
+      rollupOptions: {
+        ...(isSsrBuild ? {
+          output: {
+            inlineDynamicImports: true,
+            manualChunks: undefined, // disable dynamic splitting
+          }
+        } : {})
+      }
     },
     ssr: {
       external: [

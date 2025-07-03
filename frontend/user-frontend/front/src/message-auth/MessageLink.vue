@@ -88,7 +88,7 @@
     }
     if(isUsed.value || isExpired.value) {
       const fallbackPage = link.value?.authenticationData?.fallbackPage
-      console.log("FB", fallbackPage)
+      console.log("fallbackPage", fallbackPage)
       if(fallbackPage) {
         const error = isUsed.value ? 'used' : 'expired'
         router.push({ ...fallbackPage, params: { ...fallbackPage.params, error } })
