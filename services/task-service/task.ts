@@ -52,12 +52,9 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause, expire
     expireDate
   })
 
-  //console.log("HASH", hash)
-  //console.log("SIMILAR TASKS", similarTasks)
-
   const oldTask = similarTasks.find(similarTask => similarTask.name === taskDefinition.name
     && JSON.stringify(similarTask.properties) === propertiesJson 
-    && (!expireDate || new Date(similarTask.startedAt).getTime() > expireDate.getTime()))
+    && (!expireDate || (new Date(similarTask.startedAt).getTime() > expireDate.getTime())))
 
   const taskObject = oldTask
     ? await app.serviceViewGet('task', 'task', { task: oldTask.to || oldTask.id })

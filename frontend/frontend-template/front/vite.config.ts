@@ -15,7 +15,7 @@ const version = process.env.VERSION ?? packageJson.version ?? 'unknown'
 // @ts-ignore
 import baseViteConfig from '@live-change/frontend-base/vite-config.js'
 
-export default defineConfig(async ({ command, mode, isSsrBuild, isPreview }) => {
+export default defineConfig(async ({ command, mode, isSsrBuild, isPreview }:any) => {
   const baseConfig = (await baseViteConfig({ command, mode, version, isSsrBuild, isPreview }))
   return {
     ...baseConfig,
