@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-lmdb",
-  "version": "0.9.103",
+  "version": "0.9.104",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -26,8 +26,8 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "0.9.103",
-    "@live-change/flatten-interval-tree": "0.9.103",
+    "@live-change/dao": "^0.9.104",
+    "@live-change/flatten-interval-tree": "^0.9.104",
     "napi-macros": "^2.0.0",
     "node-lmdb": "^0.10.1",
     "p-queue": "8.1.0"
