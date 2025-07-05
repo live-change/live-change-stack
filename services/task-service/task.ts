@@ -270,28 +270,35 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             //console.log("SUBTASK RUN", taskFunction.definition.name, props)
             const subtaskProgress = { current: 0, total: 1, factor: progressFactor }
             subtasksProgress.push(subtaskProgress)
-            const result = await taskFunction(
-              props,
-              {
-                ...context,
-                taskObject: undefined,
-                task: taskObject.id,
-                causeType: 'task_Task',
-                cause: taskObject.id,
-                expire
-              },
-              (events) => app.emitEvents(serviceDefinition.name,
-                Array.isArray(events) ? events : [events], {}),
-              (current, total, action) => {
-                subtaskProgress.current = current
-                subtaskProgress.total = total
-                updateProgress()
-              }
-            )
-            //console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
-            subtaskProgress.current = subtaskProgress.total
-            updateProgress()
-            return result
+            try {
+              const result = await taskFunction(
+                props,
+                {
+                  ...context,
+                  taskObject: undefined,
+                  causeType: 'task_Task',
+                  cause: taskObject.id,
+                  expire
+                },
+                (events) => app.emitEvents(serviceDefinition.name,
+                  Array.isArray(events) ? events : [events], {}),
+                (current, total, action) => {
+                  subtaskProgress.current = current
+                  subtaskProgress.total = total
+                  updateProgress()
+                }
+              )
+              //console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
+              subtaskProgress.current = subtaskProgress.total
+              updateProgress()
+              return result
+            } catch(error) {
+              subtaskProgress.current = subtaskProgress.total // failed = finished
+              const outputError: any = new Error("Subtask error: " + error.toString())
+              outputError.stack = error.stack
+              outputError.taskNoRetry = true
+              throw outputError
+            }
           },
           async progress(current, total, action, opts) { // throttle this
             selfProgress = {
@@ -362,17 +369,21 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
           })          
           
           const promises = taskWatchers.map(watcher => new Promise((resolve, reject) => watcher.run(resolve, reject)))
-          await Promise.all(promises)
-          //console.log("TASK WATCHERS PROMISES FULLFILLED", taskWatchers)
-          const results = taskWatchers.map(watcher => {
-            //console.log("WATCHER OBSERVABLE", watcher.observable)
-            watcher.observable.getValue().result
-          })
-          for(const watcher of taskWatchers) {
-            //console.log("UNOBSERVING WATCHER", watcher)
-            watcher.observable.unobserve(watcher.observer)
-          }          
-          return results
+          try {
+            await Promise.all(promises)
+            //console.log("TASK WATCHERS PROMISES FULLFILLED", taskWatchers)
+            const results = taskWatchers.map(watcher => {
+              //console.log("WATCHER OBSERVABLE", watcher.observable)
+              watcher.observable.getValue().result
+            })
+            return results
+          } catch(subtask) {
+            const retry = subtask.retries?.at(-1)
+            const outputError: any = new Error("Subtask error: " + retry?.error)
+            outputError.stack = retry?.stack
+            outputError.taskNoRetry = true
+            throw outputError
+          }                    
         }
       }
       try {
