@@ -43,7 +43,7 @@ export default function editorData(options) {
     toast = useToast(options.appContext || getCurrentInstance().appContext),
     path = usePath(options.appContext || getCurrentInstance().appContext),
     api = useApi(options.appContext || getCurrentInstance().appContext),
-    workingZone = inject('workingZone', options.appContext || getCurrentInstance().appContext),
+    workingZone = inject('workingZone'),
 
   } = options
 
