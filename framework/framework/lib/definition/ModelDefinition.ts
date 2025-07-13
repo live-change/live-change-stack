@@ -10,8 +10,16 @@ export interface ModelIndexDefinitionSpecification {
   multi?: boolean,
 }
 
+export type ValidationConfig = string | {
+  name: string,
+  [key: string]: any
+}
+
 export interface ModelPropertyDefinitionSpecification {
   type?: any,
+  default?: ((...args: any[]) => any) | any,
+  updated?: (...args: any[]) => any,
+  validation?: ValidationConfig[],
   index?: ModelIndexDefinitionSpecification
 }
 

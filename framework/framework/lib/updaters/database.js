@@ -279,16 +279,37 @@ async function update(changes, service, app, force) {
       case "createProperty": {
         const table = generateTableName(change.model)
         const property = change.property
-        let update = {}
-        const defaultValue = property.defaultValue ?? property.default
-        if(typeof defaultValue !== 'function') update[change.name] = defaultValue // functions not supported here
-        debug("CREATE PROPERTY UPDATE", update)
-        await dao.request(['database', 'query'], database, `(${
+        if(property.type === 'typeAndId') {
+          console.log("CREATE TYPE AND ID PROPERTY", change.name)
+          process.exit(1)
+          await dao.request(['database', 'query'], database, `(${
             async (input, output, { table, update }) =>
               await input.table(table).onChange((obj, oldObj) => {
-                if(obj) output.table(table).update(obj.id, [{ op: 'merge', value: update }])
+                if(obj) output.table(table).update(obj.id, [{
+                  op: 'set',
+                  property: change.name,
+                  value: {
+                    id: obj[change.name],
+                    type: obj[change.name+'Type']
+                  }
+                }, {
+                  op: 'delete',
+                  property: change.name+'Type'
+                }])
               })
-        })`, { table, update })
+          })`, { table, propertyName: change.name }) 
+        } else {
+          let update = {}      
+          const defaultValue = property.defaultValue ?? property.default
+          if(typeof defaultValue !== 'function') update[change.name] = defaultValue // functions not supported here
+          debug("CREATE PROPERTY UPDATE", update)
+          await dao.request(['database', 'query'], database, `(${
+              async (input, output, { table, update }) =>
+                await input.table(table).onChange((obj, oldObj) => {
+                  if(obj) output.table(table).update(obj.id, [{ op: 'merge', value: update }])
+                })
+          })`, { table, update })
+        }      
       } break;
       case "renameProperty": {
         const table = generateTableName(change.model)

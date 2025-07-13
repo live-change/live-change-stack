@@ -72,7 +72,7 @@ export default function(service, app) {
     ]
 
     addAccessControlAnyParents(context)
-    defineAnyIndexes(context.model, context.otherPropertyNames, false)
+    defineAnyIndexes(context.model, context.otherPropertyNames, false, config.typeAndId)
     defineAnyTypeIndexes(config, context, context.otherPropertyNames.length === 1)
 
     defineObjectView(config, context,

@@ -3,7 +3,9 @@ try {
   Symbol.metadata ??= Symbol("Symbol.metadata") 
 } catch (e) { }
 
-import { PropertyOfAny, Model, Property, modelConfigSymbol, Index } from '../../src/index.js'
+import { 
+  PropertyOfAny, Model, Property, modelConfigSymbol, Index, TypeAndId, Validation, Updated, Default, RangeIndex
+} from '../../src/index.js'
 
 /* @PropertyOfAny({
   readAccessControl: {
@@ -21,26 +23,14 @@ const currencyConfig = {
   type: Number,
   default: currencyZero
 }
-
-type RelationProperties<T extends Record<string, any>> = {
-  [K in keyof T as `${Extract<K, string>}`]: any
-  //[K in keyof T as `${Extract<K, string>}Type`]: any
-}
-type RelationPropertiesTypes<T extends Record<string, any>> = {
-  [K in keyof T as `${Extract<K, string>}Type`]: any
-}
-
-type RelationPropertiesWithTypes<T extends Record<string, any>> = RelationProperties<T> & RelationPropertiesTypes<T>
-
 @Model(definition)
 @PropertyOfAny({
   readAccessControl: {
     roles: ['owner', 'admin']
   }
 })
-export class Balance implements RelationPropertiesWithTypes<{ owner: string }> {  
-  owner: string /// will be auto-generated
-  ownerType: string /// will be auto-generated
+export class Balance {
+  owner: TypeAndId
 
   @Property(currencyConfig)
   available: Currency
@@ -48,13 +38,15 @@ export class Balance implements RelationPropertiesWithTypes<{ owner: string }> {
   @Property(currencyConfig)
   amount: Currency
 
+  @Validation('nonEmpty')
+  @Updated(() => new Date())
   @Property()
   lastUpdate: Date
 
   @Index({
     property: ['owner', 'lastUpdate']
   }) 
-  static byOwnerAndLastUpdate /// TODO: model index runtime type
+  static byOwnerAndLastUpdate: RangeIndex<( owner: TypeAndId, lastUpdate: Date ) => Balance[]>
 }
 
 

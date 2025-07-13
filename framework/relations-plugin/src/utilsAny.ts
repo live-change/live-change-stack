@@ -11,8 +11,13 @@ import { ModelDefinitionSpecificationWithAccessControl } from "./types.js"
 export function extractTypeAndIdParts(otherPropertyNames, properties) {
   const typeAndIdParts = []
   for (const propertyName of otherPropertyNames) {
-    typeAndIdParts.push(properties[propertyName+'Type'])
-    typeAndIdParts.push(properties[propertyName])
+    if(typeof properties[propertyName] === 'object') {
+      typeAndIdParts.push(properties[propertyName].type)
+      typeAndIdParts.push(properties[propertyName].id)
+    } else {
+      typeAndIdParts.push(properties[propertyName+'Type'])
+      typeAndIdParts.push(properties[propertyName])
+    }
   }
   return typeAndIdParts
 }
@@ -20,24 +25,20 @@ export function extractTypeAndIdParts(otherPropertyNames, properties) {
 export function extractIdentifiersWithTypes(otherPropertyNames, properties) {
   const identifiers = {}
   for (const propertyName of otherPropertyNames) {
-    identifiers[propertyName] = properties[propertyName]
-    identifiers[propertyName + 'Type'] = properties[propertyName + 'Type']
+    if(typeof properties[propertyName] === 'object') {
+      identifiers[propertyName] = properties[propertyName].id
+      identifiers[propertyName + 'Type'] = properties[propertyName].type
+    } else {
+      identifiers[propertyName] = properties[propertyName]
+      identifiers[propertyName + 'Type'] = properties[propertyName + 'Type']
+    }
   }
   return identifiers
 }
 
 export function generateAnyId(otherPropertyNames, properties) {
-/*
-  console.log("GEN ID", otherPropertyNames, properties, '=>',
-    otherPropertyNames
-      .map(p => [p+'Type', p])
-      .flat()
-      .map(p => JSON.stringify(properties[p])).join(':'))
-*/
-  return otherPropertyNames
-      .map(p => [p+'Type', p])
-      .flat()
-      .map(p => JSON.stringify(properties[p])).join(':')
+  const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
+  return typeAndIdParts.map(p => JSON.stringify(properties[p])).join(':')
 }
 
 export function defineAnyProperties(model, names, config) {
@@ -45,16 +46,34 @@ export function defineAnyProperties(model, names, config) {
   for (let i = 0; i < names.length; i++) {
     const possibleTypes = config[names[i]+'Types']
     const possibleTypesNames = possibleTypes && possibleTypes.map(t => t.getTypeName ? t.getTypeName() : t)
-    identifiers[names[i]+'Type'] = new PropertyDefinition({
-      type: 'type',
-      validation: ['nonEmpty'],
-      enum: possibleTypesNames
-    })
-    identifiers[names[i]] = new PropertyDefinition({
-      types: possibleTypesNames,
-      type: 'any',
-      validation: ['nonEmpty']
-    })
+    if(config.typeAndId) {
+      identifiers[names[i]] = new PropertyDefinition({
+        type: 'typeAndId',
+        validation: ['nonEmpty'],
+        properties: {
+          type: {
+            type: 'type',
+            validation: ['nonEmpty'],
+            enum: possibleTypesNames
+          },
+          id: {
+            type: 'any',
+            validation: ['nonEmpty']
+          }
+        }
+      })      
+    } else {
+      identifiers[names[i]+'Type'] = new PropertyDefinition({
+        type: 'type',
+        validation: ['nonEmpty'],
+        enum: possibleTypesNames
+      })
+      identifiers[names[i]] = new PropertyDefinition({
+        types: possibleTypesNames,
+        type: 'any',
+        validation: ['nonEmpty']
+      })
+    }
   }
   for(const key in identifiers) {
     model.properties[key] = identifiers[key]
@@ -62,19 +81,19 @@ export function defineAnyProperties(model, names, config) {
   return identifiers
 }
 
-export function defineAnyIndex(model, what, props) {
+export function defineAnyIndex(model, what, props, typeAndId) {
   model.indexes['by' + what] = {
-    property: props.map(prop => [prop+'Type', prop]).flat(),
+    property: props.map(prop => typeAndId ? [prop+'.id', prop+'.type'] : [prop+'Type', prop]).flat(),
     hash: true
   }
 }
 
-export function defineAnyIndexes(model, props, fullIndex = true) {
+export function defineAnyIndexes(model, props, fullIndex = true, typeAndId) {
   const propCombinations = allCombinations(props)
   for(const propCombination of propCombinations) {
     if(propCombination.length === props.length && !fullIndex) continue
     const upperCaseProps = propCombination.map(prop => prop[0].toUpperCase() + prop.slice(1))
-    defineAnyIndex(model, upperCaseProps.join('And'), propCombination)
+    defineAnyIndex(model, upperCaseProps.join('And'), propCombination, typeAndId)
   }
 }
 
@@ -89,6 +108,7 @@ export interface AnyRelationConfig {
   sortBy?: string[],
   customDeleteTrigger?: boolean, /// TODO: check if this is needed
   customParentCopyTrigger?: boolean /// TODO: check if this is needed
+  typeAndId?: boolean
 }
 
 export interface ModelDefinitionSpecificationWithAnyRelation extends ModelDefinitionSpecificationWithAccessControl {  

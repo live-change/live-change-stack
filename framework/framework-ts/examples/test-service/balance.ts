@@ -6,22 +6,24 @@ import config from './config.js'
 
 type Currency = typeof config.currencyType
 
-import { PropertyOfAny, Model, Property } from '../../src/index.js'
+import { PropertyOfAny, Model, Property, TypeAndId } from '../../src/index.js'
 
-/* @PropertyOfAny({
+@PropertyOfAny({
   readAccessControl: {
     roles: ['owner', 'admin']
   }
-}) */
+})
 @Model(definition)
-class Balance {  
-  //@Property(config.currencyType)
+class Balance {
+  owner: TypeAndId
+
+  @Property(config.currencyType)
   available: Currency
 
-  //@Property(config.currencyType)
+  @Property(config.currencyType)
   amount: Currency
 
-  //@Property()
+  @Property()
   lastUpdate: Date
 }
 

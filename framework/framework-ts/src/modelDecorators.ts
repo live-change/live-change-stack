@@ -1,4 +1,4 @@
-import { ModelIndexDefinitionSpecification, ModelPropertyDefinitionSpecification } from "@live-change/framework/lib/definition/ModelDefinition.js"
+import { ModelIndexDefinitionSpecification, ModelPropertyDefinitionSpecification, ValidationConfig } from "@live-change/framework/lib/definition/ModelDefinition.js"
 import { BoundToAnyConfig, BoundToConfig, ItemOfAnyConfig, ItemOfConfig, ModelWithRelations, PropertyOfAnyConfig, PropertyOfConfig, RelatedToAnyConfig, RelatedToConfig, SaveAuthorConfig } from "@live-change/relations-plugin"
 import { CrudSettings, Identifier } from "@live-change/relations-plugin/src/types.js"
 
@@ -69,7 +69,10 @@ export function PropertyOf(config: PropertyOfConfig) {
 export function PropertyOfAny(config: PropertyOfAnyConfig) {
   return function actualDecorator(target: any, context: ClassDecoratorContext) {
     const modelConfig : ModelConfig = (context.metadata[modelConfigSymbol] as ModelConfig | undefined) ??= new ModelConfig();
-    modelConfig.propertyOfAny = config
+    modelConfig.propertyOfAny = {
+      ...config,
+      typeAndId: true
+    }
   }
 }
 
@@ -83,7 +86,10 @@ export function RelatedTo(config: RelatedToConfig) {
 export function RelatedToAny(config: RelatedToAnyConfig) {
   return function actualDecorator(target: any, context: ClassDecoratorContext) {
     const modelConfig : ModelConfig = (context.metadata[modelConfigSymbol] as ModelConfig | undefined) ??= new ModelConfig();
-    modelConfig.relatedToAny = config
+    modelConfig.relatedToAny = { 
+      ...config,
+      typeAndId: true
+    }
   }
 }
 
@@ -97,7 +103,10 @@ export function BoundTo(config: BoundToConfig) {
 export function BoundToAny(config: BoundToAnyConfig) {
   return function actualDecorator(target: any, context: ClassDecoratorContext) {
     const modelConfig : ModelConfig = (context.metadata[modelConfigSymbol] as ModelConfig | undefined) ??= new ModelConfig();
-    modelConfig.boundToAny = config
+    modelConfig.boundToAny = {
+      ...config,
+      typeAndId: true
+    }
   }
 }
 
@@ -113,5 +122,38 @@ export function Index(config: ModelIndexDefinitionSpecification) {
     console.log("Index decorator", ...arguments)
     const modelConfig : ModelConfig = (context.metadata[modelConfigSymbol] as ModelConfig | undefined) ??= new ModelConfig();
     modelConfig.indexes[context.name.toString()] = config
+  }
+}
+
+export function Default(valueOrFunction: any) {
+  return function actualDecorator(target: any, context: ClassFieldDecoratorContext) {
+    const modelConfig : ModelConfig = (context.metadata[modelConfigSymbol] as ModelConfig | undefined) ??= new ModelConfig();
+    modelConfig.properties[context.name.toString()] = {
+      ...modelConfig.properties[context.name.toString()],
+      default: valueOrFunction
+    }
+  }
+}
+
+export function Updated(valueOrFunction: any) {
+  return function actualDecorator(target: any, context: ClassFieldDecoratorContext) {
+    const modelConfig : ModelConfig = (context.metadata[modelConfigSymbol] as ModelConfig | undefined) ??= new ModelConfig();
+    modelConfig.properties[context.name.toString()] = {
+      ...modelConfig.properties[context.name.toString()],
+      updated: valueOrFunction
+    }
+  }
+}
+
+export function Validation(validation: ValidationConfig[] | ValidationConfig) {
+  const validationConfig = Array.isArray(validation) ? validation : [validation]
+  return function actualDecorator(target: any, context: ClassFieldDecoratorContext) {
+    const modelConfig : ModelConfig = (context.metadata[modelConfigSymbol] as ModelConfig | undefined) ??= new ModelConfig();
+    modelConfig.properties[context.name.toString()] = {
+      ...modelConfig.properties[context.name.toString()],
+      validation: [
+        ...(modelConfig.properties[context.name.toString()].validation ?? []),
+        ...validationConfig]        
+    }
   }
 }
