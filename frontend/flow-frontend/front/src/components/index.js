@@ -411,7 +411,5 @@ export function useFlow(options) {
   }
   provide("flow", flow)
 
-  globalThis.flow = flow
-
   return flow
 }

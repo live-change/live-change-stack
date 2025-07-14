@@ -355,7 +355,7 @@ class Store {
   async openDb() {
     console.log("Opening db", this.dbName, this.storeName)
     const openRequest = globalThis.indexedDB.open(this.idbName, 1)
-    globalThis.lastOpenRequest = openRequest
+    //globalThis.lastOpenRequest = openRequest
     this.dbPromise = handleRequest(openRequest, (event) => {
       //console.error("Upgrading db", this.dbName, this.storeName)
       const db = event.target.result

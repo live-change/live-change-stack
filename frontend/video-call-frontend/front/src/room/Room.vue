@@ -174,7 +174,9 @@
     return output
   })
 
-  globalThis.peer = peer
+  if(typeof window !== 'undefined') {
+    window.peer = peer
+  }
 
 
 </script>

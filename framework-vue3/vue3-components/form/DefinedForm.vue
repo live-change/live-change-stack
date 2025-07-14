@@ -684,7 +684,9 @@
       this.initForm()
       this.state = 'ready'
 
-      globalThis.form = this
+      if(typeof window !== 'undefined') {
+        window.form = this
+      }
     },
     unmounted() {
     },

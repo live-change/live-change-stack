@@ -238,7 +238,9 @@
     }
   })
 
-  globalThis.deviceSelectModel = model
+  if(typeof window !== 'undefined') {
+    window.deviceSelectModel = model
+  }
 
   function restoreSavedDevice(model, deviceType) {
     const saved = localStorage.getItem(deviceType)

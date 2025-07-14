@@ -48,7 +48,9 @@ const getUserMediaNative = userMediaFactory()
 const getDisplayMediaNative = displayMediaFactory()
 
 //const trackedStreams = []
-globalThis.trackedStreams = []
+if(typeof window !== 'undefined') {
+  window.trackedStreams = []
+}
 
 async function getUserMedia(...args) {
   const stream = await getUserMediaNative(...args)
