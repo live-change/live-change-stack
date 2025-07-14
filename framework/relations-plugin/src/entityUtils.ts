@@ -5,7 +5,7 @@ import {
   propertiesWithoutDefaults
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
-import App, { AccessSpecification, ModelDefinitionSpecification, PropertyDefinitionSpecification, ServiceDefinition } from '@live-change/framework'
+import App, { AccessSpecification, ModelDefinitionSpecification, PropertyDefinitionSpecification, ServiceDefinition, ModelPropertyDefinitionSpecification } from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } from "@live-change/framework"
@@ -43,7 +43,7 @@ export interface EntityContext {
   modelName: string
   modelPropertyName: string
   model: ModelDefinitionSpecificationWithEntity
-  originalModelProperties: Record<string, PropertyDefinitionSpecification>
+  originalModelProperties: Record<string, ModelPropertyDefinitionSpecification>
   modelProperties: string[]
   writeableProperties: string[]
   objectType: string

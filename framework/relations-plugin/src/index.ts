@@ -33,21 +33,21 @@ export default plugin
 
 export { processors }
 
-export interface MotelWithRelations extends ModelDefinitionSpecificationWithAccessControl {
-  propertyOf: PropertyOfConfig
-  itemOf: ItemOfConfig
-  propertyOfAny: PropertyOfAnyConfig
-  itemOfAny: ItemOfAnyConfig
-  relatedTo: RelatedToConfig
-  relatedToAny: RelatedToAnyConfig
-  boundTo: BoundToConfig
-  boundToAny: BoundToAnyConfig
-  saveAuthor: SaveAuthorConfig        
+export interface ModelWithRelations extends ModelDefinitionSpecificationWithAccessControl {
+  propertyOf?: PropertyOfConfig
+  itemOf?: ItemOfConfig
+  propertyOfAny?: PropertyOfAnyConfig
+  itemOfAny?: ItemOfAnyConfig
+  relatedTo?: RelatedToConfig
+  relatedToAny?: RelatedToAnyConfig
+  boundTo?: BoundToConfig
+  boundToAny?: BoundToAnyConfig
+  saveAuthor?: SaveAuthorConfig        
 }
 
 export type { 
   PropertyOfConfig, ItemOfConfig, PropertyOfAnyConfig, ItemOfAnyConfig,
   RelatedToConfig, RelatedToAnyConfig, BoundToConfig, BoundToAnyConfig, 
-  SaveAuthorConfig
+  SaveAuthorConfig,
 } 
 

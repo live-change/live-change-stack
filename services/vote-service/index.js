@@ -55,7 +55,7 @@ const Vote = definition.model({
             }
             output.debug("PREFIX", prefix.split(':'))
             const [onType, on] = prefix.split(':').map(x => JSON.parse(x))
-            const votes = await sourceIndex.get({
+            const votes = await sourceIndex.rangeGet({
               gt: prefix + '_',
               lt: prefix + '_\xFF',
               limit: 1000

@@ -17,8 +17,12 @@ async function newBrowser() {
   console.log("New browser", config)
   //process.exit(0)
   if(config.browser.webSocketDebuggerUrl) {
-    //const browser = await chromium.connect({ wsEndpoint: config.browser.webSocketDebuggerUrl }, { timeout: 60000 })
-    const browser = await chromium.connect(config.browser.webSocketDebuggerUrl, { timeout: 10000 })
+    const url = new URL(config.browser.webSocketDebuggerUrl)
+    const ip = await dns.resolve4(url.hostname)
+    console.log("BROWSER WS DEBUGGER URL HOST", url.hostname, "RESOLVED TO", ip)
+    url.hostname = ip
+    const browser = await chromium.connect(url.href, { timeout: 10000 }) // connect by ip address
+    //const browser = await chromium.connect(config.browser.webSocketDebuggerUrl, { timeout: 10000 })
     return browser
   } else if(config.browser.url) {
     const browserInfo = await got.post(config.browser.url + '/json/version').json()
