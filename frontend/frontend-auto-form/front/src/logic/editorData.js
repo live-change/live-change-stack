@@ -72,7 +72,6 @@ export default function editorData(options) {
       draftIdParts.push(identifier)
     }
   }
-  const isNew = (idKey ? (!identifiers[idKey]) : (!draftIdParts.every(key => identifiers[key])))
   let draftId = (idKey ? identifiers[idKey]
     : draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_')) ?? 'new'
   if(draftId.length > 16) {
@@ -82,7 +81,7 @@ export default function editorData(options) {
     actionType: serviceName, action: crudMethods.read, targetType: modelName, target: draftId
   }
 
-  const savedDataPath = isNew ? null : path[serviceName][crudMethods.read](identifiers)
+  const savedDataPath = Object.keys(identifiers).length > 0 ? path[serviceName][crudMethods.read](identifiers) : null
   const draftDataPath = (draft && path.draft.myDraft(draftIdentifiers)) || null
 
   const updateAction = api.actions[serviceName][crudMethods.update]
@@ -90,14 +89,19 @@ export default function editorData(options) {
   if(!updateAction && !createOrUpdateAction)
     throw new Error('update or createOrUpdate action must be defined in model or options')
   const createAction = api.actions[serviceName][crudMethods.create]
-  if(isNew && !createAction && !createOrUpdateAction)
-    throw new Error('create action must be defined in model or options')
   const createOrUpdateDraftAction = draft && api.actions.draft.setOrUpdateMyDraft
   const removeDraftAction = draft && api.actions.draft.resetMyDraft
 
   return Promise.all([
     live(savedDataPath), live(draftDataPath)
   ]).then(([savedData, draftData]) => {
+
+    const isNew = computed(() => !savedData.value)
+    watch(isNew, (newVal) => {
+      console.log("IS NEW", newVal)
+      if(newVal && !createAction && !createOrUpdateAction)
+        console.error('create action must be defined in model or options')
+    })
 
     const editableSavedData = computed(() => savedData.value && Object.fromEntries(
       editableProperties.map(prop => [prop, savedData.value[prop]])
@@ -177,11 +181,11 @@ export default function editorData(options) {
         }
       })
       const changed = computed(() =>
-        JSON.stringify(editableSavedData.value ?? {})
+        JSON.stringify({ ...(editableSavedData.value ?? {}), [timeField]: undefined })
            !== JSON.stringify({ ...synchronizedData.value.value, [timeField]: undefined })
       )
       const sourceChanged = computed(() =>
-        JSON.stringify(draftData.value.from) 
+        JSON.stringify({ ...(draftData.value.from ?? {}), [timeField]: undefined })
           !== JSON.stringify({ ...synchronizedData.value.value, [timeField]: undefined })
       )
 
@@ -226,11 +230,13 @@ export default function editorData(options) {
         model,
         isNew,
         propertiesErrors,
+        source,
         draftChanged: synchronizedData.changed,
         saveDraft: synchronizedData.save,
         savingDraft: synchronizedData.saving,
         saved: savedData,
         savedPath: savedDataPath,
+        editableSavedData,
         draft: draftData,
         sourceChanged /// needed for draft discard on concurrent save
       }
@@ -273,6 +279,7 @@ export default function editorData(options) {
         saving: synchronizedData.saving,
         saved: savedData,
         savedPath: savedDataPath,
+        isNew,
         propertiesErrors,
         reset,
         model,

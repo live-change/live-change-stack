@@ -258,56 +258,60 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         startedAt: new Date()
       })
       await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
+      const commonFunctions = {
+        async run(taskFunction: TaskFunction, props, progressFactor = 1, expire = undefined) {
+          if(typeof taskFunction !== 'function') {
+            console.log("TASK FUNCTION", taskFunction)
+            throw new Error('Task function is not a function')
+          }
+          //console.log("SUBTASK RUN", taskFunction.definition.name, props)
+          const subtaskProgress = { current: 0, total: 1, factor: progressFactor }
+          subtasksProgress.push(subtaskProgress)
+          try {
+            const result = await taskFunction(
+              props,
+              {
+                ...context,
+                taskObject: undefined,
+                causeType: 'task_Task',
+                cause: taskObject.id,
+                expire
+              },
+              (events) => app.emitEvents(serviceDefinition.name,
+                Array.isArray(events) ? events : [events], {}),
+              (current, total, action) => {
+                subtaskProgress.current = current
+                subtaskProgress.total = total
+                updateProgress()
+              }
+            )
+            //console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
+            subtaskProgress.current = subtaskProgress.total
+            updateProgress()
+            return result
+          } catch(error) {
+            subtaskProgress.current = subtaskProgress.total // failed = finished
+            const outputError: any = new Error("Subtask error: " + error.toString())
+            outputError.stack = error.stack
+            outputError.taskNoRetry = true
+            throw outputError
+          }
+        },
+        async progress(current, total, action, opts) { // throttle this
+          selfProgress = {
+            ...opts,
+            current, total, action
+          }
+          updateProgress()
+        }
+      }
       const runContext = {
         ...context,
         task: {
           id: taskObject.id,
-          async run(taskFunction: TaskFunction, props, progressFactor = 1, expire = undefined) {
-            if(typeof taskFunction !== 'function') {
-              console.log("TASK FUNCTION", taskFunction)
-              throw new Error('Task function is not a function')
-            }
-            //console.log("SUBTASK RUN", taskFunction.definition.name, props)
-            const subtaskProgress = { current: 0, total: 1, factor: progressFactor }
-            subtasksProgress.push(subtaskProgress)
-            try {
-              const result = await taskFunction(
-                props,
-                {
-                  ...context,
-                  taskObject: undefined,
-                  causeType: 'task_Task',
-                  cause: taskObject.id,
-                  expire
-                },
-                (events) => app.emitEvents(serviceDefinition.name,
-                  Array.isArray(events) ? events : [events], {}),
-                (current, total, action) => {
-                  subtaskProgress.current = current
-                  subtaskProgress.total = total
-                  updateProgress()
-                }
-              )
-              //console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
-              subtaskProgress.current = subtaskProgress.total
-              updateProgress()
-              return result
-            } catch(error) {
-              subtaskProgress.current = subtaskProgress.total // failed = finished
-              const outputError: any = new Error("Subtask error: " + error.toString())
-              outputError.stack = error.stack
-              outputError.taskNoRetry = true
-              throw outputError
-            }
-          },
-          async progress(current, total, action, opts) { // throttle this
-            selfProgress = {
-              ...opts,
-              current, total, action
-            }
-            updateProgress()
-          }
+          ...commonFunctions
         },
+        ...commonFunctions,
         async trigger(trigger, props) {
           return await app.trigger({
             causeType: 'task_Task',

@@ -353,3 +353,16 @@ export {
   prefixRange, rangeProperties, fieldListToFieldsObject,
   encodeIdentifier, extractRange, isomorphic, computeDefaults, computeUpdates
 }
+
+export function parseDuration(duration) {
+  if(typeof duration === 'number') return duration
+  const match = duration.match(/(\d+)([smhd])/g)
+  if(!match || match.length === 0) throw new Error(`Invalid duration: ${duration}`)
+  let result = 0
+  for(const m of match) {
+    const value = parseInt(m.slice(0, -1))
+    const unit = m.slice(-1)
+    result += value * { s: 1000, m: 60000, h: 3600000, d: 86400000 }[unit]
+  }
+  return result
+}

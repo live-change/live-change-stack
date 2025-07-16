@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.106",
+    "@live-change/framework": "0.9.106",
     "pluralize": "^8.0.0"
   },
   "devDependencies": {

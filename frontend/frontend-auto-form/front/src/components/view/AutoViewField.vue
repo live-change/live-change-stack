@@ -45,7 +45,7 @@
     }
   })
 
-  const { value, definition, propName, rootValue, label, name } = toRefs(props)
+  const { value, definition, propName, rootValue, label, name, i18n } = toRefs(props)
 
   const definitionIf = computed(() => {
     if(definition.value?.if) {
