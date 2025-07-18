@@ -26,6 +26,7 @@ function addSchema(schemas, schema) {
 }
 
 export function schemaFromDefinition(definition, data, type, appContext = getCurrentInstance().appContext) {
+  if(!definition) throw new Error("Definition is required")
   if(!type) type = definition.type
   if(type === 'Object') {
     const properties = Object.fromEntries(

@@ -19,6 +19,9 @@ const taskProperties = {
   properties: {
     type: Object
   },
+  client: {
+    type: Object,
+  },
   result: {
     type: Object
   },

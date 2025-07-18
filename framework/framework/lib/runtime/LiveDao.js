@@ -31,12 +31,16 @@ class LiveDao extends LcDao.DaoProxy {
 
   computeCredentials() {
     let credentials = JSON.parse(JSON.stringify(this.initialCredentials))
+    const keys = Object.keys(credentials).filter(key => key.endsWith("Key"))
     for(const credentialsObserver of this.credentialsObservations) {
       credentials = {
         ...credentials,
         ...credentialsObserver.credentials,
         roles: [...credentials.roles, ...(credentialsObserver.credentials.roles || [])]
       }
+    }    
+    for(const key of keys) {
+      delete credentials[key]
     }
     return credentials
   }

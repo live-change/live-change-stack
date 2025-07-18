@@ -34,11 +34,18 @@
         <div>
           {{ (new Date(taskData.doneAt).getTime() - new Date(taskData.startedAt).getTime()) / 1000 }}s
         </div>
-      </div>
+      </div>      
       
       <div class="grid grid-cols-2 gap-2 text-sm" v-if="taskData.doneAt">
         <div v-if="taskData.doneAt">Done:</div>
         <div v-if="taskData.doneAt">{{ d(taskData.doneAt, 'longWithSeconds') }}</div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-sm" v-if="taskData.client">
+        <div>Client:</div>
+        <div>
+          {{ taskData.client }}
+        </div>
       </div>
     </div>
 

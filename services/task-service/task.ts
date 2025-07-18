@@ -36,11 +36,17 @@ async function triggerOnTaskStateChange(taskObject, causeType, cause) {
   })
 }
 
-async function createOrReuseTask(taskDefinition, props, causeType, cause, expire) {
+interface ClientInfo {
+    user?: string
+    session?: string
+}
+
+async function createOrReuseTask(taskDefinition, props, causeType, cause, expire, client:ClientInfo) {  
   const propertiesJson = JSON.stringify(props)
+  const userInfo = client?.user ? `user:${client.user}` : `session:${client?.session}`
   const hash = crypto
     .createHash('sha256')
-    .update(taskDefinition.name + ':' + propertiesJson)
+    .update(taskDefinition.name + ':' + propertiesJson + userInfo)    
     .digest('hex')
 
   const expireDate = (expire ?? taskDefinition.expire) ? new Date(Date.now() - taskDefinition.expire) : null
@@ -66,7 +72,8 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause, expire
       state: 'created',
       service: taskDefinition.service,
       retries: [],
-      maxRetries: taskDefinition.maxRetries ?? 5
+      maxRetries: taskDefinition.maxRetries ?? 5,
+      client
     }
 
   if(!oldTask) {
@@ -82,12 +89,13 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause, expire
   return taskObject
 }
 
-async function startTask(taskFunction, props, causeType, cause, expire){
-  const taskObject = await createOrReuseTask(taskFunction.definition, props, causeType, cause, expire)
+async function startTask(taskFunction, props, causeType, cause, expire, client:ClientInfo){
+  const taskObject = await createOrReuseTask(taskFunction.definition, props, causeType, cause, expire, client)
   const context = {
     causeType,
     cause,
     taskObject,
+    client
   }
   console.log("START TASK!", taskFunction.name)
   const promise = taskFunction(props, context)
@@ -181,6 +189,34 @@ interface TaskDefinition {
 
 }
 
+function progressCounter(reportProgress) {  
+  let currentAcc = 0
+  let totalAcc = 0
+  const progressFunction = (current, total, action, opts) => {
+    currentAcc = current
+    totalAcc = total
+    reportProgress(currentAcc, totalAcc, action, opts)
+  }
+  progressFunction.increment = (action, by = 1, opts) => {
+    currentAcc += by
+    progressFunction(currentAcc, totalAcc, action, opts)
+  }
+  progressFunction.incrementTotal = (action, by = 1, opts) => {
+    totalAcc += by
+    progressFunction(currentAcc, totalAcc, action, opts)
+  }
+  progressFunction.slice = (sliceSize, factor = 1.0) => {
+    const sliceStart = currentAcc    
+    const sliceEnd = sliceStart + sliceSize
+    currentAcc = sliceEnd
+    return progressCounter((current, total, action, opts) => {
+      progressFunction(sliceStart + Math.min(current, sliceSize) * factor,
+         sliceEnd + Math.min(total, sliceSize) * factor, action, opts)
+    })
+  }
+  return progressFunction
+}
+
 type TaskFunction = (props, context: TaskExecuteContext, emit, reportProgress) => Promise<any>
 
 export default function task(definition:TaskDefinition, serviceDefinition) {
@@ -196,7 +232,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     }
 
     let taskObject = context.taskObject ?? 
-      await createOrReuseTask(definition, props, context.causeType, context.cause, context.expire)
+      await createOrReuseTask(definition, props, context.causeType, context.cause, context.expire, context.client)
 
     if(!taskObject?.state) throw new Error('Task object state is not defined in ' + taskObject)
     if(!taskObject?.id) throw new Error('Task object id is not defined in '+taskObject)
@@ -297,25 +333,26 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             throw outputError
           }
         },
-        async progress(current, total, action, opts) { // throttle this
+        progress: progressCounter((current, total, action, opts) => { // throttle this
           selfProgress = {
             ...opts,
             current, total, action
           }
           updateProgress()
-        }
+        })
       }
       const runContext = {
         ...context,
         task: {
           id: taskObject.id,
           ...commonFunctions
-        },
+        },      
         ...commonFunctions,
         async trigger(trigger, props) {
           return await app.trigger({
             causeType: 'task_Task',
             cause: taskObject.id,
+            client: context.client,
             ...trigger,
           }, props)
         },
@@ -323,6 +360,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
           return await app.triggerService({
             causeType: 'task_Task',
             cause: taskObject.id,
+            client: context.client,
             ...trigger
           }, props, returnArray)
         },
@@ -330,6 +368,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
           const tasks = await app.trigger({
             causeType: 'task_Task',
             cause: taskObject.id,
+            client: context.client,
             ...trigger
           }, data)
           const fullProgressSum = tasks.length * progressFactor     
@@ -378,7 +417,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             //console.log("TASK WATCHERS PROMISES FULLFILLED", taskWatchers)
             const results = taskWatchers.map(watcher => {
               //console.log("WATCHER OBSERVABLE", watcher.observable)
-              watcher.observable.getValue().result
+              return watcher.observable.getValue().result
             })
             return results
           } catch(subtask) {
@@ -451,15 +490,15 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       }
     }
 
-    while(taskObject.state !== 'done' && taskObject.state !== 'failed') {
+    if(taskObject.state === 'failed') {
+      throw new Error(taskObject.retries[taskObject.retries.length - 1].error)
+    }
+    
+    while(taskObject.state !== 'done' && taskObject.state !== 'fallbackDone' && taskObject.state !== 'failed') {
       console.log("RUNNING TASK", definition.name, "STATE", taskObject.state, "OBJECT", taskObject)
       await runTask()
       console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
      // console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
-    }
-
-    if(taskObject.state === 'failed') {
-      throw new Error(taskObject.retries[taskObject.retries.length - 1].error)
     }
 
     return taskObject.result
@@ -485,6 +524,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             causeType: task.causeType,
             cause: task.cause,
             taskObject,
+            client: task.client
           }
           /// mark started subtasks as interrupted
           const subtasks = await app.serviceViewGet('task', 'tasksByRoot', {
@@ -530,10 +570,10 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       },
       async execute(props, context, emit) {
         const startResult =
-          await startTask(taskFunction, props, 
+          await startTask(taskFunction, props,            
             context.reaction.causeType ?? 'trigger', 
             context.reaction.cause ?? context.reaction.id, 
-            props.taskExpire) // Must be done that way, so subtasks can be connected to the parent task
+            props.taskExpire, context.client) // Must be done that way, so subtasks can be connected to the parent task
         return startResult.task
       }
     })
@@ -547,10 +587,11 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       },
       async execute(props, context, emit) {
         const startResult =
-          await startTask(taskFunction, props, 
+          await startTask(taskFunction, 
+            props,
             context.reaction.causeType ?? 'trigger', 
             context.reaction.cause ?? context.reaction.id, 
-            props.taskExpire) // Must be done that way, so subtasks can be connected to the parent task
+            props.taskExpire, context.client) // Must be done that way, so subtasks can be connected to the parent task
         return startResult.task
       }
     })  
@@ -566,23 +607,18 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         type: Task
       },
       async execute(props, context, emit) {
-        const client = {
-          ...context.client,
-          sessionKey: undefined
-        }
         const startResult =
-          await startTask(taskFunction, { ...props, client }, 'command', context.command.id, undefined)
+          await startTask(taskFunction, props, 'command', context.command.id, undefined, context.client)
         return startResult.task
       },
       ...(typeof definition.action === 'object' && definition.action)
     })
 
-
   }
 
   taskFunction.definition = definition
-  taskFunction.start = async (props, causeType, cause, expire = undefined) => {
-    return await startTask(taskFunction, props, causeType, cause, expire)
+  taskFunction.start = async (props, causeType, cause, expire = undefined, client:ClientInfo) => {
+    return await startTask(taskFunction, props, causeType, cause, expire, client)
   }
   return taskFunction
 

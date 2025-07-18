@@ -638,10 +638,10 @@ class App {
     const taskDescriptionHashBinary = await crypto.subtle.digest('SHA-256', utf8)
     const taskDescriptionHash = Array.from(new Uint8Array(taskDescriptionHashBinary))
       .map(b => b.toString(16).padStart(2, '0')).join('')
-    console.log("taskDescriptionHash", taskDescriptionHash)
+    //console.log("taskDescriptionHash", taskDescriptionHash)
     let cacheEntry = await this.dao.get(['database', 'tableObject', this.databaseName, 'cache', taskDescriptionHash])
     if(!cacheEntry || cacheEntry.createdAt < new Date(Date.now() - expireAfterMs).toISOString()) {
-      console.log("cache miss", taskDescription)
+      //console.log("cache miss", taskDescription)
       const result = await task()
       const expiresAt = new Date(Date.now() + expireAfterMs).toISOString()
       cacheEntry = {
@@ -652,7 +652,7 @@ class App {
       }
       await this.dao.request(['database', 'put'], this.databaseName, 'cache', cacheEntry)
     } else { // extend cache entry expiration
-      console.log("cache hit", taskDescription)
+      //console.log("cache hit", taskDescription)
       const newExpiresAt = new Date(new Date(cacheEntry.createdAt).getTime() + expireAfterMs).toISOString()
       if(cacheEntry.expiresAt < newExpiresAt) {
         cacheEntry.expiresAt = newExpiresAt
@@ -660,6 +660,32 @@ class App {
       }
     }
     return cacheEntry.result
+  }
+
+  async cacheGet(taskDescription, expireAfter) {
+    const expireAfterMs = utils.parseDuration(expireAfter)
+    const utf8 = new TextEncoder().encode(JSON.stringify(taskDescription))
+    const taskDescriptionHashBinary = await crypto.subtle.digest('SHA-256', utf8)
+    const taskDescriptionHash = Array.from(new Uint8Array(taskDescriptionHashBinary))
+      .map(b => b.toString(16).padStart(2, '0')).join('')
+    const cacheEntry = await this.dao.get(['database', 'tableObject', this.databaseName, 'cache', taskDescriptionHash])
+    if(!cacheEntry || cacheEntry.createdAt < new Date(Date.now() - expireAfterMs).toISOString()) {
+      return null
+    }
+    return cacheEntry.result
+  }
+
+  async cachePut(taskDescription, result) {
+    const utf8 = new TextEncoder().encode(JSON.stringify(taskDescription))
+    const taskDescriptionHashBinary = await crypto.subtle.digest('SHA-256', utf8)
+    const taskDescriptionHash = Array.from(new Uint8Array(taskDescriptionHashBinary))
+      .map(b => b.toString(16).padStart(2, '0')).join('')
+    const cacheEntry = {
+      id: taskDescriptionHash,
+      createdAt: new Date().toISOString(),
+      result
+    }
+    await this.dao.request(['database', 'put'], this.databaseName, 'cache', cacheEntry)
   }
 
 }

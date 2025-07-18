@@ -21,8 +21,8 @@
     <!-- <pre>tasksPathConfig = {{ tasksPathConfig }}</pre> -->
 
     <range-viewer :pathFunction="tasksPathFunction" :key="JSON.stringify(tasksPathConfig)"
-                  :canLoadTop="false" canDropBottom
-                  loadBottomSensorSize="3000px" dropBottomSensorSize="5000px">
+                  :canLoadTop="false" :canDropBottom="false"
+                  loadBottomSensorSize="3000px" dropBottomSensorSize="12000px">
       <template #empty>
         <div class="bg-surface-0 p-3 shadow text-center text-gray-500 text-lg">
           No tasks found...
