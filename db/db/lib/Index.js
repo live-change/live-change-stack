@@ -85,8 +85,8 @@ class RangeReader extends ChangeStream {
   range(range) {
     return new RangeReader(this.tableReader, rangeIntersection(this.range, range))
   }
-  async get() {
-    return await (await this.tableReader.table).rangeGet(this.range)
+  async get(range = {}) {
+    return await (await this.tableReader.table).rangeGet(rangeIntersection(this.range, range))
   }
   async objectGet(id) {
     return await (await this.tableReader.table).objectGet(id)

@@ -31,7 +31,7 @@
     "@live-change/db-server": "0.9.106",
     "@live-change/framework": "0.9.106",
     "@live-change/server": "0.9.106",
-    "dotenv": "^16.4.4",
+    "dotenv": "^16.5.0",
     "express": "^4.18.2",
     "http-proxy-middleware": "2.0.6",
     "resolve": "^1.22.8",

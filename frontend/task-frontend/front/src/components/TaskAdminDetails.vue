@@ -110,12 +110,30 @@
         </div>
     </div>
 
-    <div v-if="childTasks.length" class="mt-2">
+    <div class="mt-2">
+      <div class="font-semibold">Subtasks:</div>
+      <range-viewer :pathFunction="tasksPathFunction" :key="JSON.stringify(tasksPathConfig)"
+                  :canLoadTop="false" :canDropBottom="false"
+                  loadBottomSensorSize="3000px" dropBottomSensorSize="12000px">
+        <template #empty>
+          <div class="bg-surface-0 dark:bg-surface-900 p-3 shadow text-center text-gray-500 text-lg">
+            No subtasks found...
+          </div>
+        </template>
+
+        <template #default="{ item: task }">     
+          <TaskAdminCard :task="task" class="mt-1"  />
+        </template>
+      </range-viewer>
+    </div>    
+    
+
+    <!-- <div v-if="childTasks.length" class="mt-2">
       <div class="font-semibold">Subtasks:</div>
       <div v-for="subtask in childTasks" :key="subtask.id" class="mt-2">
-        <TaskAdminCard :task="subtask" :tasks="tasks" :taskTypes="taskTypes" />
+        <TaskAdminCard :task="subtask" :tasks="tasks" :taskTypes="taskTypes" />        
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -124,6 +142,7 @@
   import ProgressBar from 'primevue/progressbar'
   import TaskAdminCard from './TaskAdminCard.vue'
   import TaskRetry from './TaskRetry.vue'
+  import { RangeViewer } from "@live-change/vue3-components"
 
   import { useI18n } from 'vue-i18n'
   const { d } = useI18n()
@@ -133,24 +152,41 @@
       type: Object,
       required: true
     },
-    tasks: {
+/*     tasks: {
       type: Array,
       default: () => []
-    },
+    }, */
     taskTypes: {
       type: Object,
       default: () => ({})
     }
   })
 
-  const taskId = computed(() => props.task?.to || props.task?.id || props.task)
+  /* const taskId = computed(() => props.task?.to || props.task?.id || props.task) */
 
-  const taskData = computed(() => props.tasks.find(t => t.to === taskId.value || t.id === taskId.value))
+  const taskData = computed(() => props.task)//tasks.find(t => t.to === taskId.value || t.id === taskId.value))
 
-  const childTasks = computed(() => {
+/*   const childTasks = computed(() => {
     return props.tasks.filter(t => t.causeType === "task_Task" && t.cause === taskId.value)
-  })
+  }) */
 
+  const taskId = computed(() => props.task?.to ?? props.task?.id)
+
+  import { usePath, live, useClient, useActions, reverseRange, useApi } from '@live-change/vue3-ssr'
+  const path = usePath()
+  const client = useClient()
+  const actions = useActions()
+  const api = useApi()
+
+  const tasksPathConfig = computed(() => ({
+    causeType: 'task_Task',
+    cause: taskId.value
+  }))
+
+  const tasksPathFunction = computed(() => (range) => 
+    path.task.tasksByCauseAndStart({ ...tasksPathConfig.value, ...reverseRange(range) })
+  )
+  
   const isResultExpanded = ref(false)
   const isPropertiesExpanded = ref(false)
   

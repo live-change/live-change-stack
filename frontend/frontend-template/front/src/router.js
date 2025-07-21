@@ -9,6 +9,8 @@ import {
 } from '@live-change/vue3-components'
 
 import { dbAdminRoutes } from "@live-change/db-admin"
+import { autoFormRoutes } from "@live-change/frontend-auto-form"
+import { taskAdminRoutes } from "@live-change/task-frontend"
 import { userRoutes } from "@live-change/user-frontend"
 import { catchAllPagesRoute, contentEditRoutes, pagesSitemap } from "@live-change/content-frontend"
 
@@ -18,6 +20,7 @@ export function routes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
     ...userRoutes({ ...config, prefix: prefix + 'user/' }),
+    ...autoFormRoutes({ ...config, prefix: prefix + 'auto-form' }),
 
     route({
       name: 'index', path: prefix, meta: { },
@@ -28,6 +31,7 @@ export function routes(config = {}) {
 
     ...contentEditRoutes({ ...config }),
 
+    ...taskAdminRoutes({ ...config, prefix: '/_task' }),
     ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
     ...catchAllPagesRoute({ ...config }),
   ]

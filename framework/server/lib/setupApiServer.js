@@ -23,8 +23,8 @@ async function setupApiServer(settings) {
 
   if(updateServices) await services.update()
   await services.start(withServices
-      ? { runCommands: true, handleEvents: true, indexSearch: true }
-      : { runCommands: false, handleEvents: false, indexSearch: false })
+      ? { runCommands: true, handleEvents: true, indexSearch: true, stopped: settings.stopped }
+      : { runCommands: false, handleEvents: false, indexSearch: false, stopped: true })
 
   if(settings.initScript) {
     if(config.init) {

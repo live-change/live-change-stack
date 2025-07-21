@@ -51,8 +51,8 @@ class RangeReader extends ChangeStream {
   }
   unobserve(obs) {}
   onDelete(cb) {}
-  async get() {
-    return await (await this.#table).rangeGet(this.#range)
+  async get(range = {}) {
+    return await (await this.#table).rangeGet(rangeIntersection(this.#range, range))
   }
 
   async rangeGet(range) {
@@ -90,7 +90,7 @@ class TableReader extends ChangeStream {
       results = results.concat(await Promise.all(objects.map(object => cb(object, null, object.id, this.#time()))))
       if(objects.length === maxGetLimit)  {
         range.gt = objects[objects.length - 1].id
-        console.log("READING", this.#table.name, "MORE", range)
+        //console.log("READING", this.#table.name, "MORE", range)
       } else {
         break // all processed
       }
@@ -100,6 +100,9 @@ class TableReader extends ChangeStream {
   unobserve(obs) {}
   async rangeGet(range) {
     return (await this.#table).rangeGet(range)
+  }
+  async get(range = {}) {
+    return await (await this.#table).rangeGet(range)
   }
   range(range) {
     return new RangeReader(this.#table, range, this.#time)

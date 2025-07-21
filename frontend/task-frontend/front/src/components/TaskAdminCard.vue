@@ -26,7 +26,8 @@
     </div>
     
     <div v-if="isExpanded">
-      <TaskAdminDetails :task="task" :tasks="tasks" :taskTypes="taskTypes" />
+      <!-- <TaskAdminDetails :task="task" :tasks="tasks" :taskTypes="taskTypes" /> -->
+      <TaskAdminDetails :task="task" :taskTypes="taskTypes" />
     </div>
   </div>
 </template>
@@ -47,19 +48,19 @@
       type: Object,
       required: true
     },
-    tasks: {
+ /*    tasks: {
       type: Array,
       default: () => []
-    },
+    }, */
     taskTypes: {
       type: Object,
       default: () => ({})
     }
   })
 
-  const taskId = computed(() => props.task?.to || props.task?.id || props.task)
+  /* const taskId = computed(() => props.task?.to || props.task?.id || props.task) */
 
-  const taskData = computed(() => props.tasks.find(t => t.to === taskId.value || t.id === taskId.value))
+  const taskData = computed(() => props.task)//s.find(t => t.to === taskId.value || t.id === taskId.value))
 
   const isExpanded = ref(false)
 

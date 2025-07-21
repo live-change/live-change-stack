@@ -214,7 +214,7 @@ if(config.indexed) {
       async function iterate(index, prefix, cb) {
         let position = prefix + ':'
         while(true) {
-          const bucket = await index.get({
+          const bucket = await index.rangeGet({
             gt: position,
             lte: prefix + '_\xFF\xFF\xFF\xFF',
             limit: bucketSize

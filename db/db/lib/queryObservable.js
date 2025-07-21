@@ -166,8 +166,8 @@ class RangeReader extends Reader {
   onChange(cb) {
     return this.startObserver((r) => new RangeObserver(r, cb))
   }
-  async get() {
-    return await (await this.#table).rangeGet(this.#range)
+  async get(range = {}) {
+    return await (await this.#table).rangeGet(rangeIntersection(this.#range, range))
   }
   async rangeGet(range) {
     return await this.#tableReader.rangeGet(rangeIntersection(this.#range, range))

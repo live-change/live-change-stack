@@ -104,6 +104,10 @@ export function apiServerOptions(yargs) {
     description: 'run init script',
     type: 'string'
   })
+  yargs.option('stopped', {
+    describe: 'start everything without calling afterStart callbacks',
+    type: 'boolean'
+  })
 }
 
 export function ssrServerOptions(yargs) {

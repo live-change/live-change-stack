@@ -99,6 +99,9 @@ const Task = definition.model({
     byCauseAndState: {
       property: ['causeType', 'cause', 'state']
     },
+    byCauseAndStart: {
+      property: ['causeType', 'cause', 'startedAt']
+    },
     byState: {
       property: ['state']
     },
@@ -185,7 +188,7 @@ const Task = definition.model({
       function: async function(input, output, { tableName }) {
         function mapFunction(obj) {
           if(!obj) return null
-          if(['done', 'failed', 'canceled'].includes(obj.state)) return null
+          if(['done', 'failed', 'canceled', 'fallbackDone'].includes(obj.state)) return null
           if(obj.causeType === tableName) return null
           return { id: `"${obj.name}"_${obj.id}`, to: obj.id }
         }
@@ -259,6 +262,31 @@ definition.view({
   async daoPath({ causeType, cause, hash }) {
     /// TODO: add expireDate to range
     return Task.indexRangePath('byCauseAndHash', [causeType, cause, hash], { limit: 23, reverse: true })
+  }
+})
+
+definition.view({
+  name: 'tasksByCauseAndStart',
+  internal: true,
+  properties: {
+    causeType: {
+      type: String
+    },
+    cause: {
+      type: String
+    },
+    ...App.rangeProperties
+  },
+  returns: {
+    type: Array,
+    of: {
+      type: Task
+    }
+  },
+  async daoPath(props) {
+    const { causeType, cause } = props
+    const range = App.extractRange(props)
+    return Task.sortedIndexRangePath('byCauseAndStart', [causeType, cause], range)
   }
 })
 

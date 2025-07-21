@@ -30,7 +30,8 @@
       </template>
 
       <template #default="{ item: task }">     
-        <TaskAdminCard :task="task" :tasks="task.subTasks" class="mt-1"  />
+        <!-- <TaskAdminCard :task="task" :tasks="task.subTasks" class="mt-1"  /> -->
+        <TaskAdminCard :task="task" class="mt-1"  />
       </template>
     </range-viewer>
     
@@ -72,10 +73,10 @@
 
   const tasksPathFunction = computed(() => (range) => 
     path.task.independentTasks({ ...tasksPathConfig.value, ...reverseRange(range) })
-      .with(task => path.task.tasksByRoot({
-         rootType: 'task_Task',
-         root: task.id//{ or: [task.to, task.id]} 
-        }).bind('subTasks'))
+/*       .with(task => path.task.tasksByRoot({
+        rootType: 'task_Task',
+        root: task.id//{ or: [task.to, task.id]} 
+      }).bind('subTasks')) */
      
   )
 
