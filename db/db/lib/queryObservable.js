@@ -1,5 +1,6 @@
 import ReactiveDao from "@live-change/dao"
 import { ChangeStream } from './ChangeStream.js'
+import { unitRange, rangeIntersection } from './utils.js'
 
 class ObjectObserver {
   #callback = null

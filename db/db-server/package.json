@@ -29,6 +29,10 @@
   "type": "module",
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",
+    "vite-plugin-checker": "^0.6.4",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-pages": "^0.32.2",
+    "vite-plugin-vue-images": "^0.6.1",
     "copyfiles": "^2.4.1",
     "tape": "^5.7.4"
   },

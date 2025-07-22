@@ -45,7 +45,6 @@
 
 <script setup>
   import InputMask from "primevue/inputmask"
-  import InputOtp from "primevue/inputotp"
   import Button from "primevue/button"
   import Message from "primevue/message"
 

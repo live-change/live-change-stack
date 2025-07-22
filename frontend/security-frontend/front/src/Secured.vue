@@ -52,20 +52,21 @@
     }
   })
 
-  import { DateTime } from 'luxon'
-  import { useTimestamp } from '@vueuse/core'
-  const now = useTimestamp({ interval: 1000 })
-  const nowISO = computed(() => new Date(now.value).toISOString())
-
   import { provide, computed } from 'vue'
-  import { live, path } from '@live-change/vue3-ssr'
+
+  import { DateTime } from 'luxon'
+  import { currentTime } from "@live-change/frontend-base";
+  const nowISO = computed(() => new Date(currentTime.value).toISOString())
+
+  import { live, usePath } from '@live-change/vue3-ssr'
+  const path = usePath()
 
   const [ bansState, countersState ] = await Promise.all([
     live(
-      path().security.myActionsBansByTypes({ actions, types: ['captcha', 'block'] })
+      path.security.myActionsBansByTypes({ actions, types: ['captcha', 'block'] })
     ),
     live(
-      path().security.myCountersState({ events })
+      path.security.myCountersState({ events })
     )
   ])
 
