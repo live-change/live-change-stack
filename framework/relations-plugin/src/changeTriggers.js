@@ -2,10 +2,13 @@ import { extractObjectData, extractIdentifiers } from "./dataUtils.js"
 import {
   TriggerDefinition
 } from "@live-change/framework"
+import assert from "assert"
 
 async function fireChangeTriggers(context, objectType, identifiers, object, oldData, data,
-     trigger = (...args) => app.trigger(...args)) {
+     trigger) {  
   const { service, modelName, app } = context
+  //if(!trigger) trigger = (...args) => app.trigger(...args)
+  assert(trigger, "trigger is required")
   const changeType = data ? (oldData ? 'update' : 'create') : 'delete'
   //console.log("FIRE CHANGE TRIGGERS", { context, objectType, identifiers, object, oldData, data })
   //console.trace()
@@ -31,6 +34,12 @@ async function iterateChildren(context, propertyName, path, cb) {
     service, modelRuntime, objectType: myType, writeableProperties, modelName,
     reverseRelationWord, app, otherPropertyNames, sameIdAsParent
   } = context
+  assert(modelRuntime, "modelRuntime is required")
+  assert(modelRuntime().sortedIndexRangeGet, "sortedIndexRangeGet is required")
+  assert(modelRuntime().get, "get is required")
+  assert(propertyName, "propertyName is required")
+  assert(path, "path is required")
+  assert(cb, "cb is required")
   if(sameIdAsParent) {
     const entity = await modelRuntime().get(path)
     if(entity) await cb(entity)
@@ -47,15 +56,16 @@ async function iterateChildren(context, propertyName, path, cb) {
       //console.log("BUCKET", bucket)
       if(bucket.length === 0) break
       gt = bucket[bucket.length - 1].id
-      const copyTriggerPromises = bucket.map(entity => cb({ ...entity, id: entity.to }))
-      await Promise.all(copyTriggerPromises)
+      const triggerPromises = bucket.map(entity => cb({ ...entity, id: entity.to }))
+      await Promise.all(triggerPromises)
     } while (bucket.length === bucketSize)
   }
 }
 
 
 async function triggerDeleteOnParentDeleteTriggers(
-    context, propertyName, path, objectType, object, emit) {
+    context, propertyName, path, objectType, object, emit, trigger) {
+  assert(trigger, "trigger is required")
   const {
     service, modelRuntime, objectType: myType, writeableProperties, modelName,
     reverseRelationWord, otherPropertyNames
@@ -66,7 +76,7 @@ async function triggerDeleteOnParentDeleteTriggers(
     found = true
     const identifiers = extractIdentifiers(otherPropertyNames, entity)
     await fireChangeTriggers(context, myType, identifiers, entity.id,
-        extractObjectData(writeableProperties, entity, {}), null)
+        extractObjectData(writeableProperties, entity, {}), null, trigger)
   })
   if (found) {
     const eventName = modelName + 'DeleteByOwner'
@@ -80,12 +90,15 @@ async function triggerDeleteOnParentDeleteTriggers(
 
 function registerParentDeleteTriggers(context, config) {
   const {
-    service, parentsTypes, otherPropertyNames,
+    service, parentsTypes, otherPropertyNames, isAny
   } = context
-  if(parentsTypes) {
+  if(parentsTypes && !isAny) {
     for (const index in parentsTypes) {
+      assert(otherPropertyNames.length === parentsTypes.length, "otherPropertyNames.length === parentsTypes.length")
       const otherType = parentsTypes[index]
       const propertyName = otherPropertyNames[index]
+      assert(propertyName, "propertyName is required")
+      assert(otherType, "otherType is required")
       const triggerName = 'delete' + otherType[0].toUpperCase() + otherType.slice(1)
       if (!service.triggers[triggerName]) service.triggers[triggerName] = []
       service.triggers[triggerName].push(new TriggerDefinition({
@@ -96,9 +109,9 @@ function registerParentDeleteTriggers(context, config) {
           }
         },
         timeout: config.parentDeleteTriggerTimeout,
-        async execute({object}, {client, service}, emit) {
+        async execute({object}, {client, service, trigger}, emit) {
           await triggerDeleteOnParentDeleteTriggers(context, propertyName, [object],
-              otherType, object, emit)
+              otherType, object, emit, trigger)
         }
       }))
     }
@@ -116,10 +129,10 @@ function registerParentDeleteTriggers(context, config) {
         }
       },
       timeout: config.parentDeleteTriggerTimeout,
-      async execute({ objectType, object }, {client, service}, emit) {
+      async execute({ objectType, object }, {client, service, trigger}, emit) {
         for(const propertyName of otherPropertyNames) {
           await triggerDeleteOnParentDeleteTriggers(context, propertyName, [objectType, object],
-              objectType, object, emit)
+              objectType, object, emit, trigger)
         }
       }
     }))

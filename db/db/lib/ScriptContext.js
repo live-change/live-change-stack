@@ -2,6 +2,7 @@ import vm from 'vm'
 import crypto from 'crypto'
 import { ChangeStreamPipe } from './ChangeStream.js'
 import pref_hooks from 'perf_hooks'
+import { rangeIntersection, rangeUnion, unitRange, prefixRange } from './utils.js'
 
 const defaultNativeGlobals = [
   'Array', 'ArrayBuffer',
@@ -35,6 +36,10 @@ const defaultContext = {
   pipe() {
     return new ChangeStreamPipe()
   },
+  rangeIntersection,
+  rangeUnion,
+  unitRange,
+  prefixRange,
   'performance': pref_hooks.performance,
   constructor: null
 }

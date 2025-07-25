@@ -8,7 +8,7 @@ const secretProperties = {
     secret: true,
     preFilter: config.passwordHash ||
       (password => password && crypto.createHash('sha256').update(password).digest('hex')),
-    validation: config.passwordValidation || ['password']
+    validation: ['nonEmpty', ...(config.passwordValidation || ['password'])]
   },
 }
 

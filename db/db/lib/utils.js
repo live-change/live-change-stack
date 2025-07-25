@@ -39,3 +39,10 @@ export function unitRange(id) {
     limit: 1
   }
 }
+
+export function prefixRange(prefix) {
+  return {
+    gte: prefix + ':',
+    lte: prefix + '\uffff'
+  }
+}

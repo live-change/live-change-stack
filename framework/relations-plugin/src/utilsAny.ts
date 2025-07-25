@@ -117,6 +117,7 @@ interface AnyRelationContext {
   partialReverseRelationWord?: string,
   identifiers?: Record<string, PropertyDefinition<PropertyDefinitionSpecification>>
   sameIdAsParent?: boolean
+  isAny: true
 }
 
 export function processModelsAnyAnnotation<PreparedConfig extends AnyRelationConfig>
@@ -190,7 +191,7 @@ export function processModelsAnyAnnotation<PreparedConfig extends AnyRelationCon
           annotation,
           service, app, model, originalModelProperties, modelProperties, modelPropertyName, modelRuntime,
           otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others,
-          objectType, parentsTypes, otherPossibleTypes
+          objectType, parentsTypes, otherPossibleTypes, isAny: true
         }
 
         cb(config, context)
