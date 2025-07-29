@@ -85,7 +85,7 @@ definition.trigger({
     console.log("OFFLINE ACCESS", offlineAccess)
     if(offlineAccess) {
       await triggerService({
-        type: 'googleAuthentication_resetOfflineAccess',
+        type: 'googleAuthentication_deleteOfflineAccess',
         service: definition.name
       }, {
         offlineAccess: offlineAccess.to ?? offlineAccess.id

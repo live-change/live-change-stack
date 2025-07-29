@@ -1,23 +1,30 @@
 <template>
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
 
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUnknown">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUnknown && !isRedirecting">
       <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Unknown link</div>
-      <p class="mt-0 mb-2 p-0 leading-normal">We can't find your secret link. Check if you copied the address correctly.</p>
+      <p class="mt-0 mb-2 p-0 leading-normal">
+        We can't find your secret link. Check if you copied the address correctly.
+      </p>
     </div>
 
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUsed">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUsed && !isRedirecting">
       <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Link used</div>
-      <p class="mt-0 mb-2 p-0 leading-normal">This link was already used.</p>
+      <p class="mt-0 mb-2 p-0 leading-normal">
+        This link was already used.
+      </p>
     </div>
 
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isExpired && !isUsed">
+    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isExpired && !isUsed && !isRedirecting">
       <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Link expired</div>
-      <p class="mt-0 mb-6 p-0 leading-normal">Your secret link already expired. To send another link click button below.</p>
+      <p class="mt-0 mb-6 p-0 leading-normal">
+        Your secret link already expired. To send another link click button below.
+      </p>
       <Button label="Resend" class="p-button-lg" @click="resend"></Button>
     </div>
 
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6 flex justify-center" v-if="isReady">
+    <div v-if="isReady || isRedirecting" 
+         class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6 flex justify-center">      
       <ProgressSpinner class="m-4" />
     </div>
   </div>
@@ -27,7 +34,7 @@
   import Button from "primevue/button"
   import ProgressSpinner from "primevue/progressspinner"
 
-  import { computed, inject } from 'vue'
+  import { computed, inject, ref } from 'vue'
   import { useRouter } from 'vue-router'
   import { useNow } from '@vueuse/core'
   import { path, live, actions } from '@live-change/vue3-ssr'
@@ -75,23 +82,30 @@
   const isUnknown = computed(() => link.value === null)
   const isExpired = computed(() => link.value ? (now.value.toISOString() > link.value.expire) : false )
   const isUsed = computed(() => authenticationState.value && authenticationState.value === 'used')
-  const isReady = computed(() => !(isUnknown.value || isExpired.value || isUsed.value))
+  const isReady = computed(() => !(isUnknown.value || isExpired.value || isUsed.value))  
 
   //const targetPage = computed(() => link.value?.authenticationData?.targetPage )
 
+  const isRedirecting = ref(false)
+
   if(typeof window != 'undefined') setTimeout(() => { /// timeout "fixes" suspense bug
+    console.log("LINK", link.value)
     if(isReady.value) {
       workingZone.addPromise('finishMessageAuthentication', (async () => {
         const { result, targetPage } = await finishMessageAuthentication({ secretType: 'link', secret: secretCode })
         router.push(targetPage)
       })())
+      isRedirecting.value = true
+      return
     }
     if(isUsed.value || isExpired.value) {
+      console.log("LINK USED IS USED!", link)
       const fallbackPage = link.value?.authenticationData?.fallbackPage
       console.log("FB", fallbackPage)
       if(fallbackPage) {
         const error = isUsed.value ? 'used' : 'expired'
         router.push({ ...fallbackPage, params: { ...fallbackPage.params, error } })
+        isRedirecting.value = true
       }
     }
   }, 10)

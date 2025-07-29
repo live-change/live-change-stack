@@ -55,7 +55,7 @@ function defineObjectView(config, context, external = true) {
     accessControl,
     daoPath(properties, { client, context }) {
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
-      const id = typeAndIdParts.length > 1 ? typeAndIdParts.map(p => JSON.stringify(p)).join(':') : idParts[0]
+      const id = typeAndIdParts.length > 1 ? typeAndIdParts.map(p => JSON.stringify(p)).join(':') : typeAndIdParts[0]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
       return path
     }
