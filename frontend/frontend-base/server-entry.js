@@ -9,13 +9,13 @@ import { renderHeadToString } from "@vueuse/head"
 import { Theme } from '@primeuix/styled'
 import { Base, BaseStyle } from '@primevue/core'
 
-function escapeHtml(unsafe) {
-  return (''+unsafe)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+import * as primeVue from 'primevue'
+const components = {}
+for(const name in primeVue) {
+  const object = primeVue[name]
+  if(object.style) {
+    components[object.name] = object
+  }
 }
 
 export function serverEntry(App, createRouter, config = {}) {
@@ -75,8 +75,10 @@ export function serverEntry(App, createRouter, config = {}) {
     for(const name of usedStyles) {
       styleSheets.push(Theme.getStyleSheet(name))
       try {
-        const styleObject = await import(/* @vite-ignore */`primevue/${name}/style`)
-        styleSheets.push(styleObject.default.getThemeStyleSheet())
+        //const styleObject = await import(/* @vite-ignore */`primevue/${name}/style`)
+        const component = components[name]
+        //console.log("COMPONENT", component)
+        styleSheets.push(component.getThemeStyleSheet())        
       } catch (e) {
         console.error('Error loading '+name+' style', e)
       }
