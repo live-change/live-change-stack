@@ -5,7 +5,9 @@
     "codeNotFound": "Secret code not recognized.",
     "codeExpired": "Secret code expired.",
     "wrongPassword": "Wrong password.",
-    "emailNotFound": "Email not found."
+    "emailNotFound": "Email not found.",
+    "unsafePassword": "Password is unsafe, try to use a stronger one.",
+    "passwordNotMatch": "Passwords do not match."
   },
   "app": {
     "updateAvailable": "Update available!",

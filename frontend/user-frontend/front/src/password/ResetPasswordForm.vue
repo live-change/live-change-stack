@@ -15,14 +15,15 @@
       <p class="mt-0 mb-6 p-0 leading-normal">Your password reset authentication already expired.</p>
     </div>
 
-    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border" v-if="isReady">
+    <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border" v-if="isReady || working">
       <div class="text-center mb-8">
         <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Reset password</div>
       </div>
 
       <command-form service="passwordAuthentication" action="finishResetPassword" v-slot="{ data }"
                     :parameters="{ key: resetKey }" ref="form"
-                    @done="handleDone" keepOnDone>
+                    @done="handleDone" keepOnDone
+                    @submit="handleSubmit" @error="handleError">
 
         <template v-if="isMounted">
           <div class="p-field mb-4">
@@ -59,6 +60,10 @@
 
       </command-form>
     </div>
+    <div v-if="redirecting" 
+         class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6 flex justify-center">      
+      <ProgressSpinner class="m-4" />
+    </div>
   </div>
 </template>
 
@@ -76,6 +81,9 @@
       required: true
     }
   })
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   import { useNow } from '@vueuse/core'
   const now = useNow({ interval: 1000 })
@@ -102,14 +110,27 @@
     live( path().passwordAuthentication.resetPasswordAuthenticationByKey({ key: resetKey }) )
   ])
 
+  const working = ref(false)
+  const redirecting = ref(false)
+
   const isUnknown = computed(() => authentication.value === null)
   const isExpired = computed(() =>
       authentication.value ? (now.value.toISOString() > authentication.value.expire) : false )
-  const isUsed = computed(() => authentication.value && authentication.value.state === 'used')
-  const isReady = computed(() => !(isUnknown.value || isExpired.value || isUsed.value))
+  const isUsed = computed(() => !working.value && !redirecting.value && authentication.value && authentication.value.state === 'used')
+  const isReady = computed(() => !(isUnknown.value || isExpired.value || isUsed.value))  
+
+  function handleSubmit() {
+    working.value = true    
+  }
+
+  function handleError() {
+    working.value = false
+  }
 
   function handleDone({ parameters, result }) {
     console.log("DONE RESULT", result)
+    redirecting.value = true
+    working.value = false
     router.push({
       name: 'user:resetPasswordFinished'
     })
