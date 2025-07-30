@@ -44,7 +44,7 @@ class DaoPrerenderCache {
     }
     if(this.mode === 'save') {
       observable = new ObservableValue()
-      this.get(what).then(value => {
+      Promise.resolve(this.get(what)).then(value => {
         if(value && typeof value === 'object') value[sourceSymbol] = what
         observable.set(value)      
       }).catch(error => observable.error(error))
@@ -92,7 +92,7 @@ class DaoPrerenderCache {
 
     if(this.mode === 'save') {
       if(!promise) throw new Error("GET NOT FOUND: "+what)
-      promise.then(result => {
+      Promise.resolve(promise).then(result => {
         let observable = this.observables.get(cacheKey)
         if(observable) {
           if(typeof observable == 'function') {
@@ -122,7 +122,7 @@ class DaoPrerenderCache {
       })
     }
     
-    return promise.then(data => {
+    return Promise.resolve(promise).then(data => {
       if(data && typeof data === 'object') data[sourceSymbol] = what
       return data
     })

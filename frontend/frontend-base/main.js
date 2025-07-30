@@ -100,9 +100,17 @@ export async function createApp(config, api, App, createRouter, host, headers, r
     ...config.i18n
   })
 
-  if(typeof window !== 'undefined') { 
+  /* console.log("I18N CONFIG", {
+    legacy: false,
+    locale: userLocale?.language ?? selectedLocale,
+    fallbackLocale: config.fallbackLocale || defaultLocale,
+    ...config.i18n
+  }) */
+
+
+/*   if(typeof window !== 'undefined') { 
     window.i18n = i18n
-  }
+  } */
 
   app.use(i18n)
 

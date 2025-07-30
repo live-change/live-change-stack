@@ -41,7 +41,9 @@
         <template v-if="isMounted">
 
           <div class="p-field mb-4">
-            <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">New password</label>
+            <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
+              New password
+            </label>
             <Password id="newPassword" class="w-full" inputClass="w-full"
                       toggleMask v-model:masked="masked"
                       :invalid="!!data.passwordHashError"
@@ -101,6 +103,9 @@
   import { useRouter } from 'vue-router'
   const router = useRouter()
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
 
@@ -108,6 +113,14 @@
   const form = ref()
 
   const masked = ref(true)
+
+  onMounted(() => {
+    form.value.addValidator('passwordHash', () => {
+      const value = form.value.getFieldValue('passwordHash')
+      console.log("PASSWORDS MATCH?", secondPassword.value, value)
+      if(value !== secondPassword.value) return "passwordNotMatch"
+    })
+  })
 
   import { useToast } from 'primevue/usetoast'
   const toast = useToast()

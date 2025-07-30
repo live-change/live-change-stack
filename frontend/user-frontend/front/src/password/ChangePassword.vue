@@ -95,7 +95,7 @@
     form.value.addValidator('passwordHash', () => {
       const value = form.value.getFieldValue('passwordHash')
       console.log("PASSWORDS MATCH?", secondPassword.value, value)
-      if(value !== secondPassword.value) return "passwordsNotMatch"
+      if(value !== secondPassword.value) return "passwordNotMatch"
     })
   })
 
