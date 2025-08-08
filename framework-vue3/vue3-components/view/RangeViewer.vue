@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <component :is="tag">
 
     <scroll-border placement="top"
                    key="top-scroll-border"
@@ -44,7 +44,7 @@
                    :dropDelay="loadBottomDelay"
     />
 
-  </div>
+  </component>
 </template>
 
 <script setup>
@@ -125,7 +125,11 @@
     frozen: {
       type: Boolean,
       default: false
-    }
+    },
+    tag: {
+      type: String,
+      default: 'div'
+    },
   })
 
   const {
