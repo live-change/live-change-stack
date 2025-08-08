@@ -32,17 +32,33 @@
 
       </div>
 
-      <div v-if="connectedActions" 
-              class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6">
-        <div class="text-xl mb-3">
-          Actions
+      <div class="flex flex-row flex-wrap gap-2">
+        <div v-if="connectedActions" 
+                class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6 flex-1 flex-grow">
+          <div class="text-xl mb-3">
+            Actions
+          </div>
+          <div class="flex flex-row flex-wrap gap-2">
+            <div v-for="action of connectedActions" class="mb-0">
+              <!-- <pre>{{ action }}</pre> -->
+              <router-link :to="actionRoute(action)">
+                <Button :label="action.label" icon="pi pi-play" class="p-button mb-0" />
+              </router-link>
+            </div>
+          </div>
         </div>
-        <div class="flex flex-row flex-wrap gap-2">
-          <div v-for="action of connectedActions" class="mb-0">
-            <!-- <pre>{{ action }}</pre> -->
-            <router-link :to="actionRoute(action)">
-              <Button :label="action.label" icon="pi pi-play" class="p-button mb-0" />
-            </router-link>
+        <div v-if="connectedPages" 
+                class="bg-surface-0 dark:bg-surface-900 p-4 shadow-sm rounded-border mb-6 flex-1 flex-grow">
+          <div class="text-xl mb-3">
+            Pages
+          </div>
+          <div class="flex flex-row flex-wrap gap-2">
+            <div v-for="page of connectedPages" class="mb-0">
+              <!-- <pre>{{ action }}</pre> -->
+              <router-link :to="pageRoute(page)">
+                <Button :label="page.label" icon="pi pi-external-link" class="p-button mb-0" />
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -207,6 +223,17 @@
     })
   })
 
+  const connectedPages = computed(() => {
+    const srcPages = modelDefinition.value?.connectedPages
+    if(!srcPages) return null
+    return Object.values(srcPages).map(page => {
+      return {
+        ...page,
+        label: page.label ?? page.name
+      }
+    })
+  })
+
   import { getForwardRelations, getBackwardRelations, anyRelationsTypes, prepareObjectRelations } 
     from '../../logic/relations.js'
   const forwardRelations = computed(() => getForwardRelations(modelDefinition.value, () => true, api))
@@ -297,6 +324,17 @@
     }
   }
 
+  function pageRoute(page) {
+    const modelName = model.value
+    const modelProperty = modelName[0].toLowerCase() + modelName.slice(1)
+    return {
+      name: page.name,
+      params: {
+        ...page.params,
+        [modelProperty]: object.value.to ?? object.value.id
+      }
+    }
+  }
 </script>
 
 <style scoped>
