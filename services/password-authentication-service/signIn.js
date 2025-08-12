@@ -26,7 +26,7 @@ for(const contactType of config.contactTypes) {
     waitForEvents: true,
     properties: {
       ...contactTypeProperties,
-      ...secretProperties
+      ...secretProperties(false)
     },
     async execute({ [contactTypeName]: contact, passwordHash }, { client, service }, emit) {
       const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })

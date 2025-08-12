@@ -5,7 +5,7 @@ definition.action({
   name: 'setPassword',
   waitForEvents: true,
   properties: {
-    ...secretProperties
+    ...secretProperties(true)
   },
   access: (params, { client }) => {
     return !!client.user
@@ -25,8 +25,8 @@ definition.action({
   name: 'changePassword',
   waitForEvents: true,
   properties: {
-    currentPasswordHash: secretProperties.passwordHash,
-    ...secretProperties
+    currentPasswordHash: secretProperties(true).passwordHash,
+    ...secretProperties(true)
   },
   access: (params, { client }) => {
     return !!client.user

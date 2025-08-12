@@ -135,7 +135,7 @@ definition.action({
       type: String,
       validation: ['nonEmpty']
     },
-    ...secretProperties
+    ...secretProperties(true)
   },
   async execute({ key, passwordHash }, { client, service }, emit) {
     const resetPasswordAuthenticationData = await ResetPasswordAuthentication.indexObjectGet('byKey', key)
