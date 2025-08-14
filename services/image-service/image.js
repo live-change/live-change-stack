@@ -22,6 +22,7 @@ const cropInfo = {
 const Image = definition.model({
   name: "Image",
   itemOfAny: {
+    readAccess: () => true,
   },
   properties: {
     name: {

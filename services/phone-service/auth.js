@@ -204,7 +204,7 @@ definition.trigger({
   properties: {
     user: {
       type: User,
-      validation: ['nonEmpty', 'phone']
+      validation: ['nonEmpty']
     }
   },
   async execute({ user }, context, emit) {

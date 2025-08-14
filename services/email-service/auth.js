@@ -165,7 +165,7 @@ definition.trigger({
     }
   },
   async execute({ user, email }, { client, service }, emit) {
-    email = preFilter(email)
+    email = preFilter(email)    
     const emailData = await Email.get(email)
     if(!emailData) throw { properties: { email: 'emailNotFound' } }
     if(emailData.user !== user) throw { properties: { email: 'emailNotFound' } }
@@ -201,7 +201,7 @@ definition.trigger({
   properties: {
     user: {
       type: User,
-      validation: ['nonEmpty', 'email']
+      validation: ['nonEmpty']
     }
   },
   async execute({ user }, context, _emit) {

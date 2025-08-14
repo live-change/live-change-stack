@@ -7,19 +7,19 @@ export function routes(config = {}) {
       component: () => import("./Connected.vue"), meta: { signedIn: true } }),
 
     route({ name: 'user:connect-email', path: prefix + 'connect-email',
-      component: () => import("./ConnectEmail.vue") }),
+      component: () => import("./ConnectEmail.vue"), meta: { signedIn: true } }),
     route({ name: 'user:connect-phone', path: prefix + 'connect-phone',
-      component: () => import("./ConnectPhone.vue") }),
+      component: () => import("./ConnectPhone.vue"), meta: { signedIn: true } }),
 
     /// redirect user:connect-google to google auth
     route({ name: 'user:connect-google', path: prefix + 'connect-google',
-      redirect: { name: 'user:googleAuth', params: { action: 'connectGoogle' } } }),
+      redirect: { name: 'user:googleAuth', params: { action: 'connectGoogle' } }, meta: { signedIn: true } }),
 
     route({ name: 'user:connect-linkedin', path: prefix + 'connect-linkedin',
-      redirect: { name: 'user:linkedinAuth', params: { action: 'connectLinkedin' } } }),
+      redirect: { name: 'user:linkedinAuth', params: { action: 'connectLinkedin' } }, meta: { signedIn: true } }),
 
     route({ name: 'user:connectFinished', path: prefix + 'connect-finished',
-      component: () => import("./ConnectFinished.vue") }),
+      component: () => import("./ConnectFinished.vue"), meta: { signedIn: true } }),
 
   ]
 }
