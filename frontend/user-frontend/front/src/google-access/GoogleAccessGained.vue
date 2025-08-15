@@ -40,20 +40,46 @@
   import { useRouter } from 'vue-router'
   const router = useRouter()
 
-  import { usePath, live } from "@live-change/vue3-ssr"
+  import { usePath, live, useApi } from "@live-change/vue3-ssr"
+  const api = useApi()
+
+  const userClientConfig = api.getServiceDefinition('user')?.clientConfig
 
   import pluralize from 'pluralize'
 
-  const afterGoogleAccessGained = computed( () => isMounted.value && localStorage.afterGoogleAccessGained )
-  let redirectTime
-  onMounted(() => {
-    redirectTime = new Date(Date.now() + 10 * 1000)
-    setTimeout(() => {
-      if (afterGoogleAccessGained.value) {
-        localStorage.removeItem('afterGoogleAccessGained')
-        router.push(JSON.parse(afterGoogleAccessGained.value))
+  const afterGoogleAccessGained = ref()
+  const redirectTime = ref()
+  let redirectTimeout
+  function doRedirect() {
+    if(localStorage.afterGoogleAccessGained) {
+      const route = JSON.parse(localStorage.afterGoogleAccessGained)
+      localStorage.removeItem('afterGoogleAccessGained')
+      const delay = route?.meta?.afterGoogleAccessGainedRedirectDelay
+                 ?? userClientConfig?.afterGoogleAccessGainedRedirectDelay 
+                 ?? 10
+      delete route.meta
+      afterGoogleAccessGained.value = route
+      if(delay) {
+        redirectTime.value = new Date(Date.now() + delay * 1000).getTime()
+        redirectTimeout = setTimeout(() => {
+          if(!finished) router.push(route)
+        }, redirectTime.value - currentTime.value)
+      } else {
+        setTimeout(() => { // it could be next tick
+          toast.add({
+            severity: 'info', life: 6000,
+            summary: 'Signed in',
+            detail: 'Congratulations! You have successfully logged in to your account.'
+          })
+          router.push(route)
+        }, 100)
       }
-    }, redirectTime - Date.now())
+    }
+  }
+  let finished = false
+  
+  onMounted(() => {
+    if(!finished) doRedirect()
   })
 
   const path = usePath()

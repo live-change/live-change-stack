@@ -53,7 +53,12 @@
   import { useRoute } from "vue-router"
   const route = useRoute()
 
-  const savedRoute = route.fullPath
+  const savedRoute = {
+    name: route.name,
+    params: route.params,
+    query: route.query,
+    hash: route.hash
+  }
 
   const props = defineProps({
     scopes: {
