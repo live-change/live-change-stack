@@ -1,6 +1,6 @@
 {
   "name": "@live-change/secret-link-service",
-  "version": "0.9.118",
+  "version": "0.9.119",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.9.118",
+    "@live-change/framework": "^0.9.119",
     "nodemailer": "^6.7.2"
   },
   "gitHead": "b1b605b7f1fa4fc3de4720afbb401e2cfff080cf"
