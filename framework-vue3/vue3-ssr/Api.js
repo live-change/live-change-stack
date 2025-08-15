@@ -40,7 +40,15 @@ class Api extends DaoProxy {
   setupCaches() {
     let dao = this.source
     if(this.settings.cache) {
-      const cacheSettings = (typeof this.settings.cache) == 'object' ? this.settings.cache : {}
+      const userCacheSettings = (typeof this.settings.cache) == 'object' ? this.settings.cache : {}
+      const cacheSettings = {        
+        ...userCacheSettings,
+        cacheFilter: (path) => {
+          if(userCacheSettings.cacheFilter && !userCacheSettings.cacheFilter(path)) return false
+          if(path[0] === 'online') return false /// online tracker is never cached
+          return true
+        }
+      }
       this.dataCache = new DaoCache(dao, cacheSettings)
       dao = this.dataCache
     }

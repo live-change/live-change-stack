@@ -95,6 +95,17 @@ async function fetch(api, path) {
 
 async function live(api, path, onUnmountedCb) {
   if(path == null) return ref(null)
+
+  if(!onUnmountedCb && typeof window != 'undefined') {
+    if(getCurrentInstance()) {
+      onUnmountedCb = onUnmounted
+    } else {
+      onUnmountedCb = () => {
+        console.error("live fetch outside component instance - possible memory leak")
+      }
+    }
+  }
+
   if(isRef(path)) {
     if(typeof window == 'undefined') {
       debug("FETCH", path.value)
@@ -127,17 +138,12 @@ async function live(api, path, onUnmountedCb) {
     await update()
     watch(() => path.value, () => update())
     const result = computed(() => liveRef.value === null ? null : liveRef.value?.value)
-    return result
-  }
 
-  if(!onUnmountedCb && typeof window != 'undefined') {
-    if(getCurrentInstance()) {
-      onUnmountedCb = onUnmounted
-    } else {
-      onUnmountedCb = () => {
-        console.error("live fetch outside component instance - possible memory leak")
-      }
-    }
+    onUnmountedCb(() => {
+      console.log("UNMOUNTED COMPUTED PATH", path.value, "ON UNMOUNTED CALLBACKS", onUnmountedCallbacks)
+      for(const callback of onUnmountedCallbacks) callback()
+    })
+    return result
   }
 
   if(typeof window == 'undefined') {

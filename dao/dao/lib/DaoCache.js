@@ -100,6 +100,7 @@ const defaultSettings = {
   deleteStatsScore: 0.2,
   cleanInterval: 1000, // 1 second
   cacheAdaptationFactor: 0.5, // cache add adaptation factor
+  cacheFilter: (path) => true
 }
 
 class DaoCache extends EventEmitter {
@@ -224,6 +225,7 @@ class DaoCache extends EventEmitter {
   }
 
   observable(what) {
+    if(!this.settings.cacheFilter(what)) return this.dao.observable(what)
     //console.log("CACHE OBSERVABLE", what)
     const observable = this.dao.observable(what)
     const oldObserve = observable.observe
@@ -241,6 +243,7 @@ class DaoCache extends EventEmitter {
 
   get(what) {
     //console.log("CACHE GET", what)
+    if(!this.settings.cacheFilter(what)) return this.dao.get(what)
     const cacheState = this.getOrCreateCacheState(what)
     if(cacheState) {
       cacheState.noticeSingleRead()
