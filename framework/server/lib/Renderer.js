@@ -53,13 +53,6 @@ class Renderer {
 
     const preloadLinks = this.renderPreloadLinks(modules)
 
-    for(const [path, value] of data) {
-      if(path !== '{"paths":[{"what":["accessControl","objectOwnedAccessInvitations",{"object":"[Wf1KCKj1w.0@BCriY]","objectType":"speedDating_Event"}],"more":[{"schema":[["userIdentification","identification",{"object":{"sessionOrUserType":{"property":"contactOrUserType"},"sessionOrUser":{"property":"contactOrUser"}}}]],"to":"identification"}]}]}')
-        continue
-      console.log("SERIALIZE DATA", path, value[0])
-      console.log("SERIALIZED", serialize(value[0], { isJSON: true }))
-    }
-
     const appDataScript = `  <script>` +
         `    window.__DAO_CACHE__= ${serialize(data, { isJSON: true })}\n`+
         (this.settings.fastAuth ? ''
