@@ -4,6 +4,8 @@ import * as vite from 'vite'
 import serialize from 'serialize-javascript'
 import renderTemplate from './renderTemplate.js'
 import { SitemapStream } from 'sitemap'
+import vm from 'vm'
+import { createRequire } from 'module'
 
 class Renderer {
   constructor(manifest, settings) {
@@ -16,10 +18,17 @@ class Renderer {
     if(this.settings.dev) {
       await this.setupVite()
     } else {
-      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/entry-server.js')
-      this.module = await import(serverEntryPath)
-      this.renderer = this.module.render
-      this.sitemap = this.module.sitemap
+      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/server.cjs')
+      const serverEntryCode = await fs.promises.readFile(serverEntryPath, { encoding: 'utf-8' })
+      this.script = new vm.Script(serverEntryCode, {
+        filename: serverEntryPath,
+        lineOffset: 0,
+        columnOffset: 0                
+      })      
+      this.baseContext = {
+        require: createRequire(serverEntryPath),
+        __dirname: path.dirname(serverEntryPath),
+      }
       const templatePath = path.resolve(this.root, this.settings.templatePath ?? './dist/client/index.html')
       this.template = await fs.promises.readFile(templatePath, { encoding: 'utf-8' })
     }
@@ -44,7 +53,7 @@ class Renderer {
   }
 
   async renderPage(params) {
-    const { url, headers, dao, clientIp, credentials, windowId, version, now, domain } = params
+    const { url, headers, dao, clientIp, credentials, windowId, version, now, domain } = params    
 
     const render = await this.getRenderFunction()
     const { html: appHtml, modules, data, meta, response } = await render(params)
@@ -118,13 +127,36 @@ class Renderer {
     return template
   }
 
+  async createRenderContext() {
+    const contextObject = {
+      //...globalThis,
+      ...this.baseContext,
+      exports: {},
+      //process: process,
+      process: {
+        env: {
+          NODE_ENV: 'production'
+        },
+        stdout: process.stdout,
+        stderr: process.stderr,       
+      } 
+    }
+    const requestContext = vm.createContext(contextObject, {
+      name: 'Render function',
+      ///microtaskMode: 'afterEvaluate'        
+    })
+    this.script.runInContext(requestContext) 
+    return contextObject    
+  }
+
   async getRenderFunction() {
     if(this.settings.dev) {
       /// Reload every request
       const entryPath = path.resolve(this.root, this.settings.serverEntry || 'src/entry-server.js')
       return (await this.vite.ssrLoadModule(entryPath)).render
     } else {
-      return this.renderer
+      const context = await this.createRenderContext()
+      return context.exports.render
     }
   }
 
@@ -134,7 +166,8 @@ class Renderer {
       const entryPath = path.resolve(this.root, this.settings.serverEntry || 'src/entry-server.js')
       return (await this.vite.ssrLoadModule(entryPath)).sitemap
     } else {
-      return this.sitemap
+      const context = await this.createRenderContext()
+      return context.exports.sitemap
     }
   }
 

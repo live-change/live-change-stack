@@ -182,14 +182,20 @@ export default async ({ command, mode, version, isSsrBuild, isPreview }, options
       },
       rollupOptions: {
         ...(isSsrBuild ? {
+          external: [],
           output: {
             inlineDynamicImports: true,
             manualChunks: undefined, // disable dynamic splitting
+            format: 'cjs',
+            entryFileNames: 'server.cjs'
           }
         } : {})
       }
     },
-    ssr: {
+    ssr: isSsrBuild ? {
+      target: 'node',
+      noExternal: true
+    } : {
       external: [
         ...(command === 'build' ? [
         ]: [
