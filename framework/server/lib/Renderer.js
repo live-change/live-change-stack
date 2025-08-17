@@ -142,7 +142,7 @@ class Renderer {
       } 
     }
     const requestContext = vm.createContext(contextObject, {
-      name: 'Render function',
+      name: 'SSR Render '+(new Date().toISOString()),
       ///microtaskMode: 'afterEvaluate'        
     })
     this.script.runInContext(requestContext) 
