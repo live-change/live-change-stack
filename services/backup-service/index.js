@@ -75,13 +75,13 @@ function doBackup() {
         console.log("Clear events before", new Date(ts))
         lastEventId = ts.toFixed(0).padStart(16, '0')+':'
       }
-      if(Number.isInteger(config.clearTriggers) && lastTriggerTimestamp) {
+      if(Number.isInteger(config.clearTriggers) && Number.isInteger(new Date(lastTriggerTimestamp).getTime())) {
         const date = new Date(lastTriggerTimestamp)
         const old = new Date(date.getTime() - config.clearTriggers)
         console.log("Clear triggers before", old)
         lastTriggerTimestamp = old.toISOString()
       }
-      if(Number.isInteger(config.clearCommands) && lastCommandTimestamp) {
+      if(Number.isInteger(config.clearCommands) && Number.isInteger(new Date(lastCommandTimestamp).getTime())) {
         const date = new Date(lastCommandTimestamp)
         const old = new Date(date.getTime() - config.clearCommands)
         console.log("Clear commands before", old)

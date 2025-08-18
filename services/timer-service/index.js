@@ -30,6 +30,13 @@ definition.trigger({
     let retryDelay = timer.retryDelay || 5 * 1000
     let interval = timer.interval || 0
     if(loops > 0 && interval === 0) throw new Error("impossibleTimer")
+    let existingTimer = await Timer.get(timerId)
+    if(existingTimer) {
+      emit({
+        type: "timerCanceled", timer: timerId
+      })
+      removeTimer(timerId)
+    }
     const props = {
       ...timer, timestamp, time, loops, interval, timerId, maxRetries, retryDelay, retries: 0,
       causeType: trigger.causeType,
