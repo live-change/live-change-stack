@@ -44,7 +44,13 @@ let argsDefaults = {
   ssrHost: process.env.SSR_SERVER_HOST || '0.0.0.0',
   ssrPort: process.env.SSR_SERVER_PORT || 8001,
 
-  sessionCookieDomain: process.env.SESSION_COOKIE_DOMAIN
+  sessionCookieDomain: process.env.SESSION_COOKIE_DOMAIN,
+
+  // Context pool settings
+  contextPoolSize: process.env.CONTEXT_POOL_SIZE || 2,
+  maxQueueSize: process.env.MAX_QUEUE_SIZE || 20,
+  renderTimeout: process.env.RENDER_TIMEOUT || 10000,
+  contextMaxUses: process.env.CONTEXT_MAX_USES || 128
 }
 
 export function startOptions(yargs) {
@@ -154,6 +160,26 @@ export function ssrServerOptions(yargs) {
     describe: 'domain for session cookie',
     type: 'string',
     default: argsDefaults.sessionCookieDomain
+  })
+  yargs.option('contextPoolSize', {
+    describe: 'size of render context pool',
+    type: 'number',
+    default: argsDefaults.contextPoolSize
+  })
+  yargs.option('maxQueueSize', {
+    describe: 'maximum size of render queue',
+    type: 'number',
+    default: argsDefaults.maxQueueSize
+  })
+  yargs.option('renderTimeout', {
+    describe: 'render timeout in milliseconds',
+    type: 'number',
+    default: argsDefaults.renderTimeout
+  })
+  yargs.option('contextMaxUses', {
+    describe: 'maximum uses per context before replacement',
+    type: 'number',
+    default: argsDefaults.contextMaxUses
   })
 }
 

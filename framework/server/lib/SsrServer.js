@@ -101,7 +101,7 @@ class SsrServer {
       }
     })
 
-    this.express.get('/sitemap.xml', async (req, res) => {
+    this.express.get('/sitemap.xml', async (req, res) => {      
       if(this.settings.spa) {
         res.status(404).end()
         return
@@ -132,6 +132,7 @@ class SsrServer {
       }
     })
     this.express.use('*', async (req, res) => {
+      console.log("RENDERING PAGE", req.originalUrl)
       if(fbRedirect(req, res)) return
       if(this.settings.spa) {
         if(this.settings.dev) {
