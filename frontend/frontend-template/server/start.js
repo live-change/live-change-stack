@@ -22,13 +22,15 @@ const homepage = process.env.BASE_HREF ?? packageJson.homepage
 const domain = process.env.BRAND_DOMAIN ||
   (homepage && homepage.match(/https\:\/\/([^\/]+)/)?.[1]) || 'example.com'
 const baseHref = process.env.BASE_HREF || homepage || 'http://localhost:8001'
+const version = process.env.VERSION || packageJson.version
+
 
 appConfig.clientConfig = {
-  version: packageJson.version,
+  version,
   name, brandName, domain, homepage, baseHref,
   ...appConfig.clientConfig
 }
 
 import { starter } from '@live-change/cli'
 
-starter(appConfig)
+starter(appConfig, {}, { version })

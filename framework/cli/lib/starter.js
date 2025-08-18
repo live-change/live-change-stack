@@ -185,7 +185,7 @@ export function ssrServerOptions(yargs) {
 
 let globalServicesConfig
 
-export default function starter(servicesConfig = null, args = {}) {
+export default function starter(servicesConfig = null, args = {}, extraArgs = {}) {
   argsDefaults = { ...argsDefaults, ...args }
   globalServicesConfig = servicesConfig
   yargs(process.argv.slice(2))
@@ -201,7 +201,8 @@ export default function starter(servicesConfig = null, args = {}) {
       startOptions(yargs)
     }, async (argv) => {
       argv = {
-        ...argv,
+        ...extraArgs,
+        ...argv,        
         withServices: true, updateServices: true
       }
       await setupApp({...argv, uidBorders: '[]'})
@@ -212,6 +213,7 @@ export default function starter(servicesConfig = null, args = {}) {
       startOptions(yargs)
     }, async (argv) => {
       argv = {
+        ...extraArgs,
         ...argv,
         withApi: true, withServices: true, updateServices: true,
         withDb: true, dbBackend: 'mem', createDb: true
@@ -236,6 +238,7 @@ export default function starter(servicesConfig = null, args = {}) {
       apiServerOptions(yargs)
       startOptions(yargs)
     }, async (argv) => {
+      argv = { ...extraArgs, ...argv }
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, false)
     })
@@ -244,6 +247,7 @@ export default function starter(servicesConfig = null, args = {}) {
       apiServerOptions(yargs)
       startOptions(yargs)
     }, async (argv) => {
+      argv = { ...extraArgs, ...argv }
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, false)
     })
@@ -252,6 +256,7 @@ export default function starter(servicesConfig = null, args = {}) {
       apiServerOptions(yargs)
       startOptions(yargs)
     }, async (argv) => {
+      argv = { ...extraArgs, ...argv }
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, true)
     })
@@ -261,6 +266,7 @@ export default function starter(servicesConfig = null, args = {}) {
       startOptions(yargs)
     }, async (argv) => {
       argv = {
+        ...extraArgs,
         ...argv,
         withApi: true, withServices: true, updateServices: true, createDb: true,
       }
@@ -273,6 +279,7 @@ export default function starter(servicesConfig = null, args = {}) {
       startOptions(yargs)
     }, async (argv) => {
       argv = {
+        ...extraArgs,
         ...argv,
         withApi: true, withServices: true, updateServices: true,
         withDb: true, dbBackend: 'mem', createDb: true
@@ -286,6 +293,7 @@ export default function starter(servicesConfig = null, args = {}) {
       startOptions(yargs)
     }, async (argv) => {
       argv = {
+        ...extraArgs,
         ...argv,
         withApi: true, withServices: true, updateServices: true,
         withDb: true, createDb: true
@@ -314,6 +322,7 @@ export default function starter(servicesConfig = null, args = {}) {
       })
       startOptions(yargs)
     }, async (argv) => {
+      argv = { ...extraArgs, ...argv }
       await setupApp({...argv, uidBorders: '[]'})
       await changes(argv)
     })
@@ -330,7 +339,7 @@ export default function starter(servicesConfig = null, args = {}) {
       })
       startOptions(yargs)
     }, async (argv) => {
-      await setupApp({...argv, uidBorders: '[]'})
+      await setupApp({...extraArgs, ...argv, uidBorders: '[]'})
       await update(argv)
     })
     .option('verbose', {
