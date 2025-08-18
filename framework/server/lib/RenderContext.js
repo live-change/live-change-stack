@@ -72,10 +72,6 @@ class RenderContext {
       name: 'SSR '+(new Date().toISOString()),
       ///microtaskMode: 'afterEvaluate'        
     })
-    
-    // Start context and execute script immediately
-    this.start()
-    this.script.runInContext(this.vmContext)
   }
 
   runScript(script) {
@@ -99,7 +95,8 @@ class RenderContext {
   }
 
   // Start the context - allow nextTick operations
-  start() {
+  async start() {
+    await this.script.runInContext(this.vmContext)
     this.running = true
   }
 

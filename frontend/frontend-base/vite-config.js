@@ -186,8 +186,8 @@ export default async ({ command, mode, version, isSsrBuild, isPreview }, options
           output: {
             inlineDynamicImports: true,
             manualChunks: undefined, // disable dynamic splitting
-            format: 'cjs',
-            entryFileNames: 'server.cjs'
+            //format: 'cjs',
+            //entryFileNames: 'server.cjs'
           }
         } : {})
       }

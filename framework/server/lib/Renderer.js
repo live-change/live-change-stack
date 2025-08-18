@@ -5,6 +5,7 @@ import serialize from 'serialize-javascript'
 import renderTemplate from './renderTemplate.js'
 import { SitemapStream } from 'sitemap'
 import vm from 'vm'
+import { constants } from 'vm'
 import { createRequire } from 'module'
 import RenderContext from './RenderContext.js'
 
@@ -23,13 +24,16 @@ class Renderer {
     if(this.settings.dev) {
       await this.setupVite()
     } else {
-      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/server.cjs')
-      const serverEntryCode = await fs.promises.readFile(serverEntryPath, { encoding: 'utf-8' })
+      const serverEntryPath = path.resolve(this.root, this.settings.serverEntry ?? './dist/server/entry-server.js')
+      //const serverEntryCode = await fs.promises.readFile(serverEntryPath, { encoding: 'utf-8' })
+      const serverEntryCode = 
+       `import('./entry-server.js').then(m=>Object.entries(m).forEach(([k,v])=>exports[k]=v))`
       this.script = new vm.Script(serverEntryCode, {
-        filename: serverEntryPath,
+        filename: path.dirname(serverEntryPath)+'/entrypoint.generated.js',
         lineOffset: 0,
-        columnOffset: 0                
-      })      
+        columnOffset: 0,
+        importModuleDynamically: constants.USE_MAIN_CONTEXT_DEFAULT_LOADER
+      })
       this.baseContext = {
         require: createRequire(serverEntryPath),
         __dirname: path.dirname(serverEntryPath),
@@ -38,6 +42,7 @@ class Renderer {
       // Create pool of render contexts
       for (let i = 0; i < this.poolSize; i++) {
         const context = new RenderContext(this.settings, this.baseContext, this.script)
+        await context.start()
         this.contextPool.push(context)
       }
       
@@ -113,6 +118,7 @@ class Renderer {
           // Stop the context and create a replacement
           context.stop()
           const newContext = new RenderContext(this.settings, this.baseContext, this.script)
+          await newContext.start()
           this.releaseContext(newContext)
         } else {
           // Normal release back to pool
