@@ -22,7 +22,8 @@ import {
   setupApiSockJs,
   setupApiWs,
   setupApp,
-  setupApiEndpoints
+  setupApiEndpoints,
+  setupEndpointsProxyPaths
 
 } from "@live-change/server"
 
@@ -529,6 +530,7 @@ export async function server(argv, dev) {
     })
     expressApp.use('/api', apiProxy)
     console.log("PROXY /api to", target)
+    await setupEndpointsProxyPaths(expressApp, apiProxy, argv.services)
   }
 
   let apiServer

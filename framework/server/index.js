@@ -8,7 +8,7 @@ import renderTemplate from './lib/renderTemplate.js'
 import setupApiServer from './lib/setupApiServer.js'
 import setupApiSockJs from './lib/setupApiSockJs.js'
 import setupApiWs from './lib/setupApiWs.js'
-import setupApiEndpoints from './lib/setupApiEndpoints.js'
+import { setupApiEndpoints, setupEndpointsProxyPaths } from './lib/setupApiEndpoints.js'
 import setupDbServer from './lib/setupDbServer.js'
 import setupDbClient from './lib/setupDbClient.js'
 import setupApp from './lib/setupApp.js'
@@ -25,6 +25,7 @@ export {
   setupApiSockJs,
   setupApiWs,
   setupApiEndpoints,
+  setupEndpointsProxyPaths,
   setupDbServer,
   setupDbClient,
   setupApp

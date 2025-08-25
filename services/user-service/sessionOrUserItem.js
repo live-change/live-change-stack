@@ -117,7 +117,7 @@ definition.processor(function(service, app) {
           /// TODO: delete on userDeleted trigger
         }
       })*/
-
+/* 
       if(config.ownerReadAccess) {
         const viewName = 'my' + modelName
         const propertyName = modelName[0].toLowerCase() + modelName.slice(1)
@@ -143,7 +143,7 @@ definition.processor(function(service, app) {
             return path
           }
         })
-      }
+      } */
 
       if(config.ownerReadAccess) {
         const viewName = 'my' + pluralize(modelName)
@@ -179,6 +179,7 @@ definition.processor(function(service, app) {
 
       if(config.ownerReadAccess) {
         const viewName = 'my' + modelName
+        const propertyName = modelName[0].toLowerCase() + modelName.slice(1)
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           async access(params, context) {          
@@ -191,7 +192,12 @@ definition.processor(function(service, app) {
             }
             return config.userReadAccess ? config.userReadAccess(params, context) : true
           },
-          properties: App.rangeProperties,
+          properties: {
+            [propertyName]: {
+              type: `${service.name}_${modelName}`,
+              validation: ['nonEmpty']
+            }
+          },
           daoPath(params, { client, context }) {
             const path = modelRuntime().path(params[modelPropertyName])
             return path

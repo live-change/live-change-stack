@@ -74,7 +74,7 @@ class Api extends DaoProxy {
     this.versionObservable = this.observable(['version', 'version'])
     this.versionObservable.bindProperty(version, 'value')
     const softwareVersion = computed(() => {
-      if(typeof window == 'undefined') return
+      if(typeof window == 'undefined') return 'unknown'
       return window[this.settings.ssrVersionGlobal || '__VERSION__']
     })
     const versionMismatch = computed(() => {
