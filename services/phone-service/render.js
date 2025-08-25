@@ -5,9 +5,15 @@ import { convert as htmlToText } from 'html-to-text'
 import definition from './definition.js'
 const config = definition.config
 
+const getValue = (configValue, envValue, defaultValue) => configValue ?? envValue ?? defaultValue
+
 async function renderSms(data) {
-  const baseUrl = `http://${config.ssrHost||process.env.SSR_HOST||'localhost'}`+
-  `:${config.ssrPort||process.env.SSR_PORT||'8001'}`
+  const ssrUrl = getValue(
+    definition.config.browser?.ssrUrl, 
+    process.env.SSR_URL, 
+    'http://localhost:8001'
+  )
+  const baseUrl = ssrUrl
 
   const encodedData = encodeURIComponent(JSON.stringify(data))
   const url = `${baseUrl}/_sms/${data.action}/${data.contact}/${encodedData}`

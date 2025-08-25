@@ -281,6 +281,77 @@ definition.trigger({
   }
 })
 
+
+definition.trigger({
+  name: "createImageFromDownloadedFile",
+  properties: {
+    name: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    purpose: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    downloadPath: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    cropped: {
+      type: Boolean,
+      defaultValue: true
+    },
+    ownerType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    owner: {
+      type: String,
+      validation: ['nonEmpty']
+    }
+  },
+  waitForEvents: true,
+  async execute({ name, purpose, downloadPath, owner, ownerType }, { service, client }, emit) {
+    const image = app.generateUid()
+
+    /*
+    console.log("DOWNLOADED", url, uploadsPath, '=>', downloadPath)
+    const downloadExists = await fs.promises.access(downloadPath, fs.constants.F_OK)
+      .then(() => true)
+      .catch(() => false)
+    console.log("DOWNLOAD EXISTS", downloadExists)//*/
+
+    const data = await fs.promises.readFile(downloadPath)
+    const metadata = await sharp(data).metadata()
+    //const metadata = await sharp(downloadPath).metadata()
+
+    //console.log("IMAGE METADATA", metadata)
+
+    emit({
+      type: "ImageCreated",
+      image,
+      identifiers: {
+        owner, ownerType
+      },
+      data: {
+        name, purpose,
+        fileName: downloadPath.split('/').pop(),
+        width: metadata.width,
+        height: metadata.height,
+        extension: metadata.format,
+        crop: null
+      }
+    })
+
+    const dir = `${imagesPath}/${image}`
+
+    await mkdir(dir)
+    await move(downloadPath, `${dir}/original.${metadata.format}`)
+
+    return image
+  }
+})
+
 definition.trigger({
   name: 'deleteImage_Image',
   properties: {
