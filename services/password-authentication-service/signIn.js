@@ -24,6 +24,7 @@ for(const contactType of config.contactTypes) {
   definition.action({
     name: 'signIn' + contactTypeUpperCaseName,
     waitForEvents: true,
+    timeout: 20*1000,
     properties: {
       ...contactTypeProperties,
       ...secretProperties(false)

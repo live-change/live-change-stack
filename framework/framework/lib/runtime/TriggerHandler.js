@@ -44,7 +44,7 @@ class TriggerHandler {
         ...trigger
       }, data, returnArray)
     }, emit))
-    console.log("RESULT PROMISE", resultPromise, resultPromise.then)
+    //console.log("RESULT PROMISE", resultPromise, resultPromise.then)
     resultPromise = resultPromise.then(async result => {
       const processedResult = await processReturn(result, this.definition.returns, this.service)
       return processedResult

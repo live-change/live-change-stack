@@ -10,7 +10,9 @@ export interface ActionDefinitionSpecification {
   access?: AccessSpecification,
   skipValidation?: boolean,
   validation?: (parameters: ActionParameters, context: ActionContext) => Promise<any>
-  waitForEvents?: boolean
+  waitForEvents?: boolean,
+  timeout?: number,
+  requestTimeout?: number
 }
 
 class ActionDefinition<T extends ActionDefinitionSpecification> {

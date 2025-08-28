@@ -74,6 +74,7 @@ for(const contactType of config.contactTypes) {
     definition.action({
       name: 'signUp' + contactTypeUName,
       waitForEvents: true,
+      timeout: 20*1000,
       properties: {
         ...contactTypeProperties
       },
@@ -95,6 +96,7 @@ for(const contactType of config.contactTypes) {
     definition.action({
       name: 'signIn' + contactTypeUName,
       waitForEvents: true,
+      timeout: 20*1000,
       properties: {
         ...contactTypeProperties
       },
@@ -118,6 +120,7 @@ for(const contactType of config.contactTypes) {
   if(contactConfig.connect || config.connect ) {
     definition.action({
       name: 'connect' + contactTypeUName,
+      timeout: 20*1000,
       properties: {
         ...contactTypeProperties
       },
@@ -174,6 +177,7 @@ for(const contactType of config.contactTypes) {
     definition.action({
       name: 'signInOrSignUp' + contactTypeUName,
       waitForEvents: true,
+      timeout: 20*1000,
       properties: {
         ...contactTypeProperties
       },

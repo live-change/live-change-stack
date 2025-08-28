@@ -132,7 +132,7 @@
   useResizeObserver(overlayCanvas, (entries) => repaintDebounced())
   watch(() => [props.width, props.height, props.type], () => repaintDebounced())
 
-  const position = reactive({ x: props.crop.x, y: props.crop.y, scale: props.crop.zoom })
+  const position = reactive({ x: props.crop?.x || 0, y: props.crop?.y || 0, scale: props.crop?.zoom || 1 })
   const imageTransform = computed(() => {
     const x = - position.x * 50
     const y = - position.y * 50

@@ -25,17 +25,10 @@
         </li>
         <li v-for="account in accounts"
             class="flex flex-row items-center justify-between mb-2">
-          <div v-if="account.accountType.accountType === 'google'"
-               class="flex flex-row items-center">
-            <i  class="pi pi-google mr-2"></i>
-            <span class="block text-surface-900 dark:text-surface-0 font-medium text-lg">{{ account.email }}</span>
-          </div>
-          <div v-else-if="account.accountType.accountType === 'linkedin'"
-               class="flex flex-row items-center">
-            <i  class="pi pi-linkedin mr-2"></i>
-            <span class="block text-surface-900 dark:text-surface-0 font-medium text-lg">{{ account.name }}</span>
-          </div>
-          <pre v-else>{{ account }}</pre>
+          <InjectComponent 
+            :request="{ name: 'connectedAccountItem', accountType: account.accountType.accountType }"
+            :defaultComponent="UnknownAccountItem"
+            :props="{ account }" />
           <Button class="p-button-text p-button-plain p-button-rounded mr-1" icon="pi pi-times"
                   v-if="canDelete"
                   @click="event => disconnectAccount(event, account, account.email)" />
@@ -43,7 +36,7 @@
 
       </ul>
 
-      <div class="flex flex-row flex-wrap">
+      <div class="flex flex-row flex-wrap">        
         <router-link v-for="contactType in contactsTypes"
                      :to="{ name: 'user:connect-'+contactType.contactType }" class="mr-2 no-underline block mb-1">
           <Button v-if="contactType.contactType === 'email'"
@@ -52,10 +45,12 @@
                   :label="'Add '+contactType.contactType" icon="pi pi-phone" id="connect" />
           <Button v-else :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
         </router-link>
-        <router-link v-for="accountType in accountTypes"
-                     :to="{ name: 'user:connect-'+accountType.accountType }" class="mr-2 no-underline block mb-1">
-          <Button v :label="'Add '+accountType.accountType" icon="pi pi-google" id="connect" />
-        </router-link>
+        <template v-for="accountType in accountTypes">
+          <router-link v-if="connectAccountRoute(accountType)"
+                      :to="connectAccountRoute(accountType)" class="mr-2 no-underline block mb-1">
+            <Button v :label="'Add '+accountType.accountType" icon="pi pi-google" id="connect" />
+          </router-link>
+        </template>
 
       </div>
     </div>
@@ -65,6 +60,15 @@
 
 <script setup>
   import Button from "primevue/button"
+
+  import { provideComponent, InjectComponent } from '@live-change/vue3-components'
+  import GoogleAccountItem from './accountTypes/GoogleAccountItem.vue'
+  import LinkedinAccountItem from './accountTypes/LinkedinAccountItem.vue'
+
+  provideComponent({ name: 'connectedAccountItem', accountType: 'google' }, GoogleAccountItem)
+  provideComponent({ name: 'connectedAccountItem', accountType: 'linkedin' }, LinkedinAccountItem)
+  import UnknownAccountItem from './accountTypes/UnknownAccountItem.vue'
+
 
   import { ref, onMounted, onUnmounted, inject, computed } from 'vue'
   import ConfirmPopup from 'primevue/confirmpopup'
@@ -76,6 +80,9 @@
   let isMounted = ref(false)
   onMounted(() => isMounted.value = true)
   onUnmounted(() => isMounted.value = false)
+
+  import { useRouter } from 'vue-router'
+  const router = useRouter()
 
   import { formatPhoneNumber } from '../phone/phoneNumber.js'
 
@@ -154,6 +161,13 @@
 
   const allAccountsCount = computed(() => contacts.value?.length + accounts.value?.length )
   const canDelete = computed(() => allAccountsCount.value > 1 )
+
+  function connectAccountRoute(accountType) {
+    const route = { name: 'user:connect-'+accountType.accountType }
+    /// Check if the route is registered in the router
+    const routeExists = router.getRoutes().find(r => r.name === route.name)
+    return routeExists ? route : null
+  }
 
 </script>
 
