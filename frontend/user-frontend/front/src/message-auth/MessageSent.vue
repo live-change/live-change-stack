@@ -6,9 +6,9 @@
       <p class="mt-0 mb-1 p-0 leading-normal">You authenticated in a different tab.</p>
     </div>
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-else>
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Message sent</div>
-      <p class="mt-0 mb-1 p-0 leading-normal">We sent special secret message to the contact you already provided.</p>
-      <p class="mt-0 mb-6 p-0 leading-normal">Click on the link or enter the code you found in that message.</p>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ title }}</div>
+      <p class="mt-0 mb-1 p-0 leading-normal">{{ description }}</p>
+      <p class="mt-0 mb-6 p-0 leading-normal">{{ callToAction }}</p>
       <Secured :events="['wrong-secret-code']" :actions="['checkSecretCode']">
         <command-form service="messageAuthentication" action="finishMessageAuthentication"
                       :parameters="{ secretType: 'code', authentication }" :key="authentication"
@@ -64,7 +64,19 @@
     authentication: {
       type: String,
       required: true
-    }
+    },
+    title: {
+      type: String,
+      default: 'Message sent',      
+    },
+    description: {
+      type: String,
+      default: 'We sent special secret message to the contact you already provided.',
+    },
+    callToAction: {
+      type: String,
+      default: 'Click on the link or enter the code you found in that message.',
+    },
   })
 
   function handleAuthenticated({ parameters, result }) {

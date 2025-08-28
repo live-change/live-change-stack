@@ -55,7 +55,7 @@ export function getAccountTypes(api = useApi()) {
       path: accountsPath,
       accounts: null,
       async fetchAccounts(context, onUnmountedCb){
-        const accounts = await live(path[serviceName][viewName]({}), context, onUnmountedCb)
+        const accounts = await live(accountsPath, context, onUnmountedCb)
         this.accounts = accounts
         return accounts
       }
@@ -88,7 +88,7 @@ export async function getAccounts(context, onUnmountedCb) {
   for(const accountType of accountTypes) {
     await accountType.fetchAccounts(context, onUnmountedCb)
   }
-  const accounts = computed(() => accountTypes.map((c,i) => c.accounts.value.map(v => ({
+  const accounts = computed(() => accountTypes.map((c,i) => (c.accounts.value ?? []).map(v => ({
     accountType: c.contactType,
     serviceName: c.serviceName,
     ...(v)

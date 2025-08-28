@@ -27,12 +27,12 @@
         <Button label="Sign Up with email" icon="pi pi-user" class="w-full" type="submit" />
       </command-form>
 
-      <Divider v-if="accountTypes.length > 0" align="center" class="my-6">
+      <Divider v-if="availableAccountTypes.length > 0" align="center" class="my-6">
         <b>OR</b>
       </Divider>
 
-      <router-link v-for="accountType in accountTypes"
-                   :to="{ name: `user:${accountType.accountType}Auth`, params: { action: 'signInOrSignUp' } }"
+      <router-link v-for="accountType in availableAccountTypes"
+                   :to="accountType.connectRoute"
                    class="no-underline">
         <Button
           :label="`Sign Up with ${accountType.accountType[0].toUpperCase()}${accountType.accountType.slice(1)}`"
@@ -60,12 +60,26 @@
   import { useRouter } from 'vue-router'
   const router = useRouter()
 
+  import { computed } from 'vue'
+
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
 
-  import { getContactTypes, getAccountTypes} from '../connected/connected.js'
+  import { getContactTypes, getAccountTypes } from '../connected/connected.js'
   const contactsTypes = getContactTypes()
   const accountTypes = getAccountTypes()
+
+  const availableAccountTypes = computed(() => accountTypes.map(accountType => {
+    const route = { name: `user:${accountType.accountType}Auth`, params: { action: 'signInOrSignUp' } }
+    const routeExists = router.getRoutes().find(r => r.name === route.name)
+    if(routeExists) {
+      return {
+        ...accountType,
+        connectRoute: route
+      }
+    }
+    return null
+  }).filter(accountType => !!accountType))
 
   function handleSent({ parameters, result }) {
     const { authentication } = result

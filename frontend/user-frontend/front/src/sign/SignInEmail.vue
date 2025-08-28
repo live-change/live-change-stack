@@ -51,12 +51,12 @@
 
       </command-form>
 
-      <Divider v-if="accountTypes.length > 0" align="center" class="my-6">
+      <Divider v-if="availableAccountTypes.length > 0" align="center" class="my-6">
         <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">OR</span>
       </Divider>
 
-      <router-link v-for="accountType in accountTypes"
-                   :to="{ name: `user:${accountType.accountType}Auth`, params: { action: 'signInOrSignUp' } }"
+      <router-link v-for="accountType in availableAccountTypes"
+                   :to="accountType.connectRoute"
                    class="no-underline">
         <Button
           :label="`Sign In with ${accountType.accountType[0].toUpperCase()}${accountType.accountType.slice(1)}`"
@@ -78,7 +78,7 @@
   import Password from "../password/Password.vue"
   import Message from "primevue/message"
 
-  import { onMounted, ref } from 'vue'
+  import { onMounted, ref, computed } from 'vue'
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
 
@@ -91,6 +91,18 @@
   import { getContactTypes, getAccountTypes} from '../connected/connected.js'
   const contactsTypes = getContactTypes()
   const accountTypes = getAccountTypes()
+
+  const availableAccountTypes = computed(() => accountTypes.map(accountType => {
+    const route = { name: `user:${accountType.accountType}Auth`, params: { action: 'signInOrSignUp' } }
+    const routeExists = router.getRoutes().find(r => r.name === route.name)
+    if(routeExists) {
+      return {
+        ...accountType,
+        connectRoute: route
+      }
+    }
+    return null
+  }).filter(accountType => !!accountType))
 
   function handleDone({ parameters, result }) {
     console.log("DONE RESULT", result)

@@ -131,8 +131,6 @@
     return true
   })
 
-  import { validateData } from "@live-change/vue3-components"
-  const appContext = getCurrentInstance().appContext
   const validationResult = computed(() => { 
     return errors.value?.[props.propName] || error.value
   })
