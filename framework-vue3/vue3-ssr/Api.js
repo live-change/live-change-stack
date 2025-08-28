@@ -78,6 +78,7 @@ class Api extends DaoProxy {
       return window[this.settings.ssrVersionGlobal || '__VERSION__']
     })
     const versionMismatch = computed(() => {
+      if(typeof window == 'undefined') return false
       if(!version) return
       if(!softwareVersion) return
       if(softwareVersion.value === 'unknown') return false
