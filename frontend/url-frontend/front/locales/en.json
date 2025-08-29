@@ -8,18 +8,8 @@
     "notFound": "Not Found",
     "notAuthorized": "Not Authorized",
     "resolve": "Resolve",
-    "info": "Info"
-  },
-  "nav": {
-    "home": "Home",
-    "customers": "Customers",
-    "addNew": "Add New",
-    "search": "Search",
-    "purchases": "Purchases",
-    "messages": "Messages",
-    "calendar": "Calendar",
-    "stats": "Stats",
-    "inbox": "Inbox",
-    "notifications": "Notifications"
+    "info": "Info",
+    "list": "List",
+    "form": "Form"
   }
 }

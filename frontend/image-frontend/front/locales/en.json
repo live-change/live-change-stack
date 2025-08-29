@@ -7,21 +7,11 @@
     "upload": "Upload",
     "editor": "Editor",
     "input": "Input",
-    "test": "Test",
     "width": "Width",
     "height": "Height",
-    "quality": "Quality"
-  },
-  "nav": {
-    "home": "Home",
-    "customers": "Customers",
-    "addNew": "Add New",
-    "search": "Search",
-    "purchases": "Purchases",
-    "messages": "Messages",
-    "calendar": "Calendar",
-    "stats": "Stats",
-    "inbox": "Inbox",
-    "notifications": "Notifications"
+    "quality": "Quality",
+    "imageEditor": "Image Editor",
+    "imageInput": "Image Input",
+    "imageCrop": "Image Crop"
   }
 }

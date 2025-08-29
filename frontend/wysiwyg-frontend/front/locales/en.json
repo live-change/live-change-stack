@@ -9,18 +9,12 @@
     "settings": "Settings",
     "templates": "Templates",
     "components": "Components",
-    "styles": "Styles"
-  },
-  "nav": {
-    "home": "Home",
-    "customers": "Customers",
-    "addNew": "Add New",
-    "search": "Search",
-    "purchases": "Purchases",
-    "messages": "Messages",
-    "calendar": "Calendar",
-    "stats": "Stats",
-    "inbox": "Inbox",
-    "notifications": "Notifications"
+    "styles": "Styles",
+    "document": "Document",
+    "menu": "Menu",
+    "padding": "Padding",
+    "link": "Link",
+    "image": "Image",
+    "empty": "Empty Component"
   }
 }

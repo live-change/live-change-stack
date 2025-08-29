@@ -10,18 +10,8 @@
     "preview": "Preview",
     "edit": "Edit",
     "delete": "Delete",
-    "save": "Save"
-  },
-  "nav": {
-    "home": "Home",
-    "customers": "Customers",
-    "addNew": "Add New",
-    "search": "Search",
-    "purchases": "Purchases",
-    "messages": "Messages",
-    "calendar": "Calendar",
-    "stats": "Stats",
-    "inbox": "Inbox",
-    "notifications": "Notifications"
+    "save": "Save",
+    "editor": "Editor",
+    "list": "List"
   }
 }

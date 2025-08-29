@@ -36,53 +36,71 @@ Ukończono **konwersję 14 z 18 projektów frontend** do używania vue-i18n zgod
    - ✅ 12+ kluczy tłumaczeń
 
 6. **content-frontend** ✅
-   - ✅ Struktura en.json utworzona
-   - ✅ Klucze: content, nav, common
-   - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+   - ✅ Struktura en.json utworzona (oczyszczona)
+   - ✅ Klucze: content, common (usunięto nav - przykład użycia)
+   - ⚠️ Wymaga ręcznej konwersji eksportowanych komponentów
 
 7. **upload-frontend** ✅
-   - ✅ Struktura en.json utworzona
-   - ✅ Klucze: upload, nav
-   - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+   - ✅ Struktura en.json utworzona (oczyszczona)
+   - ✅ Klucze: upload (usunięto nav - przykład użycia)
+   - ⚠️ Wymaga ręcznej konwersji eksportowanych komponentów
 
 8. **wysiwyg-frontend** ✅
-   - ✅ Struktura en.json utworzona
-   - ✅ Klucze: editor, nav
-   - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+   - ✅ Struktura en.json utworzona (oczyszczona)
+   - ✅ Klucze: editor (usunięto nav - przykład użycia)
+   - ⚠️ Wymaga ręcznej konwersji eksportowanych komponentów
 
 9. **blog-frontend** ✅
-   - ✅ Struktura en.json utworzona
-   - ✅ Klucze: blog, nav
-   - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+   - ✅ Struktura en.json utworzona (oczyszczona)
+   - ✅ Klucze: blog (usunięto nav - przykład użycia)
+   - ⚠️ Wymaga ręcznej konwersji eksportowanych komponentów
 
 10. **survey-frontend** ✅
-    - ✅ Struktura en.json utworzona
-    - ✅ Klucze: survey
-    - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+    - ✅ Oznaczone jako demo app (brak eksportowanych komponentów)
+    - ✅ Plik en.json z notatką o charakterze demonstracyjnym
 
 11. **url-frontend** ✅
-    - ✅ Struktura en.json utworzona
-    - ✅ Klucze: url, nav
-    - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+    - ✅ Struktura en.json utworzona (oczyszczona)
+    - ✅ Klucze: url (usunięto nav - przykład użycia)
+    - ⚠️ Wymaga ręcznej konwersji eksportowanych komponentów
 
 12. **video-call-frontend** ✅
     - ✅ Struktura en.json utworzona
-    - ✅ Klucze: video
-    - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+    - ✅ Klucze: video (eksportuje komponenty: PeerVideo, Room, VideoWall)
+    - ⚠️ Wymaga ręcznej konwersji eksportowanych komponentów
 
 13. **image-frontend** ✅
-    - ✅ Struktura en.json utworzona
-    - ✅ Klucze: image, nav
-    - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+    - ✅ Struktura en.json utworzona (oczyszczona)
+    - ✅ Klucze: image (usunięto nav - przykład użycia)
+    - ⚠️ Wymaga ręcznej konwersji eksportowanych komponentów
 
 14. **peer-connection-frontend** ✅
-    - ✅ Struktura en.json utworzona
-    - ✅ Klucze: peer, nav
-    - ⚠️ Wymaga ręcznej konwersji Vue komponentów
+    - ✅ Struktura en.json utworzona (oczyszczona)
+    - ✅ Klucze: peer (usunięto nav - przykład użycia)
+    - ⚠️ Wymaga ręcznej konwersji eksportowanych komponentów
 
 ---
 
 ## 🔧 Co zostało zrobione
+
+### 📝 **Ważne rozróżnienie: Komponenty vs Przykłady**
+
+Na podstawie analizy plików `index.js` każdego projektu frontend, przeprowadzono rozróżnienie między:
+
+**✅ Eksportowane komponenty biblioteki:**
+- Komponenty z `index.js` - części wielokrotnego użycia
+- Wymagają pełnej konwersji i18n
+- Przykład: `ContentEditor`, `FileInput`, `TaskModal`
+
+**❌ Przykłady użycia (NavBar, App.vue):**
+- Komponenty demonstracyjne (NavBar, routing)
+- Nie są eksportowane jako biblioteka
+- Usunięto sekcje `nav` z en.json jako niepotrzebne
+
+**🎯 Rezultat oczyszczania:**
+- Usunięto niepotrzebne sekcje `nav` z plików en.json
+- Skupiono się na rzeczywistych komponentach modułu
+- survey-frontend oznaczono jako demo (brak eksportów)
 
 ### 🎯 **Pełne konwersje (5 projektów)**
 Projekty z pełną konwersją komponentów Vue:

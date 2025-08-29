@@ -1,18 +1,3 @@
 {
-  "survey": {
-    "survey": "Survey",
-    "surveys": "Surveys",
-    "question": "Question",
-    "questions": "Questions",
-    "answer": "Answer",
-    "answers": "Answers",
-    "submit": "Submit",
-    "next": "Next",
-    "previous": "Previous",
-    "finish": "Finish",
-    "results": "Results",
-    "create": "Create",
-    "edit": "Edit",
-    "delete": "Delete"
-  }
+  "_note": "This is a demo application - no exported components"
 }

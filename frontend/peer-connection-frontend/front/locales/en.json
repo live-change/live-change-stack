@@ -7,18 +7,9 @@
     "deviceSelect": "Device Select",
     "volumeIndicator": "Volume Indicator",
     "mediaSettings": "Media Settings",
-    "debugger": "Debugger"
-  },
-  "nav": {
-    "home": "Home",
-    "customers": "Customers",
-    "addNew": "Add New",
-    "search": "Search",
-    "purchases": "Purchases",
-    "messages": "Messages",
-    "calendar": "Calendar",
-    "stats": "Stats",
-    "inbox": "Inbox",
-    "notifications": "Notifications"
+    "debugger": "Debugger",
+    "cameraButton": "Camera Button",
+    "microphoneButton": "Microphone Button",
+    "permissionsDialog": "Permissions Dialog"
   }
 }

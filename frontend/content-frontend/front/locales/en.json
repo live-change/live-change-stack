@@ -5,19 +5,13 @@
     "published": "Published",
     "contentPublished": "{type} published",
     "errorPublishing": "Error publishing {type}",
-    "saveMetadata": "Save metadata"
-  },
-  "nav": {
-    "home": "Home",
-    "customers": "Customers",
-    "addNew": "Add New",
-    "search": "Search",
-    "purchases": "Purchases",
-    "messages": "Messages",
-    "calendar": "Calendar",
-    "stats": "Stats",
-    "inbox": "Inbox",
-    "notifications": "Notifications"
+    "saveMetadata": "Save metadata",
+    "content": "Content",
+    "metadata": "Metadata",
+    "settings": "Settings",
+    "editor": "Editor",
+    "notFound": "Not Found",
+    "notAuthorized": "Not Authorized"
   },
   "common": {
     "error": "Error",
