@@ -20,9 +20,9 @@
             />
           </div>
           <div class="flex flex-row flex-wrap justify-between align-items-top gap-2">
-            <Button label="Access" icon="pi pi-key" class="p-button mb-6" @click="showAccessControl" />
+            <Button :label="t('actions.access')" icon="pi pi-key" class="p-button mb-6" @click="showAccessControl" />
             <router-link :to="editRoute">
-              <Button label="Edit" icon="pi pi-pencil" class="p-button mb-6" />
+              <Button :label="t('actions.edit')" icon="pi pi-pencil" class="p-button mb-6" />
             </router-link>
           </div>
         </div>
@@ -124,7 +124,7 @@
       <pre>preparedRelations = {{ preparedRelations }}</pre>
 
       <div v-if="backwardRelations">
-        <h4>Backward relations</h4>
+        <h4>{{ t('crud.backwardRelations') }}</h4>
         <pre>{{
             backwardRelations.map(
               ({ from, relation, what }) => ({ from: from.serviceName + '_' + from.name, relation, what })
@@ -156,6 +156,8 @@
 
   import pluralize from 'pluralize'
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
   import { RangeViewer, injectComponent, InjectComponent } from "@live-change/vue3-components"
 
   import ObjectPath from './ObjectPath.vue'

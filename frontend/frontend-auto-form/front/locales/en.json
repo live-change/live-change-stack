@@ -19,5 +19,44 @@
     "fromService": "from",
     "modelOption": "{model}",
     "modelOptionWithService": "{service} - {model}"
+  },
+  "actions": {
+    "list": "List",
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "access": "Access",
+    "create": "Create",
+    "save": "Save",
+    "reset": "Reset"
+  },
+  "crud": {
+    "notAuthorized": "Not authorized",
+    "savingDraft": "Saving draft...",
+    "draftChanged": "Draft changed",
+    "validationError": "Before saving, please correct the errors above.",
+    "noChanges": "No changes to save.",
+    "saveModel": "Save {model}",
+    "createModel": "Create {model}",
+    "createNew": "Create new {model}",
+    "executing": "Executing...",
+    "editModel": "Edit {model}",
+    "backwardRelations": "Backward relations"
+  },
+  "nav": {
+    "home": "Home",
+    "customers": "Customers",
+    "addNew": "Add New",
+    "search": "Search",
+    "purchases": "Purchases",
+    "messages": "Messages",
+    "calendar": "Calendar",
+    "stats": "Stats",
+    "inbox": "Inbox",
+    "notifications": "Notifications"
+  },
+  "common": {
+    "rejected": "Rejected",
+    "rejectedDetail": "You have rejected"
   }
 }
