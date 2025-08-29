@@ -1,6 +1,6 @@
 <template>
   <div v-if="synchronizedAccessRequests.length > 0" class="mb-6">
-    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Access Requests</div>
+    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">{{ t('access.accessRequests') }}</div>
     <div v-for="access of synchronizedAccessRequests" :key="access.to"
          class="flex flex-row flex-wrap items-center">
       <div class="col-span-12 md:col-span-6 py-1">
@@ -51,6 +51,8 @@
   import { synchronized, synchronizedList } from "@live-change/vue3-components"
 
   import { computed, watch, ref, onMounted } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const { object, objectType, availableRoles, multiRole, disabled } = defineProps({
     object: {
@@ -106,7 +108,7 @@
     identifiers: { object, objectType },
     objectIdentifiers: ({ to, sessionOrUser, sessionOrUserType }) =>
         ({ accessRequest: to, sessionOrUser, sessionOrUserType, object, objectType }),
-    onSave: () => toast.add({ severity: 'info', summary: 'Access request saved', life: 1500 }),
+    onSave: () => toast.add({ severity: 'info', summary: t('access.accessRequestSaved'), life: 1500 }),
     recursive: true
   })
   const synchronizedAccessRequests = synchronizedAccessRequestsList.value
@@ -115,16 +117,16 @@
     console.log("DELETE ACCESS REQUEST", accessRequest)
     confirm.require({
       target: event.currentTarget,
-      message: `Do you want to delete user "${accessRequest.identification.name}" access request?`,
+      message: t('access.confirmDeleteAccessRequest', { name: accessRequest.identification.name }),
       icon: 'pi pi-info-circle',
       acceptClass: 'p-button-danger',
       accept: async () => {
         await synchronizedAccessRequestsList.delete(accessRequest)
         //accessRequest.delete()
-        toast.add({ severity:'info', summary: 'Access Request Deleted', life: 1500 })
+        toast.add({ severity:'info', summary: t('access.accessRequestDeleted'), life: 1500 })
       },
       reject: () => {
-        toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
+        toast.add({ severity:'error', summary: t('common.rejected'), detail: t('common.rejectedDetail'), life: 3000 })
       }
     })
   }
@@ -134,7 +136,7 @@
     await accessControlApi.acceptAccessRequest({
       ...accessRequest, access: accessRequest.to
     })
-    toast.add({ severity:'info', summary: 'Access Request accepted', life: 1500 })
+    toast.add({ severity:'info', summary: t('access.accessRequestAccepted'), life: 1500 })
   }
 
 </script>

@@ -3,7 +3,7 @@
           :modal="true" class="w-full sm:w-9/12 md:w-8/12 lg:w-6/12">
     <template #header>
       <div class="flex flex-wrap w-full">
-        <div class="text-xl">Invite user with email</div>
+        <div class="text-xl">{{ t('invite.inviteUserWithEmail') }}</div>
       </div>
     </template>
 
@@ -13,8 +13,8 @@
 
         <Tabs  v-model:value="tabIndex" class="w-full">
           <TabList>
-            <Tab value="0">Single user</Tab>
-            <Tab value="1">Multiple users</Tab>
+            <Tab value="0">{{ t('invite.singleUser') }}</Tab>
+            <Tab value="1">{{ t('invite.multipleUsers') }}</Tab>
           </TabList>
           <TabPanels>
             <TabPanel value="0">
@@ -30,7 +30,7 @@
                   <div class="col-span-12 md:col-span-6 mb-2">
                     <div class="p-field">
                       <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                        Email address
+                        {{ t('invite.emailAddress') }}
                       </label>
                       <InputText id="email" type="text" class="w-full"
                                 aria-describedby="email-help" :invalid="!!data.emailError"
@@ -43,7 +43,7 @@
                   <div class="col-span-12 md:col-span-6 mb-2">
                     <div class="p-field ">
                       <label for="inviteAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                        Roles
+                        {{ t('invite.roles') }}
                       </label>
                       <Dropdown v-if="!multiRole" id="inviteAccess" class="w-14em w-full"
                                 :options="['none'].concat(availableRoles)"
@@ -64,7 +64,7 @@
                 </div>
                 <div class="p-field">
                   <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                    Message ( optional )
+                    {{ t('invite.messageOptional') }}
                   </label>
                   <Textarea id="inviteMessage" v-model="data.message" :autoResize="true" rows="3" class="w-full" />
                 </div>
@@ -83,7 +83,7 @@
 
                   <div class="p-field mb-4">
                     <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                      Email addresses (newline or comma separated)
+                      {{ t('invite.emailAddressesMultiple') }}
                     </label>
                     <Textarea id="emailsText" type="text" class="w-full"
                               rows="4"
@@ -95,7 +95,7 @@
                   </div>
                   <div class="p-field mb-4">
                     <label for="inviteAccess" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                      Roles
+                      {{ t('invite.roles') }}
                     </label>
                     <Dropdown v-if="!multiRole" id="inviteAccess" class="w-14em w-full"
                               :options="['none'].concat(availableRoles)"
@@ -114,7 +114,7 @@
                   </div>
                 <div class="p-field mb-1">
                   <label for="inviteMessage" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-                    Message ( optional )
+                    {{ t('invite.messageOptional') }}
                   </label>
                   <Textarea id="inviteMessage" v-model="data.message" :autoResize="true" rows="3" class="w-full" />
                 </div>
@@ -138,9 +138,9 @@
 
     <template #footer>
       <Button v-if="tabIndex === 0"
-              label="Invite email" icon="pi pi-envelope" autofocus @click="inviteForm.submit()" />
+              :label="t('invite.inviteEmail')" icon="pi pi-envelope" autofocus @click="inviteForm.submit()" />
       <Button v-else
-              label="Invite emails" icon="pi pi-envelope" autofocus @click="inviteManyForm.submit()" />
+              :label="t('invite.inviteEmails')" icon="pi pi-envelope" autofocus @click="inviteManyForm.submit()" />
     </template>
 
 
@@ -214,7 +214,7 @@
   const inviteForm = ref()
   function handleInvited({ parameters, result }) {
     visible.value = false
-    toast.add({ severity: 'success', summary: 'Invitation sent!', life: 1500 })
+    toast.add({ severity: 'success', summary: t('invite.invitationSent'), life: 1500 })
     console.log("INVITED", arguments)
   }
 
@@ -225,19 +225,19 @@
     if(!tmv) {
       inviteTask.value = null
       visible.value = false
-      toast.add({ severity: 'success', summary: 'Invitations were sent!', life: 1500 })
+      toast.add({ severity: 'success', summary: t('invite.invitationsWereSent'), life: 1500 })
     }
   })
 
   const taskTypes = {
     inviteManyEmail: {
       label(task) {
-        return 'Invite ' + task.properties.contacts.length + ' emails'
+        return t('invite.inviteMultipleEmails', { count: task.properties.contacts.length })
       }
     },
     inviteEmail: {
       label(task) {
-        return 'Invite '+ task.properties.email
+        return t('invite.inviteSingleEmail', { email: task.properties.email })
       }
     }
   }
@@ -248,7 +248,7 @@
     const { task } = result
     inviteTask.value = task
     taskModalVisible.value = true
-    toast.add({ severity: 'info', summary: 'Invitation will be sent!', life: 1500 })
+    toast.add({ severity: 'info', summary: t('invite.invitationWillBeSent'), life: 1500 })
   }
 
 </script>
