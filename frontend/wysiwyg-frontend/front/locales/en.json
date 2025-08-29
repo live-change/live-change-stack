@@ -1,0 +1,20 @@
+{
+  "editor": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "save": "Save",
+    "preview": "Preview",
+    "edit": "Edit",
+    "settings": "Settings",
+    "templates": "Templates",
+    "components": "Components",
+    "styles": "Styles",
+    "document": "Document",
+    "menu": "Menu",
+    "padding": "Padding",
+    "link": "Link",
+    "image": "Image",
+    "empty": "Empty Component"
+  }
+}

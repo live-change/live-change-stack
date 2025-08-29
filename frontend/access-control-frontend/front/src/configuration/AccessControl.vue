@@ -3,7 +3,7 @@
     <div v-if="myRoles.length > 0">
 
       <div class="text-center">
-        <Button label="Invite with email" icon="pi pi-envelope" class="p-button mb-6"
+        <Button :label="t('invite.inviteWithEmail')" icon="pi pi-envelope" class="p-button mb-6"
                 @click="inviteDialog = true" :disabled="!canInvite"  />
       </div>
 
@@ -114,6 +114,8 @@
   })
 
   import { computed, watch, ref, onMounted } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)

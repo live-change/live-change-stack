@@ -2,7 +2,7 @@
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Reset password</div>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('auth.resetPassword') }}</div>
       </div>
 
       <command-form service="passwordAuthentication" action="resetPasswordEmail" v-slot="{ data }"
@@ -20,7 +20,7 @@
           </Message>
         </div>
 
-        <Button type="submit" label="Reset password" icon="pi pi-key" class="w-full"></Button>
+        <Button type="submit" :label="t('auth.resetPassword')" icon="pi pi-key" class="w-full"></Button>
 
       </command-form>
     </div>

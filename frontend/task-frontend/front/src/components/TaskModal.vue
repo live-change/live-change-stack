@@ -8,7 +8,7 @@
         </div>
 
         <div class="my-4" v-if="!noClose">
-          <Button icon="pi pi-times" label="Close" class="w-full" @click="close" />
+          <Button icon="pi pi-times" :label="t('tasks.close')" class="w-full" @click="close" />
         </div>
 
         <Task :task="taskData" :tasks="allTasks" :taskTypes="taskTypes" />
@@ -87,10 +87,10 @@
   watchEffect(() => {
     if(!visible.value) return
     if(taskData.value?.state === 'failed') {
-      toast.add({ severity: 'error', summary: 'Task failed', detail: taskData.value?.error })
+      toast.add({ severity: 'error', summary: t('tasks.taskFailed'), detail: taskData.value?.error })
     }
     if(taskData.value?.state === 'done') {
-      toast.add({ severity: 'success', summary: 'Task done', life: 1500 })
+      toast.add({ severity: 'success', summary: t('tasks.taskDone'), life: 1500 })
       close()
     }
   })

@@ -67,6 +67,8 @@
   }
 
   import { computed, watch, ref, onMounted } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const {
     object, objectType,
@@ -135,7 +137,7 @@
     update: accessControlApi.setOrUpdatePublicAccess,
     identifiers: { object, objectType },
     recursive: true,
-    onSave: () => toast.add({ severity: 'info', summary: 'Public access saved', life: 1500 })
+    onSave: () => toast.add({ severity: 'info', summary: t('access.publicAccessSaved'), life: 1500 })
   }).value
 
 </script>

@@ -1,17 +1,17 @@
 <template>
   <div class="w-full">
     <div class="bg-surface-0 dark:bg-surface-900 p-3 shadow mb-1">
-      <h2>Tasks</h2>
+      <h2>{{ t('tasks.tasks') }}</h2>
 <!--       <pre>tasksNames = {{ tasksNames }}</pre>
       <pre>taskStates = {{ taskStates }}</pre> -->
       <div class="flex flex-wrap gap-3 mb-3">
         <div class="flex-1">
-          <label for="task-name" class="block mb-2">Task Name</label>
+          <label for="task-name" class="block mb-2">{{ t('tasks.taskName') }}</label>
           <Select id="task-name" v-model="name" :options="['any', ...tasksNames]" 
                   placeholder="Select Task Name" class="w-full"  />
         </div>
         <div class="flex-1">
-          <label for="task-state" class="block mb-2">Task State</label>
+          <label for="task-state" class="block mb-2">{{ t('tasks.taskState') }}</label>
           <Select id="task-state" v-model="state" :options="['any', ...taskStates.map(s => ({label: s, value: s}))]"
                   placeholder="Select Task State" class="w-full" />
         </div>

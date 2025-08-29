@@ -3,7 +3,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border px-4 py-1">
 
       <div>
-        <h2>Built shelters</h2>
+        <h2>{{ t('tasks.builtShelters') }}</h2>
         <pre>{{ shelters }}</pre>
       </div>
 
@@ -37,16 +37,16 @@
           </div>
 
           <div class="text-right">
-            <Button type="submit" icon="pi pi-play" label="Build" class="mt-2" />
+            <Button type="submit" icon="pi pi-play" :label="t('tasks.build')" class="mt-2" />
           </div>
         </div>
 
       </command-form>
     </div>
 <!--    <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border px-4 py-1">
-      <h2>Root</h2>
+      <h2>{{ t('tasks.root') }}</h2>
       <pre>{{ tasksRoot }}</pre>
-      <h2>Tasks</h2>
+      <h2>{{ t('tasks.tasks') }}</h2>
       <Task v-for="task in rootTasks" :key="task.id" :task="task" :tasks="tasks" :task-types="taskTypes" />
     </div>-->
   </div>
@@ -54,6 +54,8 @@
 
 <script setup>
   import { ref, computed } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
   import { usePath, live } from '@live-change/vue3-ssr'
   import { useRouter } from 'vue-router'
 

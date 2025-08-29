@@ -1,0 +1,17 @@
+{
+  "image": {
+    "crop": "Crop",
+    "resize": "Resize",
+    "edit": "Edit",
+    "save": "Save",
+    "upload": "Upload",
+    "editor": "Editor",
+    "input": "Input",
+    "width": "Width",
+    "height": "Height",
+    "quality": "Quality",
+    "imageEditor": "Image Editor",
+    "imageInput": "Image Input",
+    "imageCrop": "Image Crop"
+  }
+}

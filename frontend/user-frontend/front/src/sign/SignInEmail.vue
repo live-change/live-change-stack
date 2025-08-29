@@ -3,11 +3,11 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
 
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Welcome Back</div>
-        <span class="text-surface-600 dark:text-surface-200 font-medium leading-normal">Don't have an account?</span>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('auth.welcomeBack') }}</div>
+        <span class="text-surface-600 dark:text-surface-200 font-medium leading-normal">{{ t('auth.dontHaveAccount') }}</span>
         <router-link :to="{ name: 'user:signUpEmail' }"
                      class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
-          Create today!</router-link>
+          {{ t('auth.createToday') }}</router-link>
       </div>
 
       <command-form service="passwordAuthentication" action="signInEmail" v-slot="{ data }"
@@ -15,7 +15,7 @@
 
         <div class="p-field mb-4">
           <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-            Email address
+            {{ t('auth.emailAddress') }}
           </label>
           <InputText id="email" type="text" class="w-full"
                      aria-describedby="email-help" :invalid="data.emailError" 
@@ -26,7 +26,7 @@
         </div>
 
         <div class="p-field mb-4">
-          <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Password (optional)</label>
+          <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.passwordOptional') }}</label>
           <Password id="password" class="w-full" inputClass="w-full" toggleMask :feedback="false"
                     aria-describedby="password-help" :invalid="data.passwordHashError" 
                     v-model="data.passwordHash" />        
@@ -43,23 +43,23 @@
           </div>-->
           <router-link :to="{ name: 'user:resetPassword' }"
                        class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer">
-            Forgot password?
+            {{ t('auth.forgotPassword') }}
           </router-link>
         </div>
 
-        <Button label="Sign In" icon="pi pi-user" class="w-full" type="submit"></Button>
+        <Button :label="t('auth.signIn')" icon="pi pi-user" class="w-full" type="submit"></Button>
 
       </command-form>
 
       <Divider v-if="availableAccountTypes.length > 0" align="center" class="my-6">
-        <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">OR</span>
+        <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">{{ t('common.or') }}</span>
       </Divider>
 
       <router-link v-for="accountType in availableAccountTypes"
                    :to="accountType.connectRoute"
                    class="no-underline">
         <Button
-          :label="`Sign In with ${accountType.accountType[0].toUpperCase()}${accountType.accountType.slice(1)}`"
+          :label="t('auth.signInWith', { provider: accountType.accountType[0].toUpperCase() + accountType.accountType.slice(1) })"
           :icon="`pi pi-${accountType.accountType}`"
           class="w-full p-button-secondary mb-1"
         />

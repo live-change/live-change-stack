@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-row w-full justify-evenly">
     <div class="bg-surface-0 dark:bg-surface-900 shadow-sm rounded-border px-4 py-1 w-full">
-      <h2>Tasks</h2>
+      <h2>{{ t('tasks.tasks') }}</h2>
       <Task v-for="task in rootTasks" :key="task.id" :task="task" :tasks="tasks" :task-types="taskTypes" />
 <!--      <pre>{{ rootTasks }}</pre>-->
     </div>

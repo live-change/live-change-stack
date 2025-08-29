@@ -1,0 +1,15 @@
+{
+  "peer": {
+    "camera": "Camera",
+    "microphone": "Microphone",
+    "settings": "Settings",
+    "permissions": "Permissions",
+    "deviceSelect": "Device Select",
+    "volumeIndicator": "Volume Indicator",
+    "mediaSettings": "Media Settings",
+    "debugger": "Debugger",
+    "cameraButton": "Camera Button",
+    "microphoneButton": "Microphone Button",
+    "permissionsDialog": "Permissions Dialog"
+  }
+}

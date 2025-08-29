@@ -5,12 +5,12 @@
     </div>
     <div v-for="part in result.walls"
          :class="`bg-gray-200 px-1 mx-2 border-round`">
-      <span>Wall</span>
+      <span>{{ t('shelter.wall') }}</span>
       <span class="ml-1">({{ part.size }})</span>
     </div>
     <div v-for="part in [result.roof]"
          :class="`bg-gray-200 px-1 mx-2 border-round`">
-      <span>Roof</span>
+      <span>{{ t('shelter.roof') }}</span>
       <span class="ml-1">({{ part.size }})</span>
     </div>
   </div>

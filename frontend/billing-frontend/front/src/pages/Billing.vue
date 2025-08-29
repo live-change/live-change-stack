@@ -26,10 +26,10 @@
                                   value: offer.value, price: offer.price, currency: offer.currency
                               } }"
                          class="flex flex-row no-underline hover:underline">
-              <span class="mr-1">Add</span>
+              <span class="mr-1">{{ t('billing.add') }}</span>
               <CurrencyDisplay class="font-semibold"
                 :value="offer.value" :currency="settings.currency" :denomination="settings.denomination" />
-              <span class="mx-1">for</span>
+              <span class="mx-1">{{ t('billing.for') }}</span>
               <CurrencyDisplay class="font-medium"
                 :value="offer.price" :currency="offer.currency" :denomination="offer.denomination" />
             </router-link>
@@ -56,6 +56,8 @@
   import { CurrencyDisplay, OperationsList } from '@live-change/balance-frontend'
 
   import { defineProps, toRefs, computed, inject, provide, h } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
   import { provideComponent } from '@live-change/vue3-components'
 
   const props = defineProps({

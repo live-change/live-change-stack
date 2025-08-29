@@ -1,6 +1,6 @@
 <template>
   <div v-if="synchronizedAccesses.length > 0" class="mb-6">
-    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Authorized</div>
+    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">{{ t('access.authorized') }}</div>
     <div v-for="access of synchronizedAccesses" :key="access.to"
          class="flex flex-row flex-wrap items-center">
       <div class="col-span-12 md:col-span-6 py-1">
@@ -47,6 +47,8 @@
   import { synchronized, synchronizedList } from "@live-change/vue3-components"
 
   import { computed, watch, ref, onMounted } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const { object, objectType, availableRoles, multiRole, disabled } = defineProps({
     object: {
@@ -97,7 +99,7 @@
     identifiers: { object, objectType },
     objectIdentifiers: ({ to, sessionOrUser, sessionOrUserType }) =>
         ({ access: to, sessionOrUser, sessionOrUserType, object, objectType }),
-    onSave: () => toast.add({ severity: 'info', summary: 'Access saved', life: 1500 }),
+    onSave: () => toast.add({ severity: 'info', summary: t('access.accessSaved'), life: 1500 }),
     recursive: true
   })
   const synchronizedAccesses = synchronizedAccessesList.value

@@ -15,7 +15,7 @@
         <template v-if="isMounted">
 
           <div class="p-field mb-4" v-if="passwordExists">
-            <label for="currentPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Current password</label>
+            <label for="currentPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.currentPassword') }}</label>
             <Password id="currentPassword" class="w-full" inputClass="w-full"
                       toggle-mask v-model:masked="masked"
                       :invalid="!!data.currentPasswordHashError"
@@ -26,18 +26,18 @@
           </div>
 
           <div class="p-field mb-4">
-            <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">New password</label>
+            <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.newPassword') }}</label>
             <Password id="newPassword" class="w-full" inputClass="w-full"
                       toggle-mask v-model:masked="masked"
                       :invalid="!!data.passwordHashError"
                       v-model="data.passwordHash">
               <template #footer>
                 <Divider />
-                <p class="p-mt-2">Suggestions</p>
+                <p class="p-mt-2">{{ t('auth.passwordSuggestions') }}</p>
                 <ul class="p-pl-2 p-ml-2 p-mt-0" style="line-height: 1.5">
-                  <li>At least one lowercase</li>
-                  <li>At least one uppercase</li>
-                  <li>At least one numeric</li>
+                  <li>{{ t('auth.suggestionLowercase') }}</li>
+                  <li>{{ t('auth.suggestionUppercase') }}</li>
+                  <li>{{ t('auth.suggestionNumeric') }}</li>
                   <li>Minimum 8 characters</li>
                 </ul>
               </template>
@@ -48,7 +48,7 @@
           </div>
 
           <div class="p-field mb-4">
-            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Re-enter password</label>
+            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.reenterPassword') }}</label>
             <Password id="reenterPassword" class="w-full" inputClass="w-full"
                       toggle-mask v-model:masked="masked"
                       v-model="secondPassword"

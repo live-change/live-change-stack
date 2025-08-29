@@ -1,4 +1,19 @@
 {
+  "tasks": {
+    "tasks": "Tasks",
+    "taskName": "Task Name",
+    "taskState": "Task State",
+    "builtShelters": "Built shelters",
+    "build": "Build",
+    "root": "Root",
+    "close": "Close",
+    "taskFailed": "Task failed",
+    "taskDone": "Task done"
+  },
+  "shelter": {
+    "wall": "Wall",
+    "roof": "Roof"
+  },
   "app": {
     "updateAvailable": "Update available!",
     "newVersions": "New version of app is available!",

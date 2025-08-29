@@ -1,84 +1,17 @@
 {
-  "content": {
-    "metadata": {
-      "title": "Title",
-      "description": "Description",
-      "og:title": "Open Graph",
-      "og": {
-        "title": "Title",
-        "description": "Description",
-        "image": "Image",
-        "determiner": "Determiner",
-        "locale": "Locale",
-        "localeAlternate:title": "Locale Alternate",
-        "type": "Type",
-        "type:options": {
-          "website": "Website",
-          "article": "Article",
-          "profile": "Profile",
-          "book": "Book",
-          "music": {
-            "song": "Music Song",
-            "album": "Music Album",
-            "playlist": "Music Playlist",
-            "radio_station": "Music Radio Station"
-          },
-          "video": {
-            "movie": "Video Movie",
-            "episode": "Video Episode",
-            "tv_show": "Video TV Show",
-            "other": "Video Other"
-          }
-        },
-        "music:title": "Music",
-        "music": {
-          "duration": "Duration",
-          "song:title": "Song",
-          "creator:title": "Creator",
-          "album:title": "Album",
-          "album": {
-            "url": "URL",
-            "disc": "Disc",
-            "track": "Track"
-          },
-          "song": {
-            "url": "URL",
-            "disc": "Disc",
-            "track": "Track"
-          },
-          "musician:title": "Musician"
-        },
-        "video:title": "Video",
-        "video": {
-          "duration": "Duration",
-          "actor:title": "Actor",
-          "actor": {
-            "url": "URL",
-            "role": "Role"
-          },
-          "director:title": "Director",
-          "writer:title": "Writer",
-          "releaseDate": "Release Date",
-          "tag:title": "Tag",
-          "series": "Series"
-        },
-        "article:title": "Article",
-        "article": {
-          "publishedTime": "Published Time",
-          "modifiedTime": "Modified Time",
-          "expirationTime": "Expiration Time",
-          "author:title": "Authors",
-          "section": "Section",
-          "tag:title": "Tags"
-        },
-        "book:title": "Book",
-        "book": {
-          "author:title": "Authors",
-          "isbn": "ISBN",
-          "releaseDate": "Release Date",
-          "tag:title": "Tags"
-        }
-      }
-    }
+  "blog": {
+    "posts": "Posts",
+    "post": "Post",
+    "title": "Title",
+    "content": "Content",
+    "author": "Author",
+    "publish": "Publish",
+    "draft": "Draft",
+    "preview": "Preview",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "editor": "Editor",
+    "list": "List"
   }
 }

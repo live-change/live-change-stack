@@ -1,7 +1,14 @@
 {
-  "app": {
-    "updateAvailable": "Update available!",
-    "newVersions": "New version of app is available!",
-    "reload": "Reload"
+  "video": {
+    "selectDevicesAndJoin": "Select your media devices, and join.",
+    "join": "Join",
+    "leave": "Leave",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "camera": "Camera",
+    "microphone": "Microphone",
+    "settings": "Settings",
+    "room": "Room",
+    "participants": "Participants"
   }
 }
