@@ -1,16 +1,14 @@
 {
-  "blog": {
-    "posts": "Posts",
-    "post": "Post",
-    "title": "Title",
-    "content": "Content",
-    "author": "Author",
-    "publish": "Publish",
-    "draft": "Draft",
-    "preview": "Preview",
-    "edit": "Edit",
-    "delete": "Delete",
-    "save": "Save"
+  "url": {
+    "urls": "URLs",
+    "url": "URL",
+    "generate": "Generate",
+    "take": "Take",
+    "noUrl": "No Url",
+    "notFound": "Not Found",
+    "notAuthorized": "Not Authorized",
+    "resolve": "Resolve",
+    "info": "Info"
   },
   "nav": {
     "home": "Home",

@@ -11,22 +11,22 @@
       </div>
 
       <div v-if="topUp?.state === 'created'" class="mt-6 text-lg">
-        We are still waiting for payment confirmation.
+        {{ t('billing.waitingForConfirmation') }}
       </div>
       <div v-if="topUp?.state === 'paid'" class="mt-6 text-lg">
-        Your top-up is successful.
+        {{ t('billing.topUpSuccessful') }}
       </div>
       <div v-if="topUp?.state === 'refunded'" class="mt-6 text-lg">
-        Your top-up is refunded.
+        {{ t('billing.topUpRefunded') }}
       </div>
       <div v-if="topUp?.state === 'failed'" class="mt-6 text-lg">
-        Your top-up is failed.
+        {{ t('billing.topUpFailed') }}
       </div>
 
-      <div class="mt-4">Your current balance is <BillingBalance /></div>
+      <div class="mt-4">{{ t('billing.currentBalance') }} <BillingBalance /></div>
 
       <router-link :to="{ name: 'billing:billing' }" class="mt-8 mb-4">
-        <Button label="Back to billing" icon="pi pi-wallet" />
+        <Button :label="t('billing.backToBilling')" icon="pi pi-wallet" />
       </router-link>
 
     </div>
@@ -43,6 +43,8 @@
   import { NotFound } from "@live-change/url-frontend";
 
   import { defineProps, toRefs, computed, inject } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const props = defineProps({
     encodedId: {

@@ -13,10 +13,10 @@
 
       <div class="relative mt-6">
         <ProgressSpinner style="width: 400px; height: 400px; max-width: 90vw; max-height: 70vh" strokeWidth="1"
-                         animationDuration="1s" aria-label="Connecting to payment gateway" />
+                         animationDuration="1s" :aria-label="t('billing.connectingToGateway')" />
         <div class="absolute w-full h-full top-0 left-0 flex items-center justify-center">
           <div class="text-lg w-40 text-center">
-            Connecting to payment gateway...
+            {{ t('billing.connectingToGateway') }}...
           </div>
         </div>
       </div>
@@ -36,6 +36,8 @@
   import { CurrencyDisplay } from '@live-change/balance-frontend'
 
   import { defineProps, toRefs, computed, inject, onMounted } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   import { NotFound } from '@live-change/url-frontend'
 

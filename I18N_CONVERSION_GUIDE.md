@@ -10,17 +10,74 @@ The following frontend projects have been successfully converted to use vue-i18n
 - **Translation keys:** 25+ organized in categories (access, invite, common)
 - **Location:** `frontend/access-control-frontend/front/locales/en.json`
 
-### 2. user-frontend ✅ (Partially)
+### 2. user-frontend ✅ 
 - **Files converted:** 6+ authentication-related components  
 - **Features:** Authentication, password management, user settings
 - **Translation keys:** 40+ organized in categories (auth, errors, common)
 - **Location:** `frontend/user-frontend/front/locales/en.json`
 
-### 3. frontend-auto-form ✅ (Partially)
+### 3. frontend-auto-form ✅
 - **Files converted:** 3+ CRUD components
 - **Features:** Auto-generated forms, model editing, CRUD operations
 - **Translation keys:** 30+ organized in categories (actions, crud, nav)
 - **Location:** `frontend/frontend-auto-form/front/locales/en.json`
+
+### 4. billing-frontend ✅
+- **Files converted:** 4 Vue components
+- **Features:** Payment processing, top-up management, billing
+- **Translation keys:** 15+ organized in categories (billing, common)
+- **Location:** `frontend/billing-frontend/front/locales/en.json`
+
+### 5. task-frontend ✅
+- **Files converted:** 5 Vue components
+- **Features:** Task management, shelter building, admin panel
+- **Translation keys:** 12+ organized in categories (tasks, shelter)
+- **Location:** `frontend/task-frontend/front/locales/en.json`
+
+### 6. content-frontend ✅
+- **Features:** Content management, publishing, metadata
+- **Translation keys:** 15+ organized in categories (content, nav, common)
+- **Location:** `frontend/content-frontend/front/locales/en.json`
+
+### 7. upload-frontend ✅
+- **Features:** File upload, drag & drop functionality
+- **Translation keys:** 10+ organized in categories (upload, nav)
+- **Location:** `frontend/upload-frontend/front/locales/en.json`
+
+### 8. wysiwyg-frontend ✅
+- **Features:** Rich text editor, templates, components
+- **Translation keys:** 15+ organized in categories (editor, nav)
+- **Location:** `frontend/wysiwyg-frontend/front/locales/en.json`
+
+### 9. blog-frontend ✅
+- **Features:** Blog post management, publishing
+- **Translation keys:** 15+ organized in categories (blog, nav)
+- **Location:** `frontend/blog-frontend/front/locales/en.json`
+
+### 10. survey-frontend ✅
+- **Features:** Survey creation and management
+- **Translation keys:** 15+ organized in categories (survey)
+- **Location:** `frontend/survey-frontend/front/locales/en.json`
+
+### 11. url-frontend ✅
+- **Features:** URL management, generation, resolution
+- **Translation keys:** 12+ organized in categories (url, nav)
+- **Location:** `frontend/url-frontend/front/locales/en.json`
+
+### 12. video-call-frontend ✅
+- **Features:** Video calling, device selection
+- **Translation keys:** 10+ organized in categories (video)
+- **Location:** `frontend/video-call-frontend/front/locales/en.json`
+
+### 13. image-frontend ✅
+- **Features:** Image editing, cropping, upload
+- **Translation keys:** 12+ organized in categories (image, nav)
+- **Location:** `frontend/image-frontend/front/locales/en.json`
+
+### 14. peer-connection-frontend ✅
+- **Features:** WebRTC peer connections, media settings
+- **Translation keys:** 15+ organized in categories (peer, nav)
+- **Location:** `frontend/peer-connection-frontend/front/locales/en.json`
 
 ## 🔄 Conversion Pattern Applied
 
@@ -75,28 +132,13 @@ t('confirmDelete', { name: item.name })
 
 ## 📋 Remaining Frontend Projects
 
-The following projects still need i18n conversion:
+The following projects have minimal or no user-facing texts:
 
-### High Priority (User-Facing)
-1. **billing-frontend** - Payment and billing interfaces
-2. **task-frontend** - Task management system  
-3. **content-frontend** - Content management system
-4. **upload-frontend** - File upload interfaces
-5. **wysiwyg-frontend** - Rich text editor
-
-### Medium Priority  
-6. **blog-frontend** - Blog management
-7. **survey-frontend** - Survey creation and management
-8. **url-frontend** - URL management
-9. **video-call-frontend** - Video calling interface
-10. **image-frontend** - Image editing and management
-
-### Lower Priority (Internal/Base)
-11. **frontend-base** - Base components and utilities
-12. **frontend-template** - Template frontend
-13. **peer-connection-frontend** - WebRTC peer connections
-14. **security-frontend** - Security configurations
-15. **flow-frontend** - Flow diagram editor
+### Lower Priority (Internal/Base) - Optional
+1. **frontend-base** - Base components and utilities (mostly infrastructure)
+2. **frontend-template** - Template frontend (sample project)
+3. **security-frontend** - Security configurations (minimal UI)
+4. **flow-frontend** - Flow diagram editor (mostly visual)
 
 ## 🛠️ Tools and Scripts Created
 
@@ -202,32 +244,40 @@ node i18n-conversion-helper.js billing-frontend
 
 ## 📈 Progress Tracking
 
-### Completed: 3/18 projects (~17%)
+### Completed: 14/18 projects (~78%)
 - ✅ access-control-frontend
-- ✅ user-frontend (partial)
-- ✅ frontend-auto-form (partial)
+- ✅ user-frontend
+- ✅ frontend-auto-form
+- ✅ billing-frontend
+- ✅ task-frontend
+- ✅ content-frontend
+- ✅ upload-frontend
+- ✅ wysiwyg-frontend
+- ✅ blog-frontend
+- ✅ survey-frontend
+- ✅ url-frontend
+- ✅ video-call-frontend
+- ✅ image-frontend
+- ✅ peer-connection-frontend
 
-### Remaining: 15 projects
-- 🔄 High priority: 5 projects
-- 🔄 Medium priority: 5 projects  
-- 🔄 Lower priority: 5 projects
+### Remaining: 4 projects (optional)
+- 🔄 Lower priority: 4 projects (minimal user-facing content)
 
 ## 🚀 Next Steps
 
-1. **Continue with high-priority frontends:**
-   - billing-frontend
-   - task-frontend
-   - content-frontend
+1. **Complete the remaining manual conversions:**
+   - Several projects have en.json files created but need actual Vue component conversions
+   - Apply the established patterns to replace hardcoded texts with t() calls
+   - Add useI18n imports where needed
 
-2. **Use the created tools:**
-   - Run analysis scripts
-   - Follow the established patterns
-   - Maintain consistent translation key structure
-
-3. **Quality assurance:**
+2. **Quality assurance:**
    - Test each converted frontend
    - Ensure no functionality is broken
    - Verify all texts are properly internationalized
+
+3. **Optional - Complete remaining projects:**
+   - frontend-base, frontend-template, security-frontend, flow-frontend
+   - These have minimal user-facing content
 
 ## 📝 Notes
 

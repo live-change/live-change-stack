@@ -1,11 +1,15 @@
 {
-  "content": {
+  "editor": {
+    "bold": "Bold",
+    "italic": "Italic",
+    "underline": "Underline",
+    "save": "Save",
     "preview": "Preview",
-    "publish": "Publish",
-    "published": "Published",
-    "contentPublished": "{type} published",
-    "errorPublishing": "Error publishing {type}",
-    "saveMetadata": "Save metadata"
+    "edit": "Edit",
+    "settings": "Settings",
+    "templates": "Templates",
+    "components": "Components",
+    "styles": "Styles"
   },
   "nav": {
     "home": "Home",
@@ -18,10 +22,5 @@
     "stats": "Stats",
     "inbox": "Inbox",
     "notifications": "Notifications"
-  },
-  "common": {
-    "error": "Error",
-    "rejected": "Rejected",
-    "rejectedDetail": "You have rejected"
   }
 }

@@ -1,16 +1,10 @@
 {
-  "blog": {
-    "posts": "Posts",
-    "post": "Post",
-    "title": "Title",
-    "content": "Content",
-    "author": "Author",
-    "publish": "Publish",
-    "draft": "Draft",
-    "preview": "Preview",
-    "edit": "Edit",
-    "delete": "Delete",
-    "save": "Save"
+  "upload": {
+    "uploadFile": "Upload File",
+    "uploaded": "Uploaded",
+    "dragFilesHere": "Drag files here",
+    "orClickToSelect": "or click to select",
+    "selectFiles": "Select Files"
   },
   "nav": {
     "home": "Home",

@@ -1,16 +1,13 @@
 {
-  "blog": {
-    "posts": "Posts",
-    "post": "Post",
-    "title": "Title",
-    "content": "Content",
-    "author": "Author",
-    "publish": "Publish",
-    "draft": "Draft",
-    "preview": "Preview",
-    "edit": "Edit",
-    "delete": "Delete",
-    "save": "Save"
+  "peer": {
+    "camera": "Camera",
+    "microphone": "Microphone",
+    "settings": "Settings",
+    "permissions": "Permissions",
+    "deviceSelect": "Device Select",
+    "volumeIndicator": "Volume Indicator",
+    "mediaSettings": "Media Settings",
+    "debugger": "Debugger"
   },
   "nav": {
     "home": "Home",

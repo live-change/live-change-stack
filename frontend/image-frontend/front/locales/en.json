@@ -1,16 +1,16 @@
 {
-  "blog": {
-    "posts": "Posts",
-    "post": "Post",
-    "title": "Title",
-    "content": "Content",
-    "author": "Author",
-    "publish": "Publish",
-    "draft": "Draft",
-    "preview": "Preview",
+  "image": {
+    "crop": "Crop",
+    "resize": "Resize",
     "edit": "Edit",
-    "delete": "Delete",
-    "save": "Save"
+    "save": "Save",
+    "upload": "Upload",
+    "editor": "Editor",
+    "input": "Input",
+    "test": "Test",
+    "width": "Width",
+    "height": "Height",
+    "quality": "Quality"
   },
   "nav": {
     "home": "Home",

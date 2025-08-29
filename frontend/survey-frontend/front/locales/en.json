@@ -1,7 +1,18 @@
 {
-  "app": {
-    "updateAvailable": "Update available!",
-    "newVersions": "New version of app is available!",
-    "reload": "Reload"
+  "survey": {
+    "survey": "Survey",
+    "surveys": "Surveys",
+    "question": "Question",
+    "questions": "Questions",
+    "answer": "Answer",
+    "answers": "Answers",
+    "submit": "Submit",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish",
+    "results": "Results",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete"
   }
 }
