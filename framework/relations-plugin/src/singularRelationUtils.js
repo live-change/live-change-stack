@@ -40,7 +40,7 @@ export function defineObjectView(config, context, external = true) {
   const viewName = config.name
     || ((config.prefix ? config.prefix + modelName : modelName[0].toLowerCase() + modelName.slice(1)) + (config.suffix || ''))
   model.crud.read = viewName
-  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const sourceAccessControl = external && (config.singleAccessControl || config.readAccessControl || config.writeAccessControl)
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, 
     otherPropertyNames.concat(modelPropertyName), 
     others.concat(model))
@@ -54,7 +54,7 @@ export function defineObjectView(config, context, external = true) {
     },
     internal: !external,
     global: config.globalView,
-    access: external && (config.readAccess || config.writeAccess),
+    access: external && (config.singleAccess || config.readAccess || config.writeAccess),
     accessControl,
     daoPath(properties, { client, context }) {
       const idProp = modelPropertyName ? properties[modelPropertyName] : null

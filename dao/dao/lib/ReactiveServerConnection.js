@@ -76,7 +76,7 @@ class PushObservableTrigger {
     }
   }
   findPointers(value) {
-    debugPot("FIND POINTERS IN", value)
+    debugPot("FIND POINTERS IN", value, 'SCHEMA', JSON.stringify(this.more, null, 2))
     let depsPointers = []
     let count = 0
     for(let dep of this.more) {

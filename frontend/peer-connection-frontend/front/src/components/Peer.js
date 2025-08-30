@@ -39,7 +39,7 @@ const createPeer = async ({
     peerOnline,
     turnConfiguration
   ] = await Promise.all([
-    live(path.peerConnection.peers({ channelType, channel })
+    live(path.peerConnection.channelPeers({ channelType, channel })
       .with(peer => path.peerConnection.peerState({ peer: peer.id }).bind('peerState'))
       .with(peer => path.user.sessionUser({ session: peer.session }).bind('user'))
     , appContext, onUnmountedCb),

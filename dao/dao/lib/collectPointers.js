@@ -128,10 +128,10 @@ function collect(source, schema, getSource) {
         let propId = 0
         for(let key in objectSchema) {
           let values = collect(source, objectSchema[key], getSource)
-          propValues[propId] = values.filter(Boolean)
+          propValues[propId] = values.filter(x => x !== undefined && x !== null)
           propValues[propId].many = values.many
           propId++
-        }      
+        }
         let crossed = cross(propValues)
         let results = new Array(crossed.length)
         for(let i = 0; i < crossed.length; i++) {

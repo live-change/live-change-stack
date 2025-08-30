@@ -26,7 +26,8 @@ const peerStateFields = {
 const PeerState = definition.model({
   name: "PeerState",
   propertyOf: {
-    what: Peer
+    what: Peer,
+    singleAccess: () => true
   },
   properties: {
     ...peerStateFields,

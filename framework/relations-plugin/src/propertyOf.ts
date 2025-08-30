@@ -34,6 +34,8 @@ export interface PropertyOfConfig extends RelationConfig {
   setOrUpdateAccess?: AccessSpecification
   resetAccess?: AccessSpecification
   readAllAccess?: AccessSpecification
+  singleAccess?: AccessSpecification
+  singleAccessControl?: AccessControlSettings
 
   readAccessControl?: AccessControlSettings
   writeAccessControl?: AccessControlSettings
@@ -70,7 +72,10 @@ export default function(service, app) {
     defineIndexes(context.model, context.otherPropertyNames, context.others)
 
     defineObjectView({ ...config }, context,
-      !!(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl))
+      !!(
+        config.singleAccess || config.singleAccessControl
+         || config.readAccess || config.readAccessControl 
+         || config.writeAccess || config.writeAccessControl))
     defineRangeViews(config, context,
       !!(config.listAccess || config.readAccess || config.listAccessControl))
 

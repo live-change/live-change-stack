@@ -2,7 +2,7 @@ import test from 'tape'
 import ReactiveDao from "../index.js"
 
 test("pointers collector", (t) => {
-  t.plan(14)
+  t.plan(15)
 
   t.test("simple property", (t) => {
     t.plan(2)
@@ -231,6 +231,34 @@ test("pointers collector", (t) => {
         ], "results match")
   })
 
-
+  t.test("test fetch with parameter equals 0", (t) => {
+    t.plan(1)
+    let pointers = ReactiveDao.collectPointers({
+      id: '[Wf8UAXnGS.0@mzZQq]',
+      phase: 0,
+      round: 0,
+      phaseRound: 0,
+      state: 'running',
+      lastUpdate: '2025-08-30T10:34:32.258Z',
+      roundEndTime: '2025-08-30T18:54:42.257Z',
+      roundStartTime: '2025-08-30T10:34:32.257Z',
+      event: '[Wf8UAXnGS.0@mzZQq]',
+    }, [      
+      ["speedDating", "myPairByRound", { object: {
+        event: '[Wf8UAXnGS.0@mzZQq]',
+        round: { property: "round"}
+      }}]      
+    ])
+    t.deepEqual(pointers.slice(), [
+      [
+        "speedDating",
+        "myPairByRound",
+        {
+          "event": "[Wf8UAXnGS.0@mzZQq]",
+          "round": 0
+        }
+      ]
+    ], "results match")
+  })
 
 })

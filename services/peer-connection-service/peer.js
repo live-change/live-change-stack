@@ -21,7 +21,7 @@ export const Peer = definition.model({
 })
 
 definition.view({
-  name: "peers",
+  name: "channelPeers",
   properties: {
     channelType: {
       type: String,

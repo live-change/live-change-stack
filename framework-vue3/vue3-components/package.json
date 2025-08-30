@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/vue3-ssr": "^0.9.131",
+    "@live-change/vue3-ssr": "0.9.131",
     "debug": "^4.3.4",
     "mitt": "3.0.1",
     "vue": "^3.5.12",
