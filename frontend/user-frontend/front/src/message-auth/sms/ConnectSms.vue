@@ -1,10 +1,10 @@
 <template>
   <pre data-headers>{{ JSON.stringify(metadata, null, '  ') }}</pre>
   <pre class="message" data-text>
-    Hello! Enter authentication code: {{ code }}
-    Or open authentication link: {{ linkAddress }}
-    See you soon
-    {{ brandName }} Team
+    {{ t('smsTemplates.hello') }} {{ t('smsTemplates.enterCode') }} {{ code }}
+    {{ t('smsTemplates.openLink') }} {{ linkAddress }}
+    {{ t('smsTemplates.seeYouSoon') }}
+    {{ t('smsTemplates.teamSignature', { brandName }) }}
   </pre>
 </template>
 
@@ -30,8 +30,16 @@
   const secrets = data.secrets
 
   const secretLink = secrets.find(secret => secret.type === 'link')
-
   const secretCode = secrets.find(secret => secret.type === 'code')
+
+  const owner = { sessionOrUserType: 'user_User', sessionOrUser: data.user }
+  import { useLocale } from "@live-change/vue3-components"
+  const locale = useLocale()
+  const localePromise = locale.getOtherOwnerLocale(owner)
+  await Promise.all([localePromise])
+  import { useI18n } from 'vue-i18n'
+  const { locale: i18nLocale, t } = useI18n()
+  if(locale.localeRef.value?.language) i18nLocale.value = locale.localeRef.value?.language
 
   import { useApi } from '@live-change/vue3-ssr'
   const api = useApi()

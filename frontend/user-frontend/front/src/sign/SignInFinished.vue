@@ -1,18 +1,18 @@
 <template>
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">Signed In</div>
-      <p class="mt-0 p-0 leading-normal">Congratulations! You have successfully logged in to your account.</p>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">{{ t('auth.signedIn') }}</div>
+      <p class="mt-0 p-0 leading-normal">{{ t('auth.signInSuccess') }}</p>
       <div v-if="afterSignIn" class="flex flex-row justify-center items-center">
         <router-link :to="afterSignIn" class="no-underline">
-          <Button label="Next" v-ripple />
+          <Button :label="t('common.next')" v-ripple />
         </router-link>
         <p class="ml-6" v-if="isMounted && redirectTime">
-          Redirect in {{ pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }}...
+          {{ t('auth.redirectIn', { seconds: pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }) }}
         </p>
       </div>
       <div v-else>
-        Return to <router-link to="/">index page</router-link>.
+        {{ t('auth.returnToIndex') }} <router-link to="/">{{ t('auth.indexPage') }}</router-link>.
       </div>
     </div>
   </div>
@@ -40,6 +40,9 @@
   import { useToast } from 'primevue/usetoast'
   const toast = useToast()
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   const userClientConfig = api.getServiceDefinition('user')?.clientConfig
 
   const afterSignIn = ref()
@@ -61,8 +64,8 @@
         setTimeout(() => { // it could be next tick
           toast.add({
             severity: 'info', life: 6000,
-            summary: 'Signed in',
-            detail: 'Congratulations! You have successfully logged in to your account.'
+            summary: t('auth.signedIn'),
+            detail: t('auth.signInSuccess')
           })
           router.push(route)
         }, 100)

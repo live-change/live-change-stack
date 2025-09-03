@@ -10,7 +10,7 @@
                           transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-user mr-3"></i>
-        <span>Profile</span>
+        <span>{{ t('nav.profile') }}</span>
       </router-link>
     </li>
     <li v-if="!client.user">
@@ -23,7 +23,7 @@
                           transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-user-plus mr-3"></i>
-        <span>Sign Up</span>
+        <span>{{ t('nav.signUp') }}</span>
       </router-link>
     </li>
     <li v-if="!client.user">
@@ -36,7 +36,7 @@
                           transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-key mr-3"></i>
-        <span>Sign In</span>
+        <span>{{ t('nav.signIn') }}</span>
       </router-link>
     </li>
     <li v-if="client.user">
@@ -49,7 +49,7 @@
                           transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-cog mr-3"></i>
-        <span>Settings</span>
+        <span>{{ t('nav.settings') }}</span>
       </router-link>
     </li>
     <li v-if="client.user">
@@ -62,7 +62,7 @@
                           transition-colors duration-300 ease-in-out"
       >
         <i class="pi pi-power-off mr-3"></i>
-        <span>Sign Out</span>
+        <span>{{ t('nav.signOut') }}</span>
       </router-link>
     </li>
   </ul>
@@ -73,6 +73,9 @@
   import { path, live, actions } from '@live-change/vue3-ssr'
   import { client as useClient } from '@live-change/vue3-ssr'
   import { toRefs } from '@vueuse/core'
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const client = useClient()
 

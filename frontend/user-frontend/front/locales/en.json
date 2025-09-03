@@ -42,7 +42,20 @@
     "goBack": "Go back",
     "tryAgain": "Try again",
     "confirmEmail": "Confirm email",
-    "confirmPhone": "Confirm phone"
+    "confirmPhone": "Confirm phone",
+    "signedIn": "Signed In",
+    "signInSuccess": "Congratulations! You have successfully logged in to your account.",
+    "signedUp": "Signed Up",
+    "signUpSuccess": "Congratulations! You have successfully created your account.",
+    "canSetPassword": "You can now set password to secure your account.",
+    "setupProfile": "Setup your",
+    "profile": "profile",
+    "orReturnTo": "or return to the",
+    "indexPage": "index page",
+    "returnToIndex": "Return to",
+    "redirectIn": "Redirect in {seconds}...",
+    "signedOut": "Signed Out",
+    "signOutSuccess": "You have successfully signed out from your account."
   },
   "errors": {
     "emailTaken": "Email is already registered, try to sign-in.",
@@ -138,6 +151,7 @@
     "view": "View",
     "close": "Close",
     "ok": "OK",
+    "next": "Next",
     "testIndex": "Test Index",
     "addTestNotification": "Add test notification",
     "rejected": "Rejected",
@@ -153,5 +167,73 @@
     "send": "Send",
     "feedbackSent": "Feedback sent",
     "thankYou": "Thank you for your feedback."
+  },
+  "nav": {
+    "profile": "Profile",
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "settings": "Settings",
+    "signOut": "Sign Out"
+  },
+  "notifications": {
+    "notificationsSettings": "Notifications settings",
+    "web": "Web",
+    "settingsSaved": "Notification settings saved",
+    "notifications": "Notifications",
+    "markAllAsRead": "Mark all as read",
+    "notificationsRead": "Notifications read",
+    "allMarkedAsRead": "All notifications have been marked as read",
+    "deleteAll": "Delete all",
+    "notificationsDeleted": "Notifications deleted",
+    "allDeleted": "All notifications have been deleted",
+    "notificationRead": "Notification read",
+    "markedAsRead": "Notification has been marked as read",
+    "notificationUnread": "Notification unread",
+    "markedAsUnread": "Notification has been marked as unread",
+    "notificationDeleted": "Notification deleted",
+    "hasBeenDeleted": "Notification has been deleted",
+    "unknownNotification": "Unknown notification {type}!",
+    "types": {
+      "accessControl_Invitation": {
+        "name": "Access Control Invitation"
+      }
+    }
+  },
+  "emailTemplates": {
+    "hello": "Hello!",
+    "clickButtonBelow": "Or click the button below:",
+    "confirmEmail": "Confirm email",
+    "copyAddressInstruction": "Or copy this address to your browser address bar:",
+    "clickLinkInstruction": "Or please click link below or copy address to your browser address bar:",
+    "letUsKnow": "Let us know in case it's not you.",
+    "seeYouSoon": "See you soon",
+    "teamSignature": "{brandName} Team",
+    "signUp": {
+      "subject": "Confirm your email address.",
+      "description": "We are glad to see you have just signed up with your email. In order to confirm that, please enter secret code:",
+      "textDescription": "We are glad to see you have just signed up with your email. In order to confirm that, please enter secret code:"
+    },
+    "signIn": {
+      "subject": "Confirm your email address.",
+      "description": "We are glad to see you have just signed in with your email. In order to confirm that, please enter secret code:",
+      "textDescription": "We are glad to see you have just signed in with your email. In order to confirm that, please enter secret code:"
+    },
+    "connect": {
+      "subject": "Confirm your email address.",
+      "description": "You are trying to connect this email address to your account. In order to confirm that, please enter secret code:",
+      "textDescription": "You are trying to connect this email address to your account. In order to confirm that, please enter secret code:"
+    },
+    "resetPassword": {
+      "subject": "Confirm your email address.",
+      "description": "You are trying to reset password to your account. In order to confirm that, please enter secret code:",
+      "textDescription": "You are trying to reset password to your account. In order to confirm that, please enter secret code:"
+    }
+  },
+  "smsTemplates": {
+    "hello": "Hello!",
+    "enterCode": "Enter authentication code:",
+    "openLink": "Or open authentication link:",
+    "seeYouSoon": "See you soon",
+    "teamSignature": "{brandName} Team"
   }
 }

@@ -3,26 +3,26 @@
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
       <div class="text-center mb-8">
         <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
-          Signed Up
+          {{ t('auth.signedUp') }}
         </div>
       </div>
       <p class="mt-0 p-0 leading-normal">
-        Congratulations! You have successfully created your account.
+        {{ t('auth.signUpSuccess') }}
         <span v-if="needPassword && !afterSignIn">
-          You can now set password to secure your account.
+          {{ t('auth.canSetPassword') }}
         </span>
         <div v-else-if="afterSignIn" class="flex flex-row justify-center items-center">
           <router-link :to="afterSignIn" class="no-underline">
-            <Button label="Next" v-ripple />
+            <Button :label="t('common.next')" v-ripple />
           </router-link>
           <p class="ml-6" v-if="isMounted && redirectTime">
-            Redirect in {{ pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }}...
+            {{ t('auth.redirectIn', { seconds: pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }) }}
           </p>
         </div>
         <p v-else>
 
-          Setup your <router-link :to="{ name: 'user:identification' }">profile</router-link>
-          or return to the <router-link to="/">index page</router-link>.
+          {{ t('auth.setupProfile') }} <router-link :to="{ name: 'user:identification' }">{{ t('auth.profile') }}</router-link>
+          {{ t('auth.orReturnTo') }} <router-link to="/">{{ t('auth.indexPage') }}</router-link>.
         </p>
       </p>
     </div>
@@ -30,7 +30,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border mt-2" v-if="needPassword && !afterSignIn">
       <div class="text-center mb-8">
         <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
-          {{ passwordExists ? 'Change password' : 'Set password' }}
+          {{ passwordExists ? t('auth.changePassword') : t('auth.setPassword') }}
         </div>
       </div>
 
@@ -42,7 +42,7 @@
 
           <div class="p-field mb-4">
             <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-              New password
+              {{ t('auth.newPassword') }}
             </label>
             <Password id="newPassword" class="w-full" inputClass="w-full"
                       toggleMask v-model:masked="masked"
@@ -50,12 +50,12 @@
                       v-model="data.passwordHash">
               <template #footer>
                 <Divider />
-                <p class="p-mt-2">Suggestions</p>
+                <p class="p-mt-2">{{ t('auth.passwordSuggestions') }}</p>
                 <ul class="p-pl-2 p-ml-2 p-mt-0" style="line-height: 1.5">
-                  <li>At least one lowercase</li>
-                  <li>At least one uppercase</li>
-                  <li>At least one numeric</li>
-                  <li>Minimum 8 characters</li>
+                  <li>{{ t('auth.suggestionLowercase') }}</li>
+                  <li>{{ t('auth.suggestionUppercase') }}</li>
+                  <li>{{ t('auth.suggestionNumeric') }}</li>
+                  <li>{{ t('auth.suggestionMinLength') }}</li>
                 </ul>
               </template>
             </Password>
@@ -65,7 +65,7 @@
           </div>
 
           <div class="p-field mb-4">
-            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Re-enter password</label>
+            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.reenterPassword') }}</label>
             <Password id="reenterPassword" class="w-full" inputClass="w-full"
                       toggleMask v-model:masked="masked"
                       v-model="secondPassword"
@@ -74,7 +74,7 @@
 
         </template>
 
-        <Button :label="passwordExists ? 'Change password' : 'Set password'"
+        <Button :label="passwordExists ? t('auth.changePassword') : t('auth.setPassword')"
                 type="submit"
                 icon="pi pi-key" class="w-full"></Button>
 
@@ -158,8 +158,8 @@
           console.log("DO REDIRECT AFTER SIGN UP!", route)
           toast.add({
             severity: 'info', life: 6000,
-            summary: 'Signed up',
-            detail: 'Congratulations! You have successfully created your account.'
+            summary: t('auth.signedUp'),
+            detail: t('auth.signUpSuccess')
           })
           localStorage.removeItem('redirectAfterSignIn')
           router.push(route)

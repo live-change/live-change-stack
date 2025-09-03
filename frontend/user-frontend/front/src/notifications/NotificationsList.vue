@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-between mb-1 px-4 pt-1">
-    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">Notifications</div>
+    <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">{{ t('notifications.notifications') }}</div>
     <div>
       <Button @click="$refs.menu.toggle($event)"
           icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" />
@@ -42,6 +42,9 @@
 
   import { ref, inject } from 'vue'
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   const workingZone = inject('workingZone')
 
   import { notificationTypes } from "./notificationTypes.js"
@@ -66,27 +69,27 @@
 
   const menuItems = [
     {
-      label: 'Mark all as read',
+      label: t('notifications.markAllAsRead'),
       icon: 'pi pi-check',
       command: () => {
         workingZone.addPromise('markNotification', (async () => {
           await notificationApi.markAllAsRead({ })
           toast.add({
-            severity: 'success', summary:' Notifications read',
-            detail:'all notifications have been marked as read', life: 3000
+            severity: 'success', summary: t('notifications.notificationsRead'),
+            detail: t('notifications.allMarkedAsRead'), life: 3000
           })
         })())
       }
     },
     {
-      label: 'Delete all',
+      label: t('notifications.deleteAll'),
       icon: 'pi pi-times',
       command: () => {
         workingZone.addPromise('markNotification', (async () => {
           await notificationApi.deleteAll({ })
           toast.add({
-            severity: 'warn', summary: 'Notifications deleted',
-            detail: 'All notifications have been deleted', life: 3000
+            severity: 'warn', summary: t('notifications.notificationsDeleted'),
+            detail: t('notifications.allDeleted'), life: 3000
           })
         })())
       }

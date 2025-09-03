@@ -21,6 +21,9 @@
 
   import { inject, defineProps, defineExpose } from "vue"
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   const { notification } = defineProps({
     notification: {
       type: Object,
@@ -36,8 +39,8 @@
     workingZone.addPromise('markNotificationRead', (async () => {
       await notificationApi.markRead({ notification: notification.to || notification.id })
       toast.add({
-        severity: 'success', summary: 'Notification read',
-        detail:'Notification has been marked as read', life: 3000
+        severity: 'success', summary: t('notifications.notificationRead'),
+        detail: t('notifications.markedAsRead'), life: 3000
       })
     })())
   }
@@ -46,8 +49,8 @@
     workingZone.addPromise('markNotificationUnread', (async () => {
       await notificationApi.markUnread({ notification: notification.to || notification.id })
       toast.add({
-        severity: 'success', summary: 'Notification unread',
-        detail:'Notification has been marked as unread', life: 3000
+        severity: 'success', summary: t('notifications.notificationUnread'),
+        detail: t('notifications.markedAsUnread'), life: 3000
       })
     })())
   }
@@ -56,8 +59,8 @@
     workingZone.addPromise('deleteNotification', (async () => {
       await notificationApi.delete({ notification: notification.to || notification.id })
       toast.add({
-        severity: 'warn', summary: 'Notification deleted',
-        detail: 'Notification has been deleted', life: 3000
+        severity: 'warn', summary: t('notifications.notificationDeleted'),
+        detail: t('notifications.hasBeenDeleted'), life: 3000
       })
     })())
   }

@@ -42,7 +42,20 @@
     "goBack": "Wróć",
     "tryAgain": "Spróbuj ponownie",
     "confirmEmail": "Potwierdź email",
-    "confirmPhone": "Potwierdź telefon"
+    "confirmPhone": "Potwierdź telefon",
+    "signedIn": "Zalogowany",
+    "signInSuccess": "Gratulacje! Pomyślnie zalogowałeś się do swojego konta.",
+    "signedUp": "Zarejestrowany",
+    "signUpSuccess": "Gratulacje! Pomyślnie utworzyłeś swoje konto.",
+    "canSetPassword": "Możesz teraz ustawić hasło, aby zabezpieczyć swoje konto.",
+    "setupProfile": "Skonfiguruj swój",
+    "profile": "profil",
+    "orReturnTo": "lub wróć do",
+    "indexPage": "strony głównej",
+    "returnToIndex": "Wróć do",
+    "redirectIn": "Przekierowanie za {seconds}...",
+    "signedOut": "Wylogowany",
+    "signOutSuccess": "Pomyślnie wylogowałeś się ze swojego konta."
   },
   "errors": {
     "emailTaken": "Email jest już zarejestrowany, spróbuj się zalogować.",
@@ -138,6 +151,7 @@
     "view": "Pokaż",
     "close": "Zamknij",
     "ok": "OK",
+    "next": "Dalej",
     "testIndex": "Indeks testowy",
     "addTestNotification": "Dodaj testowe powiadomienie",
     "rejected": "Odrzucone",
@@ -153,5 +167,73 @@
     "send": "Wyślij",
     "feedbackSent": "Opinia wysłana",
     "thankYou": "Dziękujemy za Twoją opinię."
+  },
+  "nav": {
+    "profile": "Profil",
+    "signUp": "Zarejestruj się",
+    "signIn": "Zaloguj się",
+    "settings": "Ustawienia",
+    "signOut": "Wyloguj się"
+  },
+  "notifications": {
+    "notificationsSettings": "Ustawienia powiadomień",
+    "web": "Sieć",
+    "settingsSaved": "Ustawienia powiadomień zapisane",
+    "notifications": "Powiadomienia",
+    "markAllAsRead": "Oznacz wszystkie jako przeczytane",
+    "notificationsRead": "Powiadomienia przeczytane",
+    "allMarkedAsRead": "Wszystkie powiadomienia zostały oznaczone jako przeczytane",
+    "deleteAll": "Usuń wszystkie",
+    "notificationsDeleted": "Powiadomienia usunięte",
+    "allDeleted": "Wszystkie powiadomienia zostały usunięte",
+    "notificationRead": "Powiadomienie przeczytane",
+    "markedAsRead": "Powiadomienie zostało oznaczone jako przeczytane",
+    "notificationUnread": "Powiadomienie nieprzeczytane",
+    "markedAsUnread": "Powiadomienie zostało oznaczone jako nieprzeczytane",
+    "notificationDeleted": "Powiadomienie usunięte",
+    "hasBeenDeleted": "Powiadomienie zostało usunięte",
+    "unknownNotification": "Nieznane powiadomienie {type}!",
+    "types": {
+      "accessControl_Invitation": {
+        "name": "Zaproszenie do kontroli dostępu"
+      }
+    }
+  },
+  "emailTemplates": {
+    "hello": "Witaj!",
+    "clickButtonBelow": "Lub kliknij przycisk poniżej:",
+    "confirmEmail": "Potwierdź email",
+    "copyAddressInstruction": "Lub skopiuj ten adres do paska adresu przeglądarki:",
+    "clickLinkInstruction": "Lub kliknij link poniżej albo skopiuj adres do paska adresu przeglądarki:",
+    "letUsKnow": "Daj nam znać, jeśli to nie ty.",
+    "seeYouSoon": "Do zobaczenia",
+    "teamSignature": "Zespół {brandName}",
+    "signUp": {
+      "subject": "Potwierdź swój adres email.",
+      "description": "Cieszymy się, że właśnie zarejestrowałeś się swoim emailem. Aby to potwierdzić, wprowadź tajny kod:",
+      "textDescription": "Cieszymy się, że właśnie zarejestrowałeś się swoim emailem. Aby to potwierdzić, wprowadź tajny kod:"
+    },
+    "signIn": {
+      "subject": "Potwierdź swój adres email.",
+      "description": "Cieszymy się, że właśnie zalogowałeś się swoim emailem. Aby to potwierdzić, wprowadź tajny kod:",
+      "textDescription": "Cieszymy się, że właśnie zalogowałeś się swoim emailem. Aby to potwierdzić, wprowadź tajny kod:"
+    },
+    "connect": {
+      "subject": "Potwierdź swój adres email.",
+      "description": "Próbujesz połączyć ten adres email ze swoim kontem. Aby to potwierdzić, wprowadź tajny kod:",
+      "textDescription": "Próbujesz połączyć ten adres email ze swoim kontem. Aby to potwierdzić, wprowadź tajny kod:"
+    },
+    "resetPassword": {
+      "subject": "Potwierdź swój adres email.",
+      "description": "Próbujesz zresetować hasło do swojego konta. Aby to potwierdzić, wprowadź tajny kod:",
+      "textDescription": "Próbujesz zresetować hasło do swojego konta. Aby to potwierdzić, wprowadź tajny kod:"
+    }
+  },
+  "smsTemplates": {
+    "hello": "Witaj!",
+    "enterCode": "Wprowadź kod uwierzytelniania:",
+    "openLink": "Lub otwórz link uwierzytelniania:",
+    "seeYouSoon": "Do zobaczenia",
+    "teamSignature": "Zespół {brandName}"
   }
 }

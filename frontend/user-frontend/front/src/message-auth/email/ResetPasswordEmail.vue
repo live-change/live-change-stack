@@ -2,51 +2,49 @@
   <pre data-headers>{{ JSON.stringify(metadata, null, '  ') }}</pre>
   <div data-html class="message m-12">
     <p class="text-lg">
-      Hello!
+      {{ t('emailTemplates.hello') }}
     </p>
     <p>
-      You are trying to reset password to your account.
-      In order to confirm that, please enter secret code:
+      {{ t('emailTemplates.resetPassword.description') }}
     </p>
     <p class="text-3xl font-medium">{{ code }}</p>
     <p>
-      Or click the button below:
+      {{ t('emailTemplates.clickButtonBelow') }}
     </p>
     <div>
       <a :href="linkAddress" class="no-underline">
-        <Button label="Confirm email" class="p-button-lg cursor-pointer" />
+        <Button :label="t('emailTemplates.confirmEmail')" class="p-button-lg cursor-pointer" />
       </a>
     </div>
     <p>
-      Or copy this address to your browser address bar:<br>
+      {{ t('emailTemplates.copyAddressInstruction') }}<br>
       <a :href="linkAddress">
         {{ linkAddress }}
       </a>
     </p>
     <p>
-      Let us know in case it's not you.
+      {{ t('emailTemplates.letUsKnow') }}
     </p>
     <p>
-      See you soon<br>
-      {{ brandName }} Team
+      {{ t('emailTemplates.seeYouSoon') }}<br>
+      {{ t('emailTemplates.teamSignature', { brandName }) }}
     </p>
     <img src="/images/logo128.png">
   </div>
   <pre class="message" data-text>
-    Hello!
+    {{ t('emailTemplates.hello') }}
 
-    You are trying to reset password to your account.
-    In order to confirm that, please enter secret code:
+    {{ t('emailTemplates.resetPassword.textDescription') }}
     {{ code }}
 
-    Or please click link below or copy address to your browser address bar:
+    {{ t('emailTemplates.clickLinkInstruction') }}
 
     {{ linkAddress }}
 
-    Let us know in case it's not you.
+    {{ t('emailTemplates.letUsKnow') }}
 
-    See you soon
-    {{ brandName }} Team
+    {{ t('emailTemplates.seeYouSoon') }}
+    {{ t('emailTemplates.teamSignature', { brandName }) }}
   </pre>
 </template>
 
@@ -74,6 +72,15 @@
   const secretLink = secrets.find(secret => secret.type === 'link')
   const secretCode = secrets.find(secret => secret.type === 'code')
 
+  const owner = { sessionOrUserType: 'user_User', sessionOrUser: data.user }
+  import { useLocale } from "@live-change/vue3-components"
+  const locale = useLocale()
+  const localePromise = locale.getOtherOwnerLocale(owner)
+  await Promise.all([localePromise])
+  import { useI18n } from 'vue-i18n'
+  const { locale: i18nLocale, t } = useI18n()
+  if(locale.localeRef.value?.language) i18nLocale.value = locale.localeRef.value?.language
+
   import { useHead } from '@vueuse/head'
   useHead({ htmlAttrs: { class: 'email-rendering' } })
 
@@ -86,7 +93,7 @@
 
   const metadata = {
     from: `${brandName} <admin@${brandDomain}>`,
-    subject: 'Confirm your email address.',
+    subject: t('emailTemplates.resetPassword.subject'),
     to: contact
   }
 

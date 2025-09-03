@@ -2,7 +2,7 @@
   <div class="w-full lg:w-6/12 md:w-9/12" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div>
-        <h1>Notifications settings</h1>
+        <h1>{{ t('notifications.notificationsSettings') }}</h1>
       </div>
 <!--       <pre>{{ settings }}</pre>
       <pre>{{ clientConfig }}</pre> -->
@@ -56,7 +56,7 @@
     phone: 'pi-phone'
   }
   function contactText(contact, type) {
-    if(type === 'web') return 'Web'
+    if(type === 'web') return t('notifications.web')
     return contact
   }
 
@@ -107,7 +107,7 @@
           notificationType, notification: notificationType
         },
         recursive: true,
-        onSave: () => toast.add({ severity: 'info', summary: 'Notification settings saved', life: 1500 })
+        onSave: () => toast.add({ severity: 'info', summary: t('notifications.settingsSaved'), life: 1500 })
       }).value
       return {
         contactType,
