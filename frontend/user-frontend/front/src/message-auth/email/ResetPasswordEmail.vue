@@ -79,7 +79,7 @@
   await Promise.all([localePromise])
   import { useI18n } from 'vue-i18n'
   const { locale: i18nLocale, t } = useI18n()
-  if(locale.localeRef.value?.language) i18nLocale.value = locale.localeRef.value?.language
+  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
 
   import { useHead } from '@vueuse/head'
   useHead({ htmlAttrs: { class: 'email-rendering' } })

@@ -58,6 +58,11 @@ export class Locale {
     return this.localeObservable.getValue()
   }
 
+  getLanguage() {
+    const language = this.localeRef.value?.language ?? this.localeRef.value?.capturedLanguage
+    return language && language.slice(0, 2)
+  }
+
   async getLocale() {
     return (async () => {
       await this.getLocaleObservable()

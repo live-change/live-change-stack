@@ -78,14 +78,18 @@ for(const contactType of config.contactTypes) {
       properties: {
         ...contactTypeProperties
       },
-      async execute({ [contactTypeName]: contact }, { service }, _emit) {
+      async execute({ [contactTypeName]: contact }, { service, client }, _emit) {
         await service.trigger({ type: 'checkNew' + contactTypeUName }, {
           [contactTypeName]: contact,
         })
+        const messageData = {
+          session: client.session
+        }
         return service.triggerService({ service: definition.name, type: 'authenticateWithMessage' }, {
           contactType,
           contact,
           action: 'signUpWithMessage',
+          messageData,
           targetPage: config.signUpTargetPage || { name: 'user:signUpFinished' }
         })
       }
