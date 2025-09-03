@@ -1,0 +1,22 @@
+{
+  "currency": {
+    "credits": "kredyt | kredyty"
+  },
+  "billing": {
+    "backToBilling": "Powrót do płatności",
+    "retryTopUp": "Ponów doładowanie",
+    "currentBalance": "Twoje aktualne saldo to",
+    "add": "Dodaj",
+    "for": "za",
+    "connectingToGateway": "Łączenie z bramką płatności...",
+    "canceledTopUp": "Anulowane doładowanie",
+    "topUpCanceled": "Anulowałeś doładowanie.",
+    "waitingForConfirmation": "Wciąż czekamy na potwierdzenie płatności.",
+    "topUpSuccessful": "Twoje doładowanie zakończyło się sukcesem.",
+    "topUpRefunded": "Twoje doładowanie zostało zwrócone.",
+    "topUpFailed": "Twoje doładowanie nie powiodło się."
+  },
+  "common": {
+    "or": "LUB"
+  }
+}

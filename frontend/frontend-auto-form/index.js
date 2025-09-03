@@ -52,5 +52,6 @@ export { SchemaFromDefinition }
 export * from './front/src/logic/schema.js'
 
 import en from "./front/locales/en.json"
-const locales = { en }
+import pl from "./front/locales/pl.json"
+const locales = { en, pl }
 export { locales }

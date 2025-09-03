@@ -23,3 +23,8 @@ export { Page, PageEditor, PagePreview }
 import { catchAllPagesRoute, contentEditRoutes, pagesSitemap } from "./front/src/components/routes"
 
 export { catchAllPagesRoute, contentEditRoutes, pagesSitemap }
+
+import en from "./front/locales/en.json"
+import pl from "./front/locales/pl.json"
+const locales = { en, pl }
+export { locales }

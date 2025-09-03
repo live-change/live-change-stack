@@ -2,7 +2,7 @@
   <div class="w-full lg:w-6/12 md:w-9/12">
 
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="localeSettings">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Locale settings</div>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ t('settings.localeSettings') }}</div>
 
       <command-form service="localeSettings" action="setOrUpdateMyLocaleSettings"
                     :initialValues="{
@@ -17,19 +17,19 @@
 
         <div class="p-field mb-4">
           <label for="title" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-            Language
+            {{ t('settings.language') }}
           </label>
           <Dropdown v-model="data.language" :options="availableLocales"
                     :optionLabel="languageLabel" showClear
                     :filter="availableLocales.length > 10"
-                    placeholder="Auto-detect"
+                    :placeholder="t('settings.autoDetect')"
                     class="w-full" />
           <Message v-if="data.languageError" severity="error" variant="simple" size="small">
             {{ t(`errors.${data.languageError}`) }}
           </Message>
         </div>
 
-        <Button type="submit" label="Apply" class="mt-1" icon="pi pi-save" />
+        <Button type="submit" :label="t('settings.apply')" class="mt-1" icon="pi pi-save" />
 
       </command-form>
 
@@ -58,7 +58,7 @@
 
   function languageLabel(option) {
     console.log("LANGUAGE LABEL", option)
-    if(!option) return `Auto-detect (${navigator.language})`
+    if(!option) return `${t('settings.autoDetect')} (${navigator.language})`
     return getLocaleMessage(option).languageName ?? option
   }
 
@@ -69,7 +69,7 @@
   const [localeSettings] = await Promise.all([live(localePath)])
 
   function handleSettingsUpdated({ parameters, result }) {
-    toast.add({ severity: 'success', summary: 'Settings updated', detail: 'Your locale settings have been saved' })
+    toast.add({ severity: 'success', summary: t('settings.settingsUpdated'), detail: t('settings.localeSettingsSaved') })
   }
 
 </script>

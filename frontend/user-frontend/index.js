@@ -30,6 +30,12 @@ export * from './front/src/connected/connected.js'
 export * from "./front/src/router.js"
 
 import en from "./front/locales/en.json"
-const locales = { en }
-export { locales }
+import pl from "./front/locales/pl.json"
+const locales = { en, pl }
+
+import * as enLocale from "./front/locales/en.js"
+import * as plLocale from "./front/locales/pl.js"
+const localeStructures = { en: enLocale, pl: plLocale }
+
+export { locales, localeStructures }
 

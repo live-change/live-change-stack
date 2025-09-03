@@ -1,0 +1,17 @@
+{
+  "blog": {
+    "posts": "Posty",
+    "post": "Post",
+    "title": "Tytuł",
+    "content": "Treść",
+    "author": "Autor",
+    "publish": "Publikuj",
+    "draft": "Szkic",
+    "preview": "Podgląd",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "save": "Zapisz",
+    "editor": "Edytor",
+    "list": "Lista"
+  }
+}

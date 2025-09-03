@@ -1,0 +1,21 @@
+{
+  "content": {
+    "preview": "Podgląd",
+    "publish": "Publikuj",
+    "published": "Opublikowane",
+    "contentPublished": "{type} opublikowano",
+    "errorPublishing": "Błąd publikowania {type}",
+    "saveMetadata": "Zapisz metadane",
+    "content": "Treść",
+    "metadata": "Metadane",
+    "settings": "Ustawienia",
+    "editor": "Edytor",
+    "notFound": "Nie znaleziono",
+    "notAuthorized": "Brak autoryzacji"
+  },
+  "common": {
+    "error": "Błąd",
+    "rejected": "Odrzucone",
+    "rejectedDetail": "Odrzuciłeś"
+  }
+}

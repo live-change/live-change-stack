@@ -48,7 +48,7 @@
           </div>
 
           <div class="p-field mb-4">
-            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Re-enter password</label>
+            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.reenterPassword') }}</label>
             <Password id="reenterPassword" class="w-full" inputClass="w-full"
                       v-model="secondPassword"
                       :feedback="false" toggleMask />

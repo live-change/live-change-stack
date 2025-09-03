@@ -17,5 +17,6 @@ import { now, realTime, currentTime } from "./time.js"
 export { now, realTime, currentTime }
 
 import en from "./locales/en.json"
-const locales = { en }
+import pl from "./locales/pl.json"
+const locales = { en, pl }
 export { locales }

@@ -7,4 +7,7 @@ export { PeerVideo, Room, VideoWall }
 import { videoCallRoutes } from './front/src/router.js'
 export { videoCallRoutes }
 
-export { }
+import en from "./front/locales/en.json"
+import pl from "./front/locales/pl.json"
+const locales = { en, pl }
+export { locales }

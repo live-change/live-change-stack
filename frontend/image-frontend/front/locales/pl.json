@@ -1,0 +1,17 @@
+{
+  "image": {
+    "crop": "Przytnij",
+    "resize": "Zmień rozmiar",
+    "edit": "Edytuj",
+    "save": "Zapisz",
+    "upload": "Wgraj",
+    "editor": "Edytor",
+    "input": "Wprowadzanie",
+    "width": "Szerokość",
+    "height": "Wysokość",
+    "quality": "Jakość",
+    "imageEditor": "Edytor obrazów",
+    "imageInput": "Wprowadzanie obrazu",
+    "imageCrop": "Przycinanie obrazu"
+  }
+}
