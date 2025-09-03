@@ -43,6 +43,8 @@
 
 <script setup>
   import Message from "primevue/message"
+  import Dropdown from "primevue/dropdown"
+  import Button from "primevue/button"
 
   import { usePath, live, useApi } from '@live-change/vue3-ssr'
   const api = useApi()
