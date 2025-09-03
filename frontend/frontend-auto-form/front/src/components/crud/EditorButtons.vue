@@ -3,28 +3,28 @@
     <div class="flex flex-col mt-2 md:mt-0">
       <div v-if="savingDraft" class="text-surface-500 dark:text-surface-300 mr-2 flex flex-row items-center">
         <i class="pi pi-spin pi-spinner mr-2" style="font-size: 1.23rem"></i>
-        <span>Saving draft...</span>
+        <span>{{ t('crud.savingDraft') }}</span>
       </div>
       <div v-else-if="draftChanged" class="text-sm text-surface-500 dark:text-surface-300 mr-2">
-        Draft changed
+        {{ t('crud.draftChanged') }}
       </div>
       <Message v-else-if="validationResult" severity="error" variant="simple" size="small" class="mr-2">
-        Before saving, please correct the errors above.
+        {{ t('crud.validationError') }}
       </Message>
       <div v-else-if="!changed" class="">
-        No changes to save.
+        {{ t('crud.noChanges') }}
       </div>
     </div>
     <div class="flex flex-row">
       <slot name="submit" v-if="!validationResult">
         <div class="ml-2">
-          <Button v-if="exists" type="submit" :label="'Save '+model.name" :disabled="!changed" icon="pi pi-save" />
-          <Button v-else type="submit" :label="'Create '+model.name" :disabled="!changed" icon="pi pi-sparkles" />
+          <Button v-if="exists" type="submit" :label="t('crud.saveModel', { model: model.name })" :disabled="!changed" icon="pi pi-save" />
+          <Button v-else type="submit" :label="t('crud.createModel', { model: model.name })" :disabled="!changed" icon="pi pi-sparkles" />
         </div>
       </slot>
       <slot name="reset" v-if="resetButton">
         <div>
-          <Button type="reset" label="Reset" class="ml-2" :disabled="!changed" icon="pi pi-eraser"/>
+          <Button type="reset" :label="t('actions.reset')" class="ml-2" :disabled="!changed" icon="pi pi-eraser"/>
         </div>
       </slot>
     </div>
@@ -36,6 +36,8 @@
   import Message from "primevue/message"
 
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs, getCurrentInstance, unref } from 'vue'
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const props = defineProps({
     editor: {

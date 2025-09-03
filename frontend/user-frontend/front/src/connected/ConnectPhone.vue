@@ -2,7 +2,7 @@
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Add phone number</div>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('connected.addPhoneNumber') }}</div>
       </div>
 
       <command-form service="messageAuthentication" action="connectPhone" v-slot="{ data }"
@@ -10,7 +10,7 @@
 
         <div class="p-field mb-4">
           <label for="email" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
-            Phone number
+            {{ t('connected.phoneNumber') }}
           </label>
           <PhoneInput id="phone" class="w-full"
                      aria-describedby="phone-help" :class="{ 'p-invalid': data.phoneError }"
@@ -20,14 +20,14 @@
           </Message>
         </div>
 
-        <Button label="Add Phone" icon="pi pi-mobile" class="w-full" type="submit" />
+        <Button :label="t('connected.addPhone')" icon="pi pi-mobile" class="w-full" type="submit" />
 
         <Divider align="center" class="my-6">
-          <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">OR</span>
+          <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">{{ t('common.or') }}</span>
         </Divider>
 
         <router-link :to="{ name: 'user:connect-email' }">
-          <Button label="Add Email" icon="pi pi-envelope" class="w-full p-button-secondary mb-2" />
+          <Button :label="t('connected.addEmail')" icon="pi pi-envelope" class="w-full p-button-secondary mb-2" />
         </router-link>
 
 <!--        <Button label="Connect GitHub account" icon="pi pi-github" class="w-full p-button-secondary mb-2"></Button>-->

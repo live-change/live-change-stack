@@ -1,0 +1,15 @@
+{
+  "url": {
+    "urls": "URL-e",
+    "url": "URL",
+    "generate": "Generuj",
+    "take": "Weź",
+    "noUrl": "Brak URL",
+    "notFound": "Nie znaleziono",
+    "notAuthorized": "Brak autoryzacji",
+    "resolve": "Rozwiąż",
+    "info": "Info",
+    "list": "Lista",
+    "form": "Formularz"
+  }
+}

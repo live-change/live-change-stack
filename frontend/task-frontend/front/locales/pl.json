@@ -1,0 +1,17 @@
+{
+  "tasks": {
+    "tasks": "Zadania",
+    "taskName": "Nazwa zadania",
+    "taskState": "Stan zadania",
+    "builtShelters": "Zbudowane schrony",
+    "build": "Buduj",
+    "root": "Główny",
+    "close": "Zamknij",
+    "taskFailed": "Zadanie nie powiodło się",
+    "taskDone": "Zadanie ukończone"
+  },
+  "shelter": {
+    "wall": "Ściana",
+    "roof": "Dach"
+  }
+}

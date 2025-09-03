@@ -1,0 +1,14 @@
+{
+  "upload": {
+    "uploadFile": "Wgraj plik",
+    "uploaded": "Wgrano",
+    "dragFilesHere": "Przeciągnij pliki tutaj",
+    "orClickToSelect": "lub kliknij aby wybrać",
+    "selectFiles": "Wybierz pliki",
+    "dropZone": "Strefa upuszczania",
+    "fileInput": "Wprowadzanie pliku",
+    "uploadView": "Widok wgrywania",
+    "chooseFile": "Wybierz plik",
+    "noFileSelected": "Nie wybrano pliku"
+  }
+}

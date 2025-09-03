@@ -1,0 +1,15 @@
+{
+  "url": {
+    "urls": "URLs",
+    "url": "URL",
+    "generate": "Generate",
+    "take": "Take",
+    "noUrl": "No Url",
+    "notFound": "Not Found",
+    "notAuthorized": "Not Authorized",
+    "resolve": "Resolve",
+    "info": "Info",
+    "list": "List",
+    "form": "Form"
+  }
+}

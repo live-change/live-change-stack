@@ -5,7 +5,7 @@
     <Toast v-if="isMounted" />
 
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Connected accounts</div>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ t('connected.connectedAccounts') }}</div>
 
       <ul class="list-none p-0 m-0 mt-8 mb-6">
 
@@ -40,15 +40,15 @@
         <router-link v-for="contactType in contactsTypes"
                      :to="{ name: 'user:connect-'+contactType.contactType }" class="mr-2 no-underline block mb-1">
           <Button v-if="contactType.contactType === 'email'"
-                  :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
+                  :label="t('connected.addEmail')" icon="pi pi-envelope" id="connect" />
           <Button v-else-if="contactType.contactType === 'phone'"
-                  :label="'Add '+contactType.contactType" icon="pi pi-phone" id="connect" />
-          <Button v-else :label="'Add '+contactType.contactType" icon="pi pi-envelope" id="connect" />
+                  :label="t('connected.addPhone')" icon="pi pi-phone" id="connect" />
+          <Button v-else :label="t('connected.addContactType', { type: t(`connected.${contactType.contactType}`) })" icon="pi pi-envelope" id="connect" />
         </router-link>
         <template v-for="accountType in accountTypes">
           <router-link v-if="connectAccountRoute(accountType)"
                       :to="connectAccountRoute(accountType)" class="mr-2 no-underline block mb-1">
-            <Button v :label="'Add '+accountType.accountType" icon="pi pi-google" id="connect" />
+            <Button v :label="t('connected.addAccountType', { type: t(`connected.${accountType.accountType}`) })" icon="pi pi-google" id="connect" />
           </router-link>
         </template>
 
@@ -86,6 +86,9 @@
 
   import { formatPhoneNumber } from '../phone/phoneNumber.js'
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   const workingZone = inject('workingZone')
 
   import { useApi, live, usePath, useActions } from '@live-change/vue3-ssr'
@@ -98,18 +101,18 @@
     const { contactType, id: contact } = contactData
     confirm.require({
       target: event.currentTarget,
-      message: `Do you want to disconnect ${contactType.contactType} account ${contact}?`,
+      message: t('connected.confirmDisconnectContact', { type: t(`connected.${contactType.contactType}`), contact }),
       icon: 'pi pi-info-circle',
       acceptClass: 'p-button-danger',
       accept: async () => {
         const upperCaseType = contactType.contactType[0].toUpperCase() + contactType.contactType.slice(1)
         workingZone.addPromise('disconnectContact', (async () => {
           await messageAuthenticationApi['disconnect'+upperCaseType]({ [contactType.contactType]: contact })
-          toast.add({ severity: 'info', summary: 'Account disconnected', life: 1500 })
+          toast.add({ severity: 'info', summary: t('connected.accountDisconnected'), life: 1500 })
         })())
       },
       reject: () => {
-        toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
+        toast.add({ severity: 'error', summary: t('common.rejected'), detail: t('common.rejectedDetail'), life: 3000 })
       }
     })
   }
@@ -118,18 +121,18 @@
     const { accountType, id: account } = contactData
     confirm.require({
       target: event.currentTarget,
-      message: `Do you want to disconnect ${accountType.accountType} account ${name || account}?`,
+      message: t('connected.confirmDisconnectAccount', { type: t(`connected.${accountType.accountType}`), account: name || account }),
       icon: 'pi pi-info-circle',
       acceptClass: 'p-button-danger',
       accept: async () => {
         const upperCaseType = accountType.accountType[0].toUpperCase() + accountType.accountType.slice(1)
         workingZone.addPromise('disconnectAccount', (async () => {
           await api.actions[accountType.accountType+'Authentication']['disconnect'+upperCaseType]({ account })
-          toast.add({ severity: 'info', summary: 'Account disconnected', life: 1500 })
+          toast.add({ severity: 'info', summary: t('connected.accountDisconnected'), life: 1500 })
         })())
       },
       reject: () => {
-        toast.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
+        toast.add({ severity: 'error', summary: t('common.rejected'), detail: t('common.rejectedDetail'), life: 3000 })
       }
     })
   }

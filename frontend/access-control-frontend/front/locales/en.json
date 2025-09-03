@@ -1,4 +1,43 @@
 {
+  "access": {
+    "notAuthorized": "Not authorized",
+    "insufficientPrivileges": "You do not have sufficient privileges to use this feature of this object.",
+    "accessRequests": "Access Requests",
+    "accessInvitations": "Access Invitations",
+    "authorized": "Authorized",
+    "accessRequestSaved": "Access request saved",
+    "accessRequestDeleted": "Access Request Deleted",
+    "accessRequestAccepted": "Access Request accepted",
+    "confirmDeleteAccessRequest": "Do you want to delete user \"{name}\" access request?",
+    "accessInviteSaved": "Access invite saved",
+    "invitationDeleted": "Invitation Deleted",
+    "confirmDeleteInvitation": "Do you want to delete invitation for \"{name}\"?",
+    "accessSaved": "Access saved",
+    "accessRevoked": "Access Revoked",
+    "confirmRevokeAccess": "Do you want to revoke access for \"{name}\"?",
+    "publicAccessSaved": "Public access saved"
+  },
+  "invite": {
+    "inviteUserWithEmail": "Invite user with email",
+    "inviteWithEmail": "Invite with email",
+    "singleUser": "Single user",
+    "multipleUsers": "Multiple users",
+    "emailAddress": "Email address",
+    "emailAddressesMultiple": "Email addresses (newline or comma separated)",
+    "roles": "Roles",
+    "messageOptional": "Message ( optional )",
+    "inviteEmail": "Invite email",
+    "inviteEmails": "Invite emails",
+    "invitationSent": "Invitation sent!",
+    "invitationsWereSent": "Invitations were sent!",
+    "invitationWillBeSent": "Invitation will be sent!",
+    "inviteMultipleEmails": "Invite {count} emails",
+    "inviteSingleEmail": "Invite {email}"
+  },
+  "common": {
+    "rejected": "Rejected",
+    "rejectedDetail": "You have rejected"
+  },
   "notifications": {
     "types": {
       "accessControl_Invitation": {

@@ -1,23 +1,23 @@
 <template>
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUnknown">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Unknown link</div>
-      <p class="mt-0 mb-2 p-0 leading-normal">We can't find your secret link. Check if you copied the address correctly.</p>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ t('auth.unknownLink') }}</div>
+      <p class="mt-0 mb-2 p-0 leading-normal">{{ t('auth.unknownLinkDesc') }}</p>
     </div>
 
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUsed">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Link used</div>
-      <p class="mt-0 mb-2 p-0 leading-normal">This link was already used.</p>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ t('auth.linkUsed') }}</div>
+      <p class="mt-0 mb-2 p-0 leading-normal">{{ t('auth.linkUsedDesc') }}</p>
     </div>
 
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isExpired && !isUsed">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Link expired</div>
-      <p class="mt-0 mb-6 p-0 leading-normal">Your password reset authentication already expired.</p>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ t('auth.linkExpired') }}</div>
+      <p class="mt-0 mb-6 p-0 leading-normal">{{ t('auth.linkExpiredDesc') }}</p>
     </div>
 
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border" v-if="isReady || working">
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Reset password</div>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('auth.resetPassword') }}</div>
       </div>
 
       <command-form service="passwordAuthentication" action="finishResetPassword" v-slot="{ data }"
@@ -27,7 +27,7 @@
 
         <template v-if="isMounted">
           <div class="p-field mb-4">
-            <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">New password</label>
+            <label for="newPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.newPassword') }}</label>
             <Password id="newPassword" class="w-full" inputClass="w-full" toggleMask
                       :invalid="!!data.passwordHashError"
                       v-model="data.passwordHash">
@@ -48,7 +48,7 @@
           </div>
 
           <div class="p-field mb-4">
-            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">Re-enter password</label>
+            <label for="reenterPassword" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.reenterPassword') }}</label>
             <Password id="reenterPassword" class="w-full" inputClass="w-full"
                       v-model="secondPassword"
                       :feedback="false" toggleMask />

@@ -17,4 +17,7 @@ import EditorMenu from "./front/src/components/EditorMenu.vue"
 
 export { DocumentEditor, Editor, EditorMenu }
 
-
+import en from "./front/locales/en.json"
+import pl from "./front/locales/pl.json"
+const locales = { en, pl }
+export { locales }

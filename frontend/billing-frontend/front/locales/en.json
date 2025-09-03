@@ -2,6 +2,23 @@
   "currency": {
     "credits": "credit | credits"
   },
+  "billing": {
+    "backToBilling": "Back to billing",
+    "retryTopUp": "Retry to-up",
+    "currentBalance": "Your current balance is",
+    "add": "Add",
+    "for": "for",
+    "connectingToGateway": "Connecting to payment gateway",
+    "canceledTopUp": "Canceled top-up",
+    "topUpCanceled": "You have canceled the top-up.",
+    "waitingForConfirmation": "We are still waiting for payment confirmation.",
+    "topUpSuccessful": "Your top-up is successful.",
+    "topUpRefunded": "Your top-up is refunded.",
+    "topUpFailed": "Your top-up is failed."
+  },
+  "common": {
+    "or": "OR"
+  },
   "app": {
     "updateAvailable": "Update available!",
     "newVersions": "New version of app is available!",

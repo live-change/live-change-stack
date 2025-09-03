@@ -3,7 +3,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div class="text-center mb-8">
         <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
-          Profile
+          {{ t('settings.profile') }}
         </div>
       </div>
 
@@ -29,12 +29,12 @@
           <div class="p-field flex flex-col">
             <InputText type="text" v-model="data.name"
                        :invalid="!!data.nameError"
-                       class="p-inputtext-lg" placeholder="Your name" />
+                       class="p-inputtext-lg" :placeholder="t('settings.yourName')" />
             <Message v-if="data.nameError" severity="error" variant="simple" size="small">
               {{ t(`errors.${data.nameError}`) }}
             </Message>
           </div>
-          <Button type="submit" label="Save name" class="mt-4" icon="pi pi-save" />
+          <Button type="submit" :label="t('settings.saveName')" class="mt-4" icon="pi pi-save" />
         </command-form>
       </div>
 
@@ -83,7 +83,7 @@
   function openImageEditor() {
     dialog.open(ComponentDialog, {
       props: {
-        header: 'Image Editor',
+        header: t('settings.imageEditor'),
         style: {
           width: '50vw',
         },
@@ -107,14 +107,14 @@
         console.log("WZ", workingZone)
         workingZone.addPromise('update user image', (async () => {
           await api.command(['userIdentification', updateMethod.value], { image: data?.value })
-          toast.add({ severity:'info', summary: 'User image saved', life: 1500 })
+          toast.add({ severity:'info', summary: t('settings.userImageSaved'), life: 1500 })
         })())
       }
     })
   }
 
   function handleNameSaved() {
-    toast.add({ severity:'info', summary: 'User name saved', life: 1500 })
+    toast.add({ severity:'info', summary: t('settings.userNameSaved'), life: 1500 })
   }
 
 

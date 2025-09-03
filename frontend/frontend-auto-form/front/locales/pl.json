@@ -1,0 +1,50 @@
+{
+  "languageName": "Polski",
+  "errors": {
+    "empty": "To pole jest wymagane.",
+    "tooShort": "Za krótkie, minimum {length} znaków.",
+    "tooLong": "Za długie, maksimum {length} znaków.",
+    "wrongUrl": "Nieprawidłowy URL. Akceptowalne formaty: https://example.com lub www.example.com"
+  },
+  "info": {
+    "minLength": "Minimalna długość - {minLength} znaków.",
+    "maxLength": "{length} / {maxLength}"
+  },
+  "autoform": {
+    "addItem": "Dodaj następny element"
+  },
+  "objectPicker": {
+    "selectObjectType": "Wybierz typ obiektu",
+    "currentType": "Wybierz",
+    "fromService": "z",
+    "modelOption": "{model}",
+    "modelOptionWithService": "{service} - {model}"
+  },
+  "actions": {
+    "list": "Lista",
+    "view": "Pokaż",
+    "edit": "Edytuj",
+    "delete": "Usuń",
+    "access": "Dostęp",
+    "create": "Utwórz",
+    "save": "Zapisz",
+    "reset": "Resetuj"
+  },
+  "crud": {
+    "notAuthorized": "Brak autoryzacji",
+    "savingDraft": "Zapisywanie szkicu...",
+    "draftChanged": "Szkic zmieniony",
+    "validationError": "Przed zapisaniem popraw błędy powyżej.",
+    "noChanges": "Brak zmian do zapisania.",
+    "saveModel": "Zapisz {model}",
+    "createModel": "Utwórz {model}",
+    "createNew": "Utwórz nowy {model}",
+    "executing": "Wykonywanie...",
+    "editModel": "Edytuj {model}",
+    "backwardRelations": "Relacje wsteczne"
+  },
+  "common": {
+    "rejected": "Odrzucone",
+    "rejectedDetail": "Odrzuciłeś"
+  }
+}

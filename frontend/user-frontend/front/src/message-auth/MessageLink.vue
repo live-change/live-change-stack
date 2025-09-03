@@ -2,25 +2,25 @@
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
 
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUnknown && !isRedirecting">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Unknown link</div>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ t('auth.unknownLink') }}</div>
       <p class="mt-0 mb-2 p-0 leading-normal">
-        We can't find your secret link. Check if you copied the address correctly.
+        {{ t('auth.unknownLinkDesc') }}
       </p>
     </div>
 
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isUsed && !isRedirecting">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Link used</div>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ t('auth.linkUsed') }}</div>
       <p class="mt-0 mb-2 p-0 leading-normal">
-        This link was already used.
+        {{ t('auth.linkUsedDesc') }}
       </p>
     </div>
 
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6" v-if="isExpired && !isUsed && !isRedirecting">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">Link expired</div>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl">{{ t('auth.linkExpired') }}</div>
       <p class="mt-0 mb-6 p-0 leading-normal">
-        Your secret link already expired. To send another link click button below.
+        {{ t('messageAuth.linkExpiredDesc') }}
       </p>
-      <Button label="Resend" class="p-button-lg" @click="resend"></Button>
+      <Button :label="t('messageAuth.resend')" class="p-button-lg" @click="resend"></Button>
     </div>
 
     <div v-if="isReady || isRedirecting" 
@@ -38,6 +38,9 @@
   import { useRouter } from 'vue-router'
   import { useNow } from '@vueuse/core'
   import { path, live, actions } from '@live-change/vue3-ssr'
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const { secretCode } = defineProps({
     secretCode: {

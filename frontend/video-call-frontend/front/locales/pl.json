@@ -1,0 +1,14 @@
+{
+  "video": {
+    "selectDevicesAndJoin": "Wybierz swoje urządzenia multimedialne i dołącz.",
+    "join": "Dołącz",
+    "leave": "Opuść",
+    "mute": "Wycisz",
+    "unmute": "Włącz dźwięk",
+    "camera": "Kamera",
+    "microphone": "Mikrofon",
+    "settings": "Ustawienia",
+    "room": "Pokój",
+    "participants": "Uczestnicy"
+  }
+}

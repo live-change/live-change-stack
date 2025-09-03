@@ -1,14 +1,15 @@
 <template>
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">Feedback sent</div>
-      <p class="mt-0 p-0 leading-normal">Thank you for your feedback.</p>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">{{ t('deleteAccount.feedbackSent') }}</div>
+      <p class="mt-0 p-0 leading-normal">{{ t('deleteAccount.thankYou') }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 </script>
 
 <style>

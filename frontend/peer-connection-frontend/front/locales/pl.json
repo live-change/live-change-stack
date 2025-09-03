@@ -1,0 +1,15 @@
+{
+  "peer": {
+    "camera": "Kamera",
+    "microphone": "Mikrofon",
+    "settings": "Ustawienia",
+    "permissions": "Uprawnienia",
+    "deviceSelect": "Wybór urządzenia",
+    "volumeIndicator": "Wskaźnik głośności",
+    "mediaSettings": "Ustawienia multimediów",
+    "debugger": "Debugger",
+    "cameraButton": "Przycisk kamery",
+    "microphoneButton": "Przycisk mikrofonu",
+    "permissionsDialog": "Dialog uprawnień"
+  }
+}

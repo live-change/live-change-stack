@@ -27,3 +27,8 @@ export { sitemap }
 
 import { catchAllNotFoundRoute } from "./front/src/components/routes";
 export { catchAllNotFoundRoute }
+
+import en from "./front/locales/en.json"
+import pl from "./front/locales/pl.json"
+const locales = { en, pl }
+export { locales }

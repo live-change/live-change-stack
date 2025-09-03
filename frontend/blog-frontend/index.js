@@ -7,3 +7,8 @@ export { BlogPost, BlogPostEditor, BlogPostPreview }
 import { catchAllBlogRoute, blogEditRoutes, blogSitemap } from "./front/src/components/routes.js"
 
 export { catchAllBlogRoute, blogEditRoutes, blogSitemap }
+
+import en from "./front/locales/en.json"
+import pl from "./front/locales/pl.json"
+const locales = { en, pl }
+export { locales }

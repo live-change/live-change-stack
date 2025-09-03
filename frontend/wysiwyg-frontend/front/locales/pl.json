@@ -1,0 +1,20 @@
+{
+  "editor": {
+    "bold": "Pogrubienie",
+    "italic": "Kursywa",
+    "underline": "Podkreślenie",
+    "save": "Zapisz",
+    "preview": "Podgląd",
+    "edit": "Edytuj",
+    "settings": "Ustawienia",
+    "templates": "Szablony",
+    "components": "Komponenty",
+    "styles": "Style",
+    "document": "Dokument",
+    "menu": "Menu",
+    "padding": "Wypełnienie",
+    "link": "Link",
+    "image": "Obraz",
+    "empty": "Pusty komponent"
+  }
+}

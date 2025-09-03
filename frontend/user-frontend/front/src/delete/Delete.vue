@@ -3,24 +3,23 @@
 
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Delete account</div>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('deleteAccount.deleteAccount') }}</div>
       </div>
 
       <div v-if="client.user">
         <p>
-          Account deletion is irreversible, check the box below only if you are
-          100% sure that you want to delete your account.
+          {{ t('deleteAccount.warning') }}
         </p>
         <div class="p-field-checkbox mb-4">
           <Checkbox id="deleteCheckbox" v-model="wantDelete" :binary="true" />
-          <label for="deleteCheckbox" class="ml-2">I want to delete my account.</label>
+          <label for="deleteCheckbox" class="ml-2">{{ t('deleteAccount.confirmCheckbox') }}</label>
         </div>
 
-        <Button id="delete" label="Delete account" icon="pi pi-user-minus" class="p-button-lg"
+        <Button id="delete" :label="t('deleteAccount.deleteAccount')" icon="pi pi-user-minus" class="p-button-lg"
                 :disabled="!wantDelete" @click="deleteUser" />
       </div>
       <div v-else>
-        Account already deleted.
+        {{ t('deleteAccount.alreadyDeleted') }}
       </div>
     </div>
   </div>
@@ -36,6 +35,9 @@
   const router = useRouter()
   import { useClient } from '@live-change/vue3-ssr'
   const client = useClient()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const workingZone = inject('workingZone')
 

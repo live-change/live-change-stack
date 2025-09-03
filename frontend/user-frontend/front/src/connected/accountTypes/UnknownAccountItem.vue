@@ -17,8 +17,11 @@
 
   const { account } = toRefs(props)
 
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
+
   const cleanAccountInfo = computed(() => {
-    if(!account.value) return "Unknown account"
+    if(!account.value) return t('connected.unknownAccount')
     const { accountType, ...rest } = account.value
     return { ...rest, accountType: accountType.accountType }
   })

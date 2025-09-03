@@ -1,0 +1,14 @@
+{
+  "upload": {
+    "uploadFile": "Upload File",
+    "uploaded": "Uploaded",
+    "dragFilesHere": "Drag files here",
+    "orClickToSelect": "or click to select",
+    "selectFiles": "Select Files",
+    "dropZone": "Drop Zone",
+    "fileInput": "File Input",
+    "uploadView": "Upload View",
+    "chooseFile": "Choose File",
+    "noFileSelected": "No file selected"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "access": {
+    "notAuthorized": "Brak autoryzacji",
+    "insufficientPrivileges": "Nie masz wystarczających uprawnień do korzystania z tej funkcji tego obiektu.",
+    "accessRequests": "Prośby o dostęp",
+    "accessInvitations": "Zaproszenia dostępu",
+    "authorized": "Autoryzowani",
+    "accessRequestSaved": "Prośba o dostęp zapisana",
+    "accessRequestDeleted": "Prośba o dostęp usunięta",
+    "accessRequestAccepted": "Prośba o dostęp zaakceptowana",
+    "confirmDeleteAccessRequest": "Czy chcesz usunąć prośbę o dostęp użytkownika \"{name}\"?",
+    "accessInviteSaved": "Zaproszenie dostępu zapisane",
+    "publicAccessSaved": "Dostęp publiczny zapisany"
+  },
+  "invite": {
+    "inviteUserWithEmail": "Zaproś użytkownika przez email",
+    "inviteWithEmail": "Zaproś przez email",
+    "singleUser": "Jeden użytkownik",
+    "multipleUsers": "Wielu użytkowników",
+    "emailAddress": "Adres email",
+    "emailAddressesMultiple": "Adresy email (oddzielone nową linią lub przecinkiem)",
+    "roles": "Role",
+    "messageOptional": "Wiadomość (opcjonalna)",
+    "inviteEmail": "Zaproś email",
+    "inviteEmails": "Zaproś emaile",
+    "invitationSent": "Zaproszenie wysłane!",
+    "invitationsWereSent": "Zaproszenia zostały wysłane!",
+    "invitationWillBeSent": "Zaproszenie zostanie wysłane!",
+    "inviteMultipleEmails": "Zaproś {count} emaili",
+    "inviteSingleEmail": "Zaproś {email}"
+  },
+  "common": {
+    "rejected": "Odrzucone",
+    "rejectedDetail": "Odrzuciłeś"
+  }
+}

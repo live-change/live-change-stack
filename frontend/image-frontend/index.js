@@ -14,3 +14,7 @@ export function provideImageInputConfig() {
   provideInputConfig({ type: 'Image' }, config)
 }
 
+import en from "./front/locales/en.json"
+import pl from "./front/locales/pl.json"
+const locales = { en, pl }
+export { locales }
