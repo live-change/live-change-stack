@@ -19,7 +19,7 @@
           <TabPanels>
             <TabPanel value="0">
 
-              <command-form service="accessControl" action="inviteEmail"
+              <command-form service="accessControl" action="inviteEmail" 
                             ref="inviteForm"
                             v-slot="{ data }"
                             :parameters="{ objectType, object }"
@@ -137,7 +137,7 @@
     </WorkingZone>
 
     <template #footer>
-      <Button v-if="tabIndex === 0"
+      <Button v-if="tabIndex == 0"
               label="Invite email" icon="pi pi-envelope" autofocus @click="inviteForm.submit()" />
       <Button v-else
               label="Invite emails" icon="pi pi-envelope" autofocus @click="inviteManyForm.submit()" />
