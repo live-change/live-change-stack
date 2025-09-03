@@ -4,7 +4,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
       <div class="text-center mb-8">
         <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
-          {{ passwordExists ? 'Change password' : 'Set password' }}
+          {{ passwordExists ? t('auth.changePassword') : t('auth.setPassword') }}
         </div>
       </div>
 
@@ -38,7 +38,7 @@
                   <li>{{ t('auth.suggestionLowercase') }}</li>
                   <li>{{ t('auth.suggestionUppercase') }}</li>
                   <li>{{ t('auth.suggestionNumeric') }}</li>
-                  <li>Minimum 8 characters</li>
+                  <li>{{ t('auth.suggestionMinLength') }}</li>
                 </ul>
               </template>
             </Password>
@@ -57,7 +57,7 @@
 
         </template>
 
-        <Button :label="passwordExists ? 'Change password' : 'Set password'"
+        <Button :label="passwordExists ? t('auth.changePassword') : t('auth.setPassword')"
                 type="submit"
                 icon="pi pi-key" class="w-full"></Button>
 

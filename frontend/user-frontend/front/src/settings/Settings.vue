@@ -1,6 +1,6 @@
 <template>
   <div class="flex relative lg:static bg-surface-50 dark:bg-surface-950" 
-       style="height: calc(100vh - 88px)">
+       style="min-height: calc(100vh - 88px)">
     <div id="settings-menu" 
          class="bg-surface-0 dark:bg-surface-950 flex-shrink-0 absolute left-0 h-full
                 top-0 z-1 border-r-1 border-r-surface-300 dark:border-r-surface-700 select-none

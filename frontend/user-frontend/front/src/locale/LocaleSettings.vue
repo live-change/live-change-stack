@@ -57,7 +57,7 @@
   const { t, availableLocales, getLocaleMessage } = useI18n()
 
   function languageLabel(option) {
-    console.log("LANGUAGE LABEL", option)
+    //console.log("LANGUAGE LABEL", option)
     if(!option) return `${t('settings.autoDetect')} (${navigator.language})`
     return getLocaleMessage(option).languageName ?? option
   }
