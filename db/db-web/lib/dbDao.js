@@ -241,6 +241,17 @@ function localRequests(server, scriptContext) {
       if(!db) throw new Error('databaseNotFound')
       const queryFunction = scriptContext.getOrCreateFunction(code, `query`)
       return db.queryUpdate((input, output) => queryFunction(input, output, params))
+    },
+    runQuery: async (dbName, queryCodeTable, queryCodeId, params) => {
+      if(!dbName) throw new Error("databaseNameRequired")
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      const table = db.table(queryCodeTable)
+      if(!table) throw new Error("tableNotFound")
+      const queryCode = await table.objectGet(queryCodeId)
+      if(!queryCode) throw new Error("queryCodeNotFound")
+      const queryFunction = scriptContext.getOrCreateFunction(queryCode, queryCodeId)
+      return db.queryUpdate((input, output) => queryFunction(input, output, params))
     }
   }
 }
@@ -723,6 +734,28 @@ function localReads(server, scriptContext) {
         const queryFunction = scriptContext.getOrCreateFunction(code, 'queryCode:' + sourceName)
         return db.queryObjectGet((input, output) => queryFunction(input, output, params))
       }
+    },
+    runQuery: async (dbName, queryCodeTable, queryCodeId, params) => {
+      if(!dbName) throw new Error("databaseNameRequired")
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      const table = db.table(queryCodeTable)
+      if(!table) throw new Error("tableNotFound")
+      const queryCode = await table.objectGet(queryCodeId)
+      if(!queryCode) throw new Error("queryCodeNotFound")
+      const queryFunction = scriptContext.getOrCreateFunction(queryCode, queryCodeId)
+      return table.queryGet((input, output) => queryFunction(input, output, params))
+    },
+    runQueryObject: async (dbName, queryCodeTable, queryCodeId, params) => {
+      if(!dbName) throw new Error("databaseNameRequired")
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      const table = db.table(queryCodeTable)
+      if(!table) throw new Error("tableNotFound")
+      const queryCode = await table.objectGet(queryCodeId)
+      if(!queryCode) throw new Error("queryCodeNotFound")
+      const queryFunction = scriptContext.getOrCreateFunction(queryCode, queryCodeId)
+      return table.queryObjectGet((input, output) => queryFunction(input, output, params))
     }
   }
 }

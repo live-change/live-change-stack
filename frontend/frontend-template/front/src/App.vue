@@ -23,6 +23,7 @@
 
   import { useI18n } from 'vue-i18n'
   const i18n = useI18n()
+  const { locale: i18nLocale } = useI18n()
 
   import { client as useClient, useApi } from '@live-change/vue3-ssr'
   const api = useApi()
@@ -57,6 +58,16 @@
   if(typeof window != 'undefined') {
     StyleModule.mount(window.document, defaultHighlightStyle.module)
   }
+
+  locale.getLocaleObservable() // to force locale to be observed
+  // Synchronizacja języka między useLocale a vue-i18n
+  watch(() => locale.localeRef.value, (newLocale, oldLocale) => {
+    console.log("LOCALE CHANGE", oldLocale?.language, '=>', newLocale?.language)
+    if(newLocale?.language && i18nLocale.value !== newLocale.language) {
+      console.log("UPDATING I18N LOCALE TO", newLocale.language)
+      i18nLocale.value = newLocale.language
+    }
+  }, { immediate: true })
 
   import "./analytics"
 
