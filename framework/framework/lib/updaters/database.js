@@ -10,6 +10,8 @@ async function update(changes, service, app, force) {
   const dao = app.dao
   const database = app.databaseName
 
+  dao.request(['database', 'createTable'], database, 'queries').catch(e => 'ok')
+
   if(!app.noCache) {
     dao.request(['database', 'createTable'], database, 'cache').catch(e => 'ok')
     dao.request(['database', 'createIndex'], database, 'cache_byTimestamp', `${
@@ -109,10 +111,6 @@ async function update(changes, service, app, force) {
     }
 
     debug("CREATE INDEX", indexName, index)
-
-    const options = {
-      multi: index.multi || false
-    }
 
     if(index.function) {
       const functionCode = `(${index.function})`
@@ -321,6 +319,42 @@ async function update(changes, service, app, force) {
               })
             }
         })`, { table, property: change.name })*/
+      } break;
+      case "createQuery": {
+        const query = change.query
+        const queryKey = service.name + '.' + query.name
+        await dao.request(['database', 'put'], database, 'queries', {
+          id: queryKey,
+          code: typeof query.code === 'function' ? `(${query.code.toString()})` : query.code,
+          sourceName: query.sourceName,
+          update: query.update,
+          timeout: query.timeout,          
+          properties: query.properties,
+          returns: query.returns                    
+        })
+        debug("QUERY CREATED!", query.name)
+      } break;
+      case "renameQuery": {        
+        const query = change.to        
+        const queryKey = service.name + '.' + query.name
+        const oldQueryKey = service.name + '.' + change.from.name
+        const oldQuery = await dao.get(['database', 'get', database, 'queries', oldQueryKey])
+        await dao.request(['database', 'put'], database, 'queries', {
+          id: queryKey,
+          code: typeof oldQuery.code === 'function' ? `(${oldQuery.code.toString()})` : oldQuery.code,
+          sourceName: oldQuery.sourceName,
+          update: oldQuery.update, 
+          timeout: oldQuery.timeout,          
+          properties: oldQuery.properties,
+          returns: oldQuery.returns                    
+        })        
+        await dao.request(['database', 'delete'], database, 'queries', oldQueryKey)
+        debug("QUERY RENAMED!", query.name)
+      } break;
+      case "deleteQuery": {
+        const queryKey = service.name + '.' + change.name
+        await dao.request(['database', 'delete'], database, 'queries', queryKey)
+        debug("QUERY DELETED!", change.name)
       } break;
       default:
     }

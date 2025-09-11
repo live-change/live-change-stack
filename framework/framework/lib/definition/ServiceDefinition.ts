@@ -8,6 +8,7 @@ import ViewDefinition, { ViewDefinitionSpecification } from "./ViewDefinition.js
 import EventDefinition from "./EventDefinition.js"
 import defaultValidators from '../utils/validators.js'
 import { crudChanges, definitionToJSON } from "../utils.js"
+import QueryDefinition, { QueryDefinitionSpecification } from "./QueryDefinition.js"
 
 function createModelProxy(definition, model) {
   return new Proxy(model, {
@@ -72,6 +73,21 @@ function createForeignIndexProxy(definition, model) {
   })
 }
 
+function createQueryProxy(definition, query) {
+  return new Proxy(query, {
+    get(target, prop, receiver) {
+      const runtime  = definition._runtime
+      if(runtime) {
+        const queryRuntime = runtime.queries[query.name]
+        if(queryRuntime[prop]) {
+          return Reflect.get(queryRuntime, prop, receiver)
+        }
+      }
+      return Reflect.get(target, prop, receiver)
+    }
+  })
+}
+
 
 
 export interface ServiceDefinitionSpecification {
@@ -99,6 +115,7 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
     this.endpoints = []
     this.validators = { ...defaultValidators }
     this.clientSideFilters = []
+    this.queries = {}
     // @ts-ignore
     for(let key in definition) this[key] = definition[key]
   }
@@ -193,6 +210,13 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
     this.clientSideFilters.push(filter)
   }
 
+  query<T extends QueryDefinitionSpecification>(definition: T) {
+    if(this.queries[definition.name]) throw new Error('query ' + definition.name + ' already exists')
+    const query = new QueryDefinition<T>(definition)
+    this.queries[query.name] = query
+    return createQueryProxy(this, query)
+  }
+
   toJSON() {
     let models = {}
     for(let key in this.models) models[key] = this.models[key].toJSON()
@@ -235,9 +259,11 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
     let oldModule = JSON.parse(JSON.stringify(oldModuleParam))
     let changes: Record<string, any>[] = []
     changes.push(...crudChanges(oldModule.models || {}, this.models || {},
-        "Model", "model", { }))
+      "Model", "model", { }))
     changes.push(...crudChanges(oldModule.indexes || {}, this.indexes || {},
       "Index", "index", { }))
+    changes.push(...crudChanges(oldModule.queries || {}, this.queries || {},
+      "Query", "query", { }))
     return changes
   }
 }

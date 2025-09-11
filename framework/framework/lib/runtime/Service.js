@@ -70,6 +70,11 @@ class Service {
     }
 
     this.authenticators = this.definition.authenticators
+
+    this.queries = {}
+    for(let queryName in this.definition.queries) {
+      this.queries[queryName] = new Query( this.definition.queries[queryName], this )
+    }
   }
 
   async start(config) {

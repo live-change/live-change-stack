@@ -19,6 +19,7 @@ export interface ViewContext extends ContextBase {
 export type ActionParameters = Record<string, any>
 export type TriggerParameters = Record<string, any>
 export type EventParameters = Record<string, any>
+export type QueryParameters = Record<string, any>
 
 export interface TriggerSettings {
   service?: string,

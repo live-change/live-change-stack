@@ -250,10 +250,15 @@ function localRequests(server, scriptContext) {
       if(!db) throw new Error('databaseNotFound')
       const table = db.table(queryCodeTable)
       if(!table) throw new Error("tableNotFound")
-      const queryCode = await table.objectGet(queryCodeId)
-      if(!queryCode) throw new Error("queryCodeNotFound")
-      const queryFunction = scriptContext.getOrCreateFunction(queryCode, queryCodeId)
-      return table.queryUpdate((input, output) => queryFunction(input, output, params))
+      const queryData = await table.objectGet(queryCodeId)
+      if(!queryData) throw new Error("queryCodeNotFound")
+      const queryCode = queryData.code
+      const querySourceName = queryData.sourceName
+      const queryFunction = scriptContext.getOrCreateFunction(
+        queryCode, 
+        querySourceName ? querySourceName : 'queryCode:' + queryCodeId
+      )
+      return db.queryUpdate((input, output) => queryFunction(input, output, params))
     }
   }
 }
@@ -880,27 +885,73 @@ function localReads(server, scriptContext) {
         return db.queryObjectGet((input, output) => queryFunction(input, output, params))
       }
     },
-    runQuery: async (dbName, queryCodeTable, queryCodeId, params) => {
-      if(!dbName) throw new Error("databaseNameRequired")
-      const db = server.databases.get(dbName)
-      if(!db) throw new Error('databaseNotFound')
-      const table = db.table(queryCodeTable)
-      if(!table) throw new Error("tableNotFound")
-      const queryCode = await table.objectGet(queryCodeId)
-      if(!queryCode) throw new Error("queryCodeNotFound")
-      const queryFunction = scriptContext.getOrCreateFunction(queryCode, queryCodeId)
-      return table.queryGet((input, output) => queryFunction(input, output, params))
+    runQuery: {
+      get: async (dbName, queryCodeTable, queryCodeId, params) => {
+        if(!dbName) throw new Error("databaseNameRequired")
+        const db = server.databases.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        const table = db.table(queryCodeTable)
+        if(!table) throw new Error("tableNotFound")
+        const queryData = await table.objectGet(queryCodeId)
+        if(!queryData) throw new Error("queryCodeNotFound")
+        const queryCode = queryData.code
+        const querySourceName = queryData.sourceName
+        const queryFunction = scriptContext.getOrCreateFunction(
+          queryCode, 
+          querySourceName ? querySourceName : 'queryCode:' + queryCodeId
+        )
+        return db.queryGet((input, output) => queryFunction(input, output, params))
+      },
+      observable: async (dbName, queryCodeTable, queryCodeId, params) => {
+        if(!dbName) return new ReactiveDao.ObservableError("databaseNameRequired")
+        const db = server.databases.get(dbName)
+        if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+        const table = db.table(queryCodeTable)
+        if(!table) return new ReactiveDao.ObservableError('tableNotFound')
+        const queryData = await table.objectGet(queryCodeId)
+        if(!queryData) throw new Error("queryCodeNotFound")
+        const queryCode = queryData.code
+        const querySourceName = queryData.sourceName
+        const queryFunction = scriptContext.getOrCreateFunction(
+          queryCode, 
+          querySourceName ? querySourceName : 'queryCode:' + queryCodeId
+        )
+        return db.queryObservable((input, output) => queryFunction(input, output, params))
+      }
     },
-    runQueryObject: async (dbName, queryCodeTable, queryCodeId, params) => {
-      if(!dbName) throw new Error("databaseNameRequired")
-      const db = server.databases.get(dbName)
-      if(!db) throw new Error('databaseNotFound')
-      const table = db.table(queryCodeTable)
-      if(!table) throw new Error("tableNotFound")
-      const queryCode = await table.objectGet(queryCodeId)
-      if(!queryCode) throw new Error("queryCodeNotFound")
-      const queryFunction = scriptContext.getOrCreateFunction(queryCode, queryCodeId)
-      return table.queryObjectGet((input, output) => queryFunction(input, output, params))
+    runQueryObject: {
+      get: async (dbName, queryCodeTable, queryCodeId, params) => {
+        if(!dbName) throw new Error("databaseNameRequired")
+        const db = server.databases.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        const table = db.table(queryCodeTable)
+        if(!table) throw new Error("tableNotFound")
+        const queryData = await table.objectGet(queryCodeId)
+        if(!queryData) throw new Error("queryCodeNotFound")
+        const queryCode = queryData.code
+        const querySourceName = queryData.sourceName
+        const queryFunction = scriptContext.getOrCreateFunction(
+          queryCode, 
+          querySourceName ? querySourceName : 'queryCode:' + queryCodeId
+        )
+        return db.queryObjectGet((input, output) => queryFunction(input, output, params))
+      },
+      observable: async (dbName, queryCodeTable, queryCodeId, params) => {
+        if(!dbName) return new ReactiveDao.ObservableError("databaseNameRequired")
+        const db = server.databases.get(dbName)
+        if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+        const table = db.table(queryCodeTable)
+        if(!table) return new ReactiveDao.ObservableError('tableNotFound')
+        const queryData = await table.objectGet(queryCodeId)
+        if(!queryData) throw new Error("queryCodeNotFound")
+        const queryCode = queryData.code
+        const querySourceName = queryData.sourceName
+        const queryFunction = scriptContext.getOrCreateFunction(
+          queryCode, 
+          querySourceName ? querySourceName : 'queryCode:' + queryCodeId
+        )
+        return db.queryObjectObservable((input, output) => queryFunction(input, output, params))
+      }
     }
   }
 }
