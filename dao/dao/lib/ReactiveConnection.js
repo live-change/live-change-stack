@@ -6,6 +6,7 @@ import * as utils from './utils.js'
 let lastUid = 0
 
 export const sourceSymbol = Symbol("source")
+export const originalCredentialsSymbol = Symbol("originalCredentials")
 
 class Observation {
   constructor(connection, what, pushed) {
@@ -381,8 +382,11 @@ class Connection extends EventEmitter {
     if(this.settings.logLevel > 0) debug("connected")
     this.connected = true
     if(!this.settings.fastAuth) {
+      console.log("SENDING CREDENTIALS", this.credentials)
+      console.log("ORIGINAL CREDENTIALS", this.credentials[originalCredentialsSymbol])
       this.send({
-        ...this.credentials
+        ...this.credentials[originalCredentialsSymbol],
+        ...this.credentials,
       })
     }
     /// REFRESH OBSERVABLES!

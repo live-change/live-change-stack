@@ -86,8 +86,9 @@ import Path from "./lib/Path.js"
 rd.Path = Path
 export { Path }
 
-import { sourceSymbol } from "./lib/ReactiveConnection.js"
+import { sourceSymbol, originalCredentialsSymbol } from "./lib/ReactiveConnection.js"
 rd.sourceSymbol = sourceSymbol
-export { sourceSymbol }
+rd.originalCredentialsSymbol = originalCredentialsSymbol
+export { sourceSymbol, originalCredentialsSymbol }
 
 export default rd

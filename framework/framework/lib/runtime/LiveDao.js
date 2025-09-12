@@ -1,5 +1,6 @@
 import LcDao from "@live-change/dao"
 import Dao from "./Dao.js"
+import { originalCredentialsSymbol } from "@live-change/dao"
 
 import { waitForSignal } from './utils.js'
 
@@ -31,12 +32,14 @@ class LiveDao extends LcDao.DaoProxy {
 
   computeCredentials() {
     let credentials = JSON.parse(JSON.stringify(this.initialCredentials))
+    const originalCredentials = JSON.parse(JSON.stringify(this.initialCredentials))
     const keys = Object.keys(credentials).filter(key => key.endsWith("Key"))
     for(const credentialsObserver of this.credentialsObservations) {
       credentials = {
         ...credentials,
         ...credentialsObserver.credentials,
-        roles: [...credentials.roles, ...(credentialsObserver.credentials.roles || [])]
+        roles: [...credentials.roles, ...(credentialsObserver.credentials.roles || [])],
+        [originalCredentialsSymbol]: originalCredentials
       }
     }    
     for(const key of keys) {
