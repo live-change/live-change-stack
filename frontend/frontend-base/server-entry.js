@@ -117,7 +117,9 @@ export function sitemapEntry(App, createRouter, routerSitemap, config = {}) {
       config, api, App, createRouter, host, headers, response, url
     )
 
-    const sitemapPrefix = `https://${ENV_BRAND_DOMAIN}`
+    const domain = api.metadata.config.value.domain
+
+    const sitemapPrefix = `https://${domain}`
 
     return routerSitemap((location, opts) => {
       write({ url: sitemapPrefix + router.resolve(location).href, changefreq: 'daily', priority: 0.5, ...opts })

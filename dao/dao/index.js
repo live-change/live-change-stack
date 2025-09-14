@@ -91,4 +91,8 @@ rd.sourceSymbol = sourceSymbol
 rd.originalCredentialsSymbol = originalCredentialsSymbol
 export { sourceSymbol, originalCredentialsSymbol }
 
+import DummyConnection from "./lib/DummyConnection.js"
+rd.DummyConnection = DummyConnection
+export { DummyConnection }
+
 export default rd

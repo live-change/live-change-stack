@@ -22,3 +22,4 @@ dist
 .env.development.local
 .env.test.local
 .env.production.local
+link-deps-4-build.sh

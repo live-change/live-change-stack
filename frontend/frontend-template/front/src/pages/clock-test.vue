@@ -1,3 +1,7 @@
+<route>
+  { name: 'clock-test' }
+</route>
+
 <template>
   <div>
     <h1>Hello world!</h1>

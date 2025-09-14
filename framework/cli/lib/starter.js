@@ -15,9 +15,11 @@ const app = App.app()
 import {
 
   SsrServer,
+  Renderer,
   Services,
 
   createLoopbackDao,
+  serverDao,
   setupApiServer,
   setupApiSockJs,
   setupApiWs,
@@ -184,6 +186,14 @@ export function ssrServerOptions(yargs) {
   })
 }
 
+export function prerenderOptions(yargs) {
+  yargs.option('staticHtml', {
+    describe: 'generate static html files',
+    type: 'boolean',
+    default: false
+  })
+}
+
 let globalServicesConfig
 
 export default function starter(servicesConfig = null, args = {}, extraArgs = {}) {
@@ -242,6 +252,22 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       argv = { ...extraArgs, ...argv }
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, false)
+    })
+    .command('prerender', 'prerender pages', (yargs) => {
+      prerenderOptions(yargs)
+      ssrServerOptions(yargs)
+      apiServerOptions(yargs)
+      startOptions(yargs)      
+    }, async (argv) => {
+      argv = { ...extraArgs, ...argv }
+      await setupApp({...argv, uidBorders: '[]'})
+      try {
+        await prerender(argv)
+        process.exit(0)
+      } catch(e) {
+        console.error("PRERENDER ERROR", e)
+        process.exit(1)
+      }
     })
     .command('server', 'start server', (yargs) => {
       ssrServerOptions(yargs)
@@ -574,4 +600,143 @@ export async function server(argv, dev) {
   httpServer.listen(ssrPort, ssrHost)
 
   console.log("LISTENING ON ",`${ssrHost}:${ssrPort} link: http://${ssrHost}:${ssrPort}/`)
+}
+
+export async function prerender(argv) {
+  if(globalServicesConfig) argv.services = globalServicesConfig
+  argv.stopped = true
+  argv.dev = false
+  
+  const manifest = JSON.parse(fs.readFileSync((path.resolve(argv.ssrRoot, 'dist/client/.vite/ssr-manifest.json'))))
+
+  const fastAuth = true
+
+  let apiServer
+  if(argv.withApi) {
+    apiServer = await setupApiServer({ ...argv, fastAuth })
+  }
+
+  async function daoFactory(credentials, ip) {
+    if(apiServer) {
+      return createLoopbackDao(credentials, () => apiServer.daoFactory(credentials, ip))
+    } else {
+      const host = (argv.apiHost === '0.0.0.0' || !argv.apiHost)
+        ? 'localhost' : argv.apiHost
+      return await serverDao(credentials, ip, {
+        remoteUrl: `ws://${host}:${this.settings.apiPort || 8002}/api/ws`
+      })
+    }
+  }
+
+
+  const serverEntry = path.resolve(argv.ssrRoot, 'dist/server/entry-server.js')
+  const templatePath = path.resolve(argv.ssrRoot, 'dist/client/index.html')
+  const renderer = new Renderer(manifest, {    
+    ...argv,
+    serverEntry,
+    templatePath
+  })
+  await renderer.start()
+
+  if(argv.staticHtml) {
+    console.log("STATIC HTML RENDERER STARTED!")
+  } else {
+    console.log("RENDERER STARTED!")
+  }
+
+  const sitemapFunction = await renderer.withContext(async (context) => {
+    return await renderer.getSitemapRenderFunction(context)
+  })
+
+  const domain = argv.services?.clientConfig?.domain ?? process.env.BRAND_DOMAIN ?? 'localhost:8001'
+  const version = argv.version ?? 'unknown'
+  const now = Date.now()  
+
+  const routes = []
+  
+  console.log("COLLECTING ROUTES FROM SITEMAP!")
+
+  const dao = await daoFactory({ sessionKey: 'sitemap' }, '127.0.0.1')
+
+  await sitemapFunction({
+    dao,
+    clientIp: '127.0.0.1',
+    credentials: { sessionKey: 'sitemap' },
+    windowId: app.uidGenerator(),
+    headers: {
+      'Host': domain,
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Cache-Control': 'max-age=0',
+    },
+    url: `https://${domain}/sitemap.xml`,
+    version,
+    now,
+    domain,
+  }, (route) => routes.push(route))
+
+  console.log("ROUTES COLLECTED!", routes.length)
+
+ // await  fs.promises.rm(path.resolve(argv.ssrRoot, 'dist/prerender'), { recursive: true })
+  await fs.promises.mkdir(path.resolve(argv.ssrRoot, 'dist/prerender'), { recursive: true })
+
+  const prerenderRoot = path.resolve(argv.ssrRoot, 'dist/prerender') 
+  
+  for(const route of routes) {
+    const url = new URL(route.url)
+    const relativeFilename = url.pathname.slice(1) + (url.pathname.endsWith('/') ? 'index' : '/index') 
+    const baseFilename = path.resolve(prerenderRoot, relativeFilename)    
+    const htmlFilename = baseFilename + '.html'
+    const jsonFilename = baseFilename + '.json'
+
+    console.log("RENDERING ROUTE", url.pathname, '->', relativeFilename)
+
+    const rendered = await renderer.renderPage({
+      url: url.pathname,
+      headers: {
+        'Host': domain,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+      },
+      dao,
+      clientIp: '127.0.0.1',
+      credentials: { sessionKey: 'sitemap' },
+      windowId: app.uidGenerator(),
+      version,
+      now,
+      domain,
+    })
+
+    console.log("RENDERED:", Object.keys(rendered).join(', '))
+    const { html, ...metadata } = rendered    
+    //console.log("HTML", html)
+    //console.log("METADATA", metadata)
+    
+    await fs.promises.mkdir(path.dirname(htmlFilename), { recursive: true })    
+
+    await fs.promises.writeFile(htmlFilename, html)
+    await fs.promises.writeFile(jsonFilename, JSON.stringify(metadata, null, 2))
+
+    console.log("RENDERED ROUTE", url.pathname, '->', relativeFilename)
+  }
+  
+  if(argv.staticHtml) {
+    const clientAssetsDirectory = path.resolve(argv.ssrRoot, 'dist/client/assets')
+    const prerenderAssetsDirectory = path.resolve(prerenderRoot, 'assets')
+    console.log("COPYING CLIENT ASSETS FROM", clientAssetsDirectory, "TO", prerenderAssetsDirectory)
+    await fs.promises.cp(clientAssetsDirectory, prerenderAssetsDirectory, { recursive: true })
+    console.log("CLIENT ASSETS COPIED FROM", clientAssetsDirectory, "TO", prerenderAssetsDirectory)
+
+    const publicAssetsDirectory = path.resolve(argv.ssrRoot, 'public')
+    console.log("COPYING PUBLIC ASSETS FROM", publicAssetsDirectory, "TO", prerenderRoot)
+    await fs.promises.cp(publicAssetsDirectory, prerenderRoot, { recursive: true })
+    console.log("PUBLIC ASSETS COPIED FROM", publicAssetsDirectory, "TO", prerenderRoot)
+  }
 }

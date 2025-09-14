@@ -16,15 +16,46 @@ import { locales as wysiwygLocales } from "@live-change/wysiwyg-frontend"
 import { locales as blogLocales } from "@live-change/blog-frontend"
 
 import Aura from '@primeuix/themes/aura'
+import { definePreset } from '@primeuix/themes'
+
+const levels = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]
 
 export default {
 
   primeVue: {
     theme: {
-      preset: Aura,
+      preset:  definePreset(Aura, {
+        semantic: {
+          primary: Object.fromEntries(
+            levels.map(level => [level, `{blue.${level}}`])
+          ),         
+          colorScheme: {
+            light: {
+                surface: {
+                    0: '#ffffff',
+                    ...Object.fromEntries(
+                        levels.map(level => [level, `{zinc.${level}}`])
+                    )
+                },
+                primary: {                  
+                    contrastColor: '#000000',                    
+                },
+            },
+            dark: {
+                surface: {
+                    0: '#ffffff',
+                    ...Object.fromEntries(
+                        levels.map(level => [level, `{slate.${level}}`])
+                    )
+                }
+            }
+          }, 
+        },
+        
+      }),
       options: {
         prefix: 'p',
-        darkModeSelector: '.app-dark-mode:not(.email-rendering)',
+        darkModeSelector: '.app-dark-mode',
         cssLayer: {
           name: "primevue",
           order: "base, primevue",

@@ -13,6 +13,8 @@ import setupDbServer from './lib/setupDbServer.js'
 import setupDbClient from './lib/setupDbClient.js'
 import setupApp from './lib/setupApp.js'
 
+import serverDao from './lib/serverDao.js'
+
 export {
   Renderer,
   Services,
@@ -20,6 +22,7 @@ export {
   TestServer,
 
   createLoopbackDao,
+  serverDao,
   renderTemplate,
   setupApiServer,
   setupApiSockJs,

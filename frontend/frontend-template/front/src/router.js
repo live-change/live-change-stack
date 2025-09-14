@@ -22,11 +22,6 @@ export function routes(config = {}) {
     ...userRoutes({ ...config, prefix: prefix + 'user/' }),
     ...autoFormRoutes({ ...config, prefix: prefix + 'auto-form' }),
 
-    route({
-      name: 'index', path: prefix, meta: { },
-      component: () => import("./Index.vue")
-    }),
-
     ...pagesRoutes,
 
     ...contentEditRoutes({ ...config }),
@@ -40,6 +35,9 @@ export function routes(config = {}) {
 export async function sitemap(route, api) {
   route({
     name: 'index'
+  })
+  route({
+    name: 'clock-test'
   })
   await pagesSitemap(route, api)
 }

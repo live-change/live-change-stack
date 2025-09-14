@@ -152,7 +152,7 @@ class Renderer {
 
     try {
       // Use withContext only for the actual rendering part
-      const { html: appHtml, modules, data, meta, response } = await this.withContext(async (context) => {
+      const { html: appHtml, modules, data, meta, response, staticHtml } = await this.withContext(async (context) => {
         const render = await this.getRenderFunction(context)
         return await render(params)
       })
@@ -168,6 +168,7 @@ class Renderer {
           `    window.__VERSION__ = ${serialize(version, { isJSON: true })}\n`+
           `    window.__WINDOW_ID__ = ${serialize(windowId, { isJSON: true })}\n`+
           `    window.__NOW__ = ${serialize(now, { isJSON: true })}\n`+
+          `    window.__STATIC__ = ${serialize(this.settings.staticHtml || staticHtml, { isJSON: true })}\n`+
           `    console.info("SOFTWARE VERSION:" + window.__VERSION__)\n`+
           `</script>\n`
 

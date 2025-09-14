@@ -2,6 +2,7 @@ import cookie from 'cookie'
 import path from 'path'
 import crypto from 'crypto'
 import os from 'os'
+import fs from 'fs'
 import expressStaticGzip from "express-static-gzip"
 
 import serverDao from './serverDao.js'
@@ -54,6 +55,9 @@ class SsrServer {
         }],
         orderPreference: ['br', 'gzip', 'deflate']
       }))
+      const prerenderPath = path.resolve(this.root, 'dist/prerender')
+      this.usePrerender = await (fs.promises.access(prerenderPath, fs.constants.F_OK).then(() => prerenderPath).catch(() => false))
+      console.log("USE PRERENDER DIRECTORY", this.usePrerender)
       //this.express.use(serveStatic(staticPath, { index: false }))
     }
 
@@ -111,15 +115,15 @@ class SsrServer {
       const clientIp = getIp(req)
       const credentials = readCredentials(req)
       const windowId = this.uidGenerator()
-      const now = Date.now()
+      const now = Date.now()      
 
       try {
         const dao = await this.createDao({ sessionKey: 'sitemap' }, clientIp)
         try {
           const version = this.version
+          const domain = this.settings.services?.clientConfig?.domain ?? process.env.BRAND_DOMAIN ?? 'localhost:8001'
           await this.renderer.renderSitemap({
-            url, headers: req.headers, dao, clientIp, credentials, windowId, version, now,
-            domain: domain ?? req.headers.host
+            url, headers: req.headers, dao, clientIp, credentials, windowId, version, now, domain
           }, res)
         } catch (e) {
           console.error("SITEMAP RENDERING ERROR", e.stack || e)
@@ -132,6 +136,30 @@ class SsrServer {
       }
     })
     this.express.use('*', async (req, res) => {
+
+      if(this.usePrerender) {        
+        const startTime = Date.now()
+        const baseFilename = path.resolve(this.usePrerender, req.originalUrl.slice(1) + (req.originalUrl.endsWith('/') ? 'index' : '/index'))
+        const htmlFilename = baseFilename + '.html'
+        const jsonFilename = baseFilename + '.json'
+        const exists = await fs.promises.access(htmlFilename, fs.constants.F_OK).then(() => true).catch(() => false)
+        if(exists) {
+          console.log("SERVE PRERENDERED PAGE", req.originalUrl)
+          try {
+            const html = await fs.promises.readFile(htmlFilename, { encoding: 'utf-8' })
+            const metadata = await JSON.parse(await fs.promises.readFile(jsonFilename, { encoding: 'utf-8' }))
+            res.status(200)
+            res.set(metadata?.headers ?? {
+              'Content-Type': 'text/html'
+            })
+            res.end(html)
+            console.log("SERVED PRERENDERED PAGE", req.originalUrl, 'IN', Date.now() - startTime, 'ms')
+            return
+          } catch(e) {
+            console.error("PRERENDERED PAGE ERROR", e.stack || e)
+          }
+        }      
+      }
       console.log("RENDERING PAGE", req.originalUrl)
       if(fbRedirect(req, res)) return
       if(this.settings.spa) {

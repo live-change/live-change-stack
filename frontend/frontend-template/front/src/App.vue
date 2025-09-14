@@ -19,8 +19,7 @@
   import { ViewRoot, UpdateBanner } from "@live-change/frontend-base"
 
   import { computed } from 'vue'
-  import { useHead } from '@vueuse/head'
-
+  import { useHead } from '@vueuse/head'  
   import { useI18n } from 'vue-i18n'
   const i18n = useI18n()
   const { locale: i18nLocale } = useI18n()
@@ -28,6 +27,9 @@
   import { client as useClient, useApi } from '@live-change/vue3-ssr'
   const api = useApi()
   const client = useClient()
+
+  import { useRoute } from 'vue-router'
+  const route = useRoute()
 
   useHead(computed(() => ({
     title: api.metadata.config.value.brandName,
@@ -39,7 +41,10 @@
     ],
     htmlAttrs: {
       lang: i18n.locale.value,
-      amp: true
+      amp: true,
+      class: {
+        'app-dark-mode': true && !route.meta.lightMode
+      }
     },
   })))
 
