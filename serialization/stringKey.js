@@ -31,7 +31,7 @@ export class StringKeyWriter {
     return this
   }
 
-  writeInteger(num) {
+/*   writeInteger(num) {
     const numString = num.toString()
     const numKey = `${numString.length}:${numString}`
     this.#structureWriter.writeSize(numString.length)
@@ -43,6 +43,30 @@ export class StringKeyWriter {
     const numString = num.toString()
     const numKey = `${numString.length}:${numString}`
     this.#structureWriter.writeSize(numString.length)
+    this.#data.push(numKey)
+    return this
+  } */
+
+  writeNumber(num) {
+    const exponentialString = num.toExponential()
+    const [mantisaString, exponentString] = exponentialString.split('e')    
+    
+    const mantisa = +mantisaString
+    const negative = mantisa < 0    
+    const mantisaNumbers = mantisaString.slice(negative ? 1 : 0).replace('.', '')
+    const mantisaEncoded = negative 
+      ? (Math.pow(10, mantisaNumbers.length) - (+mantisaNumbers))
+      : mantisaNumbers
+
+    const exponent = +exponentString
+    const negativeExponent = exponent < 0
+    const negativeEncoded = negative ^ negativeExponent
+    const exponentEncoded = negativeEncoded ? 9999 - Math.abs(exponent) : Math.abs(exponent) + 1
+    const digitizedExponent = exponentEncoded.toString(10).padStart(4, '0')
+
+    const prefix = (negativeEncoded ? '/' : '') + digitizedExponent
+    const numKey = `${negative ? '-' : ''}${prefix}v${mantisaEncoded}`
+    this.#structureWriter.writeSize(numKey.length)
     this.#data.push(numKey)
     return this
   }
@@ -109,13 +133,30 @@ export class StringKeyReader {
     return result
   }
 
-  readInteger() {
-    const size = this.#structureReader.readSize()
-    const numKeySize = (size.toFixed().length) + 1 + size
-    const numKey = this.#data.slice(this.#dataPointer, this.#dataPointer + numKeySize)
-    this.#dataPointer += numKeySize + 1
-    const numStr = numKey.slice(numKey.indexOf(':') + 1)
-    return +numStr
+  readNumber() {
+    const size = this.#structureReader.readSize()    
+    const numKey = this.#data.slice(this.#dataPointer, this.#dataPointer + size)
+    this.#dataPointer += size + 1
+
+    const [prefix, encodedMantisa] = numKey.split('v')
+    const negative = prefix[0] === '-'
+    const encodedExponentString = prefix.slice(negative ? 1 : 0)
+    const negativeEncoded = encodedExponentString[0] == '/'    
+    const encodedExponent = +encodedExponentString.slice(negativeEncoded ? 1 : 0)
+    const absoluteExponent = negativeEncoded ? (9999 - encodedExponent) : encodedExponent - 1
+    const negativeExponent = negativeEncoded ^ negative
+    const exponent = negativeExponent ? -absoluteExponent : absoluteExponent
+
+    const mantisaInteger = negative 
+      ? ''+(Math.pow(10, encodedMantisa.length) - (+encodedMantisa))
+      : ''+encodedMantisa
+
+    const mantisa = mantisaInteger.length > 1 
+      ? `${mantisaInteger[0]}.${mantisaInteger.slice(1)}` 
+      : mantisaInteger
+    const exponentialString = `${negative ? '-' : ''}${mantisa}e${exponent}`
+    
+    return +exponentialString
   }
 
   readBoolean() {
@@ -123,4 +164,17 @@ export class StringKeyReader {
     this.#dataPointer += 5
     return result === 'true'
   }
+}
+
+import { write, read } from './serialization.js'
+
+export function serializeKeyToString(key) {
+  const writer = new StringKeyWriter()
+  write(key, writer)
+  return writer.getOutput()
+}
+
+export function deserializeKeyFromString(serialized, structure) {
+  const reader = new StringKeyReader(serialized, structure)
+  return read(reader)
 }

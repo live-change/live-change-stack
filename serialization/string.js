@@ -5,7 +5,7 @@ export class StringWriter {
   }
 
   writeType(type) {
-    this.#outputArray.push(type.toFixed())
+    this.#outputArray.push(type)
     return this
   }
 
@@ -26,12 +26,7 @@ export class StringWriter {
     return this
   }
 
-  writeInteger(num) {
-    this.#outputArray.push(num.toString())
-    return this
-  }
-
-  writeFloat(num) {
+  writeNumber(num) {
     this.#outputArray.push(num.toString())
     return this
   }
@@ -62,7 +57,7 @@ export class StringReader {
   }
 
   readType() {
-    return parseInt(this.readToken())
+    return this.readToken()
   }
 
   readKey() {
@@ -84,13 +79,8 @@ export class StringReader {
     return str
   }
 
-  readInteger() {
-    const num = parseInt(this.readToken())
-    return num
-  }
-
-  readFloat() {
-    const num = parseInt(this.readToken())
+  readNumber() {
+    const num = parseFloat(this.readToken())
     return num
   }
 
@@ -98,4 +88,17 @@ export class StringReader {
     const bool = this.readToken() === 'true'
     return bool
   }
+}
+
+import { write, read } from './serialization.js'
+
+export function serializeToString(key) {
+  const writer = new StringWriter()
+  write(key, writer)
+  return writer.getOutput()
+}
+
+export function deserializeFromString(serialized, structure) {
+  const reader = new StringReader(serialized, structure)
+  return read(reader)
 }

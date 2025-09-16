@@ -4,6 +4,7 @@
   "private": true,
   "license": "BSD-3-Clause",
   "workspaces": [
+    "serialization",
     "dao/dao",
     "dao/dao-sockjs",
     "dao/dao-websocket",

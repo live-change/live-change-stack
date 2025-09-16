@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@live-change/dao": "0.9.138",
+    "@live-change/serialization": "0.9.138",
     "get-random-values": "^1.2.2",
     "node-interval-tree": "^1.3.3"
   },

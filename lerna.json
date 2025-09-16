@@ -1,5 +1,6 @@
 {
   "packages": [
+    "serialization",
     "dao/dao",
     "dao/dao-sockjs",
     "dao/dao-websocket",

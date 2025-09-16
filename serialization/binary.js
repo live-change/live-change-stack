@@ -24,54 +24,7 @@ class BinaryWriter {
     this.#outputView = newView
   }
 
-  /** write positive integer using unicode like coding scheme, because it will give sortable result */
-  writeInteger(num) {
-    if(this.#outputPosition + 9 > this.#outputBuffer.byteLength) this.allocateMore()
-    if(num < 0) throw new Error('Only positive numbers are supported')
-    if(num < 0x80) { // 7 bit number encoded as 0xxxxxxx
-      this.#outputView.setUint8(this.#outputPosition++, num)
-    } else if(num < 0x4000) { // 14 bit number encoded as 10xxxxxx xxxxxxxx
-      this.#outputView.setUint16(this.#outputPosition, 0x8000 | num)
-      this.#outputPosition += 2
-    } else if(num < 0x200000) { // 21 bit number encoded as 110xxxxx xxxxxxxx xxxxxxxx
-      this.#outputView.setUint8(this.#outputPosition++, 0xC0 | (num >> 16))
-      this.#outputView.setUint16(this.#outputPosition, num & 0xFFFF)
-      this.#outputPosition += 3
-    } else if(num < 0x10000000) { // 28 bit number encoded as 1110xxxx xxxxxxxx xxxxxxxx xxxxxxxx
-      this.#outputView.setUint32(this.#outputPosition, 0xE0000000 | num)
-      this.#outputPosition += 4
-    } else if(num < 0x800000000) { // 35 bit number encoded as 11110xxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
-      this.#outputView.setUint8(this.#outputPosition++, 0xF0 | (num >> 32))
-      this.#outputView.setUint32(this.#outputPosition, num & 0xFFFFFFFF)
-      this.#outputPosition += 5
-    } else if(num < 0x40000000000) { // 42 bit number encoded as 111110xx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
-      this.#outputView.setUint16(this.#outputPosition, 0xF800 | (num >> 32))
-      this.#outputView.setUint32(this.#outputPosition + 2, num & 0xFFFFFFFF)
-      this.#outputPosition += 6
-    } else if(num < 0x2000000000000) { // 49 bit number encoded as 1111110x xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
-      this.#outputView.setUint8(this.#outputPosition++, 0xFC | (num >> 48))
-      this.#outputView.setUint16(this.#outputPosition, (num >> 32) & 0xFFFF)
-      this.#outputView.setUint32(this.#outputPosition + 2, num & 0xFFFFFFFF)
-      this.#outputPosition += 7
-    } else if(num < 0x100000000000000) { // 56 bit number encoded as 11111110 xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
-      this.#outputView.setUint32(this.#outputPosition, 0xFE000000 | (num >> 32))
-      this.#outputView.setUint32(this.#outputPosition + 4, num & 0xFFFFFFFF)
-      this.#outputPosition += 4
-    } else if(num < 0x8000000000000000) { // 63 bit number encoded as 11111111 xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
-      this.#outputView.setUint8(this.#outputPosition++, 0xFF)
-      this.#outputView.setUint32(this.#outputPosition, num >> 32)
-      this.#outputView.setUint32(this.#outputPosition + 4, num & 0xFFFFFFFF)
-      this.#outputPosition += 9
-    } else { // 64 bit number encoded as 11111111 xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
-      this.#outputView.setUint8(this.#outputPosition++, 0xFF)
-      this.#outputView.setUint32(this.#outputPosition, num >> 32)
-      this.#outputView.setUint32(this.#outputPosition + 4, num & 0xFFFFFFFF)
-      this.#outputPosition += 9
-    }
-    return this
-  }
-
-  writeFloat(num) {
+  writeNumber(num) {
     if(this.#outputPosition + 8 > this.#outputBuffer.byteLength) this.allocateMore()
     this.#outputView.setFloat64(this.#outputPosition, num)
     this.#outputPosition += 8
@@ -123,31 +76,13 @@ class BinaryWriter {
 export class BinaryReader {
   #inputBuffer
   #inputPosition = 0
-  #inputView = new DataView(this.#outputBuffer)
+  #inputView = new DataView(this.#inputBuffer)
   constructor(inputBuffer, structureBuffer) {
     this.#inputBuffer = inputBuffer
     this.#inputView = new DataView(inputBuffer)
   }
 
-  /** read positive integer using unicode like coding scheme, because it will give sortable result */
-  readInteger() {
-    const firstByte = this.#inputView.getUint8(this.#inputPosition++)
-    if(firstByte < 0x80) return firstByte
-    if(firstByte < 0xC0) return (firstByte & 0x3F) << 8 | this.#inputView.getUint8(this.#inputPosition++)
-    if(firstByte < 0xE0) return (firstByte & 0x1F) << 16 | this.#inputView.getUint16(this.#inputPosition)
-    if(firstByte < 0xF0) return this.#inputView.getUint32(this.#inputPosition)
-    if(firstByte < 0xF8) return (firstByte & 0x07) << 32 | this.#inputView.getUint32(this.#inputPosition)
-    if(firstByte < 0xFC) return (firstByte & 0x03) << 32 | this.#inputView.getUint32(this.#inputPosition)
-      | this.#inputView.getUint16(this.#inputPosition + 4)
-    if(firstByte < 0xFE) return (firstByte & 0x01) << 48 | this.#inputView.getUint32(this.#inputPosition) << 16
-      | this.#inputView.getUint32(this.#inputPosition + 4)
-    if(firstByte < 0xFF) return this.#inputView.getUint32(this.#inputPosition) << 32
-      | this.#inputView.getUint32(this.#inputPosition + 4)
-    return this.#inputView.getUint32(this.#inputPosition) << 32
-      | this.#inputView.getUint32(this.#inputPosition + 4)
-  }
-
-  readFloat() {
+  readNumber() {
     const result = this.#inputView.getFloat64(this.#inputPosition)
     this.#inputPosition += 8
     return result
@@ -178,4 +113,17 @@ export class BinaryReader {
 
   readNull() {
   }
+}
+
+import { write, read } from './serialization.js'
+
+export function serializeToBinary(key) {
+  const writer = new BinaryWriter()
+  write(key, writer)
+  return writer.getOutput()
+}
+
+export function deserializeFromBinary(serialized, structure) {
+  const reader = new BinaryReader(serialized, structure)
+  return read(reader)
 }

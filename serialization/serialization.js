@@ -1,16 +1,15 @@
 
-export const types = Object.freeze([
-  'string',
-  'integer',
-  'float',
-  'boolean',
-  'object',
-  'null',
-  'array'
-])
+export const typeMap = Object.freeze({
+  'string': 's',
+  'number': 'n',
+  'boolean': 'b',
+  'object': 'o',
+  'null': 'z',
+  'array': 'a'
+})
 
-export const typeMap = Object.freeze(Object.fromEntries(
-  types.map((type, index) => [type, index])
+export const types = Object.freeze(Object.fromEntries(
+ Object.entries(typeMap).map(([type, key]) => [key, type])
 ))
 
 /** Serialize any data using writer
@@ -22,8 +21,7 @@ export function write(data, writer) {
   switch(typeof data) {
     case 'string': return writer.writeType(typeMap.string).writeString(data)
     case 'number': {
-      if(Number.isInteger(data) && data >= 0) return writer.writeType(typeMap.integer).writeInteger(data)
-      return writer.writeType(typeMap.float).writeFloat(data)
+      return writer.writeType(typeMap.number).writeNumber(data)
     }
     case 'boolean': return writer.writeType(typeMap.boolean).writeBoolean(data)
     case 'object':
@@ -55,10 +53,8 @@ export function read(reader) {
   switch(type) {
     case typeMap.string:
       return reader.readString()
-    case typeMap.integer:
-      return reader.readInteger()
-    case typeMap.float:
-      return reader.readFloat()
+    case typeMap.number:
+      return reader.readNumber()
     case typeMap.boolean:
       return reader.readBoolean()
     case typeMap.object: {
