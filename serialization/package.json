@@ -1,14 +1,9 @@
 {
   "name": "@live-change/serialization",
-  "version": "0.9.138",
-  "scripts": {
-  },
+  "version": "0.9.139",
+  "scripts": {},
   "type": "module",
-  "dependencies": {
-  },
-  "devDependencies": {
-  },
-  "author":"Michał Łaszczewski <michal@laszczewski.pl>",
+  "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "ISC",
   "description": ""
 }
