@@ -27,9 +27,9 @@ const channelMessagesWithUsersAndIdentificationByTime = query({ // definition
   code(props, { user, message, identification }) => {
     const { channel, ...range } = props
     message.time.inside(range)
-    message.channel.eq(channel)
-    user.id.eq(message.author)
-    identification.id.eq(user.id)
+    message.channel.eqals(channel)
+    user.id.equals(message.au thor)
+    identification.id.equals(user.id)
   }
 })
 ```

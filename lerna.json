@@ -30,6 +30,7 @@
     "framework-vue3/vue-api",
     "framework-vue3/vue3-components",
     "framework-vue3/vue3-ssr",
+    "framework/simple-query",
     "services/session-service",
     "services/user-service",
     "services/email-service",
