@@ -1,6 +1,6 @@
 {
   "name": "@live-change/simple-query",
-  "version": "0.9.138",
+  "version": "0.9.141",
   "description": "",
   "main": "src/index.js",
   "scripts": {
