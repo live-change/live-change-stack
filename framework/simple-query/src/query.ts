@@ -68,10 +68,6 @@ class QueryRule extends CanBeStatic {
   $_parametersJSON(resultParameters: string[]) {
     return undefined
   }
-
-  $_operation() {
-    throw new Error("$_operation not implemented")
-  }
 }
 
 type QueryRules = QueryRule[]
@@ -185,6 +181,7 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
   indexes: IndexInfo[]
 
   executionPlan: ExecutionStep[]
+  indexPlan: ExecutionStep[]
 
   constructor(serviceDefinition: ServiceDefinition<SDS>, definition: QueryDefinitionSpecification) {
     this.service = serviceDefinition
@@ -207,13 +204,6 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
 
     this.printDependencies() 
 
-    this.computeExecutionPlan()
-
-    console.log("EXECUTION PLAN:")
-    console.log(JSON.stringify(this.executionPlan, null, 2))
-
-    process.exit(0)
-    /// TODO: use collected relations to create indexes and prepared query
   }
 
   printRules() {
@@ -366,7 +356,6 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     const ruleParameters = JSON.parse(JSON.stringify(source.rule.$_parametersJSON(resultParameters)))
     if(source.index) {                  
       const indexExecution = {
-        operation: source.rule.$_operation(),
         ...source.index.$_executionJSON(),
         by: ruleParameters[Object.keys(ruleParameters)[0]]
       }
@@ -385,7 +374,6 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
       }
     }  
     const execution = {
-      operation: source.rule.$_operation(),
       ...source.input.$_executionJSON(),
       by: ruleParameters[Object.keys(ruleParameters)[0]]
     }    
@@ -403,11 +391,124 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     }
   }
 
+  computeSourceIndexPlan(source: RuleSource, resultParameters: string[], processed: RuleSource[], allProcessed: RuleSource[]) {    
+    allProcessed.push(source)
+    const ruleSources = this.ruleSources
+      .filter(s => s.input.$source === source.input.$source && s != source && !processed.includes(s))
+    const next = ruleSources.map(ruleSource => {            
+      const otherSource = this.ruleSources.find(s => s.rule === ruleSource.rule && s != ruleSource)    
+      if(!otherSource) return null
+      if(processed.includes(otherSource)) return null
+      return this.computeSourceIndexPlan(
+        otherSource,
+        [...resultParameters, source.input.$alias],
+        [...processed, source],
+        allProcessed
+      )
+    }).filter(s => s !== null)
+    const ruleParameters = JSON.parse(JSON.stringify(source.rule.$_parametersJSON(resultParameters)))
+    if(source.index) {                  
+      const indexExecution = {
+        ...source.index.$_executionJSON(),
+        by: ruleParameters[Object.keys(ruleParameters)[0]]
+      }
+      const indexNext = [{
+        operation: 'object',
+        ...source.input.$_executionJSON(),
+        by: {
+          type: 'result',
+          path: [indexExecution.alias, source.index.indexParts.at(-1).alias],
+        },
+        next
+      }]
+      return {
+        execution: indexExecution,
+        next: indexNext
+      }
+    }  
+    const execution = {
+      ...source.input.$_executionJSON(),
+      by: ruleParameters[Object.keys(ruleParameters)[0]],
+    }    
+    const executionPlan = {
+      execution,
+      next
+    }
+    return executionPlan
+  }
+
+  computeIndexPlan() {
+    const indexSources = []
+    for(const ruleSource of this.ruleSources) {
+      const source = ruleSource.input.$source
+      if(indexSources.includes(source)) continue
+      indexSources.push(source)
+    }
+    this.indexPlan = indexSources.map(source => {
+      const firstFetch = {
+        sourceType: sourceType(source),
+        name: source.getTypeName(),
+        alias: source.getTypeName(),
+        by: { type: 'object', properties: {} } /// infinite range
+      }      
+      const ruleSources = this.ruleSources.filter(s => s.input.$source === source)
+      const ruleSourcesAliases = Array.from(new Set(ruleSources.map(s => s.input.$alias)))
+      const next:ExecutionStep[] = ruleSourcesAliases.map((alias) => {        
+        const processed = []
+
+        const aliasRuleSources = ruleSources.filter(s => s.input.$alias === alias)
+        const next:ExecutionStep[] = aliasRuleSources.map((input) => {
+          const rule = input.rule
+          const output = this.ruleSources.find(s => s.rule === rule && s != input)
+          if(!output) return null
+          const ignoredSources = ruleSources.filter(s => s.input.$source === source && s.input.$alias === input.input.$alias)
+          const executionPlan = this.computeSourceIndexPlan(output, [firstFetch.alias], [input, ...ignoredSources], processed)        
+          executionPlan.execution.by = { type: 'result', path: [firstFetch.alias, ...input.input.$path] }
+          return { 
+            ...executionPlan,         
+          }
+        }).filter(s => s !== null)
+
+        const mapping = {
+          [alias]: [firstFetch.alias],          
+        }
+        for(const processedSource of processed) {
+          mapping[processedSource.input.$alias] = [processedSource.input.$alias]
+        }
+        const execution = {
+          operation: 'output',
+          mapping 
+        }
+        return {
+          execution,
+          next
+        }
+      }).filter(s => s !== null)
+      return {
+        execution: firstFetch,
+        next
+      }
+    })
+  }
+
   prepareQuery() {
+    console.log("CREATE INDEXES", this.indexes)
+
+    process.exit(0)
+
+    this.computeExecutionPlan()
+    console.log("EXECUTION PLAN:")
+    console.log(JSON.stringify(this.executionPlan, null, 2))
+    /// TODO: create indexes used by query
+
+    
     /// TODO: prepare query
+
+    process.exit(0)
   }
 
   createIndex() {
+    this.computeIndexPlan()
     /// TODO: create index from query
   }
 }
@@ -420,7 +521,11 @@ export default function queryFactory<SDS extends ServiceDefinitionSpecification>
     serviceDefinition: ServiceDefinition<SDS>
   ) {
   const queryFactoryFunction: QueryFactoryFunction<SDS> = 
-    (definition: QueryDefinitionSpecification) => new QueryDefinition<SDS>(serviceDefinition, definition)
+    (definition: QueryDefinitionSpecification) => {
+      const query = new QueryDefinition<SDS>(serviceDefinition, definition)
+      query.prepareQuery()
+      return query
+    }
   return queryFactoryFunction
 }
 
@@ -482,7 +587,7 @@ function parametersJSONForInput(input: RuleInput, resultParameters: string[]) {
     if(resultParameter) {
       return {
         type: 'result',
-        path: [resultParameter],
+        path: [resultParameter, ...input.$path],
       }
     }
   }
@@ -532,10 +637,6 @@ export class RangeRule extends QueryRule {
       range: parametersJSONForInput(this.$range, resultParameters),
     }   
   }
-
-  $_operation() {
-    return 'range'
-  }
 }
 
 export class EqualsRule extends QueryRule {
@@ -581,10 +682,6 @@ export class EqualsRule extends QueryRule {
       inputA: parametersJSONForInput(this.$inputA, resultParameters),
       inputB: parametersJSONForInput(this.$inputB, resultParameters),
     }   
-  }
-
-  $_operation() {
-    return 'object'
   }
 }
 

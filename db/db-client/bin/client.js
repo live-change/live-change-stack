@@ -11,7 +11,7 @@ import yargs from 'yargs'
 
 process.on('unhandledRejection', (reason, event) => {
   console.log('Unhandled Rejection at: Promise', 
-    "reason", reason, "stack", reason.stack, "promise", promise)
+    "reason", reason, "stack", reason.stack, "promise", reason.promise)
 })
 
 process.on('uncaughtException', function (err) {
