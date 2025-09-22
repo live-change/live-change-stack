@@ -18,6 +18,10 @@ class ForeignModelDefinition {
     }
   }
 
+  toQueryDescription() {
+    return `[ForeignModel ${this.serviceName}.${this.name}]`
+  }
+
 }
 
 export default ForeignModelDefinition

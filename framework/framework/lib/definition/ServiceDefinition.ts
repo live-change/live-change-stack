@@ -21,7 +21,10 @@ function createModelProxy(definition, model) {
         }
       }
       const resutlt = Reflect.get(target, prop, receiver)
-      if(!resutlt) console.warn("Model runtime used before created", model.name)
+      if(!resutlt) {
+        console.warn("Model", model.name, "runtime used before created; property", prop, "not found")
+        console.trace()
+      }
       return resutlt
     }
   })

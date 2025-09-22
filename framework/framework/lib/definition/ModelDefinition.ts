@@ -52,6 +52,10 @@ class ModelDefinition<T extends ModelDefinitionSpecification> {
     return this.serviceName + '_' + this.name
   }
 
+  toQueryDescription() {
+    return `[Model ${this.serviceName}.${this.name}]`
+  }
+
   createAndAddProperty(name, definition) {
     const property = new PropertyDefinition(definition)
     this.properties[name] = property
