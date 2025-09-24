@@ -5,16 +5,20 @@ const debug = Debug('framework:updaters:db')
 const cartesian =
   (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
 
+const updaterRequestSettings = {
+  requestTimeout: Infinity
+}
+
 async function update(changes, service, app, force) {
 
   const dao = app.dao
   const database = app.databaseName
 
-  dao.request(['database', 'createTable'], database, 'queries').catch(e => 'ok')
+  dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'queries').catch(e => 'ok')
 
   if(!app.noCache) {
-    dao.request(['database', 'createTable'], database, 'cache').catch(e => 'ok')
-    dao.request(['database', 'createIndex'], database, 'cache_byTimestamp', `${
+    dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'cache').catch(e => 'ok')
+    dao.requestWithSettings(updaterRequestSettings, ['database', 'createIndex'], database, 'cache_byTimestamp', `${
       async (input, output) => {
         await input.table('cache').onChange((obj, oldObj) => {
           if(obj && !oldObj) output.change({ id: obj.expiresAt+'_'+obj.id, to: obj.id }, null)
@@ -24,21 +28,21 @@ async function update(changes, service, app, force) {
   }
 
   if(!app.shortEvents) {
-    dao.request(['database', 'createTable'], database, 'eventConsumers').catch(e => 'ok')
-    dao.request(['database', 'createTable'], database, 'eventReports').catch(e => 'ok')
+    dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'eventConsumers').catch(e => 'ok')
+    dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'eventReports').catch(e => 'ok')
     if (app.splitEvents) {
-      dao.request(['database', 'createLog'], database, service.name + '_events').catch(e => 'ok')
+      dao.requestWithSettings(updaterRequestSettings, ['database', 'createLog'], database, service.name + '_events').catch(e => 'ok')
     } else {
-      dao.request(['database', 'createLog'], database, 'events').catch(e => 'ok')
+      dao.requestWithSettings(updaterRequestSettings, ['database', 'createLog'], database, 'events').catch(e => 'ok')
     }
   }
 
   if(!app.shortCommands) {
     if (app.splitCommands) {
-      dao.request(['database', 'createTable'], database, service.name + '_commands').catch(e => 'ok')
+      dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, service.name + '_commands').catch(e => 'ok')
     } else {
-      dao.request(['database', 'createTable'], database, 'commands').catch(e => 'ok')
-      dao.request(['database', 'createIndex'], database, 'commands_byTimestamp', `${
+      dao.requestWithSettings(updaterRequestSettings,   ['database', 'createTable'], database, 'commands').catch(e => 'ok')
+      dao.requestWithSettings(updaterRequestSettings, ['database', 'createIndex'], database, 'commands_byTimestamp', `${
         async (input, output) => {
           await input.table('commands').onChange((obj, oldObj) => {
             if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
@@ -49,12 +53,12 @@ async function update(changes, service, app, force) {
     }
   }
   if(!app.shortTriggers) {
-    dao.request(['database', 'createTable'], database, 'triggerRoutes').catch(e => 'ok')
+    dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'triggerRoutes').catch(e => 'ok')
     if (app.splitTriggers) {
-      dao.request(['database', 'createTable'], database, service.name + '_triggers').catch(e => 'ok')
+      dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, service.name + '_triggers').catch(e => 'ok')
     } else {
-      dao.request(['database', 'createTable'], database, 'triggers').catch(e => 'ok')
-      dao.request(['database', 'createIndex'], database, 'triggers_byTimestamp', `${
+      dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'triggers').catch(e => 'ok')
+      dao.requestWithSettings(updaterRequestSettings, ['database', 'createIndex'], database, 'triggers_byTimestamp', `${
         async (input, output) => {
           await input.table('triggers').onChange((obj, oldObj) => {
             if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
@@ -192,7 +196,7 @@ async function update(changes, service, app, force) {
       case "createModel": {
         const model = change.model
         const tableName = generateTableName(model.name)
-        await dao.request(['database', 'createTable'], database, tableName, model.storage ?? {})
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, tableName, model.storage ?? {})
         debug("TABLE CREATED!", tableName)
         for(const [indexName, index] of Object.entries(model.indexes || {})) {
           if(index.created) continue
@@ -215,9 +219,9 @@ async function update(changes, service, app, force) {
         for(let indexName in model.indexes) {
           let indexName = change.name
           indexName = from + '_' + indexName
-          await dao.request(['database', 'deleteIndex'], database, indexName)
+          await dao.requestWithSettings(updaterRequestSettings, ['database', 'deleteIndex'], database, indexName)
         }
-        await dao.request(['database', 'renameTable'], database, from, to)
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'renameTable'], database, from, to)
         for(let indexName in model.indexes) {
           const index = model.indexes[indexName]
           await createIndex(to, indexName, index)
@@ -231,13 +235,13 @@ async function update(changes, service, app, force) {
           const indexName = tableName + '_' + indexKey
           debug("DELETE INDEX", indexName, indexKey)
           try {
-            await dao.request(['database', 'deleteIndex'], database, indexName)
+            await dao.requestWithSettings(updaterRequestSettings, ['database', 'deleteIndex'], database, indexName)
           } catch(e) {
             console.error(e)
           }
         }
         try {
-          await dao.request(['database', 'deleteTable'], database, tableName)
+          await dao.requestWithSettings(updaterRequestSettings, ['database', 'deleteTable'], database, tableName)
         } catch(e) {
           console.error(e)
         }
@@ -258,7 +262,7 @@ async function update(changes, service, app, force) {
           from = generateTableName(from)
           to = generateTableName(to)
         }
-        await dao.request(['database', 'renameIndex'], database, from, to)
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'renameIndex'], database, from, to)
       } break
       case "deleteIndex": {
         const table = change.model ? generateTableName(change.model) : null
@@ -269,7 +273,7 @@ async function update(changes, service, app, force) {
           indexName = generateTableName(indexName)
         }
         try {
-          await dao.request(['database', 'deleteIndex'], database, indexName)
+          await dao.requestWithSettings(updaterRequestSettings, ['database', 'deleteIndex'], database, indexName)
         } catch(e) {
           console.error(e)
         }
@@ -281,7 +285,7 @@ async function update(changes, service, app, force) {
         const defaultValue = property.defaultValue ?? property.default
         if(typeof defaultValue !== 'function') update[change.name] = defaultValue // functions not supported here
         debug("CREATE PROPERTY UPDATE", update)
-        await dao.request(['database', 'query'], database, `(${
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'query'], database, `(${
             async (input, output, { table, update }) =>
               await input.table(table).onChange((obj, oldObj) => {
                 if(obj) output.table(table).update(obj.id, [{ op: 'merge', value: update }])
@@ -290,7 +294,7 @@ async function update(changes, service, app, force) {
       } break;
       case "renameProperty": {
         const table = generateTableName(change.model)
-        await dao.request(['database', 'query'], database, `(${
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'query'], database, `(${
             async (input, output, { table, from, to }) => {
               const path = from.slice('.')
               await input.table(table).onChange((obj, oldObj) => {
@@ -308,7 +312,7 @@ async function update(changes, service, app, force) {
       } break;
       case "deleteProperty": {
         const table = generateTableName(change.model)
-        /*await dao.request(['database', 'query'], database, `(${
+        /*await dao.requestWithSettings(updaterRequestSettings, ['database', 'query'], database, `(${
             async (input, output, { table, property }) => {
               await input.log(table).onChange((obj, oldObj) => {
                 if(obj) {
@@ -323,7 +327,7 @@ async function update(changes, service, app, force) {
       case "createQuery": {
         const query = change.query
         const queryKey = service.name + '.' + query.name
-        await dao.request(['database', 'put'], database, 'queries', {
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'put'], database, 'queries', {
           id: queryKey,
           code: typeof query.code === 'function' ? `(${query.code.toString()})` : query.code,
           sourceName: query.sourceName,
@@ -339,7 +343,7 @@ async function update(changes, service, app, force) {
         const queryKey = service.name + '.' + query.name
         const oldQueryKey = service.name + '.' + change.from.name
         const oldQuery = await dao.get(['database', 'get', database, 'queries', oldQueryKey])
-        await dao.request(['database', 'put'], database, 'queries', {
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'put'], database, 'queries', {
           id: queryKey,
           code: typeof oldQuery.code === 'function' ? `(${oldQuery.code.toString()})` : oldQuery.code,
           sourceName: oldQuery.sourceName,
@@ -348,12 +352,12 @@ async function update(changes, service, app, force) {
           properties: oldQuery.properties,
           returns: oldQuery.returns                    
         })        
-        await dao.request(['database', 'delete'], database, 'queries', oldQueryKey)
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'delete'], database, 'queries', oldQueryKey)
         debug("QUERY RENAMED!", query.name)
       } break;
       case "deleteQuery": {
         const queryKey = service.name + '.' + change.name
-        await dao.request(['database', 'delete'], database, 'queries', queryKey)
+        await dao.requestWithSettings(updaterRequestSettings, ['database', 'delete'], database, 'queries', queryKey)
         debug("QUERY DELETED!", change.name)
       } break;
       default:

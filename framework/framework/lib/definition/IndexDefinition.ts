@@ -9,9 +9,11 @@ export interface IndexDefinitionSpecification {
 }
 
 class IndexDefinition<T extends IndexDefinitionSpecification> {
+  serviceName: string
   [key: string]: any
 
-  constructor(definition: T) {
+  constructor(definition: T, serviceName: string) {
+    this.serviceName = serviceName
     this.properties = {}
     // @ts-ignore
     for(let key in definition) this[key] = definition[key]

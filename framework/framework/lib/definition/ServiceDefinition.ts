@@ -138,7 +138,7 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
 
   index(definition) {
     if(this.indexes[definition.name]) throw new Error('index ' + definition.name + ' already exists')
-    const index = new IndexDefinition(definition)
+    const index = new IndexDefinition(definition, this.name)
     this.indexes[index.name] = index
     return createIndexProxy(this, index)
   }

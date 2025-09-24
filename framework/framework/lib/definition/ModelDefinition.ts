@@ -31,6 +31,7 @@ export interface ModelDefinitionSpecification {
 }
 
 class ModelDefinition<T extends ModelDefinitionSpecification> {
+  servideName: string
   [key: string]: any
 
   constructor(definition, serviceName) {

@@ -1,4 +1,4 @@
-import type { 
+import { 
   PropertyDefinitionSpecification, ServiceDefinition, ServiceDefinitionSpecification  
 } from "@live-change/framework"
 
@@ -81,10 +81,9 @@ interface QueryDefinitionSpecification {
   name: string
   properties: Record<string, PropertyDefinitionSpecification>
   returns?: PropertyDefinitionSpecification,
-  sources: Record<string, QuerySource>,
-  code: QueryCode,
-  sourceName: string,
-  update: boolean,
+  sources?: Record<string, QuerySource>,
+  code?: QueryCode,
+  update?: boolean,
 }
 
 class OutputMapping {
@@ -112,23 +111,31 @@ class IndexInfo {
   rules: QueryRule[]
   indexParts: OutputMapping[]
   name: string
+  sources: QuerySource[]
 
-  constructor(rules: QueryRule[], indexParts: OutputMapping[], name: string = undefined) {
+  constructor(rules: QueryRule[], indexParts: OutputMapping[], service: ServiceDefinition<any>, name: string = undefined) {
     this.rules = rules    
     this.indexParts = indexParts
-    const allSources = rules.map(rule => rule.$_getSources()).flat()
-    const firstSource = allSources[0]
-    if(allSources.every(source => source === firstSource)) this.singleSource = firstSource
+    this.sources = rules.map(rule => rule.$_getSources()).flat()
+    const firstSource = this.sources[0]
+    if(this.sources.every(source => source === firstSource)) this.singleSource = firstSource    
     if(this.singleSource) {      
-      this.name = name || (this.singleSource.input.$source.getTypeName() + "_" + (indexParts
-        .map(part => part.path.join(".")).join("_")))
+      this.name = name || ''
+      + (this.singleSource.input.$source.serviceName === service.name ? "" : this.singleSource.input.$source.serviceName + "_")
+      + (
+        this.singleSource.input.$source.getTypeName() + "_" + (indexParts
+        .map(part => part.path.join(".")).join("_"))
+      )
     } else {
-      this.name = name || indexParts
-        .map(part => {
-          const source = allSources.find(source => source.input.$alias === part.result)
+      this.name = name || ''
+      + (this.sources.every(source => source.input.$source.serviceName === service.name) ? "" : service.name + "_")      
+      + (
+        indexParts.map(part => {
+          const source = this.sources.find(source => source.input.$alias === part.result)
           if(!source) throw new Error("Source not found for index part: " + part)
           return source.input.$source.getTypeName() + "_" + part.path.join(".")
         }).join("_")
+      )
     }
   }
 
@@ -160,6 +167,13 @@ class IndexInfo {
       alias: this.singleSource.input.$alias + 'Indexed'
     }
   }
+
+  $_createQuery(service: ServiceDefinition<any>) {
+    return new QueryDefinition(service, {
+      name: this.name,
+      properties: {}
+    }, this.rules)
+  }
 }
 
 const staticRuleSymbol = Symbol("static")
@@ -183,7 +197,9 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
   executionPlan: ExecutionStep[]
   indexPlan: ExecutionStep[]
 
-  constructor(serviceDefinition: ServiceDefinition<SDS>, definition: QueryDefinitionSpecification) {
+  constructor(
+    serviceDefinition: ServiceDefinition<SDS>, definition: QueryDefinitionSpecification, rules: QueryRule[] = undefined
+  ) {
     this.service = serviceDefinition
     this.definition = definition
 
@@ -194,15 +210,20 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
       )
     )
 
-    this.computeRules()    
+    if(rules) {
+      this.rules = rules
+    } else {
+      this.computeRules()
+    }
+
     this.markStaticRules()
 
-    this.printRules()
+    //this.printRules()
 
     this.computeDependencies()
     this.computeIndexes()
 
-    this.printDependencies() 
+    //this.printDependencies() 
 
   }
 
@@ -332,7 +353,7 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
   computeIndexes() {
     this.indexes = []
     for(const ruleSource of this.ruleSources) {
-      const potentialIndex = ruleSource.input.$_getIndexInfo(this.indexes)
+      const potentialIndex = ruleSource.input.$_getIndexInfo(this.indexes, this.service)
       if(!potentialIndex) continue
       const existingIndex = this.indexes.find(index => index.equals(potentialIndex))
       if(existingIndex) {
@@ -437,7 +458,7 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     return executionPlan
   }
 
-  computeIndexPlan() {
+  computeIndexPlan(endMapping: OutputMapping[] = undefined) {
     const indexSources = []
     for(const ruleSource of this.ruleSources) {
       const source = ruleSource.input.$source
@@ -469,15 +490,24 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
           }
         }).filter(s => s !== null)
 
-        const mapping = {
+        const baseMapping = {
           [alias]: [firstFetch.alias],          
         }
         for(const processedSource of processed) {
-          mapping[processedSource.input.$alias] = [processedSource.input.$alias]
+          baseMapping[processedSource.input.$alias] = [processedSource.input.$alias]
+        }
+        let mapping = baseMapping
+        if(endMapping) {
+          mapping = {}
+          for(const mp of endMapping) {
+            const base = baseMapping[mp.result]
+            if(!base) throw new Error("Base mapping "+mp.result+" not found")
+            mapping[mp.alias] = base.concat(mp.path)
+          }
         }
         const execution = {
           operation: 'output',
-          mapping 
+          mapping
         }
         return {
           execution,
@@ -494,6 +524,11 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
   prepareQuery() {
     console.log("CREATE INDEXES", this.indexes)
 
+    for(const index of this.indexes) {
+      const indexQuery = index.$_createQuery(this.service)
+      indexQuery.createIndex(index.name, index.indexParts)
+    }
+
     process.exit(0)
 
     this.computeExecutionPlan()
@@ -507,9 +542,15 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     process.exit(0)
   }
 
-  createIndex() {
-    this.computeIndexPlan()
+  createIndex(name, mapping: OutputMapping[]) {    
+    console.log("CREATE INDEX", name)
+    this.printRules()
+    console.log("OUTPUT MAPPINGS", mapping)
+    this.computeIndexPlan(mapping)
+    console.log("INDEX PLAN", JSON.stringify(this.indexPlan, null, 2))
     /// TODO: create index from query
+
+    process.exit(0)
   }
 }
 
@@ -733,7 +774,7 @@ export class QueryInputBase extends CanBeStatic {
     return this.$source === input.$source && this.$alias === input.$alias
   }
 
-  $_getIndexInfo(indexes: IndexInfo[]): IndexInfo | null {
+  $_getIndexInfo(indexes: IndexInfo[], serviceDefinition: ServiceDefinition<any>): IndexInfo | null {
     if(this.$path.length === 0) return null // id is used
     if(this.$path.length === 1 && this.$path[0] === "id") return null // id is used
     return new IndexInfo([
@@ -741,7 +782,7 @@ export class QueryInputBase extends CanBeStatic {
     ], [
       new OutputMapping(this.$alias, this.$path, this.$path[this.$path.length - 1]),
       new OutputMapping(this.$alias, ['id'], 'to')
-    ])
+    ], serviceDefinition)
   }
 
   $_executionJSON() {    
