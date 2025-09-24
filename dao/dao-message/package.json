@@ -1,6 +1,6 @@
 {
   "name": "@live-change/dao-message",
-  "version": "0.9.142",
+  "version": "0.9.143",
   "author": {
     "email": "m8@em8.pl",
     "name": "Michał Łaszczewski",
@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.142",
+    "@live-change/dao": "^0.9.143",
     "debug": "^4.3.4",
     "supports-color": "^9.4.0"
   },
