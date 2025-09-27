@@ -181,11 +181,13 @@ class Connection extends EventEmitter {
             setTimeout(() => {
               if(queuedConnectionId === this.connectedCounter) {
                 this.requestsQueue[queueId] = null
+                console.error("DISCONNECTED WHILE WAITING FOR REQUEST", msg)
                 reject('disconnected')
               }
             }, settings.requestSendTimeout || 2300)
           }
         } else {
+          console.error("DISCONNECTED WHILE WAITING FOR REQUEST", msg)
           return reject('disconnected')
         }
       }
@@ -195,7 +197,8 @@ class Connection extends EventEmitter {
           this.activeTimeouts.delete(timeout)
           let waiting = this.waitingRequests.get(msg.requestId)
           if (waiting) {
-            waiting.handler('timeout')
+            console.error("TIMEOUT WHILE WAITING FOR REQUEST", msg)
+            waiting.handler('timeout')            
             this.waitingRequests.delete(msg.requestId)
           }
           for(let i = 0; i < this.requestsQueue.length; i++) {
@@ -204,6 +207,7 @@ class Connection extends EventEmitter {
             if(req.msg.requestId === msg.requestId) {
               const req = this.requestsQueue[i]
               this.requestsQueue[i] = null
+              console.error("TIMEOUT WHILE WAITING FOR REQUEST", msg)
               req.handler('timeout')
             }
           }
