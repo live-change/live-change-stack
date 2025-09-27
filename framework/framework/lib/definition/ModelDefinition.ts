@@ -113,6 +113,10 @@ class ModelDefinition<T extends ModelDefinitionSpecification> {
     return changes
   }
 
+  toString() {
+    return this.toQueryDescription()
+  }
+
 }
 
 export default ModelDefinition

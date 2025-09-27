@@ -96,7 +96,7 @@ async function update(changes, service, app, force) {
         const match = indexConfigClean === requiredConfig        
         if(!match) {
           console.log("INDEXES NOT MATCHING, DELETING AND RECREATING", indexConfigClean, requiredConfig)
-          await dao.request(['database', 'deleteIndex'], database, indexName)
+          await dao.requestWithSettings(updaterRequestSettings, ['database', 'deleteIndex'], database, indexName)
           return await doCreateIndexIfNotExists(indexName, functionCode, parameters, storage)
         } else {          
           console.log("INDEXES MATCHING, SKIPPING")
