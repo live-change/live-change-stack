@@ -1,6 +1,6 @@
 {
   "name": "@live-change/task-service",
-  "version": "0.9.147",
+  "version": "0.9.148",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.147",
-    "@live-change/relations-plugin": "^0.9.147"
+    "@live-change/framework": "^0.9.148",
+    "@live-change/relations-plugin": "^0.9.148"
   },
   "gitHead": "9202c36abc25e3baf5fe39806d89c3fab203f428"
 }
