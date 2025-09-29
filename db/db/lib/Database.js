@@ -235,6 +235,25 @@ class Database {
     return summary
   }
 
+  async deleteOpLogs() {
+    let promises = []
+    for(let name in this.config.tables) promises.push((async (name) => {
+      const result = await this.table(name).deleteOpLog()
+      return { ...result, type: 'table', name }
+    })(name))
+    for(let name in this.config.indexes) promises.push((async (name) => {
+        try {
+          const index = await this.index(name)
+          const result = await index.deleteOpLog()
+          return { ...result, type: 'index', name }
+        } catch(error) {
+          return { type: 'index', name }
+        }
+      })(name))
+    const results = await Promise.all(promises)
+    return results
+  }
+
   async index(name) {
     let index = this.indexes.get(name)
     if(!index) {

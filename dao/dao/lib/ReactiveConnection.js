@@ -151,8 +151,8 @@ class Connection extends EventEmitter {
     this.on('connect', () => this.settings.onConnect && this.settings.onConnect() )
   }
 
-  sendRequest(msg, settings) {
-    settings = { ...this.settings, ...settings }
+  sendRequest(msg, userSettings) {
+    const settings = { ...this.settings, ...userSettings }
     return new Promise((resolve, reject) => {
       msg.requestId = (++this.lastRequestId)
       let handler = (err, resp) => {
@@ -197,7 +197,8 @@ class Connection extends EventEmitter {
           this.activeTimeouts.delete(timeout)
           let waiting = this.waitingRequests.get(msg.requestId)
           if (waiting) {
-            console.error("TIMEOUT WHILE WAITING FOR REQUEST", msg)
+            console.error("TIMEOUT WHILE WAITING FOR REQUEST", msg, 'WITH SETTINGS', settings, "WITH USER SETTINGS", userSettings)
+            console.trace("TIMEOUT WHILE WAITING FOR REQUEST")
             waiting.handler('timeout')            
             this.waitingRequests.delete(msg.requestId)
           }
@@ -207,7 +208,8 @@ class Connection extends EventEmitter {
             if(req.msg.requestId === msg.requestId) {
               const req = this.requestsQueue[i]
               this.requestsQueue[i] = null
-              console.error("TIMEOUT WHILE WAITING FOR REQUEST", msg)
+              console.error("TIMEOUT WHILE WAITING FOR REQUEST", msg, 'WITH SETTINGS', settings, "WITH USER SETTINGS", userSettings)
+              console.trace("TIMEOUT WHILE WAITING FOR REQUEST")
               req.handler('timeout')
             }
           }

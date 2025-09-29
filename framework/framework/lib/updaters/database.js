@@ -6,7 +6,7 @@ const cartesian =
   (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
 
 const updaterRequestSettings = {
-  requestTimeout: Infinity
+  requestTimeout: 24 * 60 * 60 * 1000 // 24 hours
 }
 
 async function update(changes, service, app, force) {
@@ -74,7 +74,7 @@ async function update(changes, service, app, force) {
   }
 
   const indexRequestSettings = {
-    requestTimeout: 10 * 60 * 1000 // 10 minutes?
+    requestTimeout: 24 * 60 * 60 * 1000 // 10 minutes?
   }
 
   async function doCreateIndexIfNotExists(indexName, functionCode, parameters, storage) {

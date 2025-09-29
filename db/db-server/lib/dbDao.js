@@ -36,6 +36,11 @@ function localRequests(server, scriptContext) {
       await dbStore.delete()
       return 'ok'
     },
+    deleteDatabaseOpLogs: async (dbName) => {
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      return db.deleteOpLogs()
+    },
     clearDatabaseOpLogs: async (dbName, lastTimestamp, limit) => {
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
