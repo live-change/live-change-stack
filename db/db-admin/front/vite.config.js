@@ -24,7 +24,7 @@ const ssrTransformCustomDir = () => {
   }
 }
 
-export default defineConfig(async ({ command, mode }) => {
+export default defineConfig(async ({ command, mode, isSsrBuild, isPreview }) => {
   //console.log("VITE CONFIG", command, mode)
   return {
     define: {  
@@ -79,9 +79,23 @@ export default defineConfig(async ({ command, mode }) => {
           /live-change-stack\/dao-websocket\//,
           /live-change-stack\/dao-message\//,
         ]
+      },
+      rollupOptions: {
+        ...(isSsrBuild ? {
+          external: [],
+          output: {
+            inlineDynamicImports: true,
+            manualChunks: undefined, // disable dynamic splitting
+            //format: 'cjs',
+            //entryFileNames: 'server.cjs'
+          }
+        } : {})
       }
     },
-    ssr: {
+    ssr: isSsrBuild ? {
+      target: 'node',
+      noExternal: true
+    } : {
       external: [
         ...(command == 'build' ? [
         ]: [
