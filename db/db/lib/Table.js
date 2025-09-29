@@ -128,6 +128,7 @@ class Table {
   async deleteOpLog() {
     const config = this.configObservable.value
     this.database.deleteStore(config.uid + '.opLog')
+    this.database.stores.delete(config.uid + '.opLog')
     this.opLog = this.database.store(config.uid + '.opLog', { ...config, ...config.opLog })
     this.opLogWritter = opLogWritter(this.opLog)
     this.opLogger = new OpLogger(this.data, this.opLogWritter)
