@@ -130,6 +130,11 @@ interface TaskDefinition {
   maxRetries?: number,
 
   /**
+   * Retry delay in milliseconds as function of retry count
+   */
+  retryDelay?: (retryCount: number) => number,   // default is 1000 * Math.pow(2, retryCount)
+
+  /**
    * Task properties/parameters schema
    */
   properties?: Object,
@@ -479,8 +484,9 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
               stack: error.stack
             }]
           })
-          console.log("RETRYING TASK", taskObject.id, "IN", 1000 * Math.pow(2, retriesCount), "ms")   
-          await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retriesCount)))
+          const retryDelay = definition.retryDelay ? definition.retryDelay(retriesCount) : 1000 * Math.pow(2, retriesCount)
+          console.log("RETRYING TASK", taskObject.id, "IN", retryDelay, "ms")   
+          await new Promise(resolve => setTimeout(resolve, retryDelay))
         }
         await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
       } finally {

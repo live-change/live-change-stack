@@ -44,6 +44,8 @@ export const printToPdfFileTask = task({
       type: String
     }
   },
+  maxRetries: 5,
+  retryDelay: (retryCount) => 2000 * Math.pow(2, retryCount),
   async execute({ path, data, timeout, media, options, waitForSelector, clipSelector, outputPath },
                 { task, trigger, triggerService }, emit) {
     const all = 10
