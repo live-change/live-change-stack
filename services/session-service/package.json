@@ -1,6 +1,6 @@
 {
   "name": "@live-change/session-service",
-  "version": "0.9.155",
+  "version": "0.9.156",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.155",
-    "@live-change/relations-plugin": "^0.9.155",
+    "@live-change/framework": "^0.9.156",
+    "@live-change/relations-plugin": "^0.9.156",
     "pluralize": "^8.0.0"
   },
   "gitHead": "9202c36abc25e3baf5fe39806d89c3fab203f428"

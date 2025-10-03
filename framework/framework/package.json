@@ -1,6 +1,6 @@
 {
   "name": "@live-change/framework",
-  "version": "0.9.155",
+  "version": "0.9.156",
   "description": "Live Change Framework - ultimate solution for real time mobile/web apps",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
-    "@live-change/dao": "^0.9.155",
-    "@live-change/uid": "^0.9.155",
+    "@live-change/dao": "^0.9.156",
+    "@live-change/uid": "^0.9.156",
     "typedoc": "0.28.3",
     "typedoc-plugin-markdown": "^4.6.3",
     "typedoc-plugin-rename-defaults": "^0.7.3"
