@@ -19,19 +19,24 @@ definition.processor({
       console.log("ACCESS CONTROL", service.name, "ACTION", action.name)
 
       const oldExec = action.execute
-      action.execute = async (...args) => {
+      action.execute = async (...args) => {        
         const [ properties, context, emit ] = args
         const { client } = context
-
+      
         const { objectType, object } = properties
         const objects = [].concat(
           config.objects ? config.objects(properties) :
             ((objectType && object) ? [{ objectType, object }] : [])
         )
+
         if(objects.length === 0) {
           throw new Error('no objects for access control to work')
         }
-        const accessible = access.clientHasAccessRoles(client, { objects }, config.roles)
+        const accessible = await access.clientHasAccessRoles(client, { objects }, config.roles)
+
+        console.log("ACTION", service.name, action.name, "ACCESS CONTROL TO",
+          objects, 'CLIENT', client, 'CONFIG', config, "ACCESSIBLE", accessible)
+
         if(!accessible) throw 'notAuthorized'
 
         return oldExec.apply(action, args)
