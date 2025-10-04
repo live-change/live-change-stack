@@ -6,6 +6,7 @@ export interface IndexDefinitionSpecification {
   parameters: Record<string, any>
   storage: any
   multi: boolean,
+  sourceName?: string,
 }
 
 class IndexDefinition<T extends IndexDefinitionSpecification> {

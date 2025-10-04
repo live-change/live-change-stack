@@ -266,7 +266,8 @@ class Database {
       try {
         await index.startIndex()
       } catch(error) {
-        console.error("INDEX", name, "ERROR", error, "CODE:\n", code)
+        if(config.sourceName) console.error("INDEX", name, "ERROR", error)
+          else console.error("INDEX", name, "ERROR", error, "CODE:\n", code)
         console.error("DELETINGww INDEX", name)
         delete this.config.indexes[name]
         this.indexesListObservable.remove(name)

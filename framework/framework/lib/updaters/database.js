@@ -77,10 +77,10 @@ async function update(changes, service, app, force) {
     requestTimeout: 24 * 60 * 60 * 1000 // 10 minutes?
   }
 
-  async function doCreateIndexIfNotExists(indexName, functionCode, parameters, storage) {
+  async function doCreateIndexIfNotExists(indexName, functionCode, parameters, config) {
     try {
       await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
-        functionCode, parameters, storage)
+        functionCode, parameters, config)
     } catch(e) {
       if((e.message ?? e).toString().includes("already exists")) {
         const indexConfig = await dao.get(['database', 'indexConfig', database, indexName])
@@ -97,7 +97,7 @@ async function update(changes, service, app, force) {
         if(!match) {
           console.log("INDEXES NOT MATCHING, DELETING AND RECREATING", indexConfigClean, requiredConfig)
           await dao.requestWithSettings(updaterRequestSettings, ['database', 'deleteIndex'], database, indexName)
-          return await doCreateIndexIfNotExists(indexName, functionCode, parameters, storage)
+          return await doCreateIndexIfNotExists(indexName, functionCode, parameters, config)
         } else {          
           console.log("INDEXES MATCHING, SKIPPING")
           return 'ok'
@@ -119,7 +119,12 @@ async function update(changes, service, app, force) {
     if(index.function) {
       const functionCode = `(${index.function})`
       ;(globalThis.compiledFunctionsCandidates = globalThis.compiledFunctionsCandidates || {})[functionCode] = index.function
-      await doCreateIndexIfNotExists(indexName, functionCode, { ...(index.parameters || {}) }, index.storage ?? {}) 
+      await doCreateIndexIfNotExists(
+        indexName, 
+        functionCode, 
+        { ...(index.parameters || {}) },
+        { ...index.storage ?? {}, sourceName: index.sourceName ?? undefined }
+      ) 
     } else {
       if(!table) throw new Error("only function indexes are possible without table")
       if(index.multi) {

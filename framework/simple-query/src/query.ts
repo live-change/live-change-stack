@@ -6,6 +6,13 @@ import { ModelDefinition, ForeignModelDefinition } from "@live-change/framework"
 
 import { PropertyDefinition } from "@live-change/framework"
 
+import { fileURLToPath } from 'url'
+import { dirname, join, resolve } from 'path'
+import { accessSync, readFileSync } from 'fs'
+
+const autoIndexCodePath = resolve(dirname(fileURLToPath(import.meta.url)), 'autoIndex.db.js')
+const autoIndexCode = readFileSync(autoIndexCodePath, 'utf8')
+
 interface Range {
   gt?: string
   gte?: string
@@ -529,7 +536,7 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
       indexQuery.createIndex(index.name, index.indexParts)
     }
 
-    process.exit(0)
+    //process.exit(0)
 
     this.computeExecutionPlan()
     console.log("EXECUTION PLAN:")
@@ -539,18 +546,39 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     
     /// TODO: prepare query
 
-    process.exit(0)
+    // process.exit(0)
   }
 
   createIndex(name, mapping: OutputMapping[]) {    
+    /* const existingAutoIndexQuery = this.service.queries['simpleQuery:autoIndex']
+    if(!existingAutoIndexQuery) {
+     
+      this.service.query({
+        name: 'simpleQuery:autoIndex',
+        properties: {},
+        code: readFileSync(queryCodePath, 'utf8'),
+        sourceName: 'autoIndex.db.js',
+        update: false
+      })
+    } */
+
     console.log("CREATE INDEX", name)
     this.printRules()
     console.log("OUTPUT MAPPINGS", mapping)
     this.computeIndexPlan(mapping)
-    console.log("INDEX PLAN", JSON.stringify(this.indexPlan, null, 2))
+    console.log("INDEX", name, "PLAN", JSON.stringify(this.indexPlan, null, 2))
     /// TODO: create index from query
 
-    process.exit(0)
+    this.service.index({
+      name,
+      function: autoIndexCode,
+      sourceName: autoIndexCodePath,
+      parameters: {
+        plan: this.indexPlan
+      }   
+    })
+
+    //process.exit(0)
   }
 }
 
@@ -609,7 +637,7 @@ function markStatic(element: any) {
 
 function parameterJSON(element: any) {
   if(typeof element !== "object" || element === null) return element
-  if(element instanceof QueryPropertyBase) return { property: element.$path }
+  if(element instanceof QueryPropertyBase) return { type: 'property', path: element.$path }
   const output = {
     type: 'object',
     properties: {}

@@ -6,7 +6,7 @@ import queryGet from './queryGet.js'
 import profileLog from './profileLog.js'
 import nextTick from 'next-tick'
 import { ChangeStream } from './ChangeStream.js'
-import { rangeIntersection } from './utils.js'
+import { unitRange,rangeIntersection } from './utils.js'
 
 
 import Debug from 'debug'
@@ -97,6 +97,7 @@ class RangeReader extends ChangeStream {
   async count(range = {}) {
     return await (await this.tableReader.table).countGet(rangeIntersection(this.range, range))
   }
+  dispose() {}
 }
 
 class TableReader extends ChangeStream {
@@ -151,6 +152,13 @@ class TableReader extends ChangeStream {
   }
   async onChange(cb) {
     this.callbacks.push(cb)
+    return {
+      dispose() {
+        const callbackIndex = this.callbacks.indexOf(cb)
+        if(callbackIndex === -1) throw new Error('Observer double dispose')
+        this.callbacks.splice(callbackIndex, 1)
+      }
+    }
   }
   async change(obj, oldObj, id, timestamp) {
     if(!(obj || oldObj)) return
@@ -181,7 +189,6 @@ class TableReader extends ChangeStream {
       this.rangeReaders.set(key, reader)
     }
     return reader
-    return new RangeReader(this, range)
   }
   async objectGet(id) {
     return await (await this.table).objectGet(id)
@@ -537,7 +544,8 @@ class Index extends Table {
       /// TODO: script available routines
     })
     debug("COMPILE INDEX CODE", this.code)
-    const queryFunction = this.scriptContext.getOrCreateFunction(this.code,
+    const config = this.configObservable.getValue()
+    const queryFunction = this.scriptContext.getOrCreateFunction(this.code, config?.sourceName ??
       `userCode:${this.database.name}/indexes/${this.name}`)
     if(typeof queryFunction != 'function') {
       console.error("INDEX CODE", this.code)

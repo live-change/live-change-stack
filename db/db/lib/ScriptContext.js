@@ -113,6 +113,7 @@ class ScriptContext {
     const queryFunction = this.run(code, filename)
     if(typeof queryFunction != 'function') {
       console.error("compiled query function is not a function!", cleanCode)
+      console.trace('compiled function trace', code)
       process.exit(21)
     }
     globalThis.compiledFunctions[cleanCode] = queryFunction
