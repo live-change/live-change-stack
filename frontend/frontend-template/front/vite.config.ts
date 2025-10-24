@@ -41,6 +41,7 @@ export default defineConfig(async ({ command, mode, isSsrBuild, isPreview }:any)
       ...baseConfig.resolve,
       alias: [
         ...baseConfig.resolve.alias,
+        { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
       ]
     }
   }

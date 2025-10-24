@@ -27,4 +27,5 @@ export default function clientSideFilter(service, definition, app) {
   delete definition.indexes
   delete definition.endpoints
   delete definition.beforeStartCallbacks
+  delete definition.internalViews
 }

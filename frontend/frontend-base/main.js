@@ -114,5 +114,10 @@ export async function createApp(config, api, App, createRouter, host, headers, r
 
   app.use(i18n)
 
+  const configureContext = { app, api, router, locale, i18n }
+  if(config.configure) await config.configure(configureContext)
+  if(typeof window !== 'undefined' && config.configureClient) await config.configureClient(configureContext)
+  if(typeof window === 'undefined' && config.configureClient) await config.configureServer(configureContext)
+
   return { app, router, head }
 }

@@ -10,8 +10,11 @@ import { fileURLToPath } from 'url'
 import { dirname, join, resolve } from 'path'
 import { accessSync, readFileSync } from 'fs'
 
-const autoIndexCodePath = resolve(dirname(fileURLToPath(import.meta.url)), 'autoIndex.db.js')
-const autoIndexCode = readFileSync(autoIndexCodePath, 'utf8')
+const simpleIndexCodePath = resolve(dirname(fileURLToPath(import.meta.url)), 'simpleIndex.db.js')
+const simpleIndexCode = readFileSync(simpleIndexCodePath, 'utf8')
+const simpleQueryCodePath = resolve(dirname(fileURLToPath(import.meta.url)), 'simpleQuery.db.js')
+const simpleQueryCode = readFileSync(simpleQueryCodePath, 'utf8')
+
 
 interface Range {
   gt?: string
@@ -128,7 +131,7 @@ class IndexInfo {
     if(this.sources.every(source => source === firstSource)) this.singleSource = firstSource    
     if(this.singleSource) {      
       this.name = name || ''
-      + (this.singleSource.input.$source.serviceName === service.name ? "" : this.singleSource.input.$source.serviceName + "_")
+      + (this.singleSource.input.$source.serviceName === service.name ? "" : service.name + "_")
       + (
         this.singleSource.input.$source.getTypeName() + "_" + (indexParts
         .map(part => part.path.join(".")).join("_"))
@@ -231,6 +234,8 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     this.computeIndexes()
 
     //this.printDependencies() 
+
+   // process.exit(0)
 
   }
 
@@ -377,10 +382,15 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     /// Poza tym przy pobieraniu wstecz nie koniecznie potrzeba indexów,
     ///  może trzeba wprowadzić index-forward i index-backward ?
     /// A może trzeba wprowadzić analizę tego co mamy i co chcemy uzyskać w przyszłości ?
+
     const next = source.dependentBy.map(dependent => {
       const otherSource = this.ruleSources.find(s => s.rule === dependent.rule && s != dependent)
       return this.computeSourceExecutionPlan(otherSource, [...resultParameters, source.input.$alias])
     })
+
+    console.log("COMPUTING SOURCE EXECUTION PLAN FOR", source.input.$_toQueryDescription(), "WITH", resultParameters)
+    console.log("RULE", queryDescription(source.rule, '  '))
+
     const ruleParameters = JSON.parse(JSON.stringify(source.rule.$_parametersJSON(resultParameters)))
     if(source.index) {                  
       const indexExecution = {
@@ -528,19 +538,81 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     })
   }
 
-  prepareQuery() {
-    console.log("CREATE INDEXES", this.indexes)
+  createIndexes() {
+    //console.log("CREATE INDEXES", this.indexes)
 
-    for(const index of this.indexes) {
+    /* for(const index of this.indexes) {
       const indexQuery = index.$_createQuery(this.service)
       indexQuery.createIndex(index.name, index.indexParts)
+    } */
+
+    const indexesWithQueries = this.indexes.map(index => ({ info: index, query: index.$_createQuery(this.service) }))
+    for(const indexQuery of indexesWithQueries) {
+      //console.log("CREATE INDEX", indexQuery.info.name)
+      //this.printRules()
+      //console.log("OUTPUT MAPPINGS", indexQuery.info.indexParts)
+      indexQuery.query.computeIndexPlan(indexQuery.info.indexParts)
+      //console.log("INDEX", indexQuery.info.name, "PLAN", JSON.stringify(indexQuery.query.indexPlan, null, 2))
     }
 
-    //process.exit(0)
+    for(let i = 0; i < indexesWithQueries.length; i++) {
+      const a = indexesWithQueries[i]
+      for(let j = i+1; j < indexesWithQueries.length; j++) {
+        const b = indexesWithQueries[j]
+        const plansMatch = JSON.stringify(a.query.indexPlan) === JSON.stringify(b.query.indexPlan)
+        if(plansMatch) {
+          if(a.info.name !== b.info.name) {
+            console.log("INDEXES HAVE THE SAME PLAN", a.info.name, b.info.name, "but different names => merge")
+            b.info.name = a.info.name
+          } else {
+            console.error("INDEXES HAVE THE SAME PLAN AND NAME", a.info.name)
+          }
+          indexesWithQueries.splice(j, 1)
+          j--
+          continue
+        }
+        if(a.info.name === b.info.name) { // check for collision
+          console.error("INDEXES HAVE THE SAME NAME", a.info.name, "but different plans => error")
+          console.log("PLAN A", JSON.stringify(a.query.indexPlan, null, 2))
+          console.log("PLAN B", JSON.stringify(b.query.indexPlan, null, 2))
+          throw new Error("INDEXES HAVE THE SAME NAME " + a.info.name + " but different plans")
+        }        
+      }
+    }
+
+    for(const index of indexesWithQueries) {
+      if(this.service.indexes[index.info.name.slice(this.service.name.length+1)]) {
+        if(JSON.stringify(this.indexPlan)
+           === JSON.stringify(this.service.indexes[index.info.name.slice(this.service.name.length+1)].parameters.plan)) 
+          continue
+        console.error("INDEX", index.info.name, "ALREADY EXISTS BUT DIFFERENT PLAN")
+        throw new Error("INDEX" + index.info.name + "ALREADY EXISTS BUT DIFFERENT PLAN")
+      }
+      this.service.index({
+        name: index.info.name.slice(this.service.name.length+1),
+        function: simpleIndexCode,
+        sourceName: simpleIndexCodePath,
+        parameters: {
+          plan: index.query.indexPlan
+        }   
+      })
+    }
+  }
+
+  prepareQuery() {
+    this.createIndexes()
+
+    console.log("########### PREPARING QUERY!!!!")
+
+    this.printRules()
+
+    this.printDependencies()
 
     this.computeExecutionPlan()
     console.log("EXECUTION PLAN:")
     console.log(JSON.stringify(this.executionPlan, null, 2))
+
+    process.exit(0)
     /// TODO: create indexes used by query
 
     
@@ -550,18 +622,6 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
   }
 
   createIndex(name, mapping: OutputMapping[]) {    
-    /* const existingAutoIndexQuery = this.service.queries['simpleQuery:autoIndex']
-    if(!existingAutoIndexQuery) {
-     
-      this.service.query({
-        name: 'simpleQuery:autoIndex',
-        properties: {},
-        code: readFileSync(queryCodePath, 'utf8'),
-        sourceName: 'autoIndex.db.js',
-        update: false
-      })
-    } */
-
     console.log("CREATE INDEX", name)
     this.printRules()
     console.log("OUTPUT MAPPINGS", mapping)
@@ -569,10 +629,17 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     console.log("INDEX", name, "PLAN", JSON.stringify(this.indexPlan, null, 2))
     /// TODO: create index from query
 
+    if(this.service.indexes[name]) {
+      if(JSON.stringify(this.indexPlan) === JSON.stringify(this.service.indexes[name].parameters.plan)) 
+        return
+      console.error("INDEX", name, "ALREADY EXISTS BUT DIFFERENT PLAN")
+      throw new Error("INDEX" + name + "ALREADY EXISTS BUT DIFFERENT PLAN")
+    }
+
     this.service.index({
       name,
-      function: autoIndexCode,
-      sourceName: autoIndexCodePath,
+      function: simpleIndexCode,
+      sourceName: simpleIndexCodePath,
       parameters: {
         plan: this.indexPlan
       }   
@@ -598,7 +665,7 @@ export default function queryFactory<SDS extends ServiceDefinitionSpecification>
   return queryFactoryFunction
 }
 
-type RuleInput = QueryInputBase | QueryPropertyBase | any
+type RuleInput = QueryInputLike | QueryPropertyBase | any
 
 function getSource(input: RuleInput): QuerySource {
   if(input instanceof QueryInputBase) return input.$source
@@ -613,12 +680,13 @@ function isStatic(element: any) {
 
 function queryDescription(element: any, indent: string = "") {  
   const flags = isStatic(element) ? "static " : ""
-  if(typeof element.toQueryDescription === "function") 
-    return flags + element.toQueryDescription(indent)
+  if(typeof element !== "object" || element === null) return flags + element.toString()
+  if(typeof element.$_toQueryDescription === "function") 
+    return flags + element.$_toQueryDescription(indent)
   const fields = Object.entries(element)
     .map(([key, value]) => `${indent}  ${key}: ${queryDescription(value, indent + "  ")}`)
     .join("\n")
-  if(element.constructor.name !== "Object") return flags + `${element.constructor.name}(${fields})`
+  if(element.constructor.name !== "Object") return flags + `${element.constructor.name}(\n${fields})`
   return flags + '{\n'+fields+`\n${indent}}`;
 }
 
@@ -651,6 +719,8 @@ function parameterJSON(element: any) {
 function parametersJSONForInput(input: RuleInput, resultParameters: string[]) {
   if(isStatic(input)) {
     return parameterJSON(input)        
+  } else if(typeof input.$_parametersJSON === "function") {
+    return input.$_parametersJSON(resultParameters)
   } else {
     const resultParameter = resultParameters.find(p => p === input.$alias)
     if(resultParameter) {
@@ -659,6 +729,7 @@ function parametersJSONForInput(input: RuleInput, resultParameters: string[]) {
         path: [resultParameter, ...input.$path],
       }
     }
+    //throw new Error("Result parameter not found for input: "+input.$alias)
   }
 }
 
@@ -666,13 +737,13 @@ export class RangeRule extends QueryRule {
   $input: RuleInput
   $range: RuleInput
 
-  constructor(input: QueryInputBase, range: Range) {
+  constructor(input: QueryInputLike, range: Range) {
     super()
     this.$input = input
     this.$range = range
   }
 
-  toQueryDescription(indent: string = "") {
+  $_toQueryDescription(indent: string = "") {
     return `Range(`+
            `\n${indent}  ${queryDescription(this.$input, indent + "  ")}`+
            `\n${indent}  ${queryDescription(this.$range, indent + "  ")}`+
@@ -718,7 +789,7 @@ export class EqualsRule extends QueryRule {
     this.$inputB = inputB
   }
 
-  toQueryDescription(indent: string = "") {
+  $_toQueryDescription(indent: string = "") {
     return `Equals(`+
            `\n${indent}  ${queryDescription(this.$inputA, indent + "  ")}`+
            `\n${indent}  ${queryDescription(this.$inputB, indent + "  ")}`+
@@ -759,7 +830,114 @@ function sourceType(source: QuerySource) {
     ? "table" : "index"
 }
 
-export class QueryInputBase extends CanBeStatic {
+export interface QueryInputLike {  
+  $source: QuerySource
+  $alias: string
+
+  $get(...path: string[]): QueryInputLike
+  $inside(range: Range): QueryRule
+  $equals(value: any): QueryRule
+  $concat(...input: QueryInputLike[]): QueryInputLike
+
+  $_markStatic()
+  $_isStatic()
+  $_canBeUsedAsSource(input: QueryInputLike)
+  $_getIndexInfo(indexes: IndexInfo[], serviceDefinition: ServiceDefinition<any>): IndexInfo | null
+  $_executionJSON()
+  $_equals(other: QueryInputLike)
+
+  $_toQueryDescription(indent: string): string
+}
+
+export class CompoundQueryInputBase implements QueryInputLike {
+  $source: QuerySource
+  $paths: string[][]
+  $alias: string
+
+  constructor(source: QuerySource, paths: string[][], alias: string) {    
+    this.$source = source
+    this.$paths = paths
+    this.$alias = alias
+  }
+
+  $get(...path: string[]): QueryInputLike {
+    throw new Error('compound inputs does not have fields, while fetching field: '+path.join(".")+' of '+this.$alias)
+  }
+
+  $inside(range: Range) {
+    return new RangeRule(this, range)
+  }
+
+  $equals(value: any) {
+    return new EqualsRule(this, value)
+  }
+
+  $concat(...input: QueryInputLike[]) {
+    if(!input.every(i => i.$source === this.$source)) throw new Error('concat only supports inputs from the same source')
+    return new CompoundQueryInputBase(this.$source, [...this.$paths, ...input.map(i => {
+      if(i instanceof CompoundQueryInputBase) return i.$paths
+      if(i instanceof QueryInputBase) return [i.$path]
+      throw new Error('concat only supports QueryInputBase and CompoundQueryInputBase')
+    }).flat()], this.$alias)
+  }
+
+
+  $_markStatic() {
+    /// ignore - QueryInput is not static
+  }
+
+  $_isStatic() {
+    return false
+  }
+
+  $_canBeUsedAsSource(input: QueryInputLike) {
+    return this.$source === input.$source && this.$alias === input.$alias
+  }
+
+
+  $_getIndexInfo(indexes: IndexInfo[], serviceDefinition: ServiceDefinition<any>): IndexInfo | null {
+    return new IndexInfo([
+      new RangeRule(this, {}),
+    ], [
+      ...this.$paths.map(path => new OutputMapping(this.$alias, path, path.join("_"))),      
+      new OutputMapping(this.$alias, ['id'], 'to')
+    ], serviceDefinition)
+  }
+
+  $_executionJSON() {    
+    return {
+      sourceType: sourceType(this.$source),
+      name: this.$source.getTypeName(),
+      alias: this.$alias
+    }
+  }
+  $_equals(other: QueryInputLike) {
+    if(!(other instanceof CompoundQueryInputBase)) return false
+    return this.$source === other.$source 
+      && this.$paths.length === other.$paths.length
+      && this.$paths.every((path, i) => path.join(".") === other.$paths[i].join(".")) 
+      && this.$alias === other.$alias
+  }
+
+  $_toQueryDescription(indent: string = "") {
+    return `CompoundQueryInput(\n${indent}  source: ${queryDescription(this.$source, indent + "  ")}`+
+                      `\n${indent}  paths: ${this.$paths.map(path => path.join(".")).join(", ")}`+
+                      `\n${indent}  alias: ${this.$alias}`+
+                      `\n${indent})`
+  }
+
+  $_parametersJSON(resultParameters: string[]) {
+    const resultParameter = resultParameters.find(p => p === this.$alias)    
+    if(resultParameter) {
+      return this.$paths.map(path => ({
+        type: 'result',
+        path: [resultParameter, ...path],
+      }))      
+    }
+  }
+}
+
+export class QueryInputBase extends CanBeStatic implements QueryInputLike {
   $source: QuerySource
   $path: string[]
   $alias: string
@@ -770,6 +948,38 @@ export class QueryInputBase extends CanBeStatic {
 
   $equals(value: any) {
     return new EqualsRule(this, value)
+  }
+
+  $get(...path: string[]): QueryInputLike {
+    return new QueryInputBase(this.$source, [...this.$path, ...path], this.$alias)
+  }
+
+  $concat(...input: QueryInputLike[]) {
+    if(!input.every(i => i.$source === this.$source)) throw new Error('concat only supports inputs from the same source')
+    return new CompoundQueryInputBase(this.$source, [this.$path, ...input.map(i => {
+      if(i instanceof CompoundQueryInputBase) return i.$paths
+      if(i instanceof QueryInputBase) return [i.$path]
+      throw new Error('concat only supports QueryInputBase and CompoundQueryInputBase')
+    }).flat()], this.$alias)
+  }
+
+  /** 
+   * @returns corresponding type property 
+   * */
+  $type() {
+    const typePath:string[] = [
+      ...this.$path.slice(0, -1), 
+      this.$path[this.$path.length - 1] + 'Type'
+    ]
+    return createQueryInputProxy(new QueryInputBase(this.$source, typePath, this.$alias))
+  }
+
+  /**
+   * Transforms property to typed property adding propertyType property
+   * @returns typed property multiple fields key
+   */
+  $typed() {
+    return this.$type().$concat(this)
   }
 
   $as(alias: string) {
@@ -783,7 +993,7 @@ export class QueryInputBase extends CanBeStatic {
     this.$alias = alias
   }
 
-  toQueryDescription(indent: string = "") {
+  $_toQueryDescription(indent: string = "") {
     return `QueryInput(\n${indent}  source: ${queryDescription(this.$source, indent + "  ")}`+
                       `\n${indent}  path: ${this.$path.join(".")}`+
                       `\n${indent}  alias: ${this.$alias}`+
@@ -808,7 +1018,7 @@ export class QueryInputBase extends CanBeStatic {
     return new IndexInfo([
       new RangeRule(this, {}),
     ], [
-      new OutputMapping(this.$alias, this.$path, this.$path[this.$path.length - 1]),
+      new OutputMapping(this.$alias, this.$path, this.$path.join("_")),
       new OutputMapping(this.$alias, ['id'], 'to')
     ], serviceDefinition)
   }
@@ -817,12 +1027,22 @@ export class QueryInputBase extends CanBeStatic {
     return {
       sourceType: sourceType(this.$source),
       name: this.$source.getTypeName(),
-      path: [...this.$path],
       alias: this.$alias
     }
   }
-  $_equals(other: QueryInputBase) {
+  $_equals(other: QueryInputLike) {
+    if(!(other instanceof QueryInputBase)) return false
     return this.$source === other.$source && this.$path.join(".") === other.$path.join(".") && this.$alias === other.$alias
+  }
+
+  $_parametersJSON(resultParameters: string[]) {
+    const resultParameter = resultParameters.find(p => p === this.$alias)    
+    if(resultParameter) {
+      return {
+        type: 'result',
+        path: [resultParameter, ...this.$path],
+      }
+    }
   }
 }
 
@@ -832,13 +1052,13 @@ export class QueryInput extends QueryInputBase {
 
 
 export function createQueryInputProxy(
-  base: QueryInputBase
+  base: QueryInputLike
 ) {
   return new Proxy(base, {
     get(target, prop, receiver) {
       const foundInBase = Reflect.get(target, prop, receiver)
       if(foundInBase) return foundInBase      
-      const newBase = new QueryInputBase(base.$source, [...base.$path, prop as string], base.$alias)
+      const newBase = target.$get(prop as string)
       const inputProxy = createQueryInputProxy(newBase)
       return inputProxy
     }
@@ -853,7 +1073,7 @@ export class QueryPropertyBase extends CanBeStatic {
     this.$path = path
   }
 
-  toQueryDescription(indent: string = "") {
+  $_toQueryDescription(indent: string = "") {
     return `QueryProperty(${this.$path.join(".")})`
   }
 

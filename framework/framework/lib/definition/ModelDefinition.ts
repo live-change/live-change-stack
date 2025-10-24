@@ -31,7 +31,7 @@ export interface ModelDefinitionSpecification {
 }
 
 class ModelDefinition<T extends ModelDefinitionSpecification> {
-  servideName: string
+  serviceName: string
   [key: string]: any
 
   constructor(definition, serviceName) {
@@ -53,7 +53,7 @@ class ModelDefinition<T extends ModelDefinitionSpecification> {
     return this.serviceName + '_' + this.name
   }
 
-  toQueryDescription() {
+  $_toQueryDescription() {
     return `[Model ${this.serviceName}.${this.name}]`
   }
 
@@ -114,7 +114,7 @@ class ModelDefinition<T extends ModelDefinitionSpecification> {
   }
 
   toString() {
-    return this.toQueryDescription()
+    return this.$_toQueryDescription()
   }
 
 }

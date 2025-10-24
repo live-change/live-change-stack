@@ -18,12 +18,12 @@ class ForeignModelDefinition {
     }
   }
 
-  toQueryDescription() {
+  $_toQueryDescription() {
     return `[ForeignModel ${this.serviceName}.${this.name}]`
   }
 
   toString() {
-    return this.toQueryDescription()
+    return this.$_toQueryDescription()
   }
 
 }

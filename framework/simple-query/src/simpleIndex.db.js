@@ -101,12 +101,13 @@ async function autoIndex(input, output, { plan, properties }) {
   }
 
   function keyData(entries, data) {
-    return data.map(entry => keyEntry(entries, entry))
+    return data.map(entry => keyEntry(entries, entry)).filter(entry => entry !== null)
   }
 
   function findChanges(data, oldData) {
+    //output.debug("FIND CHANGES", data, "OLD DATA", oldData)
     const byKey = new Map()
-    for(const entry of data) {
+    for(const entry of data) {    
       if(byKey.has(entry.id)) {
         throw new Error(`Duplicate id: ${entry.id}`)
       } else {
@@ -126,22 +127,24 @@ async function autoIndex(input, output, { plan, properties }) {
   const observations = new Map()
 
   async function execute(planStep, context, oldContext) {
-    output.debug("EXECUTE STEP", planStep, "WITH CONTEXT", context, "AND OLD CONTEXT", oldContext)
+    //output.debug("EXECUTE STEP", planStep, "WITH CONTEXT", context, "AND OLD CONTEXT", oldContext)
     const { execution, next } = planStep    
     if(execution.operation === 'output') {
       const [outputData, oldOutputData] = await gatherOutputData(next, context, oldContext)       
+
+      //output.debug("OUTPUT DATA", outputData, "OLD OUTPUT DATA", oldOutputData)
 
       const mappingEntries = Object.entries(execution.mapping)
       const mappedData = generateOutputData(mappingEntries, outputData)
       const oldMappedData = generateOutputData(mappingEntries, oldOutputData)
 
-      console.log("MAPPED DATA2", mappedData, 'FROM', outputData, "MAP", mappingEntries)
-      console.log("OLD MAPPED DATA2", oldMappedData, 'FROM', oldOutputData, "MAP", mappingEntries)
+      //output.debug("MAPPED DATA2", mappedData, 'FROM', outputData, "MAP", mappingEntries)
+      //output.debug("OLD MAPPED DATA2", oldMappedData, 'FROM', oldOutputData, "MAP", mappingEntries)
 
       const keyedData = keyData(mappingEntries, mappedData)
       const oldKeyedData = keyData(mappingEntries, oldMappedData)
 
-      console.log("KEYED DATA", keyedData, "OLD KEYED DATA", oldKeyedData)
+      //output.debug("KEYED DATA", keyedData, "OLD KEYED DATA", oldKeyedData)
 
       const changes = findChanges(keyedData, oldKeyedData)
       for(const change of changes) {
@@ -165,7 +168,8 @@ async function autoIndex(input, output, { plan, properties }) {
       if(!observations.has(byKey)) {
         const observation = await source.range(by).onChange(async (obj, oldObj) => {
           const nextContext = { ...context, [execution.alias]: obj }
-          const nextOldContext = { ...oldContext, [execution.alias]: oldObj }
+          const nextOldContext = { ...context, [execution.alias]: oldObj } 
+          // not ...oldContext, oldContext was used in previous observation
           for(const nextStep of next) {
             await execute(nextStep, nextContext, nextOldContext)
           }

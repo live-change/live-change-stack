@@ -36,12 +36,12 @@ definition.trigger({
     },
     render: {
       type: Object
-    }
+    },
   },
-  async execute({ message, content, render }, context, emit) {
+  async execute({ message, email: content, render }, context, emit) {
     if(render) content = await renderEmail(render)
     if(!message) message = app.generateUid()
-    if(!content) throw new Error('email must be defined')
+    if(!content) throw new Error('content must be defined')
 
     const { to, text } = content
     if(!to) throw new Error('to must be defined')

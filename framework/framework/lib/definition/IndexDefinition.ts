@@ -49,6 +49,10 @@ class IndexDefinition<T extends IndexDefinitionSpecification> {
     return changes
   }
 
+
+  $_toQueryDescription() {
+    return `[Index ${this.serviceName}.${this.name}]`
+  }
 }
 
 export default IndexDefinition

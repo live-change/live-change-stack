@@ -16,7 +16,7 @@ definition.processor({
       const config = action.accessControl
       if(config.public) continue
 
-      console.log("ACCESS CONTROL", service.name, "ACTION", action.name)
+      //console.log("ACCESS CONTROL", service.name, "ACTION", action.name)
 
       const oldExec = action.execute
       action.execute = async (...args) => {        
@@ -34,8 +34,8 @@ definition.processor({
         }
         const accessible = await access.clientHasAccessRoles(client, { objects }, config.roles)
 
-        console.log("ACTION", service.name, action.name, "ACCESS CONTROL TO",
-          objects, 'CLIENT', client, 'CONFIG', config, "ACCESSIBLE", accessible)
+        /* console.log("ACTION", service.name, action.name, "ACCESS CONTROL TO",
+          objects, 'CLIENT', client, 'CONFIG', config, "ACCESSIBLE", accessible) */
 
         if(!accessible) throw 'notAuthorized'
 

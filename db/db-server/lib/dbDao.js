@@ -263,7 +263,7 @@ function localRequests(server, scriptContext) {
         queryCode, 
         querySourceName ? querySourceName : 'queryCode:' + queryCodeId
       )
-      return db.queryUpdate((input, output) => queryFunction(input, output, params))
+      return db.queryUpdate((input, output) => queryFunction(input, output, { _query: queryData, ...params }))
     }
   }
 }
@@ -905,7 +905,7 @@ function localReads(server, scriptContext) {
           queryCode, 
           querySourceName ? querySourceName : 'queryCode:' + queryCodeId
         )
-        return db.queryGet((input, output) => queryFunction(input, output, params))
+        return db.queryGet((input, output) => queryFunction(input, output, { _query: queryData, ...params }))
       },
       observable: async (dbName, queryCodeTable, queryCodeId, params) => {
         if(!dbName) return new ReactiveDao.ObservableError("databaseNameRequired")
@@ -921,7 +921,7 @@ function localReads(server, scriptContext) {
           queryCode, 
           querySourceName ? querySourceName : 'queryCode:' + queryCodeId
         )
-        return db.queryObservable((input, output) => queryFunction(input, output, params))
+        return db.queryObservable((input, output) => queryFunction(input, output, { _query: queryData, ...params }))
       }
     },
     runQueryObject: {
@@ -939,7 +939,7 @@ function localReads(server, scriptContext) {
           queryCode, 
           querySourceName ? querySourceName : 'queryCode:' + queryCodeId
         )
-        return db.queryObjectGet((input, output) => queryFunction(input, output, params))
+        return db.queryObjectGet((input, output) => queryFunction(input, output, { _query: queryData, ...params }))
       },
       observable: async (dbName, queryCodeTable, queryCodeId, params) => {
         if(!dbName) return new ReactiveDao.ObservableError("databaseNameRequired")
@@ -955,7 +955,7 @@ function localReads(server, scriptContext) {
           queryCode, 
           querySourceName ? querySourceName : 'queryCode:' + queryCodeId
         )
-        return db.queryObjectObservable((input, output) => queryFunction(input, output, params))
+        return db.queryObjectObservable((input, output) => queryFunction(input, output, { _query: queryData, ...params }))
       }
     }
   }
