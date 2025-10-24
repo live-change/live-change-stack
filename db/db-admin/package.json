@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-admin",
-  "version": "0.9.158",
+  "version": "0.9.159",
   "scripts": {
     "memDev": "node server/start.js memDev --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; lcli localDev --initScript ./init.js --dbAccess",
@@ -19,14 +19,14 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
-    "@live-change/dao": "0.9.158",
-    "@live-change/dao-message": "0.9.158",
-    "@live-change/dao-sockjs": "0.9.158",
-    "@live-change/dao-vue3": "0.9.158",
-    "@live-change/dao-websocket": "0.9.158",
-    "@live-change/framework": "0.9.158",
-    "@live-change/vue3-components": "0.9.158",
-    "@live-change/vue3-ssr": "0.9.158",
+    "@live-change/dao": "^0.9.159",
+    "@live-change/dao-message": "^0.9.159",
+    "@live-change/dao-sockjs": "^0.9.159",
+    "@live-change/dao-vue3": "^0.9.159",
+    "@live-change/dao-websocket": "^0.9.159",
+    "@live-change/framework": "^0.9.159",
+    "@live-change/vue3-components": "^0.9.159",
+    "@live-change/vue3-ssr": "^0.9.159",
     "@primeuix/themes": "^1.2.1",
     "@vueuse/core": "^12.3.0",
     "@vueuse/head": "^2.0.0",
@@ -52,7 +52,7 @@
     "vue3-scroll-border": "0.1.7"
   },
   "devDependencies": {
-    "@live-change/codeceptjs-helper": "0.9.158",
+    "@live-change/codeceptjs-helper": "^0.9.159",
     "@vitejs/plugin-vue": "^6.0.0",
     "@wdio/selenium-standalone-service": "^8.15.0",
     "codeceptjs": "^3.6.10",
