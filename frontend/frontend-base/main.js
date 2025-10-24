@@ -21,6 +21,9 @@ import { createHead } from "@vueuse/head"
 // that creates a fresh app instance. If using Vuex, we'd also be creating a
 // fresh store here.
 export async function createApp(config, api, App, createRouter, host, headers, response, url) {
+    
+  if(config.beforeStart) await config.beforeStart({ api })
+
   const isSSR = response !== undefined
   const isSPA = (typeof window !== 'undefined') && !window.__DAO_CACHE__
   //console.log("IS SPA", isSPA)
@@ -114,10 +117,7 @@ export async function createApp(config, api, App, createRouter, host, headers, r
 
   app.use(i18n)
 
-  const configureContext = { app, api, router, locale, i18n }
-  if(config.configure) await config.configure(configureContext)
-  if(typeof window !== 'undefined' && config.configureClient) await config.configureClient(configureContext)
-  if(typeof window === 'undefined' && config.configureClient) await config.configureServer(configureContext)
+  if(config.configure) await config.configure({ app, api, router, locale, i18n })
 
   return { app, router, head }
 }
