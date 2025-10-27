@@ -1,8 +1,8 @@
 {
-  "name": "@live-change/relations-plugin",
+  "name": "@live-change/cron-service",
   "version": "0.9.160",
   "description": "",
-  "main": "src/index.js",
+  "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test tape tests/*"
   },
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/live-change/live-change-stack.git"
   },
-  "license": "BSD-3-Clause",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
@@ -22,13 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.9.160",
-    "pluralize": "^8.0.0"
-  },
-  "devDependencies": {
-    "typedoc": "0.28.3",
-    "typedoc-plugin-markdown": "^4.6.3",
-    "typedoc-plugin-rename-defaults": "^0.7.3"
+    "@live-change/framework": "0.9.160"
   },
   "gitHead": "9202c36abc25e3baf5fe39806d89c3fab203f428"
 }
