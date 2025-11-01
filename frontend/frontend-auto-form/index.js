@@ -42,6 +42,8 @@ import ObjectPath from './front/src/components/crud/ObjectPath.vue'
 export { ObjectPath }
 import AutoObjectIdentification from './front/src/components/crud/AutoObjectIdentification.vue'
 export { AutoObjectIdentification }
+import ActionForm from './front/src/components/crud/ActionForm.vue'
+export { ActionForm }
 
 export * from './front/src/router.js'
 

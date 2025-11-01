@@ -12,9 +12,12 @@
 <script setup>
   import { ref, computed, defineProps } from 'vue'
   import { usePath, live } from '@live-change/vue3-ssr'
-  import BuildShelterResult from './components/BuildShelterResult.vue'
-  import MakePlanksResult from './components/MakePlanksResult.vue'
-  import Task from './components/Task.vue'
+  import BuildShelterResult from '../components/BuildShelterResult.vue'
+  import MakePlanksResult from '../components/MakePlanksResult.vue'
+  import Task from '../components/Task.vue'
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const props = defineProps({
     action: {
@@ -67,7 +70,7 @@
   }
 
   const tasksRoot = computed(() => ({
-    rootType: 'userAction',
+    rootType: 'command',
     root: props.action
   }))
 

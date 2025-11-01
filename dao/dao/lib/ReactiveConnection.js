@@ -151,6 +151,13 @@ class Connection extends EventEmitter {
     this.on('connect', () => this.settings.onConnect && this.settings.onConnect() )
   }
 
+  connectionInfo() {
+    return {
+      settings: this.settings,
+      credentials: this.credentials,
+    }
+  }
+
   sendRequest(msg, userSettings) {
     const settings = { ...this.settings, ...userSettings }
     return new Promise((resolve, reject) => {
@@ -181,13 +188,13 @@ class Connection extends EventEmitter {
             setTimeout(() => {
               if(queuedConnectionId === this.connectedCounter) {
                 this.requestsQueue[queueId] = null
-                console.error("DISCONNECTED WHILE WAITING FOR REQUEST", msg)
+                console.error("DISCONNECTED WHILE WAITING FOR REQUEST", msg, 'CONNECTION', this.connectionInfo())
                 reject('disconnected')
               }
             }, settings.requestSendTimeout || 2300)
           }
         } else {
-          console.error("DISCONNECTED WHILE WAITING FOR REQUEST", msg)
+          console.error("DISCONNECTED WHILE WAITING FOR REQUEST", msg, 'CONNECTION', this.connectionInfo())
           return reject('disconnected')
         }
       }

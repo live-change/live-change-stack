@@ -14,7 +14,16 @@
   const locale = useLocale()
   locale.captureLocale()
 
-  import { ViewRoot, NavBar, UpdateBanner } from "@live-change/frontend-base"
+  import { 
+    provideAutoViewComponents, 
+    provideAutoInputConfiguration, 
+    provideMetadataBasedAutoInputConfiguration,
+  } from "@live-change/frontend-auto-form"
+  provideAutoViewComponents()
+  provideAutoInputConfiguration()
+  provideMetadataBasedAutoInputConfiguration()
+
+  import { ViewRoot, UpdateBanner } from "@live-change/frontend-base"
 
   import { computed } from 'vue'
   import { useHead } from '@vueuse/head'

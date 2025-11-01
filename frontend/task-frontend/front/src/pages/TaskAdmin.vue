@@ -45,6 +45,9 @@
 
   import Select from 'primevue/select'
 
+  import { useI18n } from 'vue-i18n'    
+  const { t } = useI18n()
+
   import { ref, computed } from 'vue'
   import { RangeViewer } from "@live-change/vue3-components"
 
@@ -59,7 +62,6 @@
 
   const taskDefinition = computed(() => api.getServiceDefinition('task').models.Task)
   const taskStates = computed(() => taskDefinition.value?.properties?.state?.enum)
-
 
   const state = ref('any')
   const name = ref('any')

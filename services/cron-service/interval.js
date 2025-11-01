@@ -17,6 +17,7 @@ export const Interval = definition.model({
     readAccessControl: {
       roles: config.adminRoles
     },
+    readAllAccess: ['admin'],
   },
   properties: {
     description: {
@@ -62,7 +63,7 @@ async function processInterval({ id, interval, wait, trigger }) {
 
 
 definition.trigger({
-  type: 'runInterval',
+  name: 'runInterval',
   properties: {
     interval: {
       type: Interval,
@@ -98,7 +99,7 @@ definition.trigger({
 
 
 definition.trigger({
-  type: 'changeCron_Interval',
+  name: 'changeCron_Interval',
   properties: {
     object: {
       type: Interval,
@@ -140,7 +141,7 @@ definition.trigger({
   }
 })
 
-const Timer = service.foreignModel('timer', 'Timer')
+const Timer = definition.foreignModel('timer', 'Timer')
 
 definition.afterStart(async (service) => {
   const position = ''

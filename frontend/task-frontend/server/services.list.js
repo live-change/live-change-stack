@@ -19,7 +19,9 @@ import content from '@live-change/content-service'
 import geoIp from '@live-change/geoip-service'
 import vote from '@live-change/vote-service'
 import backup from '@live-change/backup-service'
+import draft from '@live-change/draft-service'
 import task from '@live-change/task-service'
+import cron from '@live-change/cron-service'
 import init from './init.js'
 
 export {
@@ -44,7 +46,9 @@ export {
   geoIp,
   vote,
   backup,
+  draft,
   task,
+  cron,
   init
 }
 

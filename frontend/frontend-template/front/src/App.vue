@@ -12,7 +12,7 @@
 
   import { useLocale } from '@live-change/vue3-components'
   const locale = useLocale()
-  if(typeof window !== 'undefined') locale.captureLocale()
+  locale.captureLocale()
 
   import NavBar from "./components/NavBar.vue"
 
@@ -23,6 +23,15 @@
   import { useI18n } from 'vue-i18n'
   const i18n = useI18n()
   const { locale: i18nLocale } = useI18n()
+
+  import { 
+    provideAutoViewComponents, 
+    provideAutoInputConfiguration, 
+    provideMetadataBasedAutoInputConfiguration,
+  } from "@live-change/frontend-auto-form"
+  provideAutoViewComponents()
+  provideAutoInputConfiguration()
+  provideMetadataBasedAutoInputConfiguration()
 
   import { client as useClient, useApi } from '@live-change/vue3-ssr'
   const api = useApi()
@@ -65,7 +74,7 @@
   }
 
   locale.getLocaleObservable() // to force locale to be observed
-  // Synchronizacja języka między useLocale a vue-i18n
+  
   watch(() => locale.localeRef.value, (newLocale, oldLocale) => {
     console.log("LOCALE CHANGE", oldLocale?.language, '=>', newLocale?.language)
     if(newLocale?.language && i18nLocale.value !== newLocale.language) {

@@ -7,4 +7,7 @@ export default async function(services) {
   const testUser = await createUser(services,
     'Test User', 'test@test.com', 'Testy123', 'u1', ['writer'])
 
+  const adminUser = await createUser(services,
+    'Test Admin', 'admin@test.com', 'Testy123', 'u1', ['admin'])
+
 }

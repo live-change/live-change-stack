@@ -1,5 +1,5 @@
 
-export default function clientSideFilter(service, definition, app) {
+export default function clientSideFilter(service, definition, app, client) {
 /*  for(let actionName in service.actions) {
     const action = service.actions[actionName]
 
@@ -15,8 +15,11 @@ export default function clientSideFilter(service, definition, app) {
     if(model.indexes) delete model.indexes
   }
 
-  delete definition.events
-  delete definition.triggers
+  if(!(client.roles.includes('admin'))) {
+    delete definition.triggers
+  }
+
+  delete definition.events  
   delete definition.authenticators
   delete definition.processors
   delete definition.validators

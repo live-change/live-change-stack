@@ -88,7 +88,13 @@ app.config = {
       name: 'vote',
     },
     {
+      name: 'draft',
+    },
+    {
       name: 'task',
+    },
+    {
+      name: 'cron',
     },
     {
       name: 'backup',

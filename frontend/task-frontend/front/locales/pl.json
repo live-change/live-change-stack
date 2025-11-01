@@ -10,6 +10,23 @@
     "taskFailed": "Zadanie nie powiodło się",
     "taskDone": "Zadanie ukończone"
   },
+  "cron": {
+    "scheduledTasks": "Zaplanowane zadania",
+    "taskType": "Typ zadania",
+    "schedules": "Harmonogramy",
+    "intervals": "Interwały",
+    "createTask": "Utwórz nowe zadanie cron",
+    "createSchedule": "Utwórz harmonogram",
+    "createInterval": "Utwórz interwał",
+    "description": "Opis",
+    "minute": "Minuta (0-59)",
+    "hour": "Godzina (0-23)",
+    "day": "Dzień (1-31)",
+    "month": "Miesiąc (1-12)",
+    "taskToRun": "Zadanie do uruchomienia",
+    "intervalMs": "Interwał (ms)",
+    "waitMs": "Oczekiwanie (ms)"
+  },
   "shelter": {
     "wall": "Ściana",
     "roof": "Dach"

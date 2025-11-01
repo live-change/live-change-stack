@@ -10,6 +10,15 @@ class WebSocketConnection extends ReactiveConnection {
     this.initialize()
   }
 
+  connectionInfo() {
+    return {
+      type: 'websocket',
+      url: this.url,
+      settings: this.settings,
+      credentials: this.credentials,
+    }
+  }
+
   initialize() {
     debug("connecting", this.url, "...")
     this.connection = new WebSocket(this.url, "reactive-observer", this.settings)

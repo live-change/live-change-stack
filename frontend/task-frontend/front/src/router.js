@@ -7,10 +7,19 @@ export function taskAdminRoutes(config = {}) {
       component: () => import("./pages/TaskAdmin.vue"),
       props: true
     }),
-
   ]
 }
 
+export function cronAdminRoutes(config = {}) {
+  const { prefix = '/', route = (r) => r } = config
+  return [
+    route({
+      name: 'cron:admin', path: prefix, meta: { },
+      component: () => import("./pages/CronAdmin.vue"),
+      props: true
+    }),
+  ]
+}
 
 import {
   createMemoryHistory,
@@ -35,12 +44,12 @@ export function routes(config = {}) {
 
     route({
       name: 'index', path: prefix, meta: { },
-      component: () => import("./Index.vue")
+      component: () => import("./pages/Index.vue")
     }),
 
     route({
       name: 'progress', path: prefix+'progress/:action', meta: { }, props:true,
-      component: () => import("./ShelterProgress.vue")
+      component: () => import("./pages/ShelterProgress.vue")
     }),
 
     ...pagesRoutes,
@@ -48,6 +57,8 @@ export function routes(config = {}) {
     ...contentEditRoutes({ ...config }),
 
     ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
+    ...taskAdminRoutes({ prefix: '/_task', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
+    ...cronAdminRoutes({ prefix: '/_cron', route: r => ({ ...r, meta: { ...r.meta, pageType: 'wide' }}) }),
     ...catchAllPagesRoute({ ...config }),
   ]
 }

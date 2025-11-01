@@ -355,7 +355,7 @@ definition.action({
     }
   },
   async execute({ size, woodType, place }, { service, client, command }, emit) {
-    return await buildShelter.start({ size, woodType, place }, 'userAction', command.id)
+    return await buildShelter.start({ size, woodType, place }, 'command', command.id)
   }
 })
 

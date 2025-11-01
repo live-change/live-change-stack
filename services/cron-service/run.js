@@ -31,7 +31,8 @@ export const RunState = definition.model({
   },
   indexes: {
     byTasks: {
-      property: ['tasks', 'id']
+      multi: true,
+      property: ['tasks']
     }
   }
 })
@@ -39,6 +40,7 @@ export const RunState = definition.model({
 
 export const triggerType = {  
   description: "Trigger to schedule",
+  input: 'triggerEditor',
   type: Object,
   properties: {
     name: {
@@ -51,7 +53,7 @@ export const triggerType = {
     },
     properties: {
       description: "Properties to pass to the trigger",
-      type: Object,
+      type: Object,      
     }
   }
 }

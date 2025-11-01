@@ -89,6 +89,7 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause, expire
   return taskObject
 }
 
+
 async function startTask(taskFunction, props, causeType, cause, expire, client:ClientInfo){
   const taskObject = await createOrReuseTask(taskFunction.definition, props, causeType, cause, expire, client)
   const context = {

@@ -40,6 +40,7 @@ export default defineConfig(async ({ command, mode }) => {
     resolve: {
       ...baseConfig.resolve,
       alias: [
+        { find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) },
         ...baseConfig.resolve.alias,
       ]
     }

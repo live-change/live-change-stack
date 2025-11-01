@@ -10,6 +10,15 @@ class SockJsConnection extends ReactiveConnection {
     this.initialize()
   }
 
+  connectionInfo() {
+    return {
+      type: 'sockjs',
+      url: this.url,
+      settings: this.settings,
+      credentials: this.credentials,
+    }
+  }
+
   initialize() {
     this.connection = new SockJS(this.url)
     const connection = this.connection

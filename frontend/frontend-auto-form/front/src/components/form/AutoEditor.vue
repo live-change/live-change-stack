@@ -50,11 +50,13 @@
 
   const emit = defineEmits(['update:modelValue'])
 
-  const propertiesList = computed(() =>
-    editableProperties.value ??
-    props.definition.editableProperties ??
-    Object.keys(props.definition.properties).filter(key => props.definition.properties[key])
-  )
+  const propertiesList = computed(() => {
+    if(editableProperties.value) return editableProperties.value
+    if(props.definition.editableProperties) return props.definition.editableProperties
+    if(!props.definition) return []
+    if(!props.definition.properties) return []
+    return Object.keys(props.definition.properties).filter(key => props.definition.properties[key])
+  })
 
   function updateModelProperty(property, value) {
     const data = modelValue.value || {}

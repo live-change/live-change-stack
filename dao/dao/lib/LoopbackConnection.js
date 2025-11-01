@@ -13,6 +13,15 @@ class LoopbackConnection extends Connection {
     this.headers = {}
   }
 
+  connectionInfo() {
+    return {
+      type: 'loopback',
+      server: this.server.connectionInfo(),
+      settings: this.settings,
+      credentials: this.credentials,
+    }
+  }
+  
   next(fn) {
     if(this.delay) {
       setTimeout(fn, this.delay)

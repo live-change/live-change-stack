@@ -17,6 +17,7 @@ export const Schedule = definition.model({
     readAccessControl: {
       roles: config.adminRoles
     },
+    readAllAccess: ['admin'],
   },
   properties: {
     description: {
@@ -96,7 +97,7 @@ async function processSchedule({ id, minute, hour, day, dayOfWeek, month, trigge
 }
 
 definition.trigger({
-  type: 'runSchedule',
+  name: 'runSchedule',
   properties: {
     schedule: {
       type: Schedule,
@@ -121,7 +122,7 @@ definition.trigger({
 })
 
 definition.trigger({
-  type: 'changeCron_Schedule',
+  name: 'changeCron_Schedule',
   properties: {
     object: {
       type: Schedule,
@@ -153,7 +154,7 @@ definition.trigger({
   }
 })
 
-const Timer = service.foreignModel('timer', 'Timer')
+const Timer = definition.foreignModel('timer', 'Timer')
 
 definition.afterStart(async (service) => {
   const position = ''
