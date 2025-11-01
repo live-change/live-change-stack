@@ -1,6 +1,6 @@
 {
   "name": "@live-change/dao-vue3",
-  "version": "0.9.161",
+  "version": "0.9.162",
   "author": {
     "email": "m8@em8.pl",
     "name": "Michał Łaszczewski",
@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.161"
+    "@live-change/dao": "^0.9.162"
   },
   "type": "module",
   "description": "Vue.js integration for live-change dao",
@@ -32,5 +32,5 @@
   "scripts": {
     "compileTests": "webpack test/*.js tests-bundle.js"
   },
-  "gitHead": "9202c36abc25e3baf5fe39806d89c3fab203f428"
+  "gitHead": "1361610ea2c25bfecff4ec102cde2fd2aecbdb53"
 }
