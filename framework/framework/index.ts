@@ -12,6 +12,7 @@ import PropertyDefinition from './lib/definition/PropertyDefinition.js'
 import ServiceDefinition from './lib/definition/ServiceDefinition.js'
 import TriggerDefinition from './lib/definition/TriggerDefinition.js'
 import ViewDefinition from './lib/definition/ViewDefinition.js'
+import QueryDefinition from './lib/definition/QueryDefinition.js'
 
 export {
   ActionDefinition,
@@ -23,7 +24,8 @@ export {
   PropertyDefinition,
   ServiceDefinition,
   TriggerDefinition,
-  ViewDefinition
+  ViewDefinition,
+  QueryDefinition
 }
 
 // Export all types from definition files
@@ -38,4 +40,5 @@ export type { ClientContext, ContextBase, ViewContext, ActionContext } from './l
 export type { ServiceDefinitionSpecification } from './lib/definition/ServiceDefinition.js'
 export type { AccessSpecification, AccessFunction } from './lib/processors/accessMethod.js'
 export type { EventDefinitionSpecification as EventDefinitionSpecificationAC } from './lib/definition/EventDefinition.js'
+export type { QueryDefinitionSpecification } from './lib/definition/QueryDefinition.js'
 export type * from './lib/definition/types.js'

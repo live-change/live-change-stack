@@ -55,7 +55,7 @@
     if(!props.image) return
     if(!loadImagePromise) loadImagePromise = (async () => {
       const loaded = await api.get(['image', 'image', { image: props.image }])
-      //console.log("IM", props.image, "DATA", loaded)
+      //console.log("IM", props.image, "DATA", loaded, 'UPLOAD', upload.value)
       loadImagePromise = null
       if(loaded) {
         const { width, height } = loaded
@@ -121,7 +121,7 @@
   }
 
   async function updateUrl() {
-    //console.log("UPDATE URL!", upload.value)
+    //console.log("UPDATE URL!", upload.value, props, imageUploads.value.map(u => u.id))
     if(upload.value && upload.value.url) { // available upload
       size.value = { ...upload.value.size }
       url.value = upload.value.url

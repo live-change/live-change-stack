@@ -12,7 +12,7 @@ export interface ViewDefinitionSpecificationBase {
   global?: boolean,
   access?: AccessSpecification,
   skipValidation?: boolean,
-  validation? : (parameters: Record<string, any>, context: ViewContext) => Promise<any>
+  validation? : (parameters: Record<string, any>, context: ViewContext) => Promise<any>  
 }
 
 export interface ViewDefinitionSpecificationObservable extends ViewDefinitionSpecificationBase {

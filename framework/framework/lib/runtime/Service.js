@@ -6,6 +6,7 @@ import Action from "./Action.js"
 import EventHandler from "./EventHandler.js"
 import TriggerHandler from "./TriggerHandler.js"
 import ExecutionQueue from "../utils/ExecutionQueue.js"
+import Query from "./Query.js"
 
 class Service {
 

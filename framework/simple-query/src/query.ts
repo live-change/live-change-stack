@@ -2,7 +2,16 @@ import {
   PropertyDefinitionSpecification, ServiceDefinition, ServiceDefinitionSpecification  
 } from "@live-change/framework"
 
-import { ModelDefinition, ForeignModelDefinition } from "@live-change/framework"
+import { 
+  ModelDefinition, ForeignModelDefinition, ContextBase, QueryParameters as FrameworkQueryParameters,
+  QueryDefinition as FrameworkQueryDefinition, 
+  QueryDefinitionSpecification as FrameworkQueryDefinitionSpecification,
+  ViewDefinition,
+  EventDefinition,
+  TriggerDefinition,
+  ActionDefinition,
+  ViewDefinitionSpecificationDaoPath
+} from "@live-change/framework"
 
 import { PropertyDefinition } from "@live-change/framework"
 
@@ -17,7 +26,7 @@ const simpleQueryCode = readFileSync(simpleQueryCodePath, 'utf8')
 
 
 interface Range {
-  gt?: string
+  gt?: string 
   gte?: string
   lt?: string
   lte?: string,
@@ -50,7 +59,6 @@ class RuleSource {
   dependentBy: RuleSource[]
   dependsOn: RuleSource[]
   index: IndexInfo | null
-
 
   constructor(rule: QueryRule, input: QueryInput, source: QuerySource, type: string) {
     this.rule = rule
@@ -94,6 +102,14 @@ interface QueryDefinitionSpecification {
   sources?: Record<string, QuerySource>,
   code?: QueryCode,
   update?: boolean,
+  id: Function | string,
+  timeout?: number,
+  requestTimeout?: number,
+  validation?: (parameters: FrameworkQueryParameters, context: ContextBase) => Promise<any>
+  view?: Record<string, any>
+  event?: Record<string, any>
+  trigger?: Record<string, any>
+  action?: Record<string, any>
 }
 
 class OutputMapping {
@@ -181,7 +197,8 @@ class IndexInfo {
   $_createQuery(service: ServiceDefinition<any>) {
     return new QueryDefinition(service, {
       name: this.name,
-      properties: {}
+      properties: {},
+      id: (x:any) => x
     }, this.rules)
   }
 }
@@ -206,6 +223,8 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
 
   executionPlan: ExecutionStep[]
   indexPlan: ExecutionStep[]
+
+  preparedQuery: FrameworkQueryDefinition<FrameworkQueryDefinitionSpecification>
 
   constructor(
     serviceDefinition: ServiceDefinition<SDS>, definition: QueryDefinitionSpecification, rules: QueryRule[] = undefined
@@ -340,7 +359,7 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     for(const key in this.rules) {
       const rule = this.rules[key]
       console.log(`${indent}  RULE ${key}:`)
-      console.log(`${indent}    ${queryDescription(rule, indent + '    ')}`)      
+      console.log(`${indent}    ${queryDescription(rule, indent + '    ')}`)
       console.log(`${indent}    SOURCES:`)
       for(const ruleSource of this.ruleSources) {
         if(ruleSource.rule !== rule) continue
@@ -377,32 +396,33 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     }
   }
 
-  computeSourceExecutionPlan(source: RuleSource, resultParameters: string[]) {
-    /// TODO: W poniższej linii jest bug, powinno pobierać odmienne source, a nie te bezpośrednio zależne.
-    /// Poza tym przy pobieraniu wstecz nie koniecznie potrzeba indexów,
-    ///  może trzeba wprowadzić index-forward i index-backward ?
-    /// A może trzeba wprowadzić analizę tego co mamy i co chcemy uzyskać w przyszłości ?
+  computeSourceExecutionPlan(source: RuleSource, resultParameters: string[]) {    
+    /// TODO: Może trzeba wprowadzić analizę tego co mamy i co chcemy uzyskać w przyszłości ?
 
     const next = source.dependentBy.map(dependent => {
       const otherSource = this.ruleSources.find(s => s.rule === dependent.rule && s != dependent)
-      return this.computeSourceExecutionPlan(otherSource, [...resultParameters, source.input.$alias])
+      const nextStep = this.computeSourceExecutionPlan(otherSource, [...resultParameters, source.input.$alias])
+      return nextStep
     })
 
     console.log("COMPUTING SOURCE EXECUTION PLAN FOR", source.input.$_toQueryDescription(), "WITH", resultParameters)
     console.log("RULE", queryDescription(source.rule, '  '))
 
     const ruleParameters = JSON.parse(JSON.stringify(source.rule.$_parametersJSON(resultParameters)))
+    console.log("RULE PARAMETERS", ruleParameters)
     if(source.index) {                  
       const indexExecution = {
         ...source.index.$_executionJSON(),
-        by: ruleParameters[Object.keys(ruleParameters)[0]]
+        by: parameterEnsureRange(ruleParameters[Object.keys(ruleParameters)[0]])
       }
       const indexNext = [{
-        operation: 'object',
-        ...source.input.$_executionJSON(),
-        by: {
-          type: 'result',
-          path: [indexExecution.alias, source.index.indexParts.at(-1).alias],
+        execution: {
+          operation: 'object',
+          ...source.input.$_executionJSON(),
+          by: {
+            type: 'result',
+            path: [indexExecution.alias, source.index.indexParts.at(-1).alias],
+          },
         },
         next
       }]
@@ -612,13 +632,34 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     console.log("EXECUTION PLAN:")
     console.log(JSON.stringify(this.executionPlan, null, 2))
 
-    process.exit(0)
-    /// TODO: create indexes used by query
+    //process.exit(0)
 
-    
-    /// TODO: prepare query
+    const idFunctionCode = (typeof this.definition.id === 'string')
+      ? this.definition.id : `(${this.definition.id})`
+  
+    console.log("ID FUNCTION", idFunctionCode)
 
-    // process.exit(0)
+    this.preparedQuery = this.service.query({
+      name: this.definition.name,
+      properties: this.definition.properties,
+      returns: this.definition.returns,
+      code: simpleQueryCode,
+      sourceName: simpleQueryCodePath,
+      update: this.definition.update,
+      timeout: this.definition.timeout,
+      requestTimeout: this.definition.requestTimeout,
+      validation: this.definition.validation,
+      config: {
+        plan: this.executionPlan,
+        idFunction: idFunctionCode
+      },
+      view: this.definition.view,
+      trigger: this.definition.trigger,
+      action: this.definition.action,
+      event: this.definition.event
+    })
+ 
+    return this.preparedQuery
   }
 
   createIndex(name, mapping: OutputMapping[]) {    
@@ -649,6 +690,22 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
   }
 }
 
+function parameterIsRange(parameter: any) {
+  if(typeof parameter !== 'object' || parameter === null) return false
+  if(Array.isArray(parameter)) return parameterIsRange(parameter.at(-1))
+  if(parameter.type === 'object') return true  
+  return false
+}
+
+function parameterEnsureRange(parameter: any) {
+  if(parameterIsRange(parameter)) return parameter  
+  if(Array.isArray(parameter)) return [...parameter, { type: 'object', properties: {} }]
+  return {
+    type: 'array',
+    items: [parameter, { type: 'object', properties: {} }]
+  }  
+}
+
 
 export type QueryFactoryFunction<SDS extends ServiceDefinitionSpecification> = 
   (definition: QueryDefinitionSpecification) => QueryDefinition<SDS>
@@ -675,7 +732,9 @@ function getSource(input: RuleInput): QuerySource {
 function isStatic(element: any) {
   if(typeof element !== "object" || element === null) return true
   return element instanceof CanBeStatic ? element.$_isStatic() : 
-    (element.constructor.name === "Object" ? element[staticRuleSymbol] : false)  
+    ((element.constructor.name === "Object" || element.constructor.name === "Array") 
+      ? element[staticRuleSymbol] 
+      : false)  
 }
 
 function queryDescription(element: any, indent: string = "") {  
@@ -706,6 +765,7 @@ function markStatic(element: any) {
 function parameterJSON(element: any) {
   if(typeof element !== "object" || element === null) return element
   if(element instanceof QueryPropertyBase) return { type: 'property', path: element.$path }
+  if(Array.isArray(element)) return element.map(item => parameterJSON(item))
   const output = {
     type: 'object',
     properties: {}
@@ -768,7 +828,7 @@ export class RangeRule extends QueryRule {
   $_getSources(): RuleSource[] {
     return [
       new RuleSource(this, this.$input, getSource(this.$input), 'range')
-    ].filter(s => s.input != null)
+    ].filter(s => s.input?.$source != null)
   }
 
   $_parametersJSON(resultParameters: string[]) {
@@ -814,7 +874,7 @@ export class EqualsRule extends QueryRule {
     return [
       new RuleSource(this, this.$inputA, getSource(this.$inputA), 'object'), 
       new RuleSource(this, this.$inputB, getSource(this.$inputB), 'object')
-    ].filter(s => s.input != null)
+    ].filter(s => s.input?.$source != null)
   }
 
   $_parametersJSON(resultParameters: string[]) {

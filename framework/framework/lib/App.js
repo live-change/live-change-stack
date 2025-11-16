@@ -19,6 +19,7 @@ import fetchView from "./processors/fetchView.js"
 import accessControl from "./processors/accessControl.js"
 import autoValidation from "./processors/autoValidation.js"
 import indexCode from "./processors/indexCode.js"
+import queryExtensions from "./processors/queryExtensions.js"
 
 import databaseUpdater from "./updaters/database.js"
 
@@ -53,11 +54,12 @@ class App {
 
     this.defaultProcessors = [
       indexListProcessor,
+      queryExtensions,
       daoPathView,
-      fetchView,
+      fetchView,      
       accessControl,
       autoValidation,
-      indexCode
+      indexCode      
     ]
     this.defaultUpdaters = [
       databaseUpdater

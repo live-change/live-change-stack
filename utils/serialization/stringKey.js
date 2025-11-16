@@ -174,6 +174,12 @@ export function serializeKeyToString(key) {
   return writer.getOutput()
 }
 
+export function serializeKeyDataToString(key) {
+  const writer = new StringKeyWriter()
+  write(key, writer)
+  return writer.getData()
+}
+
 export function deserializeKeyFromString(serialized, structure) {
   const reader = new StringKeyReader(serialized, structure)
   return read(reader)

@@ -11,19 +11,10 @@ class Query {
     this.codeString = typeof definition.code === 'function' ? `(${definition.code.toString()})` : definition.code
   }
 
-  async run(parameters, context) {
+  async run(parameters) {
     if(!this.definition.update) throw new Error("Only update queries can be run")
     
     if(!parameters) parameters = {}
-    if(!context) context = {
-      client: {
-        session: null,
-        user: null,
-        ip: null,
-        roles: []
-      },
-      service: this.service,
-    }
     
     let preparedParams = await prepareParameters(parameters, this.definition.properties, this.service)        
 
@@ -37,47 +28,31 @@ class Query {
     return resultPromise
   }
 
-  get(parameters, context) {
-    if(this.definition.update) throw new Error("Only non-update queries can be get")
+  daoPath(parameters) {
+    if(this.definition.update) throw new Error("Only non-update queries can be get or observed")
     
     if(!parameters) parameters = {}
-    if(!context) context = {
-      client: {
-        session: null,
-        user: null,
-        ip: null,
-        roles: []
-      },
-      service: this.service,
-    }
 
-    const resultPromise = this.service.app.dao.get([
+    return [
       'database', this.definition.isObjectQuery ? 'runQueryObject' : 'runQuery', 
       this.service.app.databaseName, 'queries', this.queryKey, parameters
-    ])
+    ]
+  }
+
+  get(parameters) {
+    if(this.definition.update) throw new Error("Only non-update queries can be get")
+    
+    const resultPromise = this.service.app.dao.get(this.daoPath(parameters))
     resultPromise.catch(error => {
       console.error(`Query ${this.definition.name} error `, error.stack || error)
     })
     return resultPromise
   }
 
-  observable(parameters, context) {
-    if(this.definition.update) throw new Error("Only non-update queries can be observable")
-    if(!parameters) parameters = {}
-    if(!context) context = {
-      client: {
-        session: null,
-        user: null,
-        ip: null,
-        roles: []
-      },
-      service: this.service,
-    }
+  observable(parameters) {
+    if(this.definition.update) throw new Error("Only non-update queries can be observed")
 
-    const resultPromise = this.service.app.dao.observable([
-      'database', this.definition.isObjectQuery ? 'runQueryObject' : 'runQuery', 
-      this.service.app.databaseName, 'queries', this.queryKey, parameters
-    ])
+    const resultPromise = this.service.app.dao.observable(this.daoPath(parameters))
     resultPromise.catch(error => {
       console.error(`Query ${this.definition.name} error `, error.stack || error)
     })

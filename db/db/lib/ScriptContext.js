@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { ChangeStreamPipe } from './ChangeStream.js'
 import pref_hooks from 'perf_hooks'
 import { rangeIntersection, rangeUnion, unitRange, prefixRange } from './utils.js'
-import { serializeKeyToString, deserializeKeyFromString } from '@live-change/serialization'
+import { serializeKeyToString, deserializeKeyFromString, serializeKeyDataToString } from '@live-change/serialization'
 
 const defaultNativeGlobals = [
   'Array', 'ArrayBuffer',
@@ -43,6 +43,7 @@ const defaultContext = {
   prefixRange,
 
   serializeKey : serializeKeyToString,
+  serializeKeyData : serializeKeyDataToString,
   deserializeKey : deserializeKeyFromString,
 
   'performance': pref_hooks.performance,

@@ -5,11 +5,12 @@ export const typeMap = Object.freeze({
   'boolean': 'b',
   'object': 'o',
   'null': 'z',
-  'array': 'a'
+  'array': 'a',
+  'undefined': 'u'
 })
 
 export const types = Object.freeze(Object.fromEntries(
- Object.entries(typeMap).map(([type, key]) => [key, type])
+  Object.entries(typeMap).map(([type, key]) => [key, type])
 ))
 
 /** Serialize any data using writer
@@ -38,6 +39,7 @@ export function write(data, writer) {
         write(value, writer)
       }
       return writer
+    case 'undefined': return writer.writeType(typeMap.undefined)
     default:
       throw new Error(`Unsupported type: ${typeof data}`)
   }

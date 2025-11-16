@@ -452,7 +452,7 @@ export async function describe(argv) {
       console.log(JSON.stringify(service.toJSON(), null, "  "))
       return
     }
-    console.log("  models:")
+    if(Object.keys(service.models).length > 0) console.log("  models:")
     for(const modelName in service.models) {
       const model = service.models[modelName]
       const properties = Object.keys(model.properties ?? {})
@@ -462,25 +462,25 @@ export async function describe(argv) {
         console.log("      ", indexName)
       }
     }
-    console.log("  indexes:")
+    if(Object.keys(service.indexes).length > 0) console.log("  indexes:")
     for(const indexName in service.indexes) {
       const index = service.indexes[indexName]
       console.log("    ", indexName)
     }
-    console.log("  actions:")
+    if(Object.keys(service.actions).length > 0) console.log("  actions:")
     for(const actionName in service.actions) {
       const action = service.actions[actionName]
       const properties = Object.keys(action.properties ?? {})
       console.log("    ", actionName, "(", properties.join(', '), ")")
     }
-    console.log("  views:")
+    if(Object.keys(service.views).length > 0) console.log("  views:")
     for(const viewName in service.views) {
       const view = service.views[viewName]
       const properties = Object.keys(view.properties ?? {})
       console.log("    ", viewName, "(", properties.join(', '), ")",
           view.global ? "global" : "", view.internal ? "internal" : "", view.remote ? "remote" : "")
     }
-    console.log("  triggers:")
+    if(Object.keys(service.triggers).length > 0) console.log("  triggers:")
     for(const triggerName in service.triggers) {
       const triggers = service.triggers[triggerName]
       for(const trigger of triggers) {
@@ -488,11 +488,17 @@ export async function describe(argv) {
         console.log("    ", triggerName, "(", properties.join(', '), ")")
       }
     }
-    console.log("  events:")
+    if(Object.keys(service.events).length > 0) console.log("  events:")
     for(const eventName in service.events) {
       const event = service.events[eventName]
       const properties = Object.keys(event.properties ?? {})
       console.log("    ", eventName, "(", properties.join(', '), ")")
+    }
+    if(Object.keys(service.queries).length > 0) console.log("  queries:")
+    for(const queryName in service.queries) {
+      const query = service.queries[queryName]
+      const properties = Object.keys(query.properties ?? {})
+      console.log("    ", queryName, "(", properties.join(', '), ")")
     }
   }
   if(argv.service === '*') {

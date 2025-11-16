@@ -1,12 +1,12 @@
 <template>
   <Toast v-if="isMounted" />
   <router-view v-slot="{ route, Component }">
-    <template v-if="route?.meta?.raw">
+    <template v-if="route?.meta?.raw && isAccessible(route)">
       <suspense>
         <component :is="Component" />
       </suspense>
     </template>
-    <loading-zone v-else suspense @isLoading="l => loading = l" :key="route.href">
+    <loading-zone v-else-if="isAccessible(route)" suspense @isLoading="l => loading = l" :key="route.href">
       <template v-slot:loading>
         <div class="fixed w-full h-full flex items-center justify-center top-0 left-0">
           <ProgressSpinner animationDuration=".5s"/>
@@ -34,13 +34,21 @@
         </page>
       </template>
     </loading-zone>
+    <template v-else>
+      <page :loading="loading" :working="working" :route="route" :pageType="route?.meta?.pageType">
+        <template #navbar>
+          <slot name="navbar">&nbsp;</slot>
+        </template>
+        <InsufficientAccess />    
+      </page>
+    </template>
   </router-view>
 </template>
 
 <script setup>
 
   import Toast from 'primevue/toast'
-
+  import { InsufficientAccess } from "@live-change/access-control-frontend"
  // import 'primeflex/primeflex.css'
   import 'primeicons/primeicons.css'
 
@@ -59,6 +67,23 @@
   })
 
   import { computed, onMounted, ref } from 'vue'
+
+  import { useClient } from '@live-change/vue3-ssr'
+  const client = useClient()
+
+  function isAccessible(route) {    
+    if(route?.meta?.requireRoles) {
+      for(const roleSet of route?.meta?.requireRoles) {
+        if(Array.isArray(roleSet)) {
+          if(roleSet.every(role => client.value.roles.includes(role))) return true
+        } else {
+          if(client.value.roles.includes(roleSet)) return true
+        }
+      }
+      return false
+    } 
+    return true   
+  }
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)

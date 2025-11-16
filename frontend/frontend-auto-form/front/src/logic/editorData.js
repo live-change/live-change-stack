@@ -93,7 +93,7 @@ export default function editorData(options) {
   const removeDraftAction = draft && api.actions.draft.resetMyDraft
 
   return Promise.all([
-    live(savedDataPath), live(draftDataPath)
+    live(savedDataPath, appContext), live(draftDataPath, appContext)
   ]).then(([savedData, draftData]) => {
 
     const isNew = computed(() => !savedData.value)

@@ -36,5 +36,5 @@
     "test": "NODE_ENV=test tape tests/*"
   },
   "version": "0.9.162",
-  "gitHead": "1361610ea2c25bfecff4ec102cde2fd2aecbdb53"
+  "gitHead": "59cd1485ca6d76bd87a6634a92d6e661e5803d5e"
 }

@@ -13,9 +13,10 @@ export interface QueryDefinitionSpecification {
   update: boolean,
 
   validation?: (parameters: QueryParameters, context: ContextBase) => Promise<any>
-  waitForEvents?: boolean,
   timeout?: number,
-  requestTimeout?: number
+  requestTimeout?: number,
+
+  config?: Record<string, any>
 }
 
 class QueryDefinition<T extends QueryDefinitionSpecification> {

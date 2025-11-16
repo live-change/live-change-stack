@@ -334,12 +334,13 @@ async function update(changes, service, app, force) {
         const queryKey = service.name + '.' + query.name
         await dao.requestWithSettings(updaterRequestSettings, ['database', 'put'], database, 'queries', {
           id: queryKey,
-          code: typeof query.code === 'function' ? `(${query.code.toString()})` : query.code,
+          code: `(${query.code.toString()})`,
           sourceName: query.sourceName,
           update: query.update,
           timeout: query.timeout,          
           properties: query.properties,
-          returns: query.returns                    
+          returns: query.returns,
+          ...query.config                  
         })
         debug("QUERY CREATED!", query.name)
       } break;
@@ -350,7 +351,7 @@ async function update(changes, service, app, force) {
         const oldQuery = await dao.get(['database', 'get', database, 'queries', oldQueryKey])
         await dao.requestWithSettings(updaterRequestSettings, ['database', 'put'], database, 'queries', {
           id: queryKey,
-          code: typeof oldQuery.code === 'function' ? `(${oldQuery.code.toString()})` : oldQuery.code,
+          code: `(${oldQuery.code.toString()})`,
           sourceName: oldQuery.sourceName,
           update: oldQuery.update, 
           timeout: oldQuery.timeout,          
