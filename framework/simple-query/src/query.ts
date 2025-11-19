@@ -102,7 +102,7 @@ interface QueryDefinitionSpecification {
   sources?: Record<string, QuerySource>,
   code?: QueryCode,
   update?: boolean,
-  id: Function | string,
+  id: Function,
   timeout?: number,
   requestTimeout?: number,
   validation?: (parameters: FrameworkQueryParameters, context: ContextBase) => Promise<any>
@@ -216,6 +216,7 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
   definition: QueryDefinitionSpecification
   properties: Record<string, PropertyDefinition<any>>
   rules: QueryRules
+  idFields: QueryInputLike[] | null
   firstRule: QueryRule
   rootSources: RuleSource[]
   ruleSources: RuleSource[]
@@ -265,6 +266,15 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
     }
   }
 
+  printIdFields() {
+    console.log("ID FIELDS:")
+    if(this.idFields) {
+      for(const idField of this.idFields) {
+        console.log(`  `, queryDescription(idField, '  '))
+      }
+    }
+  }
+
   computeRules() {
     const queryProperties = {}
     for(const propertyName in this.definition.properties) {
@@ -282,6 +292,7 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
 
     // run the code to collect relations
     this.rules = this.definition.code(queryProperties, queryInputs)
+    this.idFields = this.definition.id ? this.definition.id(queryInputs) : null
   }
 
   markStaticRules() {
@@ -410,33 +421,38 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
 
     const ruleParameters = JSON.parse(JSON.stringify(source.rule.$_parametersJSON(resultParameters)))
     console.log("RULE PARAMETERS", ruleParameters)
+    const mandatory = this.idFields?.find(idField => source.input.$alias === idField.$alias) ? true : undefined
     if(source.index) {                  
       const indexExecution = {
         ...source.index.$_executionJSON(),
         by: parameterEnsureRange(ruleParameters[Object.keys(ruleParameters)[0]])
       }
+      /// TODO: decide if id field is mandatory - if exports aliases that are required in id Fields or market mandatory      
       const indexNext = [{
         execution: {
           operation: 'object',
-          ...source.input.$_executionJSON(),
+          ...source.input.$_executionJSON(),          
           by: {
             type: 'result',
             path: [indexExecution.alias, source.index.indexParts.at(-1).alias],
           },
         },
+        mandatory,
         next
       }]
       return {
         execution: indexExecution,
         next: indexNext
       }
-    }  
+    }
+
     const execution = {
-      ...source.input.$_executionJSON(),
+      ...source.input.$_executionJSON(),      
       by: ruleParameters[Object.keys(ruleParameters)[0]]
     }    
     const executionPlan = {
       execution,
+      mandatory,
       next
     }
     return executionPlan
@@ -622,9 +638,11 @@ export class QueryDefinition<SDS extends ServiceDefinitionSpecification> {
   prepareQuery() {
     this.createIndexes()
 
-    console.log("########### PREPARING QUERY!!!!")
+    console.log("########### PREPARING QUERY!!!!")    
 
     this.printRules()
+
+    this.printIdFields()
 
     this.printDependencies()
 

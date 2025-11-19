@@ -64,6 +64,28 @@ async function simpleQuery(input, output, { _query, ...params }) {
     }  
   }
 
+  function applyChange(results, obj, oldObj) {
+    if(oldObj) {
+      const index = results.findIndex(result => result.id === oldObj.id)
+      if(index !== -1) {
+        if(obj) {
+          results[index] = obj
+        } else {
+          results.splice(index, 1)
+        }              
+      }
+    } else if(obj) {
+      const index = results.findIndex(result => result.id >= obj.id)
+      if(index === -1) {
+        results.push(obj)
+      } else if(results[index].id === obj.id) {
+        results[index] = obj
+      } else {
+        results.splice(index, 0, obj)
+      }
+    }      
+  }
+
   class DataObservation {
 
     #planStep = null
@@ -71,13 +93,16 @@ async function simpleQuery(input, output, { _query, ...params }) {
     #source = null
     #by = null
     #onChange = null
-
+    #disposed = false
+    
     #observation = null
 
-    #dependentObservations = new Map()
+    #dependentObservationsByNext
 
     #resultsPromise = null
     #results = []
+    #rawResults = []
+
     #idFunction = null
 
     constructor(planStep, context, source, by, onChange, idFunction) {
@@ -87,6 +112,11 @@ async function simpleQuery(input, output, { _query, ...params }) {
       this.#by = by
       this.#onChange = onChange
       this.#idFunction = idFunction
+
+      this.#dependentObservationsByNext = new Array(planStep.next.length)
+      for(const nextIndex in planStep.next) {
+        this.#dependentObservationsByNext[nextIndex] = new Map()
+      }
     }
 
     async start() {
@@ -102,6 +132,8 @@ async function simpleQuery(input, output, { _query, ...params }) {
         const id = obj?.id || oldObj?.id
         if(!id) return
 
+        applyChange(this.#rawResults, obj, oldObj)
+
         const nextContext = { ...context, [planStep.execution.alias]: obj }
         const nextOldContext = { ...context, [planStep.execution.alias]: oldObj }
         
@@ -109,22 +141,24 @@ async function simpleQuery(input, output, { _query, ...params }) {
 
         const oldJoinedResults = oldObj ? await this.#joinResults([ oldObj ]) : []
         
-        for(const nextStep of planStep.next) {
+        for(const nextStepIndex in planStep.next) {
+          const nextStep = planStep.next[nextStepIndex]
           const nextSource = await getSource(nextStep.execution.sourceType, nextStep.execution.name)
-          const nextBy = decodeParameter(nextStep.execution.by, nextContext, params)
-          const nextOldBy = decodeParameter(nextStep.execution.by, nextOldContext, params)
-          const nextByKey = nextBy && serializeKeyData([nextStep.execution.alias, nextBy])
-          const nextOldByKey = nextOldBy && serializeKeyData([nextStep.execution.alias, nextOldBy])
+          const nextBy = obj && decodeParameter(nextStep.execution.by, nextContext, params)
+          const nextOldBy = oldObj && decodeParameter(nextStep.execution.by, nextOldContext, params)
+          const nextByKey = nextBy && serializeKeyData(nextBy)
+          const nextOldByKey = nextOldBy && serializeKeyData(nextOldBy)
           if(nextByKey !== nextOldByKey) {
-            if(this.#dependentObservations.has(nextOldByKey)) {
-              const dependentObservation = this.#dependentObservations.get(nextOldByKey)
+            const nextDependentObservations = this.#dependentObservationsByNext[nextStepIndex]
+            if(nextOldBy && nextDependentObservations.has(nextOldByKey)) {
+              const dependentObservation = nextDependentObservations.get(nextOldByKey)
               dependentObservation.dispose()
-              this.#dependentObservations.delete(nextOldByKey)
+              nextDependentObservations.delete(nextOldByKey)
             }
-            if(!this.#dependentObservations.has(nextByKey)) {
+            if(nextBy && !nextDependentObservations.has(nextByKey)) {
               const dependentObservation = new DataObservation(nextStep, nextContext, nextSource, nextBy, 
                 (context, oldContext, observation) => this.handleDependentChange(context, oldContext, observation, id))
-              this.#dependentObservations.set(nextByKey, dependentObservation)
+              nextDependentObservations.set(nextByKey, dependentObservation)
               await dependentObservation.start()
             }
           }
@@ -136,21 +170,7 @@ async function simpleQuery(input, output, { _query, ...params }) {
         //output.debug(this.#planStep.execution.alias, "oldJoinedResults", oldJoinedResults, "from", oldObj)
         //output.debug(this.#planStep.execution.alias, "newJoinedResults", newJoinedResults, "from", obj)        
 
-        for(const oldJoinedResult of oldJoinedResults) {
-          if(!oldJoinedResult) throw new Error("oldJoinedResult is null")
-          if(!newJoinedResults.some(newResult => newResult.id === oldJoinedResult.id)) 
-            this.#joinedChange(null, oldJoinedResult)
-        }
-        for(const newJoinedResult of newJoinedResults) {
-          const oldJoinedResult = oldJoinedResults.find(oldResult => oldResult.id === newJoinedResult.id)
-          if(oldJoinedResult) {
-            if(JSON.stringify(newJoinedResult) !== JSON.stringify(oldJoinedResult)) {
-              this.#joinedChange(newJoinedResult, oldJoinedResult)
-            }
-          } else {
-            this.#joinedChange(newJoinedResult, null)
-          }
-        }
+        await this.#joinedChanges(newJoinedResults, oldJoinedResults)
 
       })
       this.#resultsPromise = observationPromise.then(() => {
@@ -159,27 +179,27 @@ async function simpleQuery(input, output, { _query, ...params }) {
       this.#observation = await observationPromise      
     }
 
-    async #joinedChange(obj, oldObj, observation) {
-      if(oldObj) {
-        const index = this.#results.findIndex(result => result.id === oldObj.id)
-        if(index !== -1) {
-          if(obj) {
-            this.#results[index] = obj
-          } else {
-            this.#results.splice(index, 1)
-          }              
-        }
-      } else if(obj) {
-        const index = this.#results.findIndex(result => result.id >= obj.id)
-        if(index === -1) {
-          this.#results.push(obj)
-        } else if(this.#results[index].id === obj.id) {
-          this.#results[index] = obj
+    async #joinedChange(obj, oldObj) {
+      applyChange(this.#results, obj, oldObj)
+      await this.#onChange(obj, oldObj, this)
+    }
+
+    async #joinedChanges(newJoinedResults, oldJoinedResults) {
+      for(const oldJoinedResult of oldJoinedResults) {
+        if(!oldJoinedResult) throw new Error("oldJoinedResult is null")
+        if(!newJoinedResults.some(newResult => newResult.id === oldJoinedResult.id)) 
+          this.#joinedChange(null, oldJoinedResult)
+      }
+      for(const newJoinedResult of newJoinedResults) {
+        const oldJoinedResult = oldJoinedResults.find(oldResult => oldResult.id === newJoinedResult.id)
+        if(oldJoinedResult) {
+          if(JSON.stringify(newJoinedResult) !== JSON.stringify(oldJoinedResult)) {
+            this.#joinedChange(newJoinedResult, oldJoinedResult)
+          }
         } else {
-          this.#results.splice(index, 0, obj)
+          this.#joinedChange(newJoinedResult, null)
         }
       }
-      await this.#onChange(obj, oldObj, this)
     }
 
     async #joinResults(results) {
@@ -187,31 +207,42 @@ async function simpleQuery(input, output, { _query, ...params }) {
         __result_id_patrs: [result.id],
         [this.#planStep.execution.alias]: result
       }))
-      // output.debug("joined results", joinedResults)
-      for(const dependentObservation of this.#dependentObservations.values()) {
-        const dependentResults = await dependentObservation.results()
+      //output.debug("joined results", joinedResults)
+      for(const nextId in this.#planStep.next) {
+        const nextDependentObservations = this.#dependentObservationsByNext[nextId]
+        const nextStep = this.#planStep.next[nextId]
         // output.debug("  dep results", dependentObservation.#planStep.execution.alias, dependentResults)
-        joinedResults = joinedResults.flatMap(
-          (joinedResult) => {            
-            if(dependentResults.length === 0) return [
-              { /// TODO: check if optional (not mandatory)
-                ...joinedResult,
-                [dependentObservation.#planStep.execution.alias]: null
-              }
-            ]
+        joinedResults = (await Promise.all(joinedResults.map(
+          async (joinedResult) => { 
+            const nextBy = decodeParameter(nextStep.execution.by, joinedResult, params)
+            const nextByKey = nextBy && serializeKeyData(nextBy)
+            const dependentObservation = nextDependentObservations.get(nextByKey)
+            let dependentResults = []
+            if(dependentObservation) {
+              dependentResults = await dependentObservation.results()
+            }
+            if(dependentResults.length === 0) {
+              if(nextStep.mandatory) return []
+              return [
+                { /// TODO: check if optional (not mandatory)
+                  ...joinedResult,
+                  [nextStep.execution.alias]: null
+                }
+              ]
+            }
             return dependentResults.map(dependentJoinedResult => ({            
               ...dependentJoinedResult,
               ...joinedResult,
               __result_id_patrs: joinedResult.__result_id_patrs.concat(dependentJoinedResult.__result_id_patrs)
             }))
           }                     
-        )                 
+        ))).flat()
       }      
       //output.debug("joinedResultsAfterDependencies", JSON.stringify(joinedResults, null, 2))
       for(const joinedResult of joinedResults) {
-        if(this.#idFunction) {
+        /* if(this.#idFunction) {
           output.debug("callIdFunction", _query.idFunction, "on", JSON.stringify(joinedResult, null, 2))
-        }
+        } */
         joinedResult.id = serializeKey(
           this.#idFunction ? this.#idFunction(joinedResult) : joinedResult.__result_id_patrs
         )
@@ -226,28 +257,52 @@ async function simpleQuery(input, output, { _query, ...params }) {
 
     async handleDependentChange(context, oldContext, observation, id) {
       if(!this.#results) return 
-      // we need to find thre results affected by the change
-      for(const result of this.#results) { // bunary search can be used here for better performance
-        if(result.__result_id_patrs[0] === id) {          
-          const oldResult = { ...result }
-          const alias = observation.#planStep.execution.alias
-          result[alias] = context[alias]
-          this.#onChange(result, oldResult, observation) /// TODO: handle cases when part is mandatory
-        }
+      if(observation.#disposed) return
+
+      /* console.log("handleDependentChange", context, oldContext, id, 
+        "observation", observation.#planStep.execution.alias,
+         "to", this.#planStep.execution.alias) */
+
+      const observationByJson = JSON.stringify(observation.#by)
+
+      const affectedRawResults = this.#rawResults.filter(result => 
+        JSON.stringify(decodeParameter(observation.#planStep.execution.by, { 
+          [this.#planStep.execution.alias]: result 
+        }, params)) === observationByJson
+      )      
+
+      //console.log("affectedRawResults", affectedRawResults)
+
+      for(const affectedRawResult of affectedRawResults) {
+        const id = affectedRawResult.id
+        const newJoinedResults = await this.#joinResults([ affectedRawResult ])
+        const oldJoinedResults = this.#results.filter(
+          joinedResult => joinedResult[this.#planStep.execution.alias].id === id
+        )
+        //console.log("newJoinedResults", newJoinedResults)
+        //console.log("oldJoinedResults", oldJoinedResults)
+        await this.#joinedChanges(newJoinedResults, oldJoinedResults)
       }
     }
 
     dispose() {
       this.#observation.dispose()
-      this.#dependentObservations.forEach(dependentObservation => dependentObservation.dispose())
-      this.#dependentObservations.clear()
-      this.#results = null
+      for(const nextIndex in this.#dependentObservationsByNext) {
+        const nextDependentObservations = this.#dependentObservationsByNext[nextIndex]
+        for(const dependentObservation of nextDependentObservations.values()) {
+          dependentObservation.dispose()
+        }
+        nextDependentObservations.clear()
+      }
+      this.#results = []
+      this.#rawResults = []
       this.#resultsPromise = null
       this.#observation = null
       this.#source = null
       this.#by = null
       this.#planStep = null
       this.#context = null
+      this.#disposed = true
     }
   }  
 
