@@ -180,7 +180,7 @@ async function update(changes, service, app, force) {
             }).join(':')+'_'+(hash ? sha1(obj.id, 'base64') : obj.id),
             to: obj.id
           })
-          await input.table(table).onChange((obj, oldObj) =>
+          await input.table(table).onChange((obj, oldObj) =>            
             output.change(obj && mapper(obj), oldObj && mapper(oldObj)) )
         }
         const functionCode = `(${func})`

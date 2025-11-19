@@ -22,12 +22,16 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const workerQueue = new PQueue({ concurrency: workersCount })
 
+const woodTypes = ['oak', 'birch', 'spruce', 'acacia']
+
 const getWood = task({
   name: 'getWood',
   properties: {
     woodType: {
       type: String,
-      validation: ['nonEmpty']
+      validation: ['nonEmpty'],
+      options: woodTypes,
+      input: 'select'
     },
   },
   returns: {
@@ -39,6 +43,7 @@ const getWood = task({
     }
   },
   async execute({ woodType }, { service, task }, emit) {
+    console.log("GET WOOD", woodType)
     task.progress(0, 1, 'finding tree')
     await sleep(workDuration)
     if(Math.random() < 0.1) {
@@ -61,7 +66,9 @@ const cutWood = task({
       type: 'Wood',
       properties: {
         woodType: {
-          type: String
+          type: String,
+          options: woodTypes,
+          input: 'select'
         }
       }
     },

@@ -4,7 +4,10 @@ import definition from './definition.js'
 
 const User = definition.model({
   name: "User",
-  entity: {    
+  entity: {
+    readAccess: ['admin'],
+    writeAccess: ['admin'],
+    readAllAccess: ['admin']
   },
   properties: {
     roles: {

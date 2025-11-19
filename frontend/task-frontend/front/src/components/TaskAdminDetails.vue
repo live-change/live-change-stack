@@ -35,6 +35,7 @@
           {{ (new Date(taskData.doneAt).getTime() - new Date(taskData.startedAt).getTime()) / 1000 }}s
         </div>
       </div>      
+
       
       <div class="grid grid-cols-2 gap-2 text-sm" v-if="taskData.doneAt">
         <div v-if="taskData.doneAt">Done:</div>
@@ -46,6 +47,11 @@
         <div>
           {{ taskData.client }}
         </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-sm" v-if="taskData.cause">
+        <div>Cause:</div>
+        <div>{{ taskData.causeType }} - {{ taskData.cause }}</div>
       </div>
     </div>
 

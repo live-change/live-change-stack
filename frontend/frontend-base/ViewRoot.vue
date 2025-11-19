@@ -35,7 +35,7 @@
       </template>
     </loading-zone>
     <template v-else>
-      <page :loading="loading" :working="working" :route="route" :pageType="route?.meta?.pageType">
+      <page :loading="loading" :working="working" :route="route">
         <template #navbar>
           <slot name="navbar">&nbsp;</slot>
         </template>
@@ -71,7 +71,7 @@
   import { useClient } from '@live-change/vue3-ssr'
   const client = useClient()
 
-  function isAccessible(route) {    
+  function isAccessible(route) {
     if(route?.meta?.requireRoles) {
       for(const roleSet of route?.meta?.requireRoles) {
         if(Array.isArray(roleSet)) {

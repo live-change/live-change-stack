@@ -73,6 +73,10 @@ types.Boolean = inputs.switch = {
 
 types.any = inputs.object = inputConfig(() => import('./ObjectInput.vue'))
 
+inputs.json = inputConfig(() => import('./JsonInput.vue'))
+
+inputs.trigger = inputConfig(() => import('./TriggerInput.vue'))
+
 
 export function provideAutoInputConfiguration() {
   for(let type in types) {

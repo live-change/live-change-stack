@@ -7,6 +7,14 @@
       </div>      
       <div class="flex flex-row items-center gap-4">
         <div class="text-sm">
+          <strong>Last</strong>
+          {{ lastRunDisplay }}
+        </div>        
+        <div class="text-sm">
+          <strong>Next</strong>
+          {{ nextRunDisplay }}
+        </div>
+        <div class="text-sm">
           Every {{ formatInterval(intervalData.interval) }}
         </div>
         <Button 
@@ -15,13 +23,25 @@
           text
           rounded
         />
+        <Button
+          icon="pi pi-trash"
+          @click="deleteInterval"
+          text
+          rounded
+        />
       </div>
     </div>
     
     <div v-if="isExpanded" class="mt-2 p-2 bg-surface-50 dark:bg-surface-800 rounded">
       <div class="grid grid-cols-1 gap-2 text-sm">
-        <div><strong>Interval:</strong> {{ formatInterval(intervalData.interval) }} ({{ intervalData.interval }}ms)</div>
-        <div v-if="intervalData.wait"><strong>Wait:</strong> {{ formatInterval(intervalData.wait) }} ({{ intervalData.wait }}ms)</div>
+        <div>
+          <strong>Interval:</strong> 
+          {{ formatInterval(intervalData.interval) }} ({{ intervalData.interval }}ms)
+        </div>
+        <div v-if="intervalData.wait">
+          <strong>Wait:</strong> 
+          {{ formatInterval(intervalData.wait) }} ({{ intervalData.wait }}ms)
+        </div>
       </div>
       <div v-if="intervalData.trigger" class="mt-2">
         <strong>Trigger:</strong>
@@ -30,7 +50,8 @@
           <div><strong>Service:</strong> {{ intervalData.trigger.service || 'any' }}</div>
           <div v-if="intervalData.trigger.properties">
             <strong>Properties:</strong>
-            <pre class="text-xs bg-surface-100 dark:bg-surface-700 p-1 rounded mt-1">{{ JSON.stringify(intervalData.trigger.properties, null, 2) }}</pre>
+            <pre class="text-xs bg-surface-100 dark:bg-surface-700 p-1 rounded mt-1"
+              >{{ JSON.stringify(intervalData.trigger.properties, null, 2) }}</pre>
           </div>
         </div>
       </div>
@@ -52,14 +73,37 @@
           </div>
         </div>
       </div>
+
+      <div v-if="intervalInfoData" class="mt-2 grid grid-cols-1 gap-1 text-sm">
+        <div v-if="intervalInfoData.lastRun">
+          <strong>Last Run: </strong>
+          <span :title="lastRunAbsolute || undefined">{{ lastRunDisplay }}</span>
+        </div>
+        <div v-if="intervalInfoData.nextRun">
+          <strong>Next Run: </strong>
+          <span :title="nextRunAbsolute || undefined">{{ nextRunDisplay }}</span>
+        </div>
+      </div>
+
+      <div v-if="tasksData?.length" class="mt-2">
+        <strong>Last 5 Tasks:</strong>
+        <div class="ml-2 text-sm">
+          <div v-for="task in tasksData" :key="task.id">
+            <TaskAdminCard :task="task" class="mt-1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- <pre>{{ JSON.stringify(intervalData, null, 2) }}</pre> -->
     </div>
   </div>
 </template>
 
 <script setup>
-  import { ref, computed, watch } from 'vue'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
   import Button from 'primevue/button'
   import { usePath, live } from '@live-change/vue3-ssr'
+  import { currentTime } from "@live-change/frontend-base"
 
   const props = defineProps({
     interval: {
@@ -70,22 +114,6 @@
 
   const intervalData = computed(() => props.interval)
   const isExpanded = ref(false)
-  const runStateData = ref(null)
-  const path = usePath()
-
-  // Watch for interval changes and fetch run state
-  watch(() => props.interval?.id, async (newId) => {
-    if (newId) {
-      try {
-        // Get run state for this specific interval
-        const runStatePath = path.cron_RunState.to(['cron_Interval', newId])
-        runStateData.value = await live(runStatePath)
-      } catch (error) {
-        console.error('Error fetching run state:', error)
-        runStateData.value = null
-      }
-    }
-  }, { immediate: true })
 
   function formatInterval(ms) {
     if (!ms) return 'N/A'
@@ -100,6 +128,8 @@
     if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''}`
     return `${seconds} second${seconds > 1 ? 's' : ''}`
   }
+
+  const runStateData = computed(() => intervalData.value?.runState)
 
   const runStateIcon = computed(() => {
     switch(runStateData.value?.state) {
@@ -116,4 +146,71 @@
       default: return ''
     }
   })
+
+  const intervalInfoData = computed(() => intervalData.value?.info)
+
+
+  function formatAbsoluteMoment(timestamp) {
+    if (!timestamp) return ''
+    const date = new Date(timestamp)
+    if (Number.isNaN(date.getTime())) return ''
+    return date.toLocaleString()
+  }
+
+  function formatRelativeMoment(timestamp) {
+    if (!timestamp) return 'N/A'
+    const target = new Date(timestamp).getTime()
+    if (Number.isNaN(target)) return 'N/A'
+
+    const diff = target - currentTime.value
+    const absDiff = Math.abs(diff)
+    const dayMs = 24 * 60 * 60 * 1000
+
+    if (absDiff < dayMs) {
+      const hourMs = 60 * 60 * 1000
+      const minuteMs = 60 * 1000
+      const hours = Math.floor(absDiff / hourMs)
+      const minutes = Math.floor((absDiff % hourMs) / minuteMs)
+      const seconds = Math.floor((absDiff % minuteMs) / 1000)
+      const parts = []
+      if (hours > 0) parts.push(`${hours}h`)
+      if (minutes > 0) parts.push(`${minutes}m`)
+      parts.push(`${seconds}s`)
+      const relative = parts.join(' ')
+      if (diff > 0) return `in ${relative}`
+      if (diff < 0) return `${relative} ago`
+      return 'now'
+    }
+
+    return new Date(target).toLocaleString()
+  }
+
+  const lastRunDisplay = computed(() => formatRelativeMoment(intervalInfoData.value?.lastRun))
+  const nextRunDisplay = computed(() => formatRelativeMoment(intervalInfoData.value?.nextRun))
+  const lastRunAbsolute = computed(() => formatAbsoluteMoment(intervalInfoData.value?.lastRun))
+  const nextRunAbsolute = computed(() => formatAbsoluteMoment(intervalInfoData.value?.nextRun))
+
+  const tasksData = computed(() => intervalData.value?.tasks)
+
+  import { useConfirm } from 'primevue/useconfirm'
+  const confirm = useConfirm()
+  import { useToast } from 'primevue/usetoast'
+  const toast = useToast()
+
+  function deleteInterval() {
+    confirm.require({
+      target: event.currentTarget,
+      message: `Do you want to delete this interval?`,
+      icon: 'pi pi-info-circle',
+      acceptClass: 'p-button-danger',
+      accept: async () => {
+        console.log("deleteInterval", intervalData.value.id)
+        await api.actions.cron.deleteInterval({ interval: intervalData.value.id })
+        toast.add({ severity:'info', summary: 'Interval deleted', life: 1500 })
+      },
+      reject: () => {
+        toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
+      }
+    })
+  }
 </script>

@@ -4,12 +4,16 @@ const app = App.app()
 import definition from './definition.js'
 
 const Task = definition.foreignModel('task', 'Task')
+import config from './config.js'
 
 export const RunState = definition.model({
   name: "RunState",
   propertyOfAny: {
     to: ['job'],
-    jobTypes: ['cron_Interval', 'cron_Schedule']
+    jobTypes: ['cron_Interval', 'cron_Schedule'],
+    readAccessControl: {
+      roles: [...config.adminRoles, ...config.readerRoles]
+    }
   },
   properties: {
     state: {
@@ -37,43 +41,52 @@ export const RunState = definition.model({
   }
 })
 
-
 export const triggerType = {  
   description: "Trigger to schedule",
-  input: 'triggerEditor',
+  input: 'trigger',
   type: Object,
   properties: {
     name: {
       description: "Trigger name",
       type: String,
+      validation: ['nonEmpty']
     },
     service: {
       description: "Service holding the trigger, or null for triggering any service",
       type: String,
+      validation: ['nonEmpty']
     },
     properties: {
       description: "Properties to pass to the trigger",
-      type: Object,      
+      type: Object,
+      input: 'json',
+      defaultValue: {}
     }
   }
 }
 
-export async function doRunTrigger(triggerInfo, { trigger, triggerService, jobType, job }) {
+export async function doRunTrigger(triggerInfo, { trigger, triggerService, jobType, job, runTime }) {
   if(triggerInfo.service) {
     return await triggerService({
       type: triggerInfo.name,
       service: triggerInfo.service,
       causeType: jobType, cause: job
-    }, triggerInfo.properties, true)
+    }, {
+      ...triggerInfo.properties,
+      jobRunTime: runTime
+    }, true)
   } else {
     return await trigger({
       type: triggerInfo.name,
       causeType: jobType, cause: job
-    }, triggerInfo.properties)
+    }, {
+      ...triggerInfo.properties,
+      jobRunTime: runTime
+    })
   }
 }
 
-export async function runTrigger(triggerInfo, { trigger, triggerService, jobType, job, timeout }) {
+export async function runTrigger(triggerInfo, { trigger, triggerService, jobType, job, timeout, runTime }) {
   const id = App.encodeIdentifier([jobType, job])
   await RunState.create({    
     id,
@@ -104,7 +117,7 @@ export async function runTrigger(triggerInfo, { trigger, triggerService, jobType
   }
   let triggerResults = []
   try {
-    triggerResults = await doRunTrigger(triggerInfo, { trigger, triggerService, jobType, job })
+    triggerResults = await doRunTrigger(triggerInfo, { trigger, triggerService, jobType, job, runTime })
   } catch(error) {
     console.error("ERROR RUNNING TRIGGER", error)   
     /// Ignore error, it will be handled by the task service

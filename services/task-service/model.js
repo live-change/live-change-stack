@@ -102,6 +102,9 @@ const Task = definition.model({
     byCauseAndStart: {
       property: ['causeType', 'cause', 'startedAt']
     },
+    byCauseAndCreatedAt: {
+      property: ['causeType', 'cause', 'createdAt']
+    },
     byState: {
       property: ['state']
     },
@@ -289,6 +292,32 @@ definition.view({
     return Task.sortedIndexRangePath('byCauseAndStart', [causeType, cause], range)
   }
 })
+
+
+definition.view({
+  name: 'tasksByCauseAndCreatedAt',
+  properties: {
+    causeType: {
+      type: String
+    },
+    cause: {
+      type: String
+    },
+    ...App.rangeProperties
+  },
+  returns: {
+    type: Array,
+    of: {
+      type: Task
+    }
+  },
+  async daoPath(props) {
+    const { causeType, cause } = props
+    const range = App.extractRange(props)
+    return Task.sortedIndexRangePath('byCauseAndCreatedAt', [causeType, cause], range)
+  }
+})
+
 
 definition.view({
   name: 'tasksByRoot',

@@ -220,22 +220,22 @@ export function addAccessControlAnyParents(context) {
   )
 }
 
-export function prepareAccessControl(accessControl, names) {
+export function prepareAccessControl(accessControl, names, types = undefined) {
   if(typeof accessControl == 'object') {
-    accessControl.objects = accessControl.objects ?? ((params) => names.map(name => ({
-      objectType: params[name + 'Type'],
+    accessControl.objects = accessControl.objects ?? ((params) => names.map((name, index) => ({
+      objectType: types?.[index] ?? params[name + 'Type'],
       object: params[name]
     })))
   }
 }
 
-export function cloneAndPrepareAccessControl(accessControl, names) {
+export function cloneAndPrepareAccessControl(accessControl, names, types = undefined) {
   if(!accessControl) return accessControl
   if(Array.isArray(accessControl)) {
     accessControl = { roles: accessControl}
   }
   const newAccessControl = { ...accessControl }
-  prepareAccessControl(newAccessControl, names)
+  prepareAccessControl(newAccessControl, names, types)
   return newAccessControl
 }
 

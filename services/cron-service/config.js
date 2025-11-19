@@ -2,12 +2,14 @@ import definition from './definition.js'
 
 const {
   adminRoles = ['admin', 'owner'],
+  readerRoles = ['reader'],
   ownerTypes = ['user_User'],
-  topicTypes = ['topic_Topic']
+  topicTypes = undefined
 } = definition.config
 
 const config = {
   adminRoles,
+  readerRoles,
   ownerTypes,
   topicTypes
 } 

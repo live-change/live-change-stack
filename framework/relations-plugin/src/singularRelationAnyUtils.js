@@ -339,9 +339,13 @@ function getResetFunction(config, context) {
     if (!entity) throw new Error('not_found')
     await fireChangeTriggers(context, objectType, identifiers, id,
         entity ? extractObjectData(writeableProperties, entity, {}) : null, null, trigger)
+
     emit({
-      type: eventName,
-      identifiers
+      type: eventName,      
+      identifiers: {
+        ...identifiers,
+        [modelPropertyName]: properties[modelPropertyName]
+      }
     })
     return id
   }

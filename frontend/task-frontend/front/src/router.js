@@ -3,7 +3,7 @@ export function taskAdminRoutes(config = {}) {
   return [
 
     route({
-      name: 'task:admin', path: prefix, meta: { },
+      name: 'task:admin', path: prefix, meta: { requireRoles: ['admin'] },
       component: () => import("./pages/TaskAdmin.vue"),
       props: true
     }),
@@ -14,8 +14,18 @@ export function cronAdminRoutes(config = {}) {
   const { prefix = '/', route = (r) => r } = config
   return [
     route({
-      name: 'cron:admin', path: prefix, meta: { },
+      name: 'cron:admin', path: prefix, meta: { requireRoles: ['admin'] },
       component: () => import("./pages/CronAdmin.vue"),
+      props: true
+    }),
+    route({
+      name: 'cron:admin:intervals', path: prefix+'/intervals', meta: { requireRoles: ['admin'] },
+      component: () => import("./pages/CronIntervalsAdmin.vue"),
+      props: true
+    }),
+    route({
+      name: 'cron:admin:schedules', path: prefix+'/schedules', meta: { requireRoles: ['admin'] },
+      component: () => import("./pages/CronSchedulesAdmin.vue"),
       props: true
     }),
   ]
@@ -56,8 +66,8 @@ export function routes(config = {}) {
 
     ...contentEditRoutes({ ...config }),
 
-    ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
-    ...taskAdminRoutes({ prefix: '/_task', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
+    ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, pageType: 'wide' }}) }),
+    ...taskAdminRoutes({ prefix: '/_task', route: r => ({ ...r, meta: { ...r.meta, pageType: 'wide' }}) }),
     ...cronAdminRoutes({ prefix: '/_cron', route: r => ({ ...r, meta: { ...r.meta, pageType: 'wide' }}) }),
     ...catchAllPagesRoute({ ...config }),
   ]

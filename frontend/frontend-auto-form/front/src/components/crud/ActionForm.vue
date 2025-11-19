@@ -154,7 +154,7 @@
 
   const returnType = computed(() => {
     const returnType = actionFormData.action.definition.returns
-    return returnType.type
+    return returnType?.type
   })
 
   function handleSubmit(ev) {

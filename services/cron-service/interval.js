@@ -3,7 +3,7 @@ const app = App.app()
 
 import definition from './definition.js'
 import config from './config.js'
-import { triggerType } from './run.js'
+import { triggerType, runTrigger, doRunTrigger, waitForTasks, RunState } from './run.js'
 
 export const Interval = definition.model({
   name: "Interval",
@@ -15,31 +15,72 @@ export const Interval = definition.model({
       roles: config.adminRoles
     },
     readAccessControl: {
-      roles: config.adminRoles
+      roles: [...config.adminRoles, ...config.readerRoles]
     },
     readAllAccess: ['admin'],
   },
   properties: {
     description: {
       type: String,
-      description: "Description of the interval"
+      description: "Description of the interval",
+      input: 'textarea',
     },
     interval: {
       type: Number, // milliseconds      
-      description: "Interval between triggers in milliseconds"
+      description: "Interval between triggers in milliseconds",
+      validation: ['nonEmpty', 'integer'],
+      input: 'integer',
+      inputConfig: {
+        attributes: {
+          suffix: ' ms',
+          showButtons: true,
+          step: 1000,
+          min: 1000,
+        }
+      }
     },
     wait: {
       type: Number, // milliseconds 
-      description: "Wait for previous trigger to finish before planning next trigger"     
+      description: "Wait for previous trigger to finish before planning next trigger",
+      input: 'integer',
+      inputConfig: {
+        attributes: {
+          suffix: ' ms',
+          showButtons: true,
+          step: 1000,
+          min: 0,
+        }
+      }
     },
     trigger: triggerType
   }
 })
 
-async function processInterval({ id, interval, wait, trigger }) {
+export const IntervalInfo = definition.model({
+  name: "IntervalInfo",
+  propertyOf: {
+    what: Interval,
+    readAccessControl: {
+      roles: [...config.adminRoles, ...config.readerRoles]
+    }
+  },
+  properties: {
+    lastRun: {
+      type: Date
+    },
+    nextRun: {
+      type: Date
+    }
+  }
+})
+
+async function processInterval({ id, interval, wait, trigger }, { triggerService }) {
+  //console.log("PROCESSING INTERVAL", id, interval, wait, trigger)
   if(wait) await waitForTasks('cron_Interval', id)
+  //console.log("WAIT FOR TASKS DONE", id)
   const nextTimestamp = Date.now() + interval
   const nextTime = new Date(nextTimestamp)
+  //console.log("NEXT TIME", nextTime)
   await triggerService({
     service: 'timer',
     type: 'createTimer',
@@ -59,6 +100,11 @@ async function processInterval({ id, interval, wait, trigger }) {
       }
     }
   })
+  await IntervalInfo.update(id, {
+    id,    
+    nextRun: nextTime
+  })
+  //console.log("TIMER CREATED", id)
 }
 
 
@@ -73,22 +119,34 @@ definition.trigger({
     const intervalData = await Interval.get(interval)
     if(!intervalData) return /// interval was deleted
     if(intervalData.wait) {
+      const lastRun = new Date()
       await runTrigger(intervalData.trigger, {
         trigger,
         triggerService,
         jobType: 'cron_Interval',
         job: interval,
-        timeout: Number.isInteger(intervalData.wait) ? intervalData.wait : undefined
+        timeout: Number.isInteger(intervalData.wait) ? intervalData.wait : undefined,
+        runTime: lastRun
       })
-      await processInterval(intervalData)
+      await IntervalInfo.update(interval, {
+        id: interval,
+        lastRun       
+      })
+      await processInterval(intervalData, { triggerService })
     } else {
-      await processInterval(intervalData) // no wait, process immediately
+      await processInterval(intervalData, { triggerService }) // no wait, process immediately
       try {
+        const lastRun = new Date()
         await doRunTrigger(intervalData.trigger, {
           trigger,
           triggerService,
           jobType: 'cron_Interval',
-          job: interval
+          job: interval,
+          runTime: lastRun
+        })
+        await IntervalInfo.update(interval, {
+          id: interval,
+          lastRun
         })
       } catch(error) {
         console.error("ERROR RUNNING INTERVAL TRIGGER", error)
@@ -116,27 +174,27 @@ definition.trigger({
     if(oldData) { // clear old version
       await triggerService({
         service: 'timer',
-        type: 'cancelTimerIfExists',
-        data: {
-          timer: 'cron_Interval_' + object.id
-        }
+        type: 'cancelTimerIfExists',        
+      }, {
+        timer: 'cron_Interval_' + object
       })
       if(!data) { // full cleanup
         await triggerService({
           service: 'timer',
-          type: 'cancelTimerIfExists',
-          data: {
-            timer: 'cron_run_timeout_' + object.id
-          }
+          type: 'cancelTimerIfExists',          
+        }, {
+          timer: 'cron_run_timeout_' + object
         })
-        RunState.delete(App.encodeIdentifier(['cron_Interval', object.id]))
+        RunState.delete(App.encodeIdentifier(['cron_Interval', object]))
       }
     }
     if(data) { // setup new version
+      console.log("PROCESSING INTERVAL", object, data)
       await processInterval({
-        id: object,
-        ...data``
-      })
+          id: object,
+          ...data
+        }, { triggerService })
+      console.log("PROCESSING INTERVAL DONE", object, data)
     }
   }
 })
@@ -156,7 +214,14 @@ definition.afterStart(async (service) => {
       const existingTimer = await Timer.get('cron_Interval_' + interval.id)
       if(!existingTimer) {
         console.error("INTERVAL", interval, "HAS NO TIMER, REPROCESSING")
-        await processInterval(interval)
+        await processInterval(interval, { 
+          triggerService: (trigger, data, returnArray = false) => 
+            app.triggerService({ 
+              ...trigger,
+              causeType: 'cron_Interval',
+              cause: 'cron_Interval_' + interval.id,
+            }, data, returnArray) 
+        })
       }
     }    
   } while(bucket.length === bucketSize)    

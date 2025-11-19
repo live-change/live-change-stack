@@ -6,6 +6,7 @@ import { synchronized, defaultData } from '@live-change/vue3-components'
 import { propertiesValidationErrors } from './validation.js'
 
 import { cyrb128 } from './utils.js'
+import deepmerge from 'deepmerge'
 
 export default async function actionData(options) {
   if(!options) throw new Error('options must be provided')
@@ -81,7 +82,16 @@ export default async function actionData(options) {
 
   const propertiesServerErrors = ref({})
   const lastSentData = ref(null)
-  const formData = ref(JSON.parse(JSON.stringify(initialValue)))
+
+  console.log("INITIAL VALUE", initialValue)
+  console.log("DEFAULT DATA", defaultData(action.definition))
+
+  const mergedInitialValue = deepmerge(
+    defaultData(action.definition),
+    JSON.parse(JSON.stringify(initialValue))
+  )
+
+  const formData = ref(mergedInitialValue)
   const done = ref(false)
 
   let commandPromise = null
@@ -121,7 +131,7 @@ export default async function actionData(options) {
     function saveDraft(data){
       return createOrUpdateDraftAction({ ...data, from: formData.value })
     }
-    const source = computed(() => draftData.value?.data || initialValue)
+    const source = computed(() => draftData.value?.data || mergedInitialValue)
     const synchronizedData = synchronized({
       source,
       update: saveDraft,
@@ -143,7 +153,7 @@ export default async function actionData(options) {
       }
     })
     const changed = computed(() =>
-      JSON.stringify(initialValue ?? {})
+      JSON.stringify(mergedInitialValue ?? {})
         !== JSON.stringify({ ...synchronizedData.value.value, [timeField]: undefined })
     )    
 
@@ -172,7 +182,7 @@ export default async function actionData(options) {
       if(workingZone)
         workingZone.addPromise('discardDraft:'+serviceName+':'+actionName, discardPromise)
       await discardPromise
-      synchronizedData.value.value = editableSavedData.value || defaultData(model)
+      synchronizedData.value.value = editableSavedData.value || JSON.parse(JSON.stringify(mergedInitialValue))
       if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: resetToast, life: 1500 })
       done.value = false
       onReset()
@@ -181,6 +191,7 @@ export default async function actionData(options) {
     return {
       parameters,
       initialValue,
+      mergedInitialValue,
       editableProperties,
       value: synchronizedData.value,
       changed,
@@ -207,12 +218,12 @@ export default async function actionData(options) {
     }
 
     const changed = computed(() =>
-      JSON.stringify(initialValue ?? {})
+      JSON.stringify(mergedInitialValue ?? {})
         !== JSON.stringify(formData.value)
     )    
     
     function reset() {
-      formData.value = JSON.parse(JSON.stringify(initialValue))
+      formData.value = JSON.parse(JSON.stringify(mergedInitialValue))
     }
 
     return {

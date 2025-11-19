@@ -3,7 +3,7 @@ const app = App.app()
 
 import definition from './definition.js'
 import config from './config.js'
-import { triggerType } from './run.js'
+import { triggerType, runTrigger, doRunTrigger, waitForTasks } from './run.js'
 
 export const Schedule = definition.model({
   name: "Schedule",
@@ -21,24 +21,94 @@ export const Schedule = definition.model({
   },
   properties: {
     description: {
-      type: String
+      type: String,
+      description: "Description of the schedule",
+      input: 'textarea',
     },
     minute: {
       type: Number // NaN for every minute      
+      description: "Minute of the hour to run the schedule",
+      input: 'integer',
+      inputConfig: {
+        attributes: {          
+          showButtons: true,
+          step: 1,
+          min: 0,
+          max: 59,
+        }
+      }
     },
     hour: {
       type: Number, // NaN for every hour      
+      description: "Hour of the day to run the schedule",
+      input: 'integer',
+      inputConfig: {
+        attributes: {          
+          showButtons: true,
+          step: 1,
+          min: 0,
+          max: 23,
+        }
+      }
     },
     day: {
       type: Number, // NaN for every day      
+      description: "Day of the month to run the schedule",
+      input: 'integer',
+      inputConfig: {
+        attributes: {          
+          showButtons: true,
+          step: 1,
+          min: 1,
+          max: 31,
+        }
+      }
     },
     dayOfWeek: {
       type: Number, // NaN for every day of week      
+      description: "Day of the week to run the schedule",
+      input: 'integer',
+      inputConfig: {
+        attributes: {          
+          showButtons: true,
+          step: 1,
+          min: 1,
+          max: 7,
+        }
+      }
     },
     month: {
       type: Number, // NaN for every month      
+      description: "Month of the year to run the schedule",
+      input: 'integer',
+      inputConfig: {
+        attributes: {          
+          showButtons: true,
+          step: 1,
+          min: 1,
+          max: 12,
+        }
+      }
     },
     trigger: triggerType
+  }
+})
+
+export const ScheduleInfo = definition.model({
+  name: "ScheduleInfo",
+  propertyOf: {
+    what: Schedule,
+    readAccessControl: {
+      roles: [...config.adminRoles, ...config.readerRoles]
+    }
+  },
+  properties: {
+    lastRun: {
+      type: Date
+    },
+    nextRun: {
+      type: Date
+    }
   }
 })
 
@@ -72,7 +142,7 @@ function getNextTime(schedule) {
   return time
 }
 
-async function processSchedule({ id, minute, hour, day, dayOfWeek, month, trigger }) {
+async function processSchedule({ id, minute, hour, day, dayOfWeek, month, trigger }, { triggerService }) {
   const nextTime = getNextTime(schedule)
   const nextTimestamp = nextTime.getTime()
   await triggerService({
@@ -94,6 +164,10 @@ async function processSchedule({ id, minute, hour, day, dayOfWeek, month, trigge
       }
     }
   })
+  await ScheduleInfo.update(id, {
+    id,    
+    nextRun: nextTime
+  })
 }
 
 definition.trigger({
@@ -106,18 +180,23 @@ definition.trigger({
   execute: async ({ schedule }, { service, trigger, triggerService }, emit) => {
     const scheduleData = await Schedule.get(schedule)
     if(!scheduleData) return /// schedule was deleted
-    await processSchedule(scheduleData) // no wait, process immediately
+    await processSchedule(scheduleData, { triggerService }) // no wait, process immediately
     try {
+      const lastRun = new Date()
       await doRunTrigger(scheduleData.trigger, {
         trigger,
         triggerService,
         jobType: 'cron_Schedule',
-        job: schedule
+        job: schedule,
+        runTime: lastRun
+      })
+      await ScheduleInfo.update(schedule, {
+        id: schedule,
+        lastRun
       })
     } catch(error) {
       console.error("ERROR RUNNING SCHEDULE TRIGGER", error)
     }
-    
   }
 })
 
@@ -141,7 +220,7 @@ definition.trigger({
         service: 'timer',
         type: 'cancelTimerIfExists',
         data: {
-          timer: 'cron_Schedule_' + object.id
+          timer: 'cron_Schedule_' + object
         }
       })
     }
@@ -149,7 +228,7 @@ definition.trigger({
       await processSchedule({
         id: object,
         ...data
-      })
+      }, { triggerService })
     }
   }
 })
@@ -170,7 +249,14 @@ definition.afterStart(async (service) => {
     const existingTimer = await Timer.get('cron_Schedule_' + schedule.id)
     if(!existingTimer) {
       console.error("SCHEDULE", schedule, "HAS NO TIMER, REPROCESSING")
-      await processSchedule(schedule)
+      await processSchedule(schedule, { 
+        triggerService: (trigger, data, returnArray = false) => 
+          app.triggerService({ 
+            ...trigger,
+            causeType: 'cron_Interval',
+            cause: 'cron_Interval_' + interval.id,
+          }, data, returnArray) 
+      })
     }
   }
 })
