@@ -1,6 +1,6 @@
 {
   "name": "@live-change/video-call-service",
-  "version": "0.9.163",
+  "version": "0.9.164",
   "description": "",
   "main": "index.js",
   "type": "module",
