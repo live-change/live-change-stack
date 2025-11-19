@@ -207,8 +207,11 @@ async function simpleQuery(input, output, { _query, ...params }) {
           }                     
         )                 
       }      
-      //output.debug("joinedResultsAfterDependencies", joinedResults)
-      for(const joinedResult of joinedResults) {        
+      //output.debug("joinedResultsAfterDependencies", JSON.stringify(joinedResults, null, 2))
+      for(const joinedResult of joinedResults) {
+        if(this.#idFunction) {
+          output.debug("callIdFunction", _query.idFunction, "on", JSON.stringify(joinedResult, null, 2))
+        }
         joinedResult.id = serializeKey(
           this.#idFunction ? this.#idFunction(joinedResult) : joinedResult.__result_id_patrs
         )

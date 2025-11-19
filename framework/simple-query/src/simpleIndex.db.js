@@ -18,7 +18,7 @@ async function autoIndex(input, output, { plan, properties }) {
 
   async function gatherOutputData(next, context, oldContext) {
     const outputContext = { ...context }
-    const oldOutputContext = { ...context }
+    const oldOutputContext = { ...oldContext }
     /// first execute next to gather all data
     for(const nextStep of next) {
       await fetch(nextStep, outputContext, oldOutputContext)            
