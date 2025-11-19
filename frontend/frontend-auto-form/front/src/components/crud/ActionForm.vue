@@ -178,7 +178,7 @@
     resultWithType.value = null
     if(type === 'task_Task') {
       task.value = result
-    } else if(type.split('_').length === 1) {
+    } else if(type && type.split('_').length === 1) {
       if(typeof result === 'object') {
         resultWithType.value = {
           type: type,

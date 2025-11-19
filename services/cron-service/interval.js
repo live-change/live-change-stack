@@ -39,6 +39,19 @@ export const Interval = definition.model({
         }
       }
     },
+    firstRunDelay: {
+      type: Number, // milliseconds 
+      description: "Delay before first run",
+      input: 'integer',
+      inputConfig: {
+        attributes: {
+          suffix: ' ms',
+          showButtons: true,
+          step: 1000,
+          min: 0,
+        }
+      }
+    },
     wait: {
       type: Number, // milliseconds 
       description: "Wait for previous trigger to finish before planning next trigger",
@@ -74,11 +87,11 @@ export const IntervalInfo = definition.model({
   }
 })
 
-async function processInterval({ id, interval, wait, trigger }, { triggerService }) {
-  //console.log("PROCESSING INTERVAL", id, interval, wait, trigger)
+async function processInterval({ id, interval, wait, trigger, firstRunDelay, isFirstRun }, { triggerService }) {
+  //console.log("PROCESSING INTERVAL", id, interval, wait, trigger, firstRunDelay, isFirstRun)
   if(wait) await waitForTasks('cron_Interval', id)
   //console.log("WAIT FOR TASKS DONE", id)
-  const nextTimestamp = Date.now() + interval
+  const nextTimestamp = Date.now() + (isFirstRun ? (firstRunDelay || 0) : interval)
   const nextTime = new Date(nextTimestamp)
   //console.log("NEXT TIME", nextTime)
   await triggerService({
@@ -192,7 +205,8 @@ definition.trigger({
       console.log("PROCESSING INTERVAL", object, data)
       await processInterval({
           id: object,
-          ...data
+          ...data,
+          isFirstRun: !oldData
         }, { triggerService })
       console.log("PROCESSING INTERVAL DONE", object, data)
     }

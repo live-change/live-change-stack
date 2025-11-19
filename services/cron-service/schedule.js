@@ -26,7 +26,7 @@ export const Schedule = definition.model({
       input: 'textarea',
     },
     minute: {
-      type: Number // NaN for every minute      
+      type: Number, // NaN for every minute      
       description: "Minute of the hour to run the schedule",
       input: 'integer',
       inputConfig: {
@@ -115,6 +115,10 @@ export const ScheduleInfo = definition.model({
 function getNextTime(schedule) {
   const now = new Date()
   let time = now
+
+  /// set to next minute
+  time = new Date(time.getFullYear(), time.getMonth(), time.getDate(), time.getHours(), time.getMinutes() + 1, 0)
+
   if(Number.isInteger(schedule.minute)) {
     if(time.getMinutes() >= schedule.minute) { // next hour
       time = new Date(time.getFullYear(), time.getMonth(), time.getDate(), time.getHours() + 1, schedule.minute, 0)
@@ -143,7 +147,7 @@ function getNextTime(schedule) {
 }
 
 async function processSchedule({ id, minute, hour, day, dayOfWeek, month, trigger }, { triggerService }) {
-  const nextTime = getNextTime(schedule)
+  const nextTime = getNextTime({ minute, hour, day, dayOfWeek, month })
   const nextTimestamp = nextTime.getTime()
   await triggerService({
     service: 'timer',
@@ -219,10 +223,10 @@ definition.trigger({
       await triggerService({
         service: 'timer',
         type: 'cancelTimerIfExists',
-        data: {
-          timer: 'cron_Schedule_' + object
-        }
+      }, {        
+        timer: 'cron_Schedule_' + object        
       })
+      await ScheduleInfo.delete(object)
     }
     if(data) {
       await processSchedule({
@@ -253,8 +257,8 @@ definition.afterStart(async (service) => {
         triggerService: (trigger, data, returnArray = false) => 
           app.triggerService({ 
             ...trigger,
-            causeType: 'cron_Interval',
-            cause: 'cron_Interval_' + interval.id,
+            causeType: 'cron_Schedule',
+            cause: 'cron_Schedule_' + schedule.id,
           }, data, returnArray) 
       })
     }

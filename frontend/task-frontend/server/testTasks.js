@@ -24,6 +24,35 @@ const workerQueue = new PQueue({ concurrency: workersCount })
 
 const woodTypes = ['oak', 'birch', 'spruce', 'acacia']
 
+
+const wait = task({
+  name: 'wait',
+  properties: {
+    duration: {
+      type: Number,
+      validation: ['nonEmpty', 'integer'],
+      input: 'integer',
+      inputConfig: {
+        attributes: {
+          suffix: ' ms',
+          showButtons: true,
+          step: 1000,
+          min: 0,
+        }
+      },
+      defaultValue: 10000
+    }
+  },
+  returns: {
+    type: 'void',
+  },
+  async execute({ duration }, { service, task }, emit) {
+    console.log("WAIT", duration)
+    await sleep(duration)
+  }
+}, definition)
+
+
 const getWood = task({
   name: 'getWood',
   properties: {

@@ -39,6 +39,11 @@
                :rootValue="rootValue" :propName="propName+'.properties'"
                :i18n="i18n" label="trigger.properties" />
 
+    <div class="flex items-center gap-2 mt-2">
+      <ToggleSwitch v-model="returnTask" id="returnTask" />
+      <label for="returnTask">Trigger returns task to wait for</label>
+    </div>
+
   </div>
 </template>
 
@@ -46,8 +51,9 @@
   import ChevronDownIcon from '@primevue/icons/chevrondown'
   import Select from 'primevue/select'
   import Popover from 'primevue/popover'
+  import ToggleSwitch from 'primevue/toggleswitch'
   import TriggerPicker from './TriggerPicker.vue'
-
+    
   import AutoField from './AutoField.vue'
 
   import { defineProps, defineEmits, toRefs, ref, defineModel, computed } from 'vue'
@@ -109,6 +115,15 @@
     },
     set(value) {
       model.value = { ...(model.value ?? {}), properties: value }
+    }
+  })
+
+  const returnTask = computed({
+    get() {
+      return model.value?.returnTask
+    },
+    set(value) {
+      model.value = { ...(model.value ?? {}), returnTask: value }
     }
   })
 

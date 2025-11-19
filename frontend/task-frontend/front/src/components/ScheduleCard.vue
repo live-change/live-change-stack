@@ -15,11 +15,17 @@
           {{ nextRunDisplay }}
         </div>
         <div class="text-sm">
-          Every {{ formatSchedule(scheduleData) }}
+          {{ formatSchedule(scheduleData) }}
         </div>
         <Button 
           :icon="isExpanded ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" 
           @click="isExpanded = !isExpanded"
+          text
+          rounded
+        />
+        <Button
+          icon="pi pi-trash"
+          @click="deleteSchedule"
           text
           rounded
         />
@@ -103,18 +109,18 @@
   const scheduleData = computed(() => props.schedule)
   const isExpanded = ref(false)
 
+  const daysOfWeek = [ 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' ]
+  const months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
+
   function formatSchedule(schedule) {
-    if (!ms) return 'N/A'
-    
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
-    const days = Math.floor(hours / 24)
-    
-    if (days > 0) return `${days} day${days > 1 ? 's' : ''}`
-    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''}`
-    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''}`
-    return `${seconds} second${seconds > 1 ? 's' : ''}`
+    const parts = []
+    if(Number.isInteger(schedule.minute)) parts.push(`${schedule.minute}m`)
+    if(Number.isInteger(schedule.hour)) parts.push(`${schedule.hour}h`)
+    if(Number.isInteger(schedule.day)) parts.push(`${schedule.day}`)
+    if(Number.isInteger(schedule.dayOfWeek)) parts.push(`${daysOfWeek[schedule.dayOfWeek - 1]}`)
+    if(Number.isInteger(schedule.month)) parts.push(`${months[schedule.month - 1]}`)
+    if(parts.length === 0) parts.push('every minute')
+    return parts.join(' ')
   }
 
   const runStateData = computed(() => scheduleData.value?.runState)
@@ -179,4 +185,26 @@
   const nextRunAbsolute = computed(() => formatAbsoluteMoment(scheduleInfoData.value?.nextRun))
 
   const tasksData = computed(() => scheduleData.value?.tasks)
+
+  import { useConfirm } from 'primevue/useconfirm'
+  const confirm = useConfirm()
+  import { useToast } from 'primevue/usetoast'
+  const toast = useToast()
+
+  function deleteSchedule() {
+    confirm.require({
+      target: event.currentTarget,
+      message: `Do you want to delete this schedule?`,
+      icon: 'pi pi-info-circle',
+      acceptClass: 'p-button-danger',
+      accept: async () => {
+        console.log("deleteSchedule", scheduleData.value.id)
+        await api.actions.cron.deleteSchedule({ schedule: scheduleData.value.id })
+        toast.add({ severity:'info', summary: 'Schedule deleted', life: 1500 })
+      },
+      reject: () => {
+        toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
+      }
+    })
+  }
 </script>

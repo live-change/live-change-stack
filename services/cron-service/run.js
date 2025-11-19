@@ -61,6 +61,11 @@ export const triggerType = {
       type: Object,
       input: 'json',
       defaultValue: {}
+    },
+    returnTask: {
+      description: "Return task to wait for",
+      type: Boolean,
+      defaultValue: false
     }
   }
 }
@@ -123,7 +128,7 @@ export async function runTrigger(triggerInfo, { trigger, triggerService, jobType
     /// Ignore error, it will be handled by the task service
   }
   if(triggerInfo.returnTask) {
-    const tasks = await Promise.all(triggerResults.map((result) => Task.get(result)))
+    const tasks = (await Promise.all(triggerResults.map((result) => Task.get(result))))
       .filter(task => task !== undefined)
       .filter(task => task.state !== 'done' && task.state !== 'failed')
     if(tasks.length > 0) {
@@ -198,7 +203,7 @@ export async function waitForTasks(jobType, job) {
     }
     const runStateObservable = RunState.observable(runState)
     const runStateObserver = {
-      set: (value) => {
+      set: (value) => {        
         if(!value) finish()
         if(value.tasks) {
           for(const taskId of value.tasks) {
@@ -207,6 +212,7 @@ export async function waitForTasks(jobType, job) {
         }
       }
     }
+    runStateObservable.observe(runStateObserver)
     function finish() {
       if(done) return
       done = true

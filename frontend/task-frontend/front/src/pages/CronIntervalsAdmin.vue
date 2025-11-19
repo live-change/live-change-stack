@@ -6,8 +6,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-3 shadow mb-1">
       <ActionForm
         service="cron"
-        action="setInterval"
-        @done="handleActionDone" />
+        action="setInterval" />
 
     </div>
     

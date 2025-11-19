@@ -6,8 +6,7 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-3 shadow mb-1">
       <ActionForm
         service="cron"
-        action="setSchedule"
-        @done="handleActionDone" />
+        action="setSchedule" />
 
     </div>
     
@@ -62,7 +61,7 @@
 
   const schedulesPathFunction = computed(() => (range) => 
     path.cron.schedules({ ...reverseRange(range) })
-      .with(schedule => path.task.scheduleInfo({ schedule: schedule.id }).bind('info'))
+      .with(schedule => path.cron.scheduleInfo({ schedule: schedule.id }).bind('info'))
       .with(schedule => path.cron.runState({ jobType: 'cron_Schedule', job: schedule.id }).bind('runState'))
       .with(schedule => path.task.tasksByCauseAndCreatedAt({ 
         causeType: 'cron_Schedule', cause: schedule.id, reverse: true, limit: 5 
