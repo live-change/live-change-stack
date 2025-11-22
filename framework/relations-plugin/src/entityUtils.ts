@@ -53,11 +53,11 @@ export interface EntityContext {
 }
 
 
-export function entityAccessControl({service, modelName, modelPropertyName}, accessControl) {
+export function entityAccessControl({service, modelName, modelPropertyName}, accessControl, noObjects = false) {
   if(!accessControl) return undefined
   if(Array.isArray(accessControl)) accessControl = { roles: accessControl }
   return {
-    objects: p => [{ objectType: service.name + '_' + modelName, object: p[modelPropertyName]}],
+    objects: noObjects ? undefined : p => [{ objectType: service.name + '_' + modelName, object: p[modelPropertyName]}],
     ...accessControl
   }
 }
@@ -191,7 +191,7 @@ export function defineCreateAction(config, context) {
     name: actionName,
     properties: { ...model.properties },
     access: config.createAccess || config.writeAccess,
-    accessControl: entityAccessControl(context, config.createAccessControl || config.writeAccessControl),
+    accessControl: entityAccessControl(context, config.createAccessControl || config.writeAccessControl, true),
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,

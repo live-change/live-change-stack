@@ -30,7 +30,7 @@ definition.processor({
         )
 
         if(objects.length === 0) {
-          throw new Error('no objects for access control to work')
+          console.warn('no objects for ' + service.name + ' action ' + action.name + ' access control to work - only global roles will be checked')
         }
         const accessible = await access.clientHasAccessRoles(client, { objects }, config.roles)
 
@@ -79,7 +79,7 @@ definition.processor({
             ((objectType && object) ? [{ objectType, object }] : [])
         )
         if(objects.length === 0) {
-          throw new Error('no objects for access control to work')
+          console.warn('no objects for ' + service.name + ' view ' + viewName + ' access control to work - only global roles will be checked')
         }
 
         const rolesPath = access.accessPath(client, objects)

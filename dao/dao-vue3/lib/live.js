@@ -116,6 +116,10 @@ async function live(api, path, onUnmountedCb) {
     }
     let liveRef = shallowRef()
     let onUnmountedCallbacks = []
+    onUnmountedCb(() => {
+      console.log("UNMOUNTED COMPUTED PATH", path.value, "ON UNMOUNTED CALLBACKS", onUnmountedCallbacks)
+      for(const callback of onUnmountedCallbacks) callback()
+    })
     let oldPath = null
     let updatePromise = null
     async function update() {
@@ -138,11 +142,6 @@ async function live(api, path, onUnmountedCb) {
     await update()
     watch(() => path.value, () => update())
     const result = computed(() => liveRef.value === null ? null : liveRef.value?.value)
-
-    onUnmountedCb(() => {
-      console.log("UNMOUNTED COMPUTED PATH", path.value, "ON UNMOUNTED CALLBACKS", onUnmountedCallbacks)
-      for(const callback of onUnmountedCallbacks) callback()
-    })
     return result
   }
 

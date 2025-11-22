@@ -1,12 +1,12 @@
 <template>
   <slot v-if="!hidden && !authorized" name="blocked" :authorized="authorized" :roles="accessRoles" :accesses="accesses">
-    <InsufficientAccess />
+    <InsufficientAccess :class="class" :style="style" />
   </slot>
-  <BlockUI v-if="!hidden && !(contentHidden && !authorized)" :blocked="!authorized">
+  <BlockUI v-if="!hidden && !(contentHidden && !authorized)" :blocked="!authorized" :class="class" :style="style">
     <slot :authorized="authorized" :roles="accessRoles" :accesses="accesses"></slot>
   </BlockUI>
-  <slot v-if="authorized && hidden" :roles="accessRoles" :accesses="accesses"></slot>
-  <slot v-if="!authorized && hidden" name="alternative" :roles="accessRoles" :accesses="accesses"></slot>
+  <slot v-if="authorized && hidden" :roles="accessRoles" :accesses="accesses" :class="class" :style="style"></slot>
+  <slot v-if="!authorized && hidden" name="alternative" :roles="accessRoles" :accesses="accesses" :class="class" :style="style"></slot>
 </template>
 
 <script setup>
@@ -39,11 +39,19 @@
     contentHidden: {
       type: Boolean,
       default: false
+    },
+    class: {
+      type: String,
+      default: ''
+    },
+    style: {
+      type: String,
+      default: ''
     }
   })
 
   import { toRefs } from '@vueuse/core'
-  import { computed } from 'vue'
+  import { computed, getCurrentInstance, onUnmounted } from 'vue'
   import { live, path } from '@live-change/vue3-ssr'
 
   const { objectType, object, objects, requiredRoles } = toRefs(props)

@@ -237,10 +237,11 @@ export default (definition) => {
           const accessesRoles = roots.map(root => computeNodeRoles(root))
           //output.debug(outputObjectId, "Accesses roles:", accessesRoles)
           const firstAccessRoles = accessesRoles.shift()
-          let roles = firstAccessRoles
+          let roles = firstAccessRoles ?? []
           for(const accessRoles of accessesRoles) {
             roles = roles.filter(role => accessRoles.includes(role))
           }
+          output.debug('accessRoles', JSON.stringify(roles, null, 2))
           const outputObject = {
             id: outputObjectId,
             roles: Array.from(new Set([...roles, ...client.roles]))

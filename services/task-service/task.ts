@@ -201,22 +201,28 @@ function progressCounter(reportProgress) {
   const progressFunction = (current, total, action, opts) => {
     currentAcc = current
     totalAcc = total
-    reportProgress(currentAcc, totalAcc, action, opts)
+    return reportProgress(currentAcc, totalAcc, action, opts)
   }
   progressFunction.increment = (action, by = 1, opts) => {
     currentAcc += by
-    progressFunction(currentAcc, totalAcc, action, opts)
+    return progressFunction(currentAcc, totalAcc, action, opts)
   }
   progressFunction.incrementTotal = (action, by = 1, opts) => {
     totalAcc += by
-    progressFunction(currentAcc, totalAcc, action, opts)
+    return progressFunction(currentAcc, totalAcc, action, opts)
+  }
+  progressFunction.action = (action, opts) => {
+    return progressFunction(currentAcc, totalAcc, action, opts)
+  }
+  progressFunction.done = (opts) => {
+    return progressFunction(totalAcc, totalAcc, undefined, opts)
   }
   progressFunction.slice = (sliceSize, factor = 1.0) => {
     const sliceStart = currentAcc    
     const sliceEnd = sliceStart + sliceSize
     currentAcc = sliceEnd
     return progressCounter((current, total, action, opts) => {
-      progressFunction(sliceStart + Math.min(current, sliceSize) * factor,
+      return progressFunction(sliceStart + Math.min(current, sliceSize) * factor,
          sliceEnd + Math.min(total, sliceSize) * factor, action, opts)
     })
   }
