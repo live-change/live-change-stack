@@ -20,9 +20,9 @@ import { dirname, join, resolve } from 'path'
 import { accessSync, readFileSync } from 'fs'
 
 const simpleIndexCodePath = resolve(dirname(fileURLToPath(import.meta.url)), 'simpleIndex.db.js')
-const simpleIndexCode = readFileSync(simpleIndexCodePath, 'utf8')
+const simpleIndexCode = readFileSync(simpleIndexCodePath, 'utf8').replace('export {};', '')
 const simpleQueryCodePath = resolve(dirname(fileURLToPath(import.meta.url)), 'simpleQuery.db.js')
-const simpleQueryCode = readFileSync(simpleQueryCodePath, 'utf8')
+const simpleQueryCode = readFileSync(simpleQueryCodePath, 'utf8').replace('export {};', '')
 
 
 interface Range {
