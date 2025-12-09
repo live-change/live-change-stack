@@ -160,7 +160,7 @@ async function update(changes, service, app, force) {
                 to: obj.id }, null))
             } else if(oldObj) {
               keys(oldObj).forEach(k => output.change(null, {
-                id: k+'_'+(hash ? sha1(obj.id, 'base64') : obj.id),
+                id: k+'_'+(hash ? sha1(oldObj.id, 'base64') : oldObj.id),
                 to: oldObj.id }))
             }
           })

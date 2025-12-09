@@ -3,7 +3,7 @@ const app = App.app()
 
 import definition from './definition.js'
 import config from './config.js'
-import { triggerType, runTrigger, doRunTrigger, waitForTasks } from './run.js'
+import { triggerType, runTrigger, doRunTrigger } from './run.js'
 
 export const Schedule = definition.model({
   name: "Schedule",

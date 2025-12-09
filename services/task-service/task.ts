@@ -36,7 +36,7 @@ async function triggerOnTaskStateChange(taskObject, causeType, cause) {
   })
 }
 
-interface ClientInfo {
+export interface ClientInfo {
     user?: string
     session?: string
 }
@@ -119,7 +119,7 @@ interface TaskExecuteContext {
   cause: string
 }
 
-interface TaskDefinition {
+export interface TaskDefinition {
   /**
    * Task name
    */
@@ -235,6 +235,8 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
   if(!definition) throw new Error('Task definition is not defined')
   if(!serviceDefinition) throw new Error('Service definition is not defined')
   definition.service = serviceDefinition.name
+  if(!definition.properties) throw new Error('Task properties are not defined in ' + definition.name)
+
   const taskFunction = async (props, context,
                               emit = events => app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {}),
                               reportProgress = (current, total, selfProgress) => {}) => {
@@ -590,7 +592,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         return startResult.task
       }
     })
-  } else {  
+  } else {
     serviceDefinition.trigger({
       name: 'runTask_'+serviceDefinition.name+'_'+definition.name,
       properties: definition.properties,

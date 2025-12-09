@@ -10,68 +10,79 @@ import defaultValidators from '../utils/validators.js'
 import { crudChanges, definitionToJSON } from "../utils.js"
 import QueryDefinition, { QueryDefinitionSpecification } from "./QueryDefinition.js"
 
+const PROXY_SKIP_SYMBOLS = new Set([
+  Symbol.toPrimitive,
+  Symbol.iterator,
+  Symbol.asyncIterator,
+  Symbol.toStringTag,
+  Symbol.hasInstance,
+  Symbol.match,
+  Symbol.replace,
+  Symbol.search,
+  Symbol.split,
+  Symbol.species
+])
+
+function proxyGet(definition, kind, name, target, prop, receiver) {
+  const runtime = definition._runtime
+  const objectRuntime = runtime?.[kind]?.[name]
+  const objectName = target.name ?? target.constructor?.name ?? '<anonymous>'
+
+  // For well-known symbols we don't report missing properties.
+  // Prefer the runtime object if it defines the symbol.
+  if (typeof prop === 'symbol' && PROXY_SKIP_SYMBOLS.has(prop)) {
+    if (objectRuntime && Reflect.has(objectRuntime, prop)) {
+      return Reflect.get(objectRuntime, prop, receiver)
+    }
+    return Reflect.get(target, prop, receiver)
+  }
+
+  // If the runtime object defines this property, it takes priority.
+  if (objectRuntime && Reflect.has(objectRuntime, prop)) {
+    return Reflect.get(objectRuntime, prop, receiver)
+  }
+
+  const existsInTarget = Reflect.has(target, prop)
+  const existsInRuntime = Boolean(objectRuntime && Reflect.has(objectRuntime, prop))
+
+  // Report only when the property exists neither in target nor in runtime.
+  if (!existsInTarget && !existsInRuntime) {
+    const propLabel = typeof prop === 'symbol' ? prop.toString() : String(prop)
+    console.warn(kind, objectName, 'runtime used before created; property', propLabel, 'not found')
+    console.trace()
+  }
+
+  return Reflect.get(target, prop, receiver)
+}
+
 function createModelProxy(definition, model) {
   return new Proxy(model, {
     get(target, prop, receiver) {    
-      const runtime  = definition._runtime      
-      if(runtime) {
-        const modelRuntime = runtime.models[model.name]
-        if(modelRuntime[prop]) {
-          return Reflect.get(modelRuntime, prop, receiver)
-        }
-      }
-      const resutlt = Reflect.get(target, prop, receiver)
-      if(!resutlt) {
-        console.warn("Model", model.name, "runtime used before created; property", prop, "not found")
-        console.trace()
-      }
-      return resutlt
+      return proxyGet(definition, 'models', target.name, target, prop, receiver)
     }
   })
 }
 
 function createForeignModelProxy(definition, model) {
-  let fk = model.serviceName + "_" + model.name
   return new Proxy(model, {
     get(target, prop, receiver) {
-      const runtime  = definition._runtime
-      if(runtime) {
-        const modelRuntime = runtime.foreignModels[fk]
-        if(modelRuntime[prop]) {
-          return Reflect.get(modelRuntime, prop, receiver)
-        }
-      }
-      return Reflect.get(target, prop, receiver)
+      return proxyGet(definition, 'foreignModels', model.serviceName + "_" + model.name, target, prop, receiver)
     }
   })
 }
 
-function createIndexProxy(definition, model) {
-  return new Proxy(model, {
+function createIndexProxy(definition, index) {
+  return new Proxy(index, {
     get(target, prop, receiver) {
-      const runtime  = definition._runtime
-      if(runtime) {
-        const indexRuntime = runtime.indexes[model.name]
-        if(indexRuntime[prop]) {
-          return Reflect.get(indexRuntime, prop, receiver)
-        }
-      }
-      return Reflect.get(target, prop, receiver)
+      return proxyGet(definition, 'indexes', index.name, target, prop, receiver)
     }
   })
 }
 
-function createForeignIndexProxy(definition, model) {
-  return new Proxy(model, {
+function createForeignIndexProxy(definition, index) {
+  return new Proxy(index, {
     get(target, prop, receiver) {
-      const runtime  = definition._runtime
-      if(runtime) {
-        const indexRuntime = runtime.foreignIndexes[model.name]
-        if(indexRuntime[prop]) {
-          return Reflect.get(indexRuntime, prop, receiver)
-        }
-      }
-      return Reflect.get(target, prop, receiver)
+      return proxyGet(definition, 'foreignIndexes', index.name, target, prop, receiver)
     }
   })
 }
@@ -79,18 +90,10 @@ function createForeignIndexProxy(definition, model) {
 function createQueryProxy(definition, query) {
   return new Proxy(query, {
     get(target, prop, receiver) {
-      const runtime  = definition._runtime
-      if(runtime) {
-        const queryRuntime = runtime.queries[query.name]
-        if(queryRuntime[prop]) {
-          return Reflect.get(queryRuntime, prop, receiver)
-        }
-      }
-      return Reflect.get(target, prop, receiver)
+      return proxyGet(definition, 'queries', query.name, target, prop, receiver)
     }
   })
 }
-
 
 
 export interface ServiceDefinitionSpecification {
