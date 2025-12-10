@@ -1,6 +1,6 @@
 {
   "name": "@live-change/pattern",
-  "version": "0.9.170",
+  "version": "0.9.171",
   "description": "Realtime usage pattern analysis for security, analytics and gamification purposes",
   "main": "index.js",
   "scripts": {
@@ -28,5 +28,5 @@
     "test": "tests"
   },
   "keywords": [],
-  "gitHead": "065849199d2a56e3c3091212d0348e2d61c0a4a7"
+  "gitHead": "e5117526bb735357d5aba507da1b199f9f947b46"
 }

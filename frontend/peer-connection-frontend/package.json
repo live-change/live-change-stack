@@ -1,6 +1,6 @@
 {
   "name": "@live-change/peer-connection-frontend",
-  "version": "0.9.170",
+  "version": "0.9.171",
   "scripts": {
     "memDev": "dotenvx run -- node server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "rm tmp.db; dotenvx run -- node server/start.js localDev --enableSessions --initScript ./init.js",
@@ -22,19 +22,19 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/cli": "^0.9.170",
-    "@live-change/dao": "^0.9.170",
-    "@live-change/dao-vue3": "^0.9.170",
-    "@live-change/dao-websocket": "^0.9.170",
-    "@live-change/framework": "^0.9.170",
-    "@live-change/password-authentication-service": "^0.9.170",
-    "@live-change/secret-code-service": "^0.9.170",
-    "@live-change/secret-link-service": "^0.9.170",
-    "@live-change/session-service": "^0.9.170",
-    "@live-change/user-frontend": "^0.9.170",
-    "@live-change/user-service": "^0.9.170",
-    "@live-change/vue3-components": "^0.9.170",
-    "@live-change/vue3-ssr": "^0.9.170",
+    "@live-change/cli": "^0.9.171",
+    "@live-change/dao": "^0.9.171",
+    "@live-change/dao-vue3": "^0.9.171",
+    "@live-change/dao-websocket": "^0.9.171",
+    "@live-change/framework": "^0.9.171",
+    "@live-change/password-authentication-service": "^0.9.171",
+    "@live-change/secret-code-service": "^0.9.171",
+    "@live-change/secret-link-service": "^0.9.171",
+    "@live-change/session-service": "^0.9.171",
+    "@live-change/user-frontend": "^0.9.171",
+    "@live-change/user-service": "^0.9.171",
+    "@live-change/vue3-components": "^0.9.171",
+    "@live-change/vue3-ssr": "^0.9.171",
     "@vueuse/core": "^12.3.0",
     "boxicons": "^2.1.4",
     "codeceptjs-assert": "^0.0.5",
@@ -54,7 +54,7 @@
     "vue3-scroll-border": "0.1.7"
   },
   "devDependencies": {
-    "@live-change/codeceptjs-helper": "^0.9.170",
+    "@live-change/codeceptjs-helper": "^0.9.171",
     "codeceptjs": "^3.6.10",
     "generate-password": "1.7.1",
     "playwright": "1.49.1",
@@ -65,5 +65,5 @@
   "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "BSD-3-Clause",
   "description": "",
-  "gitHead": "065849199d2a56e3c3091212d0348e2d61c0a4a7"
+  "gitHead": "e5117526bb735357d5aba507da1b199f9f947b46"
 }
