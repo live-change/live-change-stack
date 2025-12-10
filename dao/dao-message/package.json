@@ -1,6 +1,6 @@
 {
   "name": "@live-change/dao-message",
-  "version": "0.9.168",
+  "version": "0.9.169",
   "author": {
     "email": "m8@em8.pl",
     "name": "Michał Łaszczewski",
@@ -10,7 +10,7 @@
     "url": "https://github.com/live-change/live-change-stack/issues"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.168",
+    "@live-change/dao": "^0.9.169",
     "debug": "^4.3.4",
     "supports-color": "^9.4.0"
   },
@@ -41,5 +41,5 @@
   "scripts": {
     "compileTests": "webpack test/*.js tests-bundle.js"
   },
-  "gitHead": "59cd1485ca6d76bd87a6634a92d6e661e5803d5e"
+  "gitHead": "065849199d2a56e3c3091212d0348e2d61c0a4a7"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db",
-  "version": "0.9.168",
+  "version": "0.9.169",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
-    "@live-change/db-store-level": "^0.9.168",
-    "@live-change/db-store-lmdb": "^0.9.168",
+    "@live-change/db-store-level": "^0.9.169",
+    "@live-change/db-store-lmdb": "^0.9.169",
     "minimist": ">=1.2.3",
     "next-tick": "^1.1.0",
     "rimraf": "^5.0.5",
@@ -32,10 +32,10 @@
     "websocket-extensions": ">=0.1.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.168",
-    "@live-change/serialization": "^0.9.168",
+    "@live-change/dao": "^0.9.169",
+    "@live-change/serialization": "^0.9.169",
     "get-random-values": "^1.2.2",
     "node-interval-tree": "^1.3.3"
   },
-  "gitHead": "59cd1485ca6d76bd87a6634a92d6e661e5803d5e"
+  "gitHead": "065849199d2a56e3c3091212d0348e2d61c0a4a7"
 }
