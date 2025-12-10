@@ -1,6 +1,6 @@
 {
   "name": "@live-change/cron-service",
-  "version": "0.9.169",
+  "version": "0.9.170",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.169"
+    "@live-change/framework": "^0.9.170"
   },
   "gitHead": "065849199d2a56e3c3091212d0348e2d61c0a4a7"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@live-change/serialization",
-  "version": "0.9.169",
+  "version": "0.9.170",
   "scripts": {},
   "type": "module",
   "main": "index.js",
