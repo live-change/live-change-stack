@@ -35,6 +35,16 @@
     <div v-if="isExpanded" class="mt-2 p-2 bg-surface-50 dark:bg-surface-800 rounded">
       <div class="grid grid-cols-1 gap-2 text-sm">
         <div>
+          <strong>Owner:</strong> 
+          <strong class="px-1">{{ intervalData.ownerType }}</strong>
+          <span>{{ intervalData.owner }}</span>
+        </div>
+        <div>
+          <strong>Topic:</strong> 
+          <strong class="px-1">{{ intervalData.topicType }}</strong>
+          <span>{{ intervalData.topic }}</span>
+        </div>
+        <div>
           <strong>Interval:</strong> 
           {{ formatInterval(intervalData.interval) }} ({{ intervalData.interval }}ms)
         </div>
