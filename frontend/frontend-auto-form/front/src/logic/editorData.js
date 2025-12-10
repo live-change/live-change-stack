@@ -67,13 +67,15 @@ export default function editorData(options) {
   for(const identifier of identifiersNames) {
     if(typeof identifier === 'object') {
       if(identifier.field === 'id') idKey = identifier.name
-      draftIdParts.push('id')
+      draftIdParts.push(identifier.field)
     } else {
       draftIdParts.push(identifier)
     }
   }
-  let draftId = (idKey ? identifiers[idKey]
-    : draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_')) ?? 'new'
+  let draftId = idKey 
+              ? (identifiers[idKey])
+              : (draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_'))
+  if(!draftId) draftId = 'new'    
   if(draftId.length > 16) {
     draftId = cyrb128(draftId).slice(0, 16)
   }
