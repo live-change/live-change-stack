@@ -12,6 +12,7 @@ import { setupApiEndpoints, setupEndpointsProxyPaths } from './lib/setupApiEndpo
 import setupDbServer from './lib/setupDbServer.js'
 import setupDbClient from './lib/setupDbClient.js'
 import setupApp from './lib/setupApp.js'
+import setupTelemetry from './lib/setupTelemetry.js'
 
 import serverDao from './lib/serverDao.js'
 
@@ -31,5 +32,6 @@ export {
   setupEndpointsProxyPaths,
   setupDbServer,
   setupDbClient,
-  setupApp
+  setupApp,
+  setupTelemetry
 }

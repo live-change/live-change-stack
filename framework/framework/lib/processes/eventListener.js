@@ -3,6 +3,15 @@ import EventSourcing from '../utils/EventSourcing.js'
 import Debug from 'debug'
 const debug = Debug("framework:eventListener")
 
+import { context, propagation, trace } from '@opentelemetry/api'
+import { SpanKind } from '@opentelemetry/api'
+const tracer = trace.getTracer('live-change:eventListener')
+
+async function setSpanAttributes(span, ev, service) {
+  span.setAttribute('event', ev)
+  span.setAttribute('service', service.name)
+}
+
 async function startEventListener(service, config) {
   if(!config.handleEvents) return
 
@@ -19,13 +28,22 @@ async function startEventListener(service, config) {
   for (let eventName in service.events) {
     const event = service.events[eventName]
     service.eventSourcing.addEventHandler(eventName, async (ev, bucket) => {
-      return await service.profileLog.profile({ operation: "handleEvent", eventName, id: ev.id,
+      if(ev._trace) {
+        propagation.extract(context.active(), ev._trace)
+      }
+      const handleSpan = tracer.startSpan('handleEvent', { kind: SpanKind.INTERNAL })
+      setSpanAttributes(handleSpan, ev, service)
+      try {
+        return await service.profileLog.profile({ operation: "handleEvent", eventName, id: ev.id,
             bucketId: bucket.id, triggerId: bucket.triggerId, commandId: bucket.commandId },
           () => {
             debug("EXECUTING EVENT", ev)
             return event.execute(ev, bucket)
           }
-      )
+        )
+      } finally {
+        handleSpan.end()
+      }
     })
     service.eventSourcing.onBucketEnd = async (bucket, handledEvents) => {
       if(bucket.reportFinished && handledEvents.length > 0) {

@@ -2,6 +2,17 @@ import { prepareParameters, processReturn } from "./params.js"
 import SplitEmitQueue from "../utils/SplitEmitQueue.js"
 import SingleEmitQueue from "../utils/SingleEmitQueue.js"
 
+import { context, propagation, trace } from '@opentelemetry/api'
+import { SpanKind } from '@opentelemetry/api'
+const tracer = trace.getTracer('live-change:triggerHandler')
+
+async function setSpanAttributes(span, trig, service) {
+  span.setAttribute('trigger', trig)
+  span.setAttribute('service', service.name)
+}
+
+import { loggingHelpers } from '../utils.js'
+
 class TriggerHandler {
 
   constructor(definition, service) {
@@ -14,6 +25,10 @@ class TriggerHandler {
         Array.isArray(queuedBy) ? (c) => JSON.stringify(queuedBy.map(k=>c[k])) :
           (c) => JSON.stringify(c[queuedBy]) )
     }
+
+    this.loggingHelpers = loggingHelpers(service.name, service.app.config.clientConfig.version, {
+      triggerType: definition.name,
+    })
   }
 
   async doExecute(trig, emit) {
@@ -42,7 +57,8 @@ class TriggerHandler {
         cause: trig.id,
         client: trig.client,
         ...trigger
-      }, data, returnArray)
+      }, data, returnArray),
+      ...this.loggingHelpers
     }, emit))
     //console.log("RESULT PROMISE", resultPromise, resultPromise.then)
     resultPromise = resultPromise.then(async result => {
@@ -50,73 +66,108 @@ class TriggerHandler {
       return processedResult
     })
     resultPromise.catch(error => {
-      console.error(`Trigger ${this.definition.name} error `, error)
+      this.loggingHelpers.error(`Trigger ${this.definition.name} error `, error)
     })
     return resultPromise
   }
 
   async execute(trig, service) {
-    console.log("EXECUTE", trig, this.queueKeyFunction)
+    //console.log("EXECUTE", trig, this.queueKeyFunction)
     const profileOp = await service.profileLog.begin({
       operation: 'queueTrigger', triggerType: this.definition.name,
       triggerId: trig.id, by: trig.by
     })
     if(this.queueKeyFunction) {
-      console.log("QUEUED TRIGGER STARTED", trig)
+      //console.log("QUEUED TRIGGER STARTED", trig)
+      const queueSpan = tracer.startSpan('queueTrigger', { kind: SpanKind.INTERNAL })
+      setSpanAttributes(queueSpan, trig, service)
+      const queueContext = context.active()
+
       const routine = () => service.profileLog.profile({
         operation: 'runTrigger', triggerType: this.definition.name,
         commandId: trig.id, by: trig.by
       }, async () => {
+        const handleSpan = tracer.startSpan('handleTrigger', { kind: SpanKind.INTERNAL }, queueContext)
+        setSpanAttributes(handleSpan, trig, service)
+
         let result
         const reportFinished = this.definition.waitForEvents ? 'trigger_' + trig.id : undefined
-        const flags = {triggerId: trig.id, reportFinished}
+        const _trace = {}
+        propagation.inject(context.active(), _trace)
+        const flags = {triggerId: trig.id, reportFinished, _trace }
         const emit = service.app.splitEvents
           ? new SplitEmitQueue(service, flags)
           : new SingleEmitQueue(service, flags)
+
+        const runSpan = tracer.startSpan('runTrigger', { kind: SpanKind.SERVER }, queueContext)
+        setSpanAttributes(runSpan, trig, service)
         try {
-          console.log("TRIGGER RUNNING!", trig)
+          //console.log("TRIGGER RUNNING!", trig)         
+
           result = await service.app.assertTime('trigger ' + this.definition.name,
             this.definition.timeout || 10000,
-            () => this.doExecute(trig, (...args) => emit.emit(...args)))
-          console.log("TRIGGER DONE!", trig)
+            () => this.doExecute(trig, (...args) => emit.emit(...args)))          
         } catch (e) {
-          console.error(`TRIGGER ${this.definition.name} ERROR`, e.stack)
+          this.loggingHelpers.error(`Trigger ${this.definition.name} error `, e.stack)
+          runSpan.end()
+          handleSpan.end()
+          queueSpan.end()
           throw e
         }
+        runSpan.end()
+        const emitEventsSpan = tracer.startSpan('emitEvents', { kind: SpanKind.INTERNAL }, queueContext)
+        setSpanAttributes(emitEventsSpan, trig, service)
         const events = await emit.commit()
         if (this.definition.waitForEvents)
           await service.app.waitForEvents(reportFinished, events, this.definition.waitForEvents)
+        emitEventsSpan.end()
+        handleSpan.end()
+        queueSpan.end()
         return result
       })
       try {
         routine.key = this.queueKeyFunction(trig)
       } catch (e) {
-        console.error("QUEUE KEY FUNCTION ERROR", e)
+        this.loggingHelpers.error("Queue key function error ", e)
       }
-      console.log("TRIGGER QUEUE KEY", routine.key)
+      this.loggingHelpers.log("Trigger queue key", routine.key)
       const promise = service.keyBasedExecutionQueues.queue(routine)
       await service.profileLog.endPromise(profileOp, promise)
       return promise
     } else {
-      console.log("NOT QUEUED TRIGGER STARTED", trig)
-      const reportFinished = this.definition.waitForEvents ? 'trigger_'+trig.id : undefined
-      const flags = { triggerId: trig.id, reportFinished }
+      const handleSpan = tracer.startSpan('handleTrigger', { kind: SpanKind.INTERNAL })
+      setSpanAttributes(handleSpan, trig, service)
+
+      this.loggingHelpers.log("Not queued trigger started", trig)
+      const reportFinished = this.definition.waitForEvents ? 'trigger_'+trig.id : undefined      
+      const _trace = {}
+      propagation.inject(context.active(), _trace)
+      const flags = { triggerId: trig.id, reportFinished, _trace }
       const emit = service.app.splitEvents
         ? new SplitEmitQueue(service, flags)
         : new SingleEmitQueue(service, flags)
       let result
       try {
+        const runSpan = tracer.startSpan('runTrigger', { kind: SpanKind.SERVER })
+        setSpanAttributes(runSpan, trig, service)
         result = await service.app.assertTime('trigger '+this.definition.name,
           this.definition.timeout || 10000,
           () => this.doExecute(trig, (...args) => emit.emit(...args)))
-        console.log("TRIGGER DONE!", trig)
+        runSpan.end()
+        this.loggingHelpers.log("Trigger done", trig)
       } catch (e) {
-        console.error(`TRIGGER ${this.definition.name} ERROR`, e.stack)
+        this.loggingHelpers.error(`Trigger ${this.definition.name} error `, e.stack)
+        runSpan.end()
+        handleSpan.end()
         throw e
       }
-      const events = await emit.commit()
+      const emitEventsSpan = tracer.startSpan('emitEvents', { kind: SpanKind.INTERNAL })
+      setSpanAttributes(emitEventsSpan, trig, service)
+      const events = await emit.commit()      
       if(this.definition.waitForEvents)
         await service.app.waitForEvents(reportFinished, events, this.definition.waitForEvents)
+      emitEventsSpan.end()
+      handleSpan.end()
       await service.profileLog.end(profileOp)
       return result
     }

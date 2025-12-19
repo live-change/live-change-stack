@@ -366,3 +366,46 @@ export function parseDuration(duration) {
   }
   return result
 }
+
+import { logs, SeverityNumber } from '@opentelemetry/api-logs'
+import { context } from '@opentelemetry/api'
+
+export function loggingHelper(logger, severityNumber, severityText, attributes) {
+  return (message, ...args) => {  
+    logger.emit({
+      severityNumber, severityText,
+      body: [message, ...args].map(a => {
+        try {
+          return JSON.parse(JSON.stringify(a))
+        } catch (e) {
+          return `${a}`
+        }
+      }).join(' '),
+      attributes: {
+        ...attributes,
+        'log.type': 'LogRecord',
+        message,        
+        logArgs: args.map(a => {
+          try {
+            return JSON.parse(JSON.stringify(a))
+          } catch (e) {
+            return `${a}`
+          }
+        }),
+      },
+      context: context.active()
+    })
+  }
+}
+
+export function loggingHelpers(name, version, attributes, options) {
+  const logger = logs.getLogger(name, version, options)
+  return {
+    log: loggingHelper(logger, SeverityNumber.INFO, 'INFO', attributes),
+    warn: loggingHelper(logger, SeverityNumber.WARN, 'WARN', attributes),
+    error: loggingHelper(logger, SeverityNumber.ERROR, 'ERROR', attributes),
+    debug: loggingHelper(logger, SeverityNumber.DEBUG, 'DEBUG', attributes),
+    trace: loggingHelper(logger, SeverityNumber.TRACE, 'TRACE', attributes),
+    fatal: loggingHelper(logger, SeverityNumber.FATAL, 'FATAL', attributes),    
+  }
+}

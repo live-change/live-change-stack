@@ -3,6 +3,15 @@ import CommandQueue from '../utils/CommandQueue.js'
 import SingleEmitQueue from '../utils/SingleEmitQueue.js'
 import SplitEmitQueue from '../utils/SplitEmitQueue.js'
 
+import { context, propagation, trace } from '@opentelemetry/api'
+import { SpanKind } from '@opentelemetry/api'
+const tracer = trace.getTracer('live-change:triggerExecutor')
+
+async function setSpanAttributes(span, trig, service) {
+  span.setAttribute('trigger', trig)
+  span.setAttribute('service', service.name)
+}
+
 async function startTriggerExecutor(service, config) {
   if(!config.runCommands) return
 
@@ -27,7 +36,18 @@ async function startTriggerExecutor(service, config) {
     await service.dao.request(['database', 'put'], service.databaseName, 'triggerRoutes',
         { id: triggerName + '=>' + service.name, trigger: triggerName, service: service.name })
     service.triggerQueue.addCommandHandler(triggerName,
-      (trig) => Promise.all(triggers.map( trigger => trigger.execute(trig, service) ))
+      async (trig) => {
+        if(trig._trace) {
+          propagation.extract(context.active(), trig._trace)
+        }
+        const triggerSpan = tracer.startSpan('handleTriggerCall', { kind: SpanKind.INTERNAL })
+        setSpanAttributes(triggerSpan, trig, service)
+        try {
+          return await Promise.all(triggers.map( trigger => trigger.execute(trig, service) ))
+        } finally {
+          triggerSpan.end()
+        }
+      }
     )
   }
 

@@ -40,6 +40,7 @@ const debug = Debug('framework')
 
 import * as utils from './utils.js'
 import * as validation from './utils/validation.js'
+import { trace, SpanKind, context, propagation } from '@opentelemetry/api'
 
 class App {
 
@@ -89,6 +90,8 @@ class App {
     this.triggerRoutes = {}
     this.globalViews = {}
 
+    this.loggingHelpers = utils.loggingHelpers('live-change/app', '')
+    this.tracer = trace.getTracer('live-change/app')
   }
 
   static app() {
@@ -252,121 +255,174 @@ class App {
   }
 
   async trigger(trigger, data) {
-    if(!trigger) throw new Error("trigger must have type")
-    if(typeof trigger !== 'object') throw new Error("trigger must be object")
-    if(typeof trigger.type !== 'string') throw new Error("trigger type must be string")
-    if(!data) throw new Error("trigger must have data")
-    if(typeof data !== 'object') throw new Error("trigger must be object")
-    if(trigger.service) return await this.triggerService(trigger, data, true)
-    if(this.shortTriggers) {
-      const triggers = this.triggerRoutes[trigger.type] /// TODO: check if it is right
-      return await Promise.all(triggers.map(t => t.execute(data)))
+    const triggerSpan = this.tracer.startSpan('callTrigger', { kind: SpanKind.INTERNAL })
+    triggerSpan.setAttribute('trigger', trigger)
+    triggerSpan.setAttribute('data', data)
+    try {  
+      if(!trigger) throw new Error("trigger must have type")
+      if(typeof trigger !== 'object') throw new Error("trigger must be object")
+      if(typeof trigger.type !== 'string') throw new Error("trigger type must be string")
+      if(!data) throw new Error("trigger must have data")
+      if(typeof data !== 'object') throw new Error("trigger must be object")
+      if(trigger.service) return await this.triggerService(trigger, data, true)
+      if(this.shortTriggers) {
+        const triggers = this.triggerRoutes[trigger.type] /// TODO: check if it is right
+        return await Promise.all(triggers.map(t => t.execute(data)))
+      }
+      const profileOp = await this.profileLog.begin({
+        operation: "callTrigger", triggerType: trigger.type, id: data.id, by: data.by
+      })
+      const routes = await this.dao.get(['database', 'tableRange', this.databaseName, 'triggerRoutes',
+        { gte: trigger.type+'=', lte: trigger.type+'=\xFF\xFF\xFF\xFF' }])
+      this.loggingHelpers.log("TRIGGER ROUTES", trigger.type, '=>', routes.map(r => r.service).join(', '))
+      let promises = []
+      for(const route of routes) {
+        promises.push(this.triggerService({ ...trigger, service: route.service }, { ...data }, true))
+      }
+      const promise = Promise.all(promises)
+      await this.profileLog.endPromise(profileOp, promise)
+      const result = (await promise).flat()
+      this.loggingHelpers.log("TRIGGER FINISHED!", result)
+      return result
+    } finally {
+      triggerSpan.end()
     }
-    const profileOp = await this.profileLog.begin({
-      operation: "callTrigger", triggerType: trigger.type, id: data.id, by: data.by
-    })
-    const routes = await this.dao.get(['database', 'tableRange', this.databaseName, 'triggerRoutes',
-      { gte: trigger.type+'=', lte: trigger.type+'=\xFF\xFF\xFF\xFF' }])
-    console.log("TRIGGER ROUTES", trigger.type, '=>', routes.map(r => r.service).join(', '))
-    let promises = []
-    for(const route of routes) {
-      promises.push(this.triggerService({ ...trigger, service: route.service }, { ...data }, true))
-    }
-    const promise = Promise.all(promises)
-    await this.profileLog.endPromise(profileOp, promise)
-    const result = (await promise).flat()
-    console.log("TRIGGER FINISHED!", result)
-    return result
   }
 
   async triggerService(trigger, data, returnArray = false) {
-    if(!trigger.service) throw new Error("trigger must have service")
-    if(typeof trigger !== 'object') throw new Error("trigger must be object")
-    if(typeof trigger.service !== 'string') throw new Error("trigger service must be string")
-    if(typeof trigger.type !== 'string') throw new Error("trigger type must be string")
-    trigger.data = data
-    if(!trigger.data) throw new Error("trigger must have data")
-    if(typeof trigger.data !== 'object') throw new Error("trigger must be object")
-    if(this.shortTriggers) {
-      const service = this.startedServices[trigger.service]
-      const triggers = service.triggers[trigger.type]
-      if(!triggers) return []
-      const result = await Promise.all(triggers.map(t => t.execute(data)))
+    const triggerSpan = this.tracer.startSpan('callTriggerService', { kind: SpanKind.INTERNAL })
+    triggerSpan.setAttribute('trigger', trigger)
+    triggerSpan.setAttribute('data', data)
+    triggerSpan.setAttribute('service', trigger.service)
+
+    try {
+      if(!trigger.service) throw new Error("trigger must have service")
+      if(typeof trigger !== 'object') throw new Error("trigger must be object")
+      if(typeof trigger.service !== 'string') throw new Error("trigger service must be string")
+      if(typeof trigger.type !== 'string') throw new Error("trigger type must be string")
+      trigger.data = data
+      if(!trigger.data) throw new Error("trigger must have data")
+      if(typeof trigger.data !== 'object') throw new Error("trigger must be object")
+      if(this.shortTriggers) {
+        const service = this.startedServices[trigger.service]
+        const triggers = service.triggers[trigger.type]
+        if(!triggers) return []
+        const result = await Promise.all(triggers.map(t => t.execute(data)))
+        if(!returnArray && Array.isArray(result) && result.length === 1) return result[0]
+        return result
+      }
+      if(!trigger.id) trigger.id = this.generateUid()
+      trigger.state = 'new'
+      if(!trigger.timestamp) trigger.timestamp = (new Date()).toISOString()
+
+      const profileOp = await this.profileLog.begin({
+        operation: "callTriggerService", triggerType: trigger.type, service: trigger.service, triggerId: trigger.id, by: data.by
+      })
+
+      const triggersTable = this.splitCommands ? `${this.name}_triggers` : 'triggers'
+      const objectObservable = this.dao.observable(
+          ['database', 'tableObject', this.databaseName, triggersTable, trigger.id],
+          ReactiveDao.ObservableValue
+      )
+
+      propagation.inject(context.active(), trigger._trace)
+      
+      await this.dao.request(['database', 'update', this.databaseName, triggersTable, trigger.id, [{
+        op: 'conditional',
+        conditions: [{ test: 'notExist', property: 'type' }],
+        operations: [{ op: 'reverseMerge', value: trigger }],
+      }]])
+      let observer
+      const promise = new Promise((resolve, reject) => {
+        observer = (signal, value) => {
+          if(signal !== 'set') return reject('unknownSignal')
+          if(!value) return
+          if(value.state === 'done') return resolve(value.result)
+          if(value.state === 'failed') return reject(value.error)
+        }
+        objectObservable.observe(observer)
+      }).finally(() => {
+        objectObservable.unobserve(observer)
+      })
+      await this.profileLog.endPromise(profileOp, promise)
+
+      const result = await promise
       if(!returnArray && Array.isArray(result) && result.length === 1) return result[0]
       return result
+    } finally {
+      triggerSpan.end()
     }
-    if(!trigger.id) trigger.id = this.generateUid()
-    trigger.state = 'new'
-    if(!trigger.timestamp) trigger.timestamp = (new Date()).toISOString()
-
-    const profileOp = await this.profileLog.begin({
-      operation: "callTriggerService", triggerType: trigger.type, service: trigger.service, triggerId: trigger.id, by: data.by
-    })
-
-    const triggersTable = this.splitCommands ? `${this.name}_triggers` : 'triggers'
-    const objectObservable = this.dao.observable(
-        ['database', 'tableObject', this.databaseName, triggersTable, trigger.id],
-        ReactiveDao.ObservableValue
-    )
-    await this.dao.request(['database', 'update', this.databaseName, triggersTable, trigger.id, [{
-      op: 'conditional',
-      conditions: [{ test: 'notExist', property: 'type' }],
-      operations: [{ op: 'reverseMerge', value: trigger }],
-    }]])
-    let observer
-    const promise = new Promise((resolve, reject) => {
-      observer = (signal, value) => {
-        if(signal !== 'set') return reject('unknownSignal')
-        if(!value) return
-        if(value.state === 'done') return resolve(value.result)
-        if(value.state === 'failed') return reject(value.error)
-      }
-      objectObservable.observe(observer)
-    }).finally(() => {
-      objectObservable.unobserve(observer)
-    })
-    await this.profileLog.endPromise(profileOp, promise)
-
-    const result = await promise
-    if(!returnArray && Array.isArray(result) && result.length === 1) return result[0]
-    return result
   }
-
   async command(data, requestTimeout) {
-    if(!data.id) data.id = this.generateUid()
-    if(!data.service) throw new Error("command must have service")
-    if(!data.type) throw new Error("command must have type")
-    if(!data.timestamp) data.timestamp = (new Date()).toISOString()
-    data.state = 'new'
+    const commandSpan = this.tracer.startSpan('callCommand', { kind: SpanKind.INTERNAL })
+    commandSpan.setAttribute('command', data)
+    commandSpan.setAttribute('requestTimeout', requestTimeout)
+    try {
 
-    if(this.shortCommands) {
-      const command = data
-      const service = this.startedServices[data.service]
-      const action = service.actions[data.type]
-      const reportFinished = action.definition.waitForEvents ? command.id : undefined
-      const flags = {commandId: command.id, reportFinished}
-      const emit = (!this.splitEvents || this.shortEvents)
-        ? new SingleEmitQueue(service, flags)
-        : new SplitEmitQueue(service, flags)
-      const queuedBy = action.definition.queuedBy
-      if(queuedBy) {
-        const profileOp = await service.profileLog.begin({
-          operation: 'queueCommand', commandType: actionName,
-          commandId: command.id, client: command.client
-        })
-        const keyFunction = typeof queuedBy == 'function' ? queuedBy : (
-          Array.isArray(queuedBy) ? (c) => JSON.stringify(queuedBy.map(k => c[k])) :
-            (c) => JSON.stringify(c[queuedBy]))
+      if(!data.id) data.id = this.generateUid()
+      if(!data.service) throw new Error("command must have service")
+      if(!data.type) throw new Error("command must have type")
+      if(!data.timestamp) data.timestamp = (new Date()).toISOString()
+      data.state = 'new'
 
-        const routine = () => service.profileLog.profile({
-          operation: 'runCommand', commandType: actionName,
-          commandId: command.id, client: command.client
-        }, async () => {
+      if(this.shortCommands) {
+        const command = data
+        const service = this.startedServices[data.service]
+        const action = service.actions[data.type]
+        const queuedBy = action.definition.queuedBy        
+        if(queuedBy) {
+          const profileOp = await service.profileLog.begin({
+            operation: 'queueCommand', commandType: actionName,
+            commandId: command.id, client: command.client
+          })
+          const keyFunction = typeof queuedBy == 'function' ? queuedBy : (
+            Array.isArray(queuedBy) ? (c) => JSON.stringify(queuedBy.map(k => c[k])) :
+              (c) => JSON.stringify(c[queuedBy]))
+
+          const _trace = {}
+          propagation.inject(context.active(), _trace)
+
+          const routine = () => service.profileLog.profile({
+            operation: 'runCommand', commandType: actionName,
+            commandId: command.id, client: command.client
+          }, async () => {
+            propagation.extract(context.active(), _trace)
+            const reportFinished = action.definition.waitForEvents ? command.id : undefined
+            propagation.inject(context.active(), _trace)
+            const flags = {commandId: command.id, reportFinished, _trace}
+            const emit = (!this.splitEvents || this.shortEvents)
+              ? new SingleEmitQueue(service, flags)
+              : new SplitEmitQueue(service, flags)
+
+            const result = await service.app.assertTime('command ' + action.definition.name,
+              action.definition.timeout || 10000,
+              () => action.runCommand(command, (...args) => emit.emit(...args)), command)
+            if(this.shortEvents) {
+              const bucket = {}
+              const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
+                const service = this.startedServices[event.service]
+                const handler = service.events[event.type]
+                service.exentQueue.queue(() => handler.execute(event, bucket))
+              }))
+              if (action.definition.waitForEvents) await eventsPromise
+            } else {
+              const events = await emit.commit()
+              if (action.definition.waitForEvents)
+                await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+            }
+            return result
+          })
+          routine.key = keyFunction(command)
+          const promise = service.keyBasedExecutionQueues.queue(routine)
+          await service.profileLog.endPromise(profileOp, promise)
+          return promise
+        } else {
           const result = await service.app.assertTime('command ' + action.definition.name,
             action.definition.timeout || 10000,
             () => action.runCommand(command, (...args) => emit.emit(...args)), command)
           if(this.shortEvents) {
             const bucket = {}
+            console.log("emit", emit)
             const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
               const service = this.startedServices[event.service]
               const handler = service.events[event.type]
@@ -379,78 +435,66 @@ class App {
               await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
           }
           return result
+        }
+      } else { // queue and observe command execution        
+        const profileOp = await this.profileLog.begin({
+          operation: "callCommand", commandType: data.type, service: data.service,
+          commandId: data.id, by: data.by, client: data.client
         })
-        routine.key = keyFunction(command)
-        const promise = service.keyBasedExecutionQueues.queue(routine)
-        await service.profileLog.endPromise(profileOp, promise)
+
+        const commandsTable = this.splitCommands ? `${data.service}_commands` : 'commands'
+        const objectObservable = this.dao.observable(
+          ['database', 'tableObject', this.databaseName, commandsTable, data.id],
+          ReactiveDao.ObservableValue
+        )
+
+        const _trace = {}
+        propagation.inject(context.active(), _trace)
+        data._trace = _trace
+ 
+        await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [{
+          op: 'conditional',
+          conditions: [{ test: 'notExist', property: 'type' }],
+          operations: [{ op: 'reverseMerge', value: data }],
+        }]])
+        let observer
+        const promise = new Promise((resolve, reject) => {
+          observer = (signal, value) => {
+            if (signal !== 'set') return reject('unknownSignal')
+            if (!value) return
+            if (value.state === 'done') return resolve(value.result)
+            if (value.state === 'failed') return reject(value.error)
+          }
+          objectObservable.observe(observer)
+          if (!requestTimeout) {
+            requestTimeout = this.requestTimeout
+          }
+          if (requestTimeout) {
+            const timeout = setTimeout(() => {
+              this.activeTimeouts.delete(timeout)
+              reject('timeout')
+            }, requestTimeout)
+            this.activeTimeouts.add(timeout)
+          }
+        }).finally(() => {
+          objectObservable.unobserve(observer)
+        })
+
+        await this.profileLog.endPromise(profileOp, promise)
         return promise
-      } else {
-        const result = await service.app.assertTime('command ' + action.definition.name,
-          action.definition.timeout || 10000,
-          () => action.runCommand(command, (...args) => emit.emit(...args)), command)
-        if(this.shortEvents) {
-          const bucket = {}
-          console.log("emit", emit)
-          const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
-            const service = this.startedServices[event.service]
-            const handler = service.events[event.type]
-            service.exentQueue.queue(() => handler.execute(event, bucket))
-          }))
-          if (action.definition.waitForEvents) await eventsPromise
-        } else {
-          const events = await emit.commit()
-          if (action.definition.waitForEvents)
-            await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
-        }
-        return result
       }
-    } else { // queue and observe command execution
-      const profileOp = await this.profileLog.begin({
-        operation: "callCommand", commandType: data.type, service: data.service,
-        commandId: data.id, by: data.by, client: data.client
-      })
-
-      const commandsTable = this.splitCommands ? `${data.service}_commands` : 'commands'
-      const objectObservable = this.dao.observable(
-        ['database', 'tableObject', this.databaseName, commandsTable, data.id],
-        ReactiveDao.ObservableValue
-      )
-      await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [{
-        op: 'conditional',
-        conditions: [{ test: 'notExist', property: 'type' }],
-        operations: [{ op: 'reverseMerge', value: data }],
-      }]])
-      let observer
-      const promise = new Promise((resolve, reject) => {
-        observer = (signal, value) => {
-          if (signal !== 'set') return reject('unknownSignal')
-          if (!value) return
-          if (value.state === 'done') return resolve(value.result)
-          if (value.state === 'failed') return reject(value.error)
-        }
-        objectObservable.observe(observer)
-        if (!requestTimeout) {
-          requestTimeout = this.requestTimeout
-        }
-        if (requestTimeout) {
-          const timeout = setTimeout(() => {
-            this.activeTimeouts.delete(timeout)
-            reject('timeout')
-          }, requestTimeout)
-          this.activeTimeouts.add(timeout)
-        }
-      }).finally(() => {
-        objectObservable.unobserve(observer)
-      })
-
-      await this.profileLog.endPromise(profileOp, promise)
-      return promise
+    } finally {
+      commandSpan.end()
     }
   }
 
   async emitEvents(service, events, flags = {}) {
     for(let event of events) {
       if(!event.service) event.service = service
+      if(!event._trace) {
+        event._trace = {}
+        propagation.inject(context.active(), event._trace)
+      }
     }
     if(this.splitEvents) {
       let promises = []
@@ -476,11 +520,17 @@ class App {
 
   async waitForEvents(reportId, events, timeout) {
     if(events.length === 0) {
-      console.log("no events, no need to wait", reportId)
+      this.loggingHelpers.log("no events, no need to wait", reportId)
       return
     }
     const [action, id] = reportId.split('_')
     const commandId = id
+
+    const waitForEventsSpan = this.tracer.startSpan('waitForEvents', { kind: SpanKind.INTERNAL })
+    waitForEventsSpan.setAttribute('reportId', reportId)
+    waitForEventsSpan.setAttribute('events', events)
+    waitForEventsSpan.setAttribute('timeout', timeout)
+
     const profileOp = await this.profileLog.begin({
       operation: "waitForEvents", action: action, commandId, reportId, events, timeout
     })
@@ -488,14 +538,15 @@ class App {
       let done = false
       let finishedEvents = []
       const handleError = (message) => {
-        console.error(`waitForEvents error: `, message)
-        const eventsNotDone = events.filter(event => finished.find(e => e.id === event.id))
+        let errorMessage = `waitForEvents error: ${message}`        
+        const eventsNotDone = events.filter(event => finishedEvents.find(e => e.id === event.id))
         if(eventsNotDone.length > 0) {
-          console.error("  pending events:")
+          errorMessage += "\n  pending events:"
           for(const event of eventsNotDone) {
-            console.error(`    ${event.id} - type: ${event.type}`)
+            errorMessage += `\n    ${event.id} - type: ${event.type}`
           }
         }
+        this.loggingHelpers.error(errorMessage)
         reject(message)
         done = true
       }
@@ -513,35 +564,44 @@ class App {
             const eventsNotDone = events.filter(event => data.finished.find(e => e.id === event.id))
             if(eventsNotDone.length !== 0) {
               const eventsDone = events.filter(event => !data.finished.find(e => e.id === event.id))
-              console.error("waitForEvents - finished events does not match!")
-              console.error("  finished events:")
+              let errorMessage = "waitForEvents - finished events does not match!"
+              errorMessage += "\n  finished events:"
               for(const event of eventsDone) {
-                console.error(`    ${event.id} - type: ${event.type}`)
+                errorMessage += `\n    ${event.id} - type: ${event.type}`
               }
-              console.error("  pending events:")
+              errorMessage += "\n  pending events:"
               for(const event of eventsNotDone) {
-                console.error(`    ${event.id} - type: ${event.type}`)
+                errorMessage += `\n    ${event.id} - type: ${event.type}`
               }
+              this.loggingHelpers.error(errorMessage)
             } else {
-              console.log("waiting for events finished", reportId)
+              this.loggingHelpers.log("waiting for events finished", reportId)
               resolve('finished')
               observable.unobserve(reportsObserver)
             }
           }
         }
       }
-      console.log("waiting for events", reportId)
+      this.loggingHelpers.log("waiting for events", reportId)
       observable.observe(reportsObserver)
       if(Number.isFinite(timeout)) {
         setTimeout(() => {
           if(done) return
           observable.unobserve(reportsObserver)
-          console.error("events timeout", reportId)
+          this.loggingHelpers.error("events timeout", reportId)
           handleError('timeout')
         }, timeout)
       }
     })
-    await this.profileLog.endPromise(profileOp, promise)
+    await this.profileLog.endPromise(profileOp, promise)    
+    promise.then(() => {
+      waitForEventsSpan.end()
+    })
+    promise.catch((error) => {
+      this.loggingHelpers.error("waitForEvents error", error)
+      waitForEventsSpan.end()
+      throw error
+    })
     return promise
   }
 

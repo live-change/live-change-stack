@@ -24,6 +24,7 @@ import {
   setupApiSockJs,
   setupApiWs,
   setupApp,
+  setupTelemetry,
   setupApiEndpoints,
   setupEndpointsProxyPaths
 
@@ -90,6 +91,21 @@ export function startOptions(yargs) {
   yargs.option('dbAccess', {
     type: 'boolean',
     description: 'give database access to frontend(only for development and db-admin)'
+  })
+  yargs.option('otelUrl', {
+    type: 'string',
+    description: 'open telemetry URL',
+    default: process.env.OTEL_URL ?? undefined
+  })
+  yargs.option('otelHeaders', {
+    type: 'string',
+    description: 'open telemetry headers',
+    default: process.env.OTEL_HEADERS ?? undefined
+  })
+  yargs.option('otelServiceName', {
+    type: 'string',
+    description: 'open telemetry service name',
+    default: process.env.OTEL_SERVICE_NAME ?? undefined
   })
 }
 
@@ -204,6 +220,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       apiServerOptions(yargs)
       startOptions(yargs)
     }, async (argv) => {
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await apiServer(argv)
     })
@@ -216,6 +233,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
         ...argv,        
         withServices: true, updateServices: true
       }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await apiServer(argv)
     })
@@ -229,6 +247,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
         withApi: true, withServices: true, updateServices: true,
         withDb: true, dbBackend: 'mem', createDb: true
       }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await apiServer(argv)
     })
@@ -241,6 +260,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
         withServices: true, updateServices: true,
         withDb: true, createDb: true
       }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await apiServer(argv)
     })
@@ -250,6 +270,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       startOptions(yargs)
     }, async (argv) => {
       argv = { ...extraArgs, ...argv }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, false)
     })
@@ -260,6 +281,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       startOptions(yargs)      
     }, async (argv) => {
       argv = { ...extraArgs, ...argv }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       try {
         await prerender(argv)
@@ -275,6 +297,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       startOptions(yargs)
     }, async (argv) => {
       argv = { ...extraArgs, ...argv }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, false)
     })
@@ -284,6 +307,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       startOptions(yargs)
     }, async (argv) => {
       argv = { ...extraArgs, ...argv }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, true)
     })
@@ -297,6 +321,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
         ...argv,
         withApi: true, withServices: true, updateServices: true, createDb: true,
       }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, true)
     })
@@ -311,6 +336,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
         withApi: true, withServices: true, updateServices: true,
         withDb: true, dbBackend: 'mem', createDb: true
       }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, true)
     })
@@ -325,6 +351,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
         withApi: true, withServices: true, updateServices: true,
         withDb: true, createDb: true
       }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, true)
     })
@@ -339,6 +366,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
         type: 'boolean'
       })
     }, async (argv) => {
+      await setupTelemetry(argv, servicesConfig)
       await describe(argv)
     })
     .command('changes', 'show changes', (yargs) => {
@@ -350,6 +378,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       startOptions(yargs)
     }, async (argv) => {
       argv = { ...extraArgs, ...argv }
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await changes(argv)
     })
@@ -366,6 +395,7 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       })
       startOptions(yargs)
     }, async (argv) => {
+      await setupTelemetry(argv, servicesConfig)
       await setupApp({...extraArgs, ...argv, uidBorders: '[]'})
       await update(argv)
     })
