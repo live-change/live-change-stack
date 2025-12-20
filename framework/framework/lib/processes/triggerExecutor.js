@@ -7,9 +7,13 @@ import { context, propagation, trace } from '@opentelemetry/api'
 import { SpanKind } from '@opentelemetry/api'
 const tracer = trace.getTracer('live-change:triggerExecutor')
 
-async function setSpanAttributes(span, trig, service) {
-  span.setAttribute('trigger', trig)
-  span.setAttribute('service', service.name)
+import { expandObjectAttributes } from '../utils.js'
+
+async function spanAttributes(trig, service) {
+  return {
+    ...expandObjectAttributes(trig, 'trigger'),
+    service: service.name
+  }
 }
 
 async function startTriggerExecutor(service, config) {
@@ -40,13 +44,16 @@ async function startTriggerExecutor(service, config) {
         if(trig._trace) {
           propagation.extract(context.active(), trig._trace)
         }
-        const triggerSpan = tracer.startSpan('handleTriggerCall', { kind: SpanKind.INTERNAL })
-        setSpanAttributes(triggerSpan, trig, service)
-        try {
-          return await Promise.all(triggers.map( trigger => trigger.execute(trig, service) ))
-        } finally {
-          triggerSpan.end()
-        }
+        return tracer.startActiveSpan('handleTriggerCall:'+service.name+'.'+triggerName, { 
+          kind: SpanKind.INTERNAL,
+          attributes: spanAttributes(trig, service)
+        }, async (triggerSpan) => {
+          try {
+            return await Promise.all(triggers.map( trigger => trigger.execute(trig, service) ))
+          } finally {
+            triggerSpan.end()
+          }
+        })
       }
     )
   }

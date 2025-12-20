@@ -7,9 +7,13 @@ import { context, propagation, trace } from '@opentelemetry/api'
 import { SpanKind } from '@opentelemetry/api'
 const tracer = trace.getTracer('live-change:eventListener')
 
-async function setSpanAttributes(span, ev, service) {
-  span.setAttribute('event', ev)
-  span.setAttribute('service', service.name)
+import { expandObjectAttributes } from '../utils.js'
+
+async function spanAttributes(ev, service) {
+  return {
+    ...expandObjectAttributes(ev, 'event'),
+    service: service.name
+  }
 }
 
 async function startEventListener(service, config) {
@@ -31,19 +35,22 @@ async function startEventListener(service, config) {
       if(ev._trace) {
         propagation.extract(context.active(), ev._trace)
       }
-      const handleSpan = tracer.startSpan('handleEvent', { kind: SpanKind.INTERNAL })
-      setSpanAttributes(handleSpan, ev, service)
-      try {
-        return await service.profileLog.profile({ operation: "handleEvent", eventName, id: ev.id,
-            bucketId: bucket.id, triggerId: bucket.triggerId, commandId: bucket.commandId },
-          () => {
-            debug("EXECUTING EVENT", ev)
-            return event.execute(ev, bucket)
-          }
-        )
-      } finally {
-        handleSpan.end()
-      }
+      return tracer.startActiveSpan('handleEvent:'+service.name+'.'+eventName, { 
+        kind: SpanKind.INTERNAL, 
+        attributes: spanAttributes(ev, service) 
+      }, async (handleSpan) => {        
+        try {
+          return await service.profileLog.profile({ operation: "handleEvent", eventName, id: ev.id,
+              bucketId: bucket.id, triggerId: bucket.triggerId, commandId: bucket.commandId },
+            () => {
+              debug("EXECUTING EVENT", ev)
+              return event.execute(ev, bucket)
+            }
+          )
+        } finally {
+          handleSpan.end()
+        }
+      })
     })
     service.eventSourcing.onBucketEnd = async (bucket, handledEvents) => {
       if(bucket.reportFinished && handledEvents.length > 0) {

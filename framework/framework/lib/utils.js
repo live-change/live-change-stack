@@ -376,7 +376,7 @@ export function loggingHelper(logger, severityNumber, severityText, attributes) 
       severityNumber, severityText,
       body: [message, ...args].map(a => {
         try {
-          return JSON.parse(JSON.stringify(a))
+          return JSON.stringify(a)
         } catch (e) {
           return `${a}`
         }
@@ -387,7 +387,7 @@ export function loggingHelper(logger, severityNumber, severityText, attributes) 
         message,        
         logArgs: args.map(a => {
           try {
-            return JSON.parse(JSON.stringify(a))
+            return JSON.stringify(a)
           } catch (e) {
             return `${a}`
           }
@@ -408,4 +408,16 @@ export function loggingHelpers(name, version, attributes, options) {
     trace: loggingHelper(logger, SeverityNumber.TRACE, 'TRACE', attributes),
     fatal: loggingHelper(logger, SeverityNumber.FATAL, 'FATAL', attributes),    
   }
+}
+
+export function expandObjectAttributes(object, prefix = '', acc = {}) {
+  if(typeof object !== 'object') {
+    acc[prefix] = object
+    return
+  }
+  //if(Array.isArray(object)) return object.map(item => expandObjectAttributes(item, prefix))
+  for(const [key, value] of Object.entries(object)) {
+    expandObjectAttributes(value, prefix + '_' + key, acc)
+  }
+  return acc
 }

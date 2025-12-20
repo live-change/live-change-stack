@@ -7,12 +7,17 @@ import { context, propagation, trace } from '@opentelemetry/api'
 import { SpanKind } from '@opentelemetry/api'
 const tracer = trace.getTracer('live-change:commandExecutor')
 
-async function setSpanAttributes(span, command, service, action) {
-  span.setAttribute('command', command)
-  span.setAttribute('service', service.name)
-  span.setAttribute('action.name', action.name)        
-  span.setAttribute('action.definition.waitForEvents', action.definition.waitForEvents)
-  span.setAttribute('action.definition.timeout', action.definition.timeout)
+import { expandObjectAttributes } from '../utils.js'
+
+function spanAttributes(command, service, action) {
+  return {
+    service: service.name,
+    action_name: action.definition.name,
+    action_waitForEvents: action.definition.waitForEvents,
+    action_timeout: action.definition.timeout,
+    action_requestTimeout: action.definition.requestTimeout,
+    ...expandObjectAttributes(command, 'command'),
+  }
 }
 
 async function startCommandExecutor(service, config) {
@@ -36,72 +41,84 @@ async function startCommandExecutor(service, config) {
         if(command._trace) {
           propagation.extract(context.active(), command._trace)
         }
-        const queueSpan = tracer.startSpan('queueCommand', { root: !command._trace })        
-        setSpanAttributes(queueSpan, command, service, action)
+        return tracer.startActiveSpan('queueCommand:'+command.service+'.'+command.type, {
+          root: !command._trace,
+          attributes: spanAttributes(command, service, action)
+        }, async (queueSpan) => {
+          console.log("COMMAND TRACE", command._trace)
 
-        const queueContext = context.active()
-        
-        const profileOp = await service.profileLog.begin({
-          operation: 'queueCommand', commandType: actionName,
-          commandId: command.id, client: command.client
-        })
-        
-        const routine = () => service.profileLog.profile({
-          operation: 'runCommand', commandType: actionName,
-          commandId: command.id, client: command.client
-        }, async () => {
-
-          const handleSpan = tracer.startSpan('handleCommand', { kind: SpanKind.INTERNAL }, queueContext)
-          setSpanAttributes(handleSpan, command, service, action)
-
-          const _trace = {}
-          propagation.inject(context.active(), _trace)
-          const reportFinished = action.definition.waitForEvents ? 'command_' + command.id : undefined
-          const flags = { commandId: command.id, reportFinished, _trace }
-          const emit = (!service.app.splitEvents || this.shortEvents)
-            ? new SingleEmitQueue(service, flags)
-            : new SplitEmitQueue(service, flags)
+          const queueContext = context.active()
           
-          const result = await service.app.assertTime('command ' + action.definition.name,
-              action.definition.timeout || 10000,
-              async () => action.runCommand(command, (...args) => emit.emit(...args)), command)           
-
-          const handleEventsSpan = tracer.startSpan('handleEvents', { kind: SpanKind.INTERNAL }, queueContext)
-          setSpanAttributes(handleEventsSpan, command, service, action)
-          if(service.app.shortEvents) {            
-            const bucket = {}
-            const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
-              const handlerService = service.app.startedServices[event.service]
-              const handler = handlerService.events[event.type]
-              handlerService.exentQueue.queue(() => handler.execute(event, bucket))
-            }))
-            if (action.definition.waitForEvents) await eventsPromise
-          } else {
-            const events = await emit.commit()            
-            if (action.definition.waitForEvents)
-              await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
-          }
-          handleEventsSpan.end()
-          handleSpan.end()
-          queueSpan.end()
-          return result
-        })
-        routine.key = keyFunction(command)
-        const promise = service.keyBasedExecutionQueues.queue(routine)
-        await service.profileLog.endPromise(profileOp, promise)
-        return promise
-      })
-    } else {
-      service.commandQueue.addCommandHandler(actionName,
-          (command) => service.profileLog.profile({
+          const profileOp = await service.profileLog.begin({
+            operation: 'queueCommand', commandType: actionName,
+            commandId: command.id, client: command.client
+          })
+          
+          const routine = () => service.profileLog.profile({
             operation: 'runCommand', commandType: actionName,
             commandId: command.id, client: command.client
           }, async () => {
-            if(command._trace) {
-              propagation.extract(context.active(), command._trace)
-            }
-            const handleSpan = tracer.startSpan('handleCommand', { kind: SpanKind.INTERNAL })
-            setSpanAttributes(handleSpan, command, service, action)
+            return tracer.startActiveSpan('handleCommand:'+command.service+'.'+command.type, { 
+              kind: SpanKind.INTERNAL,
+              attributes: spanAttributes(command, service, action) 
+            }, queueContext, async (handleSpan) => {
+           
+              const _trace = {}
+              propagation.inject(context.active(), _trace)
+              const reportFinished = action.definition.waitForEvents ? 'command_' + command.id : undefined
+              const flags = { commandId: command.id, reportFinished, _trace }
+              const emit = (!service.app.splitEvents || this.shortEvents)
+                ? new SingleEmitQueue(service, flags)
+                : new SplitEmitQueue(service, flags)
+              
+              const result = await service.app.assertTime('command ' + action.definition.name,
+                  action.definition.timeout || 10000,
+                  async () => action.runCommand(command, (...args) => emit.emit(...args)), command)           
+
+              return tracer.startActiveSpan('handleEvents', { 
+                kind: SpanKind.INTERNAL,
+                attributes: spanAttributes(command, service, action) 
+              }, queueContext, async (handleEventsSpan) => {
+              
+                if(service.app.shortEvents) {            
+                  const bucket = {}
+                  const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
+                    const handlerService = service.app.startedServices[event.service]
+                    const handler = handlerService.events[event.type]
+                    handlerService.exentQueue.queue(() => handler.execute(event, bucket))
+                  }))
+                  if (action.definition.waitForEvents) await eventsPromise
+                } else {
+                  const events = await emit.commit()            
+                  if (action.definition.waitForEvents)
+                    await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+                }
+                handleEventsSpan.end()
+                handleSpan.end()
+                queueSpan.end()
+                return result
+              })
+            })
+          })
+          routine.key = keyFunction(command)
+          const promise = service.keyBasedExecutionQueues.queue(routine)
+          await service.profileLog.endPromise(profileOp, promise)
+          return promise
+        })
+      })
+    } else {
+      service.commandQueue.addCommandHandler(actionName,
+        (command) => service.profileLog.profile({
+          operation: 'runCommand', commandType: actionName,
+          commandId: command.id, client: command.client
+        }, async () => {
+          if(command._trace) {
+            propagation.extract(context.active(), command._trace)
+          }
+          return tracer.startActiveSpan('handleCommand:'+command.service+'.'+command.type, { 
+            kind: SpanKind.INTERNAL,
+            attributes: spanAttributes(command, service, action) 
+          }, async (handleSpan) => {
 
             const handleContext = context.active()
 
@@ -116,25 +133,29 @@ async function startCommandExecutor(service, config) {
                 action.definition.timeout || 10000,
                 () => action.runCommand(command, (...args) => emit.emit(...args)), command)
 
-            const handleEventsSpan = tracer.startSpan('emitEvents', { kind: SpanKind.INTERNAL })
-            setSpanAttributes(handleEventsSpan, command, service, action)   
-            if(service.app.shortEvents) {
-              const bucket = {}
-              const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
-                const handlerService = service.app.startedServices[event.service]
-                const handler = handlerService.events[event.type]
-                handlerService.exentQueue.queue(() => handler.execute(event, bucket))
-              }))
-              if (action.definition.waitForEvents) await eventsPromise
-            } else {
-              const events = await emit.commit()
-              if (action.definition.waitForEvents)
-                await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
-            }
-            handleEventsSpan.end()
-            handleSpan.end()
-            return result
+            return tracer.startActiveSpan('emitEvents', { 
+              kind: SpanKind.INTERNAL,
+              attributes: spanAttributes(command, service, action) 
+            }, handleContext, async (handleEventsSpan) => {
+              if(service.app.shortEvents) {
+                const bucket = {}
+                const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
+                  const handlerService = service.app.startedServices[event.service]
+                  const handler = handlerService.events[event.type]
+                  handlerService.exentQueue.queue(() => handler.execute(event, bucket))
+                }))
+                if (action.definition.waitForEvents) await eventsPromise
+              } else {
+                const events = await emit.commit()
+                if (action.definition.waitForEvents)
+                  await service.app.waitForEvents(reportFinished, events, action.definition.waitForEvents)
+              }
+              handleEventsSpan.end()
+              handleSpan.end()
+              return result
+            })
           })
+        })
       )
 
     }
