@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-rbtree",
-  "version": "0.9.172",
+  "version": "0.9.173",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -25,9 +25,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/dao": "^0.9.172",
-    "@live-change/flatten-interval-tree": "^0.9.172",
+    "@live-change/dao": "^0.9.173",
+    "@live-change/flatten-interval-tree": "^0.9.173",
     "functional-red-black-tree": "^1.0.1"
   },
-  "gitHead": "e5117526bb735357d5aba507da1b199f9f947b46"
+  "gitHead": "74815a1952f16a2913c2ae56e3599cacf6cb3c72"
 }

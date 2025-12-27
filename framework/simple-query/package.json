@@ -1,6 +1,6 @@
 {
   "name": "@live-change/simple-query",
-  "version": "0.9.172",
+  "version": "0.9.173",
   "description": "",
   "main": "src/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.172",
+    "@live-change/framework": "^0.9.173",
     "pluralize": "^8.0.0"
   },
   "devDependencies": {
@@ -30,5 +30,5 @@
     "typedoc-plugin-markdown": "^4.6.3",
     "typedoc-plugin-rename-defaults": "^0.7.3"
   },
-  "gitHead": "e5117526bb735357d5aba507da1b199f9f947b46"
+  "gitHead": "74815a1952f16a2913c2ae56e3599cacf6cb3c72"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@live-change/scope-service",
-  "version": "0.9.172",
+  "version": "0.9.173",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,9 +22,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/access-control-service": "^0.9.172",
-    "@live-change/framework": "^0.9.172",
-    "@live-change/relations-plugin": "^0.9.172"
+    "@live-change/access-control-service": "^0.9.173",
+    "@live-change/framework": "^0.9.173",
+    "@live-change/relations-plugin": "^0.9.173"
   },
-  "gitHead": "e5117526bb735357d5aba507da1b199f9f947b46"
+  "gitHead": "74815a1952f16a2913c2ae56e3599cacf6cb3c72"
 }

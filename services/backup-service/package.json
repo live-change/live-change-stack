@@ -1,6 +1,6 @@
 {
   "name": "@live-change/backup-service",
-  "version": "0.9.172",
+  "version": "0.9.173",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,14 +9,14 @@
   "author": "Michał Łaszczewski <michal@emikse.com>",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@live-change/db-client": "^0.9.172",
-    "@live-change/framework": "^0.9.172",
+    "@live-change/db-client": "^0.9.173",
+    "@live-change/framework": "^0.9.173",
     "express": "^4.18.2",
     "express-basic-auth": "^1.2.1",
     "fs-extra": "^11.1.1",
     "p-queue": "8.1.0",
     "progress-stream": "^2.0.0"
   },
-  "gitHead": "e5117526bb735357d5aba507da1b199f9f947b46",
+  "gitHead": "74815a1952f16a2913c2ae56e3599cacf6cb3c72",
   "type": "module"
 }
