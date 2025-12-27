@@ -1,6 +1,6 @@
 {
   "name": "@live-change/password-authentication-service",
-  "version": "0.9.171",
+  "version": "0.9.172",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.9.171",
+    "@live-change/framework": "^0.9.172",
     "nodemailer": "^6.7.2"
   },
   "gitHead": "e5117526bb735357d5aba507da1b199f9f947b46"
