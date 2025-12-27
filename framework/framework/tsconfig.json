@@ -20,11 +20,12 @@
     "esModuleInterop": true,    // Enable interop for ES modules
     "resolveJsonModule": true,  // Allow importing JSON files
     "skipLibCheck": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "types": []
   },
   "files": ["index.ts"],
   "include": [
     "lib/**/*.ts", "lib/**/*.js", "index.ts"],
-  "exclude": ["node_modules/@types", "node_modules/**/*.d.ts", "**/*.test.js", "**/CMakeFiles/**"]
+  "exclude": ["node_modules/@types", "node_modules/**/*.d.ts", "**/*.test.js", "**/CMakeFiles/**", "**/node_modules/@hapi/**"]
 }
 

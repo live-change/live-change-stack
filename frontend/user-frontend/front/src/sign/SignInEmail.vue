@@ -3,8 +3,12 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
 
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('auth.welcomeBack') }}</div>
-        <span class="text-surface-600 dark:text-surface-200 font-medium leading-normal">{{ t('auth.dontHaveAccount') }}</span>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">
+          {{ t('auth.welcomeBack') }}
+        </div>
+        <span class="text-surface-600 dark:text-surface-200 font-medium leading-normal">
+          {{ t('auth.dontHaveAccount') }}
+        </span>
         <router-link :to="{ name: 'user:signUpEmail' }"
                      class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">
           {{ t('auth.createToday') }}</router-link>
@@ -26,7 +30,9 @@
         </div>
 
         <div class="p-field mb-4">
-          <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">{{ t('auth.passwordOptional') }}</label>
+          <label for="password" class="block text-surface-900 dark:text-surface-0 font-medium mb-2">
+            {{ t('auth.passwordOptional') }}
+          </label>
           <Password id="password" class="w-full" inputClass="w-full" toggleMask :feedback="false"
                     aria-describedby="password-help" :invalid="data.passwordHashError" 
                     v-model="data.passwordHash" />        
@@ -52,14 +58,18 @@
       </command-form>
 
       <Divider v-if="availableAccountTypes.length > 0" align="center" class="my-6">
-        <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">{{ t('common.or') }}</span>
+        <span class="text-surface-600 dark:text-surface-200 font-normal text-sm">
+          {{ t('common.or') }}
+        </span>
       </Divider>
 
       <router-link v-for="accountType in availableAccountTypes"
                    :to="accountType.connectRoute"
                    class="no-underline">
         <Button
-          :label="t('auth.signInWith', { provider: accountType.accountType[0].toUpperCase() + accountType.accountType.slice(1) })"
+          :label="t('auth.signInWith', { 
+            provider: accountType.accountType[0].toUpperCase() + accountType.accountType.slice(1)
+          })"
           :icon="`pi pi-${accountType.accountType}`"
           class="w-full p-button-secondary mb-1"
         />
@@ -88,7 +98,7 @@
   import { useI18n } from 'vue-i18n'
   const { t } = useI18n()
 
-  import { getContactTypes, getAccountTypes} from '../connected/connected.js'
+  import { getContactTypes, getAccountTypes } from '../connected/connected.js'
   const contactsTypes = getContactTypes()
   const accountTypes = getAccountTypes()
 

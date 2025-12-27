@@ -38,8 +38,8 @@ definition.trigger({
       type: Object
     },
   },
-  async execute({ message, email: content, render }, context, emit) {
-    if(render) content = await renderEmail(render)
+  async execute({ message, email: content, render }, { client }, emit) {
+    if(render) content = await renderEmail({ client, ...render })
     if(!message) message = app.generateUid()
     if(!content) throw new Error('content must be defined')
 

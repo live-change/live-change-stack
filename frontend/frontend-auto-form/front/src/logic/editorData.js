@@ -3,6 +3,8 @@ import { usePath, live, useApi } from '@live-change/vue3-ssr'
 import { ref, computed, inject, watch, getCurrentInstance } from 'vue'
 import { synchronized, defaultData } from '@live-change/vue3-components'
 
+import deepmerge from 'deepmerge';
+
 import { propertiesValidationErrors } from './validation.js'
 
 import { cyrb128 } from './utils.js'
@@ -37,7 +39,6 @@ export default function editorData(options) {
     onSaveError = () => {},
     onCreated = (createResult) => {},
 
-
     appContext = getCurrentInstance().appContext,
 
     toast = useToast(options.appContext || getCurrentInstance().appContext),
@@ -45,6 +46,7 @@ export default function editorData(options) {
     api = useApi(options.appContext || getCurrentInstance().appContext),
     workingZone = inject('workingZone'),
 
+    initialData = {},
   } = options
 
   if(!identifiers) throw new Error('identifiers must be defined')
@@ -55,7 +57,7 @@ export default function editorData(options) {
   const {
     crudMethods = model.crud,
     identifiersNames = model.identifiers,
-    editableProperties = model.editableProperties ?? Object.keys(model.properties)
+    editableProperties = model.editableProperties ?? Object.keys(model.properties),
   } = options
 
   if(!crudMethods) throw new Error('crud methods must be defined in model or options')
@@ -72,9 +74,11 @@ export default function editorData(options) {
       draftIdParts.push(identifier)
     }
   }
-  let draftId = idKey 
-              ? (identifiers[idKey])
-              : (draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_'))
+  let draftId = options.draftId || (
+    idKey 
+      ? (identifiers[idKey])
+      : (draftIdParts.map(key => JSON.stringify(identifiers[key])).join('_'))
+    )
   if(!draftId) draftId = 'new'    
   if(draftId.length > 16) {
     draftId = cyrb128(draftId).slice(0, 16)
@@ -113,7 +117,7 @@ export default function editorData(options) {
       editableProperties.map(prop => [prop, draftData.value.data[prop]])
         .concat([[timeField, draftData.value.data[timeField]]])
     ))
-    const source = computed(() => editableDraftData.value || editableSavedData.value || defaultData(model))
+    const source = computed(() => editableDraftData.value || editableSavedData.value || deepmerge(defaultData(model), initialData))
 
     const propertiesServerErrors = ref({})
     const lastUploadedData = ref(null)
@@ -216,7 +220,7 @@ export default function editorData(options) {
         if(workingZone)
           workingZone.addPromise('discardDraft:'+serviceName+':'+modelName, discardPromise)
         await discardPromise
-        synchronizedData.value.value = editableSavedData.value || defaultData(model)
+        synchronizedData.value.value = editableSavedData.value || deepmerge(defaultData(model), initialData)
         if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: resetToast, life: 1500 })
         onReset()
       }
@@ -268,7 +272,7 @@ export default function editorData(options) {
          propertiesServerErrors.value, appContext))
 
       async function reset() {
-        synchronizedData.value.value = editableSavedData.value || defaultData(model)
+        synchronizedData.value.value = editableSavedData.value || deepmerge(defaultData(model), initialData)
         if(toast && discardedDraftToast) toast.add({ severity: 'info', summary: resetToast, life: 1500 })
         onReset()
       }

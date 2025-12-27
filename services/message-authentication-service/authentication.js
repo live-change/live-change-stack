@@ -116,14 +116,14 @@ definition.trigger({
     ...messageProperties
   },
   async execute({ contactType, contact, action, actionProperties, targetPage, fallbackPage, messageData },
-      { client, service }, emit) {
+      { trigger }, emit) {
     const authentication = app.generateUid()
-    const secrets = await service.trigger({ type: 'authenticationSecret' }, {
+    const secrets = await trigger({ type: 'authenticationSecret' }, {
       authentication
     })
     if(secrets.length === 0) throw new Error('no secrets generated!')
     const contactTypeUpperCase = contactType[0].toUpperCase() + contactType.slice(1)
-    await service.trigger({ type: 'send' + contactTypeUpperCase + 'Message' }, {
+    await trigger({ type: 'send' + contactTypeUpperCase + 'Message' }, {
       render: {
         action,
         contactType,
@@ -140,7 +140,7 @@ definition.trigger({
       action,
       actionProperties,
       targetPage,
-      fallbackPage,
+      fallbackPage,      
       messageData
     })
     return {

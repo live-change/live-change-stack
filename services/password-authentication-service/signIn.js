@@ -29,7 +29,7 @@ for(const contactType of config.contactTypes) {
       ...contactTypeProperties,
       ...secretProperties(false)
     },
-    async execute({ [contactTypeName]: contact, passwordHash }, { client, service }, emit) {
+    async execute({ [contactTypeName]: contact, passwordHash }, { client, trigger }, emit) {
       const contactData = await app.viewGet('get'+contactTypeUName, { [contactType]: contact })
       if(!contactData) throw { properties: { email: 'emailNotFound' } }
       const { user } = contactData
@@ -40,7 +40,7 @@ for(const contactType of config.contactTypes) {
         if(!passwordAuthenticationData || passwordAuthenticationData.passwordHash !== passwordHash)
           throw { properties: { passwordHash: 'wrongPassword' } }
         const { session } = client
-        await service.trigger({ type: 'signIn' }, {
+        await trigger({ type: 'signIn' }, {
           user, session
         })
         return user
@@ -49,7 +49,7 @@ for(const contactType of config.contactTypes) {
         const messageData = {
           user
         }
-        const results = await service.trigger({ type: 'authenticateWithMessage' }, {
+        const results = await trigger({ type: 'authenticateWithMessage' }, {
           contactType,
           contact,
           messageData,
