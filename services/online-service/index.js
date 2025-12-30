@@ -6,6 +6,8 @@ import { server as WebSocketServer } from 'websocket'
 import App from '@live-change/framework'
 const app = App.app()
 
+const logger = App.utils.loggingHelpers('online', '0.1.0')
+
 const definition = app.createServiceDefinition({
   name: 'online'
 })
@@ -24,29 +26,29 @@ async function sendOnlineEvent(path) {
   try {
     if(type === 'object') {
       const { group } = params
-      console.log("PARAMs", params)
+      logger.log("PARAMs", params)
       const triggerName = `${group}Online`
-      console.log("TRIGGER", triggerName)
+      logger.log("TRIGGER", triggerName)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     } else if(type === 'user') {
       const { group, user } = params
       const triggerName = `user${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Online`
-      console.log("TRIGGER", triggerName)
+      logger.log("TRIGGER", triggerName)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     } else if(type === 'session') {
       const { group, session } = params
       const triggerName = `session${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Online`
-      console.log("TRIGGER", triggerName)
+      logger.log("TRIGGER", triggerName)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     }
   } catch(error) {
-    console.error("ONLINE EVENT ERROR")
+    logger.error("ONLINE EVENT ERROR")
   }
 }
 
@@ -57,32 +59,32 @@ async function sendOfflineEvent(path) {
     if(type === 'object') {
       const { group } = params
       const triggerName = `${group}Offline`
-      console.log("TRIGGER", triggerName)
+      logger.log("TRIGGER", triggerName)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     } else if(type === 'user') {
       const { group, user } = params
       const triggerName = `user${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Offline`
-      console.log("TRIGGER", triggerName)
+      logger.log("TRIGGER", triggerName)
       await app.trigger({ type: triggerName }, {
         ...params,
       })
     } else if(type === 'session') {
       const { group, session } = params
       const triggerName = `session${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Offline`
-      console.log("TRIGGER", triggerName)
+      logger.log("TRIGGER", triggerName)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     }
   } catch(error) {
-    console.error("OFFLINE EVENT ERROR")
+    logger.error("OFFLINE EVENT ERROR")
   }
 }
 
 async function sendAllOfflineEvent() {
-  console.log("SEND ALL OFFLINE EVENT")
+  logger.log("SEND ALL OFFLINE EVENT")
   await app.trigger({ type: `allOffline` }, { })
 }
 
@@ -97,7 +99,7 @@ class SelfObservable extends ReactiveDao.Observable {
     this.offlineEventTimeout = null
     this.lastEvent = null
 
-    console.log("PATH", this.path, "IS ONLINE")
+    logger.log("PATH", this.path, "IS ONLINE")
     this.setOnlineEventTimeout()
   }
   setOnlineEventTimeout() {
@@ -134,14 +136,14 @@ class SelfObservable extends ReactiveDao.Observable {
     this.fireObserver(observer, 'set', this.observers.length)
   }
   unobserve(observer) {
-    console.log("ONLINE UNOBSERVED")
+    logger.log("ONLINE UNOBSERVED")
     this.observers.splice(this.observers.indexOf(observer), 1)
     this.fireObservers('set', this.observers.length)
     if(this.isUseless()) this.dispose()
   }
   dispose() {
     this.disposed = true
-    console.log("PATH", this.path, "IS OFFLINE")
+    logger.log("PATH", this.path, "IS OFFLINE")
     this.disposeTimeout = setTimeout(() => {
       if(this.disposed) {
         selfObservables.delete(JSON.stringify(this.path))
@@ -158,7 +160,7 @@ class SelfObservable extends ReactiveDao.Observable {
     this.disposed = false
     this.clearOfflineEventTimeout()
     this.setOnlineEventTimeout()
-    console.log("PATH", this.path, "IS ONLINE AGAIN")
+    logger.log("PATH", this.path, "IS ONLINE AGAIN")
   }
 }
 
@@ -172,12 +174,12 @@ function getSelfObservable(path) {
 
 const onlineDao = {
   observable([type, ...path]) {
-    console.log("OBSERVABLE", type, path)
+    logger.log("OBSERVABLE", type, path)
     if(type !== 'online') throw new Error("not found")
     return getSelfObservable(path)
   },
   get([type, ...path]) {
-    console.log("GET", type, path)
+    logger.log("GET", type, path)
     if(type !== 'online') throw new Error("not found")
     let observable = selfObservables.get(path)
     return observable ? observable.observers.length : 0
@@ -187,7 +189,7 @@ const onlineDao = {
 }
 
 const createDao = (clientSessionId) => {
-  console.log("ONLINE SERVICE DAO")
+  logger.log("ONLINE SERVICE DAO")
   return onlineDao
 }
 
@@ -205,7 +207,7 @@ definition.afterStart(async service => {
     reactiveServer.handleConnection(serverConnection)
   })
 
-  console.log(`online server started at localhost:${onlinePort}`)
+  logger.log(`online server started at localhost:${onlinePort}`)
 })
 
 const onlineClient = new ReactiveDaoWebsocket.client("api-server-"+process.pid, onlineUrl)

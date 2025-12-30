@@ -89,6 +89,7 @@ async function createOrReuseTask(taskDefinition, props, causeType, cause, expire
   return taskObject
 }
 
+import { logs, SeverityNumber } from '@opentelemetry/api-logs'
 
 async function startTask(taskFunction, props, causeType, cause, expire, client:ClientInfo){
   const taskObject = await createOrReuseTask(taskFunction.definition, props, causeType, cause, expire, client)
@@ -98,7 +99,15 @@ async function startTask(taskFunction, props, causeType, cause, expire, client:C
     taskObject,
     client
   }
-  console.log("START TASK!", taskFunction.name)
+  const logger = logs.getLogger('task', '0.0.1')
+  logger.emit({
+    severityNumber: SeverityNumber.INFO,
+    severityText: 'INFO',
+    body: 'START TASK!',
+    attributes: {
+      task: taskFunction.name
+    }
+  })  
   const promise = taskFunction(props, context)
   return { task: taskObject.id, taskObject, promise, causeType, cause }
 }
@@ -231,6 +240,12 @@ function progressCounter(reportProgress) {
 
 type TaskFunction = (props, context: TaskExecuteContext, emit, reportProgress) => Promise<any>
 
+import { context, propagation, trace } from '@opentelemetry/api'
+import { SpanKind } from '@opentelemetry/api'
+const tracer = trace.getTracer('live-change:triggerHandler')
+
+const { expandObjectAttributes } = App.utils
+
 export default function task(definition:TaskDefinition, serviceDefinition) {
   if(!definition) throw new Error('Task definition is not defined')
   if(!serviceDefinition) throw new Error('Service definition is not defined')
@@ -303,206 +318,220 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     }
 
     const runTask = async () => {
-      await updateTask({
-        state: 'running',
-        startedAt: new Date()
-      })
-      await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
-      const commonFunctions = {
-        async run(taskFunction: TaskFunction, props, progressFactor = 1, expire = undefined) {
-          if(typeof taskFunction !== 'function') {
-            console.log("TASK FUNCTION", taskFunction)
-            throw new Error('Task function is not a function')
-          }
-          //console.log("SUBTASK RUN", taskFunction.definition.name, props)
-          const subtaskProgress = { current: 0, total: 1, factor: progressFactor }
-          subtasksProgress.push(subtaskProgress)
-          try {
-            const result = await taskFunction(
-              props,
-              {
-                ...context,
-                taskObject: undefined,
-                causeType: 'task_Task',
-                cause: taskObject.id,
-                expire
-              },
-              (events) => app.emitEvents(serviceDefinition.name,
-                Array.isArray(events) ? events : [events], {}),
-              (current, total, action) => {
-                subtaskProgress.current = current
-                subtaskProgress.total = total
-                updateProgress()
-              }
-            )
-            //console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
-            subtaskProgress.current = subtaskProgress.total
-            updateProgress()
-            return result
-          } catch(error) {
-            subtaskProgress.current = subtaskProgress.total // failed = finished
-            const outputError: any = new Error("Subtask error: " + error.toString())
-            outputError.stack = error.stack
-            outputError.taskNoRetry = true
-            throw outputError
-          }
-        },
-        progress: progressCounter((current, total, action, opts) => { // throttle this
-          selfProgress = {
-            ...opts,
-            current, total, action
-          }
-          updateProgress()
-        })
-      }
-      const runContext = {
-        ...context,
-        task: {
-          id: taskObject.id,
-          ...commonFunctions
-        },      
-        ...commonFunctions,
-        async trigger(trigger, props) {
-          return await app.trigger({
-            causeType: 'task_Task',
-            cause: taskObject.id,
-            client: context.client,
-            ...trigger,
-          }, props)
-        },
-        async triggerService(trigger, props, returnArray = false) {
-          return await app.triggerService({
-            causeType: 'task_Task',
-            cause: taskObject.id,
-            client: context.client,
-            ...trigger
-          }, props, returnArray)
-        },
-        async triggerTask(trigger, data, progressFactor = 1) {
-          const tasks = await app.trigger({
-            causeType: 'task_Task',
-            cause: taskObject.id,
-            client: context.client,
-            ...trigger
-          }, data)
-          const fullProgressSum = tasks.length * progressFactor     
-          const task = this     
-          const taskWatchers = tasks.map(task => {
-            const observable = Task.observable(task)
-            if(!observable) {
-              console.error("SUBTASK OBSERVABLE NOT FOUND", task)
-              throw new Error("SUBTASK OBSERVABLE NOT FOUND")
-            }
-            const watcher: any = {          
-              observable,
-              observer(signal, value) {
-                if(signal !== 'set') return
-                if(value) {                
-                  if(value.progress) {
-                    watcher.progress = value.progress
-                    updateProgress()
-                  }
-                  if(value.state === 'done') {              
-                    watcher.resolve(value.result)
-                  } else if(value.state === 'failed') {
-                    watcher.reject(value)
-                  }
-                }
-              },
-              progress: {
-                current: 0,
-                total: 1,
-                factor: progressFactor/tasks.length
-              },
-              run(resolve, reject) { 
-                watcher.resolve = resolve
-                watcher.reject = reject
-                //console.log("SUBTASK WATCHER", watcher, "TASK OBSERVABLE", watcher.observable)
-                subtasksProgress.push(watcher.progress)
-                watcher.observable.observe(watcher.observer)                              
-              }
-            }
-            return watcher
-          })          
-          
-          const promises = taskWatchers.map(watcher => new Promise((resolve, reject) => watcher.run(resolve, reject)))
-          try {
-            await Promise.all(promises)
-            //console.log("TASK WATCHERS PROMISES FULLFILLED", taskWatchers)
-            const results = taskWatchers.map(watcher => {
-              //console.log("WATCHER OBSERVABLE", watcher.observable)
-              return watcher.observable.getValue().result
-            })
-            return results
-          } catch(subtask) {
-            const retry = subtask.retries?.at(-1)
-            const outputError: any = new Error("Subtask error: " + retry?.error)
-            outputError.stack = retry?.stack
-            outputError.taskNoRetry = true
-            throw outputError
-          }                    
+      return tracer.startActiveSpan('runTask:'+serviceDefinition.name+'.'+definition.name, { 
+        kind: SpanKind.INTERNAL, 
+        attributes: {
+          ...expandObjectAttributes(taskObject, 'task'),
+          service: serviceDefinition.name,
+          taskName: definition.name
         }
-      }
-      try {
-        const result = await definition.execute(props, runContext, emit)
+      }, async (taskSpan) => {  
         await updateTask({
-          state: 'done',
-          doneAt: new Date(),
-          result
+          state: 'running',
+          startedAt: new Date()
         })
         await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
-      } catch(error) {
-        if((taskObject.retries?.length || 0) >= taskObject.maxRetries - 1 || error.taskNoRetry) {
-          await updateTask({
-            state: (definition.fallback && !error.taskNoFallback) ? 'fallback' : 'failed',
-            doneAt: new Date(),
-            error: /*error.stack ??*/ error.message ?? error,
-            retries: [...(taskObject.retries || []), {
-              startedAt: taskObject.startedAt,
-              failedAt: new Date(),
-              error: /*error.stack ??*/ error.message ?? error,
-              stack: error.stack
-            }]
-          })
-          console.error("TASK", taskObject.id, "OF TYPE", definition.name,
-            "WITH PARAMETERS", props, "FAILED WITH ERROR", error.stack ?? error.message ?? error)
-          if(definition.fallback && !error.taskNoFallback) {
-            await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
-            let result
-            if(typeof definition.fallback !== 'function') {
-              result = definition.fallback
-            } else {
-              result = definition.fallback(props, runContext, error.message ?? error)
+        const commonFunctions = {
+          async run(taskFunction: TaskFunction, props, progressFactor = 1, expire = undefined) {
+            if(typeof taskFunction !== 'function') {
+              console.log("TASK FUNCTION", taskFunction)
+              throw new Error('Task function is not a function')
             }
-            await updateTask({
-              state: 'fallbackDone',
-              result
-            })
-          } else {
-            await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
-            throw error
-          }
-        } else {
-          const retriesCount = (taskObject.retries || []).length
-          await updateTask({
-            state: 'retrying',
-            retries: [...(taskObject.retries || []), {
-              startedAt: taskObject.startedAt,
-              failedAt: new Date(),
-              error: error.message ?? error,
-              stack: error.stack
-            }]
+            //console.log("SUBTASK RUN", taskFunction.definition.name, props)
+            const subtaskProgress = { current: 0, total: 1, factor: progressFactor }
+            subtasksProgress.push(subtaskProgress)
+            try {
+              const result = await taskFunction(
+                props,
+                {
+                  ...context,
+                  taskObject: undefined,
+                  causeType: 'task_Task',
+                  cause: taskObject.id,
+                  expire
+                },
+                (events) => app.emitEvents(serviceDefinition.name,
+                  Array.isArray(events) ? events : [events], {}),
+                (current, total, action) => {
+                  subtaskProgress.current = current
+                  subtaskProgress.total = total
+                  updateProgress()
+                }
+              )
+              //console.log("SUBTASK DONE", taskFunction.definition.name, props, '=>', result)
+              subtaskProgress.current = subtaskProgress.total
+              updateProgress()
+              return result
+            } catch(error) {
+              subtaskProgress.current = subtaskProgress.total // failed = finished
+              const outputError: any = new Error("Subtask error: " + error.toString())
+              outputError.stack = error.stack
+              outputError.taskNoRetry = true
+              throw outputError
+            }
+          },
+          progress: progressCounter((current, total, action, opts) => { // throttle this
+            selfProgress = {
+              ...opts,
+              current, total, action
+            }
+            updateProgress()
           })
-          const retryDelay = definition.retryDelay ? definition.retryDelay(retriesCount) : 1000 * Math.pow(2, retriesCount)
-          console.log("RETRYING TASK", taskObject.id, "IN", retryDelay, "ms")   
-          await new Promise(resolve => setTimeout(resolve, retryDelay))
         }
-        await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
-      } finally {
-        if(definition.cleanup) {
-          await definition.cleanup(props, runContext)
+        const loggingHelpers = App.utils.loggingHelpers(serviceDefinition.name, app.config.clientConfig.version, {
+          taskName: definition.name,
+          taskId: taskObject.id
+        })
+        const runContext = {
+          ...context,
+          task: {
+            id: taskObject.id,
+            ...commonFunctions
+          },      
+          ...commonFunctions,
+          async trigger(trigger, props) {
+            return await app.trigger({
+              causeType: 'task_Task',
+              cause: taskObject.id,
+              client: context.client,
+              ...trigger,
+            }, props)
+          },
+          async triggerService(trigger, props, returnArray = false) {
+            return await app.triggerService({
+              causeType: 'task_Task',
+              cause: taskObject.id,
+              client: context.client,
+              ...trigger
+            }, props, returnArray)
+          },
+          async triggerTask(trigger, data, progressFactor = 1) {
+            const tasks = await app.trigger({
+              causeType: 'task_Task',
+              cause: taskObject.id,
+              client: context.client,
+              ...trigger
+            }, data)
+            const fullProgressSum = tasks.length * progressFactor     
+            const task = this     
+            const taskWatchers = tasks.map(task => {
+              const observable = Task.observable(task)
+              if(!observable) {
+                console.error("SUBTASK OBSERVABLE NOT FOUND", task)
+                throw new Error("SUBTASK OBSERVABLE NOT FOUND")
+              }
+              const watcher: any = {          
+                observable,
+                observer(signal, value) {
+                  if(signal !== 'set') return
+                  if(value) {                
+                    if(value.progress) {
+                      watcher.progress = value.progress
+                      updateProgress()
+                    }
+                    if(value.state === 'done') {              
+                      watcher.resolve(value.result)
+                    } else if(value.state === 'failed') {
+                      watcher.reject(value)
+                    }
+                  }
+                },
+                progress: {
+                  current: 0,
+                  total: 1,
+                  factor: progressFactor/tasks.length
+                },
+                run(resolve, reject) { 
+                  watcher.resolve = resolve
+                  watcher.reject = reject
+                  //console.log("SUBTASK WATCHER", watcher, "TASK OBSERVABLE", watcher.observable)
+                  subtasksProgress.push(watcher.progress)
+                  watcher.observable.observe(watcher.observer)                              
+                }
+              }
+              return watcher
+            })          
+            
+            const promises = taskWatchers.map(watcher => new Promise((resolve, reject) => watcher.run(resolve, reject)))
+            try {
+              await Promise.all(promises)
+              //console.log("TASK WATCHERS PROMISES FULLFILLED", taskWatchers)
+              const results = taskWatchers.map(watcher => {
+                //console.log("WATCHER OBSERVABLE", watcher.observable)
+                return watcher.observable.getValue().result
+              })
+              return results
+            } catch(subtask) {
+              const retry = subtask.retries?.at(-1)
+              const outputError: any = new Error("Subtask error: " + retry?.error)
+              outputError.stack = retry?.stack
+              outputError.taskNoRetry = true
+              throw outputError
+            }                    
+          },
+          ...loggingHelpers
         }
-      }
+        try {
+          const result = await definition.execute(props, runContext, emit)
+          await updateTask({
+            state: 'done',
+            doneAt: new Date(),
+            result
+          })
+          await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
+        } catch(error) {
+          if((taskObject.retries?.length || 0) >= taskObject.maxRetries - 1 || error.taskNoRetry) {
+            await updateTask({
+              state: (definition.fallback && !error.taskNoFallback) ? 'fallback' : 'failed',
+              doneAt: new Date(),
+              error: /*error.stack ??*/ error.message ?? error,
+              retries: [...(taskObject.retries || []), {
+                startedAt: taskObject.startedAt,
+                failedAt: new Date(),
+                error: /*error.stack ??*/ error.message ?? error,
+                stack: error.stack
+              }]
+            })
+            console.error("TASK", taskObject.id, "OF TYPE", definition.name,
+              "WITH PARAMETERS", props, "FAILED WITH ERROR", error.stack ?? error.message ?? error)
+            if(definition.fallback && !error.taskNoFallback) {
+              await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
+              let result
+              if(typeof definition.fallback !== 'function') {
+                result = definition.fallback
+              } else {
+                result = definition.fallback(props, runContext, error.message ?? error)
+              }
+              await updateTask({
+                state: 'fallbackDone',
+                result
+              })
+            } else {
+              await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
+              throw error
+            }
+          } else {
+            const retriesCount = (taskObject.retries || []).length
+            await updateTask({
+              state: 'retrying',
+              retries: [...(taskObject.retries || []), {
+                startedAt: taskObject.startedAt,
+                failedAt: new Date(),
+                error: error.message ?? error,
+                stack: error.stack
+              }]
+            })
+            const retryDelay = definition.retryDelay ? definition.retryDelay(retriesCount) : 1000 * Math.pow(2, retriesCount)
+            console.log("RETRYING TASK", taskObject.id, "IN", retryDelay, "ms")   
+            await new Promise(resolve => setTimeout(resolve, retryDelay))
+          }
+          await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
+        } finally {
+          if(definition.cleanup) {
+            await definition.cleanup(props, runContext)
+          }
+        }
+      })
     }
 
     if(taskObject.state === 'failed') {

@@ -19,7 +19,8 @@
     "esModuleInterop": true,    // Enable interop for ES modules
     "resolveJsonModule": true,  // Allow importing JSON files
     "skipLibCheck": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "types": []
   },
   "files": ["server/start.js"],
   "include": [

@@ -1,10 +1,15 @@
 import { prepareParameters, processReturn } from "./params.js"
+import { loggingHelpers } from '../utils.js'
 
 class EventHandler {
 
   constructor(definition, service) {
     this.definition = definition
     this.service = service
+
+    this.loggingHelpers = loggingHelpers(service.name, service.app.config.clientConfig.version, {
+      eventType: definition.name,
+    })
   }
 
   async execute(parameters, bucket) {
@@ -17,7 +22,8 @@ class EventHandler {
     }, {
       action: this,
       service: this.service,
-      bucket: bucket
+      bucket: bucket,
+      ...this.loggingHelpers
     })
 
     resultPromise = resultPromise.then(async result => {

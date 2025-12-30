@@ -415,6 +415,10 @@ export function expandObjectAttributes(object, prefix = '', acc = {}) {
     acc[prefix] = object
     return
   }
+  if(object === null || object === undefined) {
+    acc[prefix] = object
+    return
+  }
   //if(Array.isArray(object)) return object.map(item => expandObjectAttributes(item, prefix))
   for(const [key, value] of Object.entries(object)) {
     expandObjectAttributes(value, prefix + '_' + key, acc)

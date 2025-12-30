@@ -374,7 +374,6 @@ class App {
     }, async (commandSpan) => {
       const testTrace = {}
       propagation.inject(context.active(), testTrace)
-      console.log("CALL COMMAND TRACE - INJECTED TRACE", testTrace)
       try {
 
         if(!data.id) data.id = this.generateUid()
