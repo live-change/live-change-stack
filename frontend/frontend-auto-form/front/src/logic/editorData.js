@@ -14,6 +14,7 @@ export default function editorData(options) {
 
   const {
     identifiers,
+    parameters = {},
     service: serviceName,
     model: modelName,
 
@@ -117,7 +118,8 @@ export default function editorData(options) {
       editableProperties.map(prop => [prop, draftData.value.data[prop]])
         .concat([[timeField, draftData.value.data[timeField]]])
     ))
-    const source = computed(() => editableDraftData.value || editableSavedData.value || deepmerge(defaultData(model), initialData))
+    const source = computed(() => editableDraftData.value || editableSavedData.value
+                               || deepmerge(defaultData(model), initialData))
 
     const propertiesServerErrors = ref({})
     const lastUploadedData = ref(null)
@@ -125,9 +127,19 @@ export default function editorData(options) {
     let savePromise = null
     const saving = ref(false)
     async function saveData(data){
-      const requestData = {
+      const savedIdentifiers = {}
+      for(const identifier of identifiersNames) {
+        if(typeof identifier === 'object') {
+          savedIdentifiers[identifier.name] = savedData.value?.[identifier.name] ?? draftData.value?.data?.[identifier.name]
+        } else {
+          savedIdentifiers[identifier] = savedData.value?.[identifier] ?? draftData.value?.data?.[identifier]
+        }
+      }
+      const requestData = {        
         ...(updateDataProperty ? { [updateDataProperty]: data } : data),
-        ...identifiers
+        ...savedIdentifiers,        
+        ...identifiers,
+        ...parameters,
       }    
       if(savePromise) await savePromise // wait for previous save
       saving.value = true

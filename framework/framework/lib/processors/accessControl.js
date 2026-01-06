@@ -3,7 +3,7 @@ import getAccessMethod from "./accessMethod.js"
 export default function(module, app) {
   for(let actionName in module.actions) {
     const action = module.actions[actionName]
-    if(!action.access) continue;
+    if(!action.access) continue;    
     let access = getAccessMethod(action.access)
     if(access) {
       const oldExec = action.execute

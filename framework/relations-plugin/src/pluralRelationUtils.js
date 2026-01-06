@@ -376,15 +376,15 @@ function getCopyFunction( validators, validationContext, config, context) {
       identifiers,
       data: updatedData
     }),
-      app.trigger({
-        type: 'copyObject',
-      }, {
-        objectType,
-        object: newId,
-        from: id,
-        identifiers,
-        data: updatedData
-      })
+    app.trigger({
+      type: 'copyObject',
+    }, {
+      objectType,
+      object: newId,
+      from: id,
+      identifiers,
+      data: updatedData
+    })
     await fireChangeTriggers(context, objectType, identifiers, newId, null, updatedData, trigger)
     emit({
       type: eventName,
