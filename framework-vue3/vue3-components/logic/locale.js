@@ -58,6 +58,21 @@ export class Locale {
     return this.localeObservable.getValue()
   }
 
+  async getOtherUserOrSessionLocale(user, session) {
+    if(this.localeObservable) this.localeObservable.unbindProperty(this.localeRef, 'value')
+    const path = this.api.views.localeSettings.userOrSessionLocaleSettings({ user, session })
+    if(typeof window === 'undefined') {
+      const value = await this.api.get(path)
+      this.localeObservable = new ObservableValue(value)
+    } else {
+      this.localeObservable = this.api.observable(path)
+    }
+    this.localeObservable.bindProperty(this.localeRef, 'value')
+    this.localeObservable.wait()
+    return this.localeObservable.getValue()
+  }
+
+
   getLanguage() {
     const language = this.localeRef.value?.language ?? this.localeRef.value?.capturedLanguage
     return language && language.slice(0, 2)
@@ -103,7 +118,7 @@ export class Locale {
     return this.api.actions.localeSettings.setOrUpdateMyLocaleSettings(localSettingsUpdate)
   }
 
-  async captureLocale() {
+  async captureLocale(force = false) {
     if(typeof window === 'undefined') return // capture only on client
     if(typeof navigator === 'undefined') return // capture only on client
     return (async () => {
@@ -135,7 +150,7 @@ export class Locale {
       console.log("plural", JSON.stringify(capturedPlural) !== JSON.stringify(localeSettings.capturedPlural))
       console.log("relativeTime", JSON.stringify(capturedRelativeTime) !== JSON.stringify(localeSettings.capturedRelativeTime))
   */
-      if(!localeSettings
+      if(force || !localeSettings
         || localeSettings.capturedLanguage !== capturedLanguage
         || JSON.stringify(localeSettings.capturedDateTime) !== JSON.stringify(capturedDateTime)
         || JSON.stringify(localeSettings.capturedList) !== JSON.stringify(capturedList)

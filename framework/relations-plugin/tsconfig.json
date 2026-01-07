@@ -20,7 +20,8 @@
     "esModuleInterop": true,    // Enable interop for ES modules
     "resolveJsonModule": true,  // Allow importing JSON files
     "skipLibCheck": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "types": []
   },
   "files": ["src/index.ts"],
   "include": ["src/**/*.ts", "src/**/*.js"],

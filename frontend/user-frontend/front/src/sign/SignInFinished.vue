@@ -72,6 +72,10 @@
       }
     }
   }
+
+  import { useLocale } from '@live-change/vue3-components'
+  const locale = useLocale()
+
   let finished = false
   onMounted(async () => {
     console.log("WAIT FOR USER?", !finished, !api.client.value.user, !finished && !api.client.value.user)
@@ -79,6 +83,8 @@
       console.log("WAITING FOR USER...")
       await new Promise(resolve => setTimeout(resolve, 200))
     }
+    console.log("CAPTURE LOCALE", api.client.value.user)
+    locale.captureLocale(true)
     if(!finished) doRedirect()
   })
   onUnmounted(() => {

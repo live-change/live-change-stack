@@ -72,10 +72,9 @@
   const secretLink = secrets.find(secret => secret.type === 'link')
   const secretCode = secrets.find(secret => secret.type === 'code')
 
-  const owner = { sessionOrUserType: 'user_User', sessionOrUser: data.user }
   import { useLocale } from "@live-change/vue3-components"
   const locale = useLocale()
-  const localePromise = locale.getOtherOwnerLocale(owner)
+  const localePromise = locale.getOtherUserOrSessionLocale(data.user, data.client?.session)
   await Promise.all([localePromise])
   import { useI18n } from 'vue-i18n'
   const { locale: i18nLocale, t } = useI18n()
