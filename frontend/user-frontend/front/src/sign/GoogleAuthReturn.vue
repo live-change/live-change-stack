@@ -20,6 +20,13 @@
         <div>Error during authentication</div>
         <div>{{ error }}</div>
       </div>
+      <div v-else-if="state === 'emailTaken'" class="text-center">
+        <div>
+          Your account was created using email address. If you want to connect your Google account, 
+          you need to sign in with this email address. And connect your Google account using 
+          <router-link :to="{ name: 'user:connected' }">connected accounts page</router-link>.
+        </div>
+      </div>
       <div v-else>
         Unknown authentication state: {{ state }}
       </div>
@@ -62,36 +69,41 @@
       state.value = 'canceled'
       return
     }
-    try {
-      const result = await workingZone.addPromise(`google ${action.value}`,
-        api.command(['googleAuthentication', action.value], {
+    await workingZone.addPromise(`google ${action.value}`, (async () => {
+      try {
+        const result = await api.command(['googleAuthentication', action.value], {
           redirectUri: document.location.protocol + '//' + document.location.host
             + router.resolve({ name: 'user:googleAuthReturn', params: { action: action.value } }).href,
           ...query
         })
-      )
-      console.log("GAUTH RESULT", result)
-      const { action: actionDone, user } = result
-      while(user && api.client.value.user !== user) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-      if(actionDone === 'signIn') {
-        router.push({ name: 'user:signInFinished' })
-      } else if(actionDone === 'signUp') {
-        router.push({ name: 'user:signUpFinished' })
-      } else if(actionDone === 'connectGoogle') {
-        router.push({ name: 'user:connected' })
-      } else if(actionDone === 'addOfflineAccessToken') {
-        router.push({ name: 'user:google-access-gained' })
-      } else {
-        console.error("Unknown action", actionDone)
-      }
-    } catch(error) {
-      console.error("Google auth error", error)
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Error during google authentication', life: 3000 })
-      state.value = 'error'
-      error.value = error
-    }
+        console.log("GAUTH RESULT", result)
+        const { action: actionDone, user } = result
+        while(user && api.client.value.user !== user) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        if(actionDone === 'signIn') {
+          router.push({ name: 'user:signInFinished' })
+        } else if(actionDone === 'signUp') {
+          router.push({ name: 'user:signUpFinished' })
+        } else if(actionDone === 'connectGoogle') {
+          router.push({ name: 'user:connected' })
+        } else if(actionDone === 'addOfflineAccessToken') {
+          router.push({ name: 'user:google-access-gained' })
+        } else {
+          console.error("Unknown action", actionDone)
+        }
+      } catch(err) {
+        if(err?.properties?.email == 'emailTaken') {
+          toast.add({ severity: 'error', summary: 'Error', detail: 'Email is already in use', life: 3000 })
+          state.value = 'emailTaken'
+          return
+        }
+        console.error("Google auth error", err)
+        toast.add({ severity: 'error', summary: 'Error', detail: 'Error during google authentication', life: 3000 })
+        state.value = 'error' 
+        error.value = err
+      } 
+    })())
   })
 
   async function back() {

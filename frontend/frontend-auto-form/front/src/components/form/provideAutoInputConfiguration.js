@@ -58,7 +58,7 @@ inputs.duration = inputConfig(() => import('primevue/inputmask'), {
   attributes: { mask: '99:99:99' }
 })
 
-types.Image = inputs.image = inputConfig(
+types.image_Image = types.Image = inputs.image = inputConfig(
   async () => (await import('@live-change/image-frontend')).ImageInput
 )
 
