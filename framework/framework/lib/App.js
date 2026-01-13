@@ -468,7 +468,6 @@ class App {
           const _trace = {}
           propagation.inject(context.active(), _trace)
           data._trace = _trace
-          console.log("CALL COMMAND TRACE - SAVING TRACE", _trace)
   
           await this.dao.request(['database', 'update', this.databaseName, commandsTable, data.id, [{
             op: 'conditional',

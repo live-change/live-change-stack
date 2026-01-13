@@ -241,7 +241,6 @@ export default (definition) => {
           for(const accessRoles of accessesRoles) {
             roles = roles.filter(role => accessRoles.includes(role))
           }
-          output.debug('accessRoles', JSON.stringify(roles, null, 2))
           const outputObject = {
             id: outputObjectId,
             roles: Array.from(new Set([...roles, ...client.roles]))

@@ -45,7 +45,6 @@ async function startCommandExecutor(service, config) {
           root: !command._trace,
           attributes: spanAttributes(command, service, action)
         }, async (queueSpan) => {
-          console.log("COMMAND TRACE", command._trace)
 
           const queueContext = context.active()
           

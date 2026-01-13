@@ -17,12 +17,12 @@ import {
   OTLPMetricExporter,
 } from '@opentelemetry/exporter-metrics-otlp-proto'
 
-import { Resource } from '@opentelemetry/resources'
+import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources'
 
 import {
-  SEMRESATTRS_SERVICE_NAME,
-  SEMRESATTRS_SERVICE_VERSION,
-} from '@opentelemetry/semantic-conventions'
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+} from '@opentelemetry/semantic-conventions';
 
 import { logs } from '@opentelemetry/api-logs'
 import {
@@ -43,10 +43,10 @@ export default async function setupTelemetry(settings, appConfig = {}) {
     return;
   }
 
-  const resource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: otelServiceName || appConfig.clientConfig.name,
-    [SEMRESATTRS_SERVICE_VERSION]: appConfig.clientConfig.version,
-  })
+  const resource = defaultResource().merge(resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: otelServiceName || appConfig.clientConfig.name,
+    [ATTR_SERVICE_VERSION]: appConfig.clientConfig.version,
+  }))
   
   if(otelUrl === 'console') {
     const sdk = new NodeSDK({
@@ -59,10 +59,10 @@ export default async function setupTelemetry(settings, appConfig = {}) {
     })
     const loggerProvider = new LoggerProvider({
       resource,
+      processors: [
+        new SimpleLogRecordProcessor(new ConsoleLogRecordExporter())
+      ]
     })
-    loggerProvider.addLogRecordProcessor(
-      new SimpleLogRecordProcessor(new ConsoleLogRecordExporter())
-    )
     logs.setGlobalLoggerProvider(loggerProvider)
     await sdk.start()
 
@@ -97,14 +97,14 @@ export default async function setupTelemetry(settings, appConfig = {}) {
   })    
   const loggerProvider = new LoggerProvider({
     resource,
+    processors: [
+      new BatchLogRecordProcessor(new OTLPLogExporter({
+        url: address + '/v1/logs',
+        headers, // an optional object containing custom headers to be sent with each request
+        concurrencyLimit: 1, // an optional limit on pending requests
+      }))
+    ]
   })
-  loggerProvider.addLogRecordProcessor(
-    new BatchLogRecordProcessor(new OTLPLogExporter({
-      url: address + '/v1/logs',
-      headers, // an optional object containing custom headers to be sent with each request
-      concurrencyLimit: 1, // an optional limit on pending requests
-    }))
-  )
   logs.setGlobalLoggerProvider(loggerProvider)
   await sdk.start()
 

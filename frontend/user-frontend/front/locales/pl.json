@@ -77,8 +77,13 @@
     "edit": "Edytuj",
     "view": "Pokaż",
     "close": "Zamknij",
+    "ok": "OK",
+    "next": "Dalej",
     "testIndex": "Indeks testowy",
-    "addTestNotification": "Dodaj testowe powiadomienie"
+    "addTestNotification": "Dodaj testowe powiadomienie",
+    "rejected": "Odrzucone",
+    "rejectedDetail": "Odrzuciłeś",
+    "rememberMe": "Zapamiętaj mnie"
   },
   "app": {
     "updateAvailable": "Dostępna aktualizacja!",
@@ -124,7 +129,9 @@
     "phone": "telefon",
     "google": "Google",
     "linkedin": "LinkedIn",
-    "github": "GitHub"
+    "github": "GitHub",
+    "accountConnected": "Konto połączone",
+    "accountConnectedSuccess": "Gratulacje! Pomyślnie połączyłeś konta."
   },
   "messageAuth": {
     "authenticationDone": "Uwierzytelnianie zakończone",
@@ -139,23 +146,6 @@
     "newCodeSent": "Nowy kod został do Ciebie wysłany",
     "linkExpiredDesc": "Twój tajny link już wygasł. Aby wysłać kolejny link, kliknij przycisk poniżej.",
     "resend": "Wyślij ponownie"
-  },
-  "common": {
-    "or": "LUB",
-    "error": "Błąd",
-    "success": "Sukces",
-    "cancel": "Anuluj",
-    "save": "Zapisz",
-    "delete": "Usuń",
-    "edit": "Edytuj",
-    "view": "Pokaż",
-    "close": "Zamknij",
-    "ok": "OK",
-    "next": "Dalej",
-    "testIndex": "Indeks testowy",
-    "addTestNotification": "Dodaj testowe powiadomienie",
-    "rejected": "Odrzucone",
-    "rejectedDetail": "Odrzuciłeś"
   },
   "deleteAccount": {
     "deleteAccount": "Usuń konto",
@@ -282,15 +272,8 @@
     "suggestions": "Sugestie",
     "resetPasswordButton": "Resetuj hasło"
   },
-  "common": {
-    "rememberMe": "Zapamiętaj mnie"
-  },
   "signOut": {
     "title": "Wyloguj się",
     "signingOut": "Wylogowywanie"
-  },
-  "connected": {
-    "accountConnected": "Konto połączone",
-    "accountConnectedSuccess": "Gratulacje! Pomyślnie połączyłeś konta."
   }
 }

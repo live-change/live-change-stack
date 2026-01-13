@@ -77,8 +77,13 @@
     "edit": "Edit",
     "view": "View",
     "close": "Close",
+    "ok": "OK",
+    "next": "Next",
     "testIndex": "Test Index",
-    "addTestNotification": "Add test notification"
+    "addTestNotification": "Add test notification",
+    "rejected": "Rejected",
+    "rejectedDetail": "You have rejected",
+    "rememberMe": "Remember me"
   },
   "app": {
     "updateAvailable": "Update available!",
@@ -124,7 +129,9 @@
     "phone": "phone",
     "google": "Google",
     "linkedin": "LinkedIn",
-    "github": "GitHub"
+    "github": "GitHub",
+    "accountConnected": "Account connected",
+    "accountConnectedSuccess": "Congratulations! You have successfully connected accounts."
   },
   "messageAuth": {
     "authenticationDone": "Authentication done",
@@ -139,23 +146,6 @@
     "newCodeSent": "New code sent to you",
     "linkExpiredDesc": "Your secret link already expired. To send another link click button below.",
     "resend": "Resend"
-  },
-  "common": {
-    "or": "OR",
-    "error": "Error",
-    "success": "Success",
-    "cancel": "Cancel",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit",
-    "view": "View",
-    "close": "Close",
-    "ok": "OK",
-    "next": "Next",
-    "testIndex": "Test Index",
-    "addTestNotification": "Add test notification",
-    "rejected": "Rejected",
-    "rejectedDetail": "You have rejected"
   },
   "deleteAccount": {
     "deleteAccount": "Delete account",
@@ -282,15 +272,8 @@
     "suggestions": "Suggestions",
     "resetPasswordButton": "Reset password"
   },
-  "common": {
-    "rememberMe": "Remember me"
-  },
   "signOut": {
     "title": "Sign Out",
     "signingOut": "Signing out"
-  },
-  "connected": {
-    "accountConnected": "Account connected",
-    "accountConnectedSuccess": "Congratulations! You have successfully connected accounts."
   }
 }
