@@ -3,32 +3,48 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
 
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Google authentication</div>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('googleAuth.title') }}</div>
       </div>
 
       <div v-if="state === 'canceled'" class="text-center">
-        <div>Authentication canceled by user</div>
+        <div>{{ t('googleAuth.canceled') }}</div>
         <div class="flex flex-row">
-          <Button @click="back" label="Go back" icon="pi pi-arrow-left"
+          <Button @click="back" :label="t('auth.goBack')" icon="pi pi-arrow-left"
                   class="w-full p-button-secondary mb-1" />
         </div>
       </div>
       <div v-else-if="state === 'working'" class="text-center">
-        Waiting for server...
+        {{ t('googleAuth.waiting') }}
       </div>
       <div v-else-if="state === 'error'" class="text-center">
-        <div>Error during authentication</div>
+        <div>{{ t('googleAuth.error') }}</div>
         <div>{{ error }}</div>
       </div>
       <div v-else-if="state === 'emailTaken'" class="text-center">
         <div>
-          Your account was created using email address. If you want to connect your Google account, 
-          you need to sign in with this email address. And connect your Google account using 
-          <router-link :to="{ name: 'user:connected' }">connected accounts page</router-link>.
+          <i18n-t keypath="googleAuth.emailTaken" tag="span">
+            <template #link>
+              <router-link :to="{ name: 'user:connected' }">{{ t('googleAuth.emailTakenLink') }}</router-link>
+            </template>
+          </i18n-t>
+        </div>
+      </div>
+      <div v-else-if="state === 'invalidGrant'" class="text-center">
+        <div>
+          {{ t('googleAuth.invalidGrant') }}
+          <div class="flex flex-row">
+            <Button @click="back" :label="t('auth.goBack')" icon="pi pi-arrow-left" class="w-full p-button-secondary mb-1" />
+            <Button @click="googleAuth" :label="t('auth.tryAgain')" icon="pi pi-google" class="w-full p-button-secondary mb-1" />
+          </div>
+        </div>
+      </div>
+      <div v-else-if="state === 'connectedToAnotherUser'" class="text-center">
+        <div>
+          {{ t('googleAuth.connectedToAnotherUser') }}
         </div>
       </div>
       <div v-else>
-        Unknown authentication state: {{ state }}
+        {{ t('googleAuth.unknownState', { state }) }}
       </div>
 
     </div>
@@ -43,6 +59,9 @@
 
   import { useToast } from 'primevue/usetoast'
   const toast = useToast()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const workingZone = inject('workingZone')
 
@@ -81,6 +100,7 @@
         while(user && api.client.value.user !== user) {
           await new Promise(resolve => setTimeout(resolve, 100))
         }
+        localStorage.removeItem('googleAuthScopes')
         if(actionDone === 'signIn') {
           router.push({ name: 'user:signInFinished' })
         } else if(actionDone === 'signUp') {
@@ -94,12 +114,22 @@
         }
       } catch(err) {
         if(err?.properties?.email == 'emailTaken') {
-          toast.add({ severity: 'error', summary: 'Error', detail: 'Email is already in use', life: 3000 })
+          toast.add({ severity: 'error', summary: t('common.error'), detail: t('googleAuth.emailAlreadyInUse'), life: 3000 })
           state.value = 'emailTaken'
           return
         }
+        if((typeof err == 'string') && err.startsWith('invalid_grant')) {
+          toast.add({ severity: 'error', summary: t('common.error'), detail: t('googleAuth.invalidGrantToast'), life: 3000 })
+          state.value = 'invalidGrant'
+          return
+        }
+        if(err === 'connectedToAnotherUser') {
+          toast.add({ severity: 'error', summary: t('common.error'), detail: t('googleAuth.connectedToAnotherUserToast'), life: 3000 })
+          state.value = 'connectedToAnotherUser'
+          return
+        }
         console.error("Google auth error", err)
-        toast.add({ severity: 'error', summary: 'Error', detail: 'Error during google authentication', life: 3000 })
+        toast.add({ severity: 'error', summary: t('common.error'), detail: t('googleAuth.errorToast'), life: 3000 })
         state.value = 'error' 
         error.value = err
       } 
@@ -108,6 +138,15 @@
 
   async function back() {
     router.go(-1)
+  }
+
+  async function googleAuth() {
+    if(localStorage.googleAuthScopes) {
+      const scopes = JSON.parse(localStorage.googleAuthScopes)
+      router.push({ name: 'user:googleAuthScopes', params: { action: action.value, accessType: 'offline', scopes: scopes } })
+    } else {
+      router.push({ name: 'user:googleAuth', params: { action: action.value } })
+    }
   }
 
 </script>

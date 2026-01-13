@@ -3,28 +3,28 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
 
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Google authentication</div>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('googleAuth.title') }}</div>
       </div>
 
       <div v-if="state === 'canceled'" class="text-center">
-        <div>Authentication canceled by user</div>
+        <div>{{ t('googleAuth.canceled') }}</div>
         <div class="flex flex-row">
-          <Button @click="back" label="Go back" icon="pi pi-arrow-left" class="w-full p-button-secondary mb-1" />
-          <Button @click="googleAuth" label="Try again" icon="pi pi-google" class="w-full p-button-secondary mb-1" />
+          <Button @click="back" :label="t('auth.goBack')" icon="pi pi-arrow-left" class="w-full p-button-secondary mb-1" />
+          <Button @click="googleAuth" :label="t('auth.tryAgain')" icon="pi pi-google" class="w-full p-button-secondary mb-1" />
         </div>
       </div>
       <div v-else-if="state === 'waiting'" class="text-center">
-        Authentication will open in this window.
+        {{ t('googleAuth.waitingForRedirect') }}
       </div>
       <div v-else-if="state === 'working'" class="text-center">
-        Waiting for server...
+        {{ t('googleAuth.waiting') }}
       </div>
       <div v-else-if="state === 'error'" class="text-center">
-        <div>Error during authentication:</div>
+        <div>{{ t('googleAuth.errorWithColon') }}</div>
         <div>{{ error }}</div>
       </div>
       <div v-else>
-        Unknown authentication state: {{ state }}
+        {{ t('googleAuth.unknownState', { state }) }}
       </div>
 
     </div>
@@ -36,6 +36,9 @@
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const workingZone = inject('workingZone')
 
@@ -65,6 +68,8 @@
 
   function googleAuth() {
     state.value = 'waiting'
+
+    localStorage.googleAuthScopes = JSON.stringify(scopes.value)
 
     workingZone.addPromise('google auth', new Promise((resolve, reject) => {
       setTimeout(() => {

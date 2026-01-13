@@ -3,28 +3,28 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
 
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Linkedin authentication</div>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('linkedinAuth.title') }}</div>
       </div>
 
       <div v-if="state === 'canceled'" class="text-center">
-        <div class="mb-1">Authentication canceled by user</div>
+        <div class="mb-1">{{ t('linkedinAuth.canceled') }}</div>
         <div class="flex flex-row">
-          <Button @click="back" label="Go back" icon="pi pi-arrow-left" class="w-full p-button-secondary mb-1" />
-          <Button @click="linkedinAuth" label="Try again" icon="pi pi-linkedin" class="w-full p-button-secondary mb-1" />
+          <Button @click="back" :label="t('auth.goBack')" icon="pi pi-arrow-left" class="w-full p-button-secondary mb-1" />
+          <Button @click="linkedinAuth" :label="t('auth.tryAgain')" icon="pi pi-linkedin" class="w-full p-button-secondary mb-1" />
         </div>
       </div>
       <div v-else-if="state === 'waiting'" class="text-center">
-        Authentication will open in this window.
+        {{ t('linkedinAuth.waitingForRedirect') }}
       </div>
       <div v-else-if="state === 'working'" class="text-center">
-        Waiting for server...
+        {{ t('linkedinAuth.waiting') }}
       </div>
       <div v-else-if="state === 'error'" class="text-center">
-        <div>Error during authentication:</div>
+        <div>{{ t('linkedinAuth.errorWithColon') }}</div>
         <div>{{ error }}</div>
       </div>
       <div v-else>
-        Unknown authentication state: {{ state }}
+        {{ t('linkedinAuth.unknownState', { state }) }}
       </div>
 
     </div>
@@ -36,6 +36,9 @@
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const workingZone = inject('workingZone')
 

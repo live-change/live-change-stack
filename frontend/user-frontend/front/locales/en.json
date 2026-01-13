@@ -235,5 +235,62 @@
     "openLink": "Or open authentication link:",
     "seeYouSoon": "See you soon",
     "teamSignature": "{brandName} Team"
+  },
+  "googleAuth": {
+    "title": "Google authentication",
+    "canceled": "Authentication canceled by user",
+    "waiting": "Waiting for server...",
+    "waitingForRedirect": "Authentication will open in this window.",
+    "error": "Error during authentication",
+    "errorWithColon": "Error during authentication:",
+    "unknownState": "Unknown authentication state: {state}",
+    "emailTaken": "Your account was created using email address. If you want to connect your Google account, you need to sign in with this email address. And connect your Google account using {link}.",
+    "emailTakenLink": "connected accounts page",
+    "invalidGrant": "Invalid grant. Please try again. You may used this link before, or google authentication failed.",
+    "connectedToAnotherUser": "This account is already connected to another user. Please sign in with your email address or google account.",
+    "emailAlreadyInUse": "Email is already in use",
+    "invalidGrantToast": "Invalid grant",
+    "connectedToAnotherUserToast": "Connected to another user",
+    "errorToast": "Error during google authentication"
+  },
+  "linkedinAuth": {
+    "title": "Linkedin authentication",
+    "canceled": "Authentication canceled by user",
+    "waiting": "Waiting for server...",
+    "waitingForRedirect": "Authentication will open in this window.",
+    "error": "Error during authentication",
+    "errorWithColon": "Error during authentication:",
+    "unknownState": "Unknown authentication state: {state}",
+    "errorToast": "Error during linkedin authentication"
+  },
+  "googleAccess": {
+    "title": "Google API Access",
+    "currentAccess": "You are currently granting us access to the following Google API features:",
+    "needAccess": "To use this feature, you need to grant us access to the Google APIs listed below:",
+    "clickButton": "Click the button below to go to the Google page where you can grant access.",
+    "authenticationButton": "Google Authentication",
+    "gainedTitle": "Signed In",
+    "gainedMessage": "Congratulations! You added offline access to your account. Now your account have access to:",
+    "next": "Next",
+    "redirectIn": "Redirect in {seconds}...",
+    "returnToIndex": "Return to {link}.",
+    "indexPage": "index page",
+    "signedInToast": "Signed in",
+    "signedInToastDetail": "Congratulations! You have successfully logged in to your account."
+  },
+  "password": {
+    "suggestions": "Suggestions",
+    "resetPasswordButton": "Reset password"
+  },
+  "common": {
+    "rememberMe": "Remember me"
+  },
+  "signOut": {
+    "title": "Sign Out",
+    "signingOut": "Signing out"
+  },
+  "connected": {
+    "accountConnected": "Account connected",
+    "accountConnectedSuccess": "Congratulations! You have successfully connected accounts."
   }
 }

@@ -3,25 +3,25 @@
     <div class="bg-surface-0 dark:bg-surface-900 p-6 shadow rounded-border">
 
       <div class="text-center mb-8">
-        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Linkedin authentication</div>
+        <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ t('linkedinAuth.title') }}</div>
       </div>
 
       <div v-if="state === 'canceled'" class="text-center">
-        <div class="mb-2 text-red-500">Authentication canceled by user</div>
+        <div class="mb-2 text-red-500">{{ t('linkedinAuth.canceled') }}</div>
         <div class="flex flex-row">
-          <Button @click="back" label="Go back" icon="pi pi-arrow-left"
+          <Button @click="back" :label="t('auth.goBack')" icon="pi pi-arrow-left"
                   class="w-full p-button-secondary mb-1" />
         </div>
       </div>
       <div v-else-if="state === 'working'" class="text-center">
-        Waiting for server...
+        {{ t('linkedinAuth.waiting') }}
       </div>
       <div v-else-if="state === 'error'" class="text-center">
-        <div>Error during authentication</div>
+        <div>{{ t('linkedinAuth.error') }}</div>
         <div>{{ error }}</div>
       </div>
       <div v-else>
-        Unknown authentication state: {{ state }}
+        {{ t('linkedinAuth.unknownState', { state }) }}
       </div>
 
     </div>
@@ -36,6 +36,9 @@
 
   import { useToast } from 'primevue/usetoast'
   const toast = useToast()
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   const workingZone = inject('workingZone')
 
@@ -88,7 +91,7 @@
       }
     } catch(error) {
       console.error("Linkedin auth error", error)
-      toast.add({ severity: 'error', summary: 'Error', detail: 'Error during linkedin authentication', life: 3000 })
+      toast.add({ severity: 'error', summary: t('common.error'), detail: t('linkedinAuth.errorToast'), life: 3000 })
       state.value = 'error'
       error.value = error
     }

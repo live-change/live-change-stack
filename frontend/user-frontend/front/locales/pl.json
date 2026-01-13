@@ -235,5 +235,62 @@
     "openLink": "Lub otwórz link uwierzytelniania:",
     "seeYouSoon": "Do zobaczenia",
     "teamSignature": "Zespół {brandName}"
+  },
+  "googleAuth": {
+    "title": "Uwierzytelnianie Google",
+    "canceled": "Uwierzytelnianie anulowane przez użytkownika",
+    "waiting": "Oczekiwanie na serwer...",
+    "waitingForRedirect": "Uwierzytelnianie otworzy się w tym oknie.",
+    "error": "Błąd podczas uwierzytelniania",
+    "errorWithColon": "Błąd podczas uwierzytelniania:",
+    "unknownState": "Nieznany stan uwierzytelniania: {state}",
+    "emailTaken": "Twoje konto zostało utworzone przy użyciu adresu email. Jeśli chcesz połączyć swoje konto Google, musisz zalogować się tym adresem email. I połączyć swoje konto Google używając {link}.",
+    "emailTakenLink": "strony połączonych kont",
+    "invalidGrant": "Nieprawidłowy grant. Spróbuj ponownie. Możesz użyć tego linku wcześniej lub uwierzytelnianie Google nie powiodło się.",
+    "connectedToAnotherUser": "To konto jest już połączone z innym użytkownikiem. Zaloguj się swoim adresem email lub kontem Google.",
+    "emailAlreadyInUse": "Email jest już w użyciu",
+    "invalidGrantToast": "Nieprawidłowy grant",
+    "connectedToAnotherUserToast": "Połączone z innym użytkownikiem",
+    "errorToast": "Błąd podczas uwierzytelniania Google"
+  },
+  "linkedinAuth": {
+    "title": "Uwierzytelnianie LinkedIn",
+    "canceled": "Uwierzytelnianie anulowane przez użytkownika",
+    "waiting": "Oczekiwanie na serwer...",
+    "waitingForRedirect": "Uwierzytelnianie otworzy się w tym oknie.",
+    "error": "Błąd podczas uwierzytelniania",
+    "errorWithColon": "Błąd podczas uwierzytelniania:",
+    "unknownState": "Nieznany stan uwierzytelniania: {state}",
+    "errorToast": "Błąd podczas uwierzytelniania LinkedIn"
+  },
+  "googleAccess": {
+    "title": "Dostęp do Google API",
+    "currentAccess": "Obecnie udzielasz nam dostępu do następujących funkcji Google API:",
+    "needAccess": "Aby użyć tej funkcji, musisz udzielić nam dostępu do wymienionych poniżej Google API:",
+    "clickButton": "Kliknij przycisk poniżej, aby przejść do strony Google, gdzie możesz udzielić dostępu.",
+    "authenticationButton": "Uwierzytelnianie Google",
+    "gainedTitle": "Zalogowany",
+    "gainedMessage": "Gratulacje! Dodałeś dostęp offline do swojego konta. Teraz Twoje konto ma dostęp do:",
+    "next": "Dalej",
+    "redirectIn": "Przekierowanie za {seconds}...",
+    "returnToIndex": "Wróć do {link}.",
+    "indexPage": "strony głównej",
+    "signedInToast": "Zalogowany",
+    "signedInToastDetail": "Gratulacje! Pomyślnie zalogowałeś się do swojego konta."
+  },
+  "password": {
+    "suggestions": "Sugestie",
+    "resetPasswordButton": "Resetuj hasło"
+  },
+  "common": {
+    "rememberMe": "Zapamiętaj mnie"
+  },
+  "signOut": {
+    "title": "Wyloguj się",
+    "signingOut": "Wylogowywanie"
+  },
+  "connected": {
+    "accountConnected": "Konto połączone",
+    "accountConnectedSuccess": "Gratulacje! Pomyślnie połączyłeś konta."
   }
 }

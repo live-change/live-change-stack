@@ -33,12 +33,12 @@
                       v-model="data.passwordHash">
               <template #footer>
                 <Divider />
-                <p class="p-mt-2">Suggestions</p>
+                <p class="p-mt-2">{{ t('password.suggestions') }}</p>
                 <ul class="p-pl-2 p-ml-2 p-mt-0" style="line-height: 1.5">
-                  <li>At least one lowercase</li>
-                  <li>At least one uppercase</li>
-                  <li>At least one numeric</li>
-                  <li>Minimum 8 characters</li>
+                  <li>{{ t('auth.suggestionLowercase') }}</li>
+                  <li>{{ t('auth.suggestionUppercase') }}</li>
+                  <li>{{ t('auth.suggestionNumeric') }}</li>
+                  <li>{{ t('auth.suggestionMinLength') }}</li>
                 </ul>
               </template>
             </Password>
@@ -56,7 +56,7 @@
 
         </template>
 
-        <Button type="submit" label="Reset password" icon="pi pi-key" class="w-full"></Button>
+        <Button type="submit" :label="t('password.resetPasswordButton')" icon="pi pi-key" class="w-full"></Button>
 
       </command-form>
     </div>

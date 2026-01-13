@@ -1,8 +1,8 @@
 <template>
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">Sign Out</div>
-      <p class="mt-0 p-0 leading-normal">Signing out</p>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">{{ t('signOut.title') }}</div>
+      <p class="mt-0 p-0 leading-normal">{{ t('signOut.signingOut') }}</p>
       <ProgressSpinner v-if="isMounted" class="m-4" />
     </div>
   </div>
@@ -10,6 +10,9 @@
 
 <script setup>
   import ProgressSpinner from "primevue/progressspinner"
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   import { onMounted, ref } from 'vue'
   const isMounted = ref(false)

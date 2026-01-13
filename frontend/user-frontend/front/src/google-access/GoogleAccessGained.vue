@@ -1,9 +1,9 @@
 <template>
   <div class="w-full lg:w-6/12 md:w-9/12 max-w-[32rem]" v-shared-element:form="{ duration: '300ms', includeChildren: true }">
     <div class="bg-surface-0 dark:bg-surface-900 rounded-border shadow p-6">
-      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">Signed In</div>
+      <div class="text-surface-900 dark:text-surface-0 font-medium mb-4 text-xl mb-6">{{ t('googleAccess.gainedTitle') }}</div>
       <p class="mt-0 p-0 leading-normal">
-        Congratulations! You added offline access to your account. Now your account have access to:
+        {{ t('googleAccess.gainedMessage') }}
         <ul>
           <li v-for="access in accessList">
             {{ access }}
@@ -13,14 +13,18 @@
       </p>
       <div v-if="afterGoogleAccessGained" class="flex flex-row items-center">
         <router-link :to="afterGoogleAccessGained" class="no-underline">
-          <Button label="Next" v-ripple />
+          <Button :label="t('googleAccess.next')" v-ripple />
         </router-link>
         <p class="ml-6" v-if="isMounted && redirectTime">
-          Redirect in {{ pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }}...
+          {{ t('googleAccess.redirectIn', { seconds: pluralize('second', Math.ceil((redirectTime - currentTime) / 1000), true) }) }}
         </p>
       </div>
       <div v-else>
-        Return to <router-link to="/">index page</router-link>.
+        <i18n-t keypath="googleAccess.returnToIndex" tag="span">
+          <template #link>
+            <router-link to="/">{{ t('googleAccess.indexPage') }}</router-link>
+          </template>
+        </i18n-t>
       </div>
     </div>
   </div>
@@ -29,6 +33,9 @@
 <script setup>
 
   import Button from 'primevue/button'
+
+  import { useI18n } from 'vue-i18n'
+  const { t } = useI18n()
 
   import { onMounted, ref } from 'vue'
   const isMounted = ref(false)
@@ -42,6 +49,9 @@
 
   import { usePath, live, useApi } from "@live-change/vue3-ssr"
   const api = useApi()
+
+  import { useToast } from 'primevue/usetoast'
+  const toast = useToast()
 
   const userClientConfig = api.getServiceDefinition('user')?.clientConfig
 
@@ -68,8 +78,8 @@
         setTimeout(() => { // it could be next tick
           toast.add({
             severity: 'info', life: 6000,
-            summary: 'Signed in',
-            detail: 'Congratulations! You have successfully logged in to your account.'
+            summary: t('googleAccess.signedInToast'),
+            detail: t('googleAccess.signedInToastDetail')
           })
           router.push(route)
         }, 100)
