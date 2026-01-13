@@ -152,12 +152,12 @@
 
   await Promise.all([ ...contactPromises, ...accountPromises ])
 
-  const contacts = computed(() => contactsTypes.map((c,i) => c.contacts.value.map(v => ({
+  const contacts = computed(() => contactsTypes.map((c,i) => (c.contacts.value || []).map(v => ({
     contactType: c,
     ...(v)
   }))).flat())
 
-  const accounts = computed(() => accountTypes.map((c,i) => c.accounts.value.map(v => ({
+  const accounts = computed(() => accountTypes.map((c,i) => (c.accounts.value || []).map(v => ({
     accountType: c,
     ...(v)
   }))).flat())
