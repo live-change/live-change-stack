@@ -34,21 +34,35 @@
       type: String,
       required: true
     },
+    countries: {
+      type: Array,
+      default: null
+    },
+  })
+
+  const availableCountries = computed(() => {
+    if (!props.countries || props.countries.length === 0) {
+      return countries
+    }
+    const allowedCodes = props.countries.map(code => code.toUpperCase())
+    return countries.filter((country) =>
+      allowedCodes.includes(country.code.toUpperCase())
+    )
   })
 
   const selectedCountry = ref()
   watch(value, (newValue) => {
     if(!newValue) return
-    const found = countries.find((country) => newValue.startsWith(country.name))
+    const found = availableCountries.value.find((country) => newValue.startsWith(country.name))
     if(found) selectedCountry.value = found
   })
 
-  const filteredCountries = ref(countries)
+  const filteredCountries = ref(availableCountries.value)
   function searchCountry(event) {
     if(!event) return
     const numbers = event.query.replace(/[^\d]/g, '')
     console.log("Search country", event.query, numbers, selectedCountry.value)
-    filteredCountries.value = countries.filter((country) =>
+    filteredCountries.value = availableCountries.value.filter((country) =>
       country.name.toLowerCase().startsWith(event.query.toLowerCase())
         || country.code.toLowerCase().startsWith(event.query.toLowerCase())
         || (numbers.length > 0 && country.dial_code.replace(/[^\d]/g, '').startsWith(numbers))
@@ -67,8 +81,12 @@
   const myCountry = await live(geoIpPath)
 
   if(selectedCountry.value == null) {
-    selectedCountry.value = countries.find(c => c.code.toLowerCase() === myCountry.value.toLowerCase())
+    selectedCountry.value = availableCountries.value.find(c => c.code.toLowerCase() === myCountry.value.toLowerCase())
   }
+
+  watch(() => props.countries, () => {
+    filteredCountries.value = availableCountries.value
+  }, { deep: true })
 
 </script>
 

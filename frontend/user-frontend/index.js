@@ -22,6 +22,9 @@ import PhoneInput from "./front/src/phone/PhoneInput.vue"
 import CountryInput from './front/src/phone/CountryInput.vue'
 export { PhoneInput, CountryInput }
 
+import countries from "./front/src/utils/countries.js"
+export { countries }
+
 import MessageSent from "./front/src/message-auth/MessageSent.vue"
 export { MessageSent }
 
