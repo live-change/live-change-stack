@@ -5,6 +5,13 @@ import definition from './definition.js'
 import config from './config.js'
 import { triggerType, runTrigger, doRunTrigger } from './run.js'
 
+function scheduleAccessControlObjects({ ownerType, owner, topicType, topic }) {
+  return [{
+    objectType: ownerType,
+    object: owner
+  }]
+}
+
 export const Schedule = definition.model({
   name: "Schedule",
   propertyOfAny: {
@@ -12,10 +19,12 @@ export const Schedule = definition.model({
     ownerTypes: config.ownerTypes,
     topicTypes: config.topicTypes,
     writeAccessControl: {
-      roles: config.adminRoles
+      roles: config.adminRoles,
+      objects: scheduleAccessControlObjects
     },
     readAccessControl: {
-      roles: config.adminRoles
+      roles: config.adminRoles,
+      objects: scheduleAccessControlObjects
     },
     readAllAccess: ['admin'],
   },

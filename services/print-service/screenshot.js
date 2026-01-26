@@ -60,8 +60,9 @@ export const screenshotToFileTask = task({
   async execute({ path, data, timeout, media, options, waitForSelector, viewport, outputPath, clipSelector },
                 { task, trigger, triggerService }, emit) {
     const all = 10
-    let at = 0
+    let at = 0    
     const url = await getAuthenticatedUrl(path, data)
+    console.log("SCREENSHOT URL", url, "DATA", data, 'PATH', path)
     let imageData
     let size
     task.progress(at++, all, 'gettingBrowserReady')

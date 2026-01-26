@@ -191,7 +191,8 @@ export default (definition) => {
       return node
     }
     function computeNodeRoles(node) {
-      const parentsRoles = node.parents.map(parent => computeNodeRoles(parent)).flat()
+      const parentsRoles = node.parents.map(parent => computeNodeRoles(parent)).flat()      
+      //output.debug('computeNodeRoles', node.objectType, node.object, parentsRoles, 'FOR', client)
       return Array.from(new Set([
         ...parentsRoles,
         ...node.publicUserRoles,

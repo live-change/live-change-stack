@@ -8,6 +8,13 @@ import createWaitingFunction from './waitForDone.js'
 
 const waitForTasks = createWaitingFunction(definition)
 
+function intervalAccessControlObjects({ ownerType, owner, topicType, topic }) {
+  return [{
+    objectType: ownerType,
+    object: owner
+  }]
+}
+
 export const Interval = definition.model({
   name: "Interval",
   propertyOfAny: {
@@ -15,10 +22,12 @@ export const Interval = definition.model({
     ownerTypes: config.ownerTypes,
     topicTypes: config.topicTypes,
     writeAccessControl: {
-      roles: config.adminRoles
+      roles: config.adminRoles,
+      objects: intervalAccessControlObjects
     },
     readAccessControl: {
-      roles: [...config.adminRoles, ...config.readerRoles]
+      roles: [...config.adminRoles, ...config.readerRoles],
+      objects: intervalAccessControlObjects
     },
     readAllAccess: ['admin'],
   },

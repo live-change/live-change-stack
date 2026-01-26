@@ -63,10 +63,12 @@ definition.processor({
         if(objects.length === 0) {
           throw new Error('no objects for access control to work in view ' + viewName)
         }
-        /*console.log("OBJECTS", objects)
+        /* console.log("ACCESS CONTROL", service.name, "VIEW", view.name, "CONFIG", config)
+        console.log("OBJECTS", objects)
         console.log("CLIENT", client)
-        console.log("ROLES", config.roles)*/
+        console.log("ROLES", config.roles) */
         const accessible = await access.clientHasAccessRoles(client, { objects }, config.roles)
+        //console.log("ACCESSIBLE", accessible)
         if(!accessible) throw 'notAuthorized'
         return oldGet.apply(view, args)
       }

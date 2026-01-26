@@ -24,7 +24,7 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/pattern": "^0.9.181"
+    "@live-change/pattern": "0.9.181"
   },
   "gitHead": "9782af460ae60ee89e01d03bce816aa5380d9bad"
 }
