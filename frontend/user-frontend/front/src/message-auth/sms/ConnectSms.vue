@@ -11,11 +11,7 @@
 <script setup>
   import Button from "primevue/button"
 
-  const { action, contact, json } = defineProps({
-    action: {
-      type: String,
-      required: true
-    },
+  const { contact, json } = defineProps({
     contact: {
       type: String,
       required: true
@@ -32,17 +28,13 @@
   const secretLink = secrets.find(secret => secret.type === 'link')
   const secretCode = secrets.find(secret => secret.type === 'code')
 
-  import { useLocale } from "@live-change/vue3-components"
-  const locale = useLocale()
-  const localePromise = locale.getOtherUserOrSessionLocale(data.user, data.client?.session)
-  await Promise.all([localePromise])
   import { useI18n } from 'vue-i18n'
   const { locale: i18nLocale, t } = useI18n()
-  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
+
+  console.log("T", t)
 
   import { useApi } from '@live-change/vue3-ssr'
   const api = useApi()
-
   const {
     brandName, baseHref, brandSmsFrom
   } = api.metadata.config.value
@@ -52,8 +44,17 @@
     to: contact
   }
 
+  console.log("CLIENT", api.client.value)
+
   import { useRouter } from 'vue-router'
   const router = useRouter()
+
+  import { useLocale } from "@live-change/vue3-components"
+  const locale = useLocale()
+  const localePromise = locale.getOtherUserOrSessionLocale(data.user, data.client?.session)
+  await Promise.all([localePromise])
+  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
+
   const linkAddress = baseHref + router.resolve({
     name: 'user:link',
     params: {
