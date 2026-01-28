@@ -31,8 +31,6 @@
   import { useI18n } from 'vue-i18n'
   const { locale: i18nLocale, t } = useI18n()
 
-  console.log("T", t)
-
   import { useApi } from '@live-change/vue3-ssr'
   const api = useApi()
   const {
@@ -43,8 +41,6 @@
     from: brandSmsFrom,
     to: contact
   }
-
-  console.log("CLIENT", api.client.value)
 
   import { useRouter } from 'vue-router'
   const router = useRouter()
