@@ -341,7 +341,7 @@
       }, { deep: true })
     }
 
-    newElement(index) {
+    newElement(index) {      
       if(this.elementDefinition.type === "Object") {
         return new FormObject(this.elementDefinition, this.component, this.object, index)
       } else if(this.elementDefinition.type === 'Array') {
@@ -468,14 +468,15 @@
       }
     }
 
-    addElement(initialValue) {
-      let el = this.newElement()
+    addElement(initialValue) {      
+      let el = this.newElement(this.elements.length)
       el.reset(initialValue)
       this.elements.push(el)
     }
 
     removeElement(i) {
       this.elements.splice(i, 1)
+      this.data[this.property].splice(i, 1)
       this.updateElementIndices()
     }
   }
