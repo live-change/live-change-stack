@@ -43,6 +43,16 @@
           {{ t('googleAuth.connectedToAnotherUser') }}
         </div>
       </div>
+      <div v-else-if="state === 'alreadyConnected'" class="text-center">
+        <div>
+          {{ t('googleAuth.alreadyConnected') }}
+          <div class="flex flex-row mt-4 justify-center">
+            <router-link :to="{ name: 'user:connected' }">
+              <Button :label="t('auth.goToConnected')" icon="pi pi-arrow-left" class="w-full p-button-secondary mb-1" />
+            </router-link>
+          </div>
+        </div>
+      </div>
       <div v-else>
         {{ t('googleAuth.unknownState', { state }) }}
       </div>
@@ -123,9 +133,14 @@
           state.value = 'invalidGrant'
           return
         }
-        if(err === 'connectedToAnotherUser') {
+        if(err === 'connectedToAnotherUser' || err === 'alreadyConnectedElsewhere') {
           toast.add({ severity: 'error', summary: t('common.error'), detail: t('googleAuth.connectedToAnotherUserToast'), life: 3000 })
           state.value = 'connectedToAnotherUser'
+          return
+        }
+        if(err === 'alreadyConnected') {
+          toast.add({ severity: 'error', summary: t('common.error'), detail: t('googleAuth.alreadyConnectedToast'), life: 3000 })
+          state.value = 'alreadyConnected'
           return
         }
         console.error("Google auth error", err)

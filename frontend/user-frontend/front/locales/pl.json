@@ -40,6 +40,7 @@
     "authenticationCanceled": "Uwierzytelnianie anulowane przez użytkownika",
     "authenticationError": "Błąd podczas uwierzytelniania",
     "goBack": "Wróć",
+    "goToConnected": "Przejdź do połączonych kont",
     "tryAgain": "Spróbuj ponownie",
     "confirmEmail": "Potwierdź email",
     "confirmPhone": "Potwierdź telefon",
@@ -238,9 +239,11 @@
     "emailTakenLink": "strony połączonych kont",
     "invalidGrant": "Nieprawidłowy grant. Spróbuj ponownie. Możesz użyć tego linku wcześniej lub uwierzytelnianie Google nie powiodło się.",
     "connectedToAnotherUser": "To konto jest już połączone z innym użytkownikiem. Zaloguj się swoim adresem email lub kontem Google.",
+    "alreadyConnected": "To konto Google jest już dodane do Twojego konta. Możesz sprawdzić połączone konta w ustawieniach.",
     "emailAlreadyInUse": "Email jest już w użyciu",
     "invalidGrantToast": "Nieprawidłowy grant",
     "connectedToAnotherUserToast": "Połączone z innym użytkownikiem",
+    "alreadyConnectedToast": "Konto już dodane",
     "errorToast": "Błąd podczas uwierzytelniania Google"
   },
   "linkedinAuth": {
