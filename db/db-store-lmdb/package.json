@@ -32,5 +32,5 @@
     "node-lmdb": "^0.10.1",
     "p-queue": "8.1.0"
   },
-  "gitHead": "9782af460ae60ee89e01d03bce816aa5380d9bad"
+  "gitHead": "9cb9fc01eebdafb342a419cde03eafdf467eaa32"
 }

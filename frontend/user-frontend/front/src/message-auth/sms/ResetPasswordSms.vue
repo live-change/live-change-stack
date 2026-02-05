@@ -30,7 +30,6 @@
   const secretLink = secrets.find(secret => secret.type === 'link')
   const secretCode = secrets.find(secret => secret.type === 'code')
 
-  import { useLocale } from "@live-change/vue3-components"
   import { useI18n } from 'vue-i18n'
   const { locale: i18nLocale, t } = useI18n()
 

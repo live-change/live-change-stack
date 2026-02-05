@@ -17,6 +17,6 @@
     "p-queue": "8.1.0",
     "progress-stream": "^2.0.0"
   },
-  "gitHead": "9782af460ae60ee89e01d03bce816aa5380d9bad",
+  "gitHead": "9cb9fc01eebdafb342a419cde03eafdf467eaa32",
   "type": "module"
 }
