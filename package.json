@@ -78,6 +78,7 @@
     "services/survey-service",
     "services/scope-service",
     "services/cron-service",
+    "services/feedback-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",

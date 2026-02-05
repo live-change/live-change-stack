@@ -1,0 +1,31 @@
+{
+  "name": "@live-change/feedback-service",
+  "version": "0.9.186",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-stack/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-stack",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "dependencies": {
+    "@live-change/access-control-service": "0.9.186",
+    "@live-change/framework": "0.9.186",
+    "@live-change/relations-plugin": "0.9.186",
+    "@live-change/user-service": "0.9.186"
+  },
+  "gitHead": "9782af460ae60ee89e01d03bce816aa5380d9bad",
+  "type": "module"
+}

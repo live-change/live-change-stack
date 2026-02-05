@@ -45,12 +45,6 @@
   import { useRouter } from 'vue-router'
   const router = useRouter()
 
-  import { useLocale } from "@live-change/vue3-components"
-  const locale = useLocale()
-  const localePromise = locale.getOtherUserOrSessionLocale(data.user, data.client?.session)
-  await Promise.all([localePromise])
-  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
-
   const linkAddress = baseHref + router.resolve({
     name: 'user:link',
     params: {
@@ -59,6 +53,12 @@
   }).href
 
   const code = secretCode.secret.secretCode
+
+  import { useLocale } from "@live-change/vue3-components"
+  const locale = useLocale()
+  const localePromise = locale.getOtherUserOrSessionLocale(data.user, data.client?.session)
+  await Promise.all([localePromise])
+  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
 
 </script>
 

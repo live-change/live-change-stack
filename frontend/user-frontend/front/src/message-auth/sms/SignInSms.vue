@@ -31,12 +31,8 @@
   const secretCode = secrets.find(secret => secret.type === 'code')
 
   import { useLocale } from "@live-change/vue3-components"
-  const locale = useLocale()
-  const localePromise = locale.getOtherUserOrSessionLocale(data.user, data.client?.session)
-  await Promise.all([localePromise])
   import { useI18n } from 'vue-i18n'
   const { locale: i18nLocale, t } = useI18n()
-  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
 
   import { useApi } from '@live-change/vue3-ssr'
   const api = useApi()
@@ -60,6 +56,12 @@
   }).href
 
   const code = secretCode.secret.secretCode
+
+  import { useLocale } from "@live-change/vue3-components"
+  const locale = useLocale()
+  const localePromise = locale.getOtherUserOrSessionLocale(data.user, data.client?.session)
+  await Promise.all([localePromise])
+  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
 
 </script>
 

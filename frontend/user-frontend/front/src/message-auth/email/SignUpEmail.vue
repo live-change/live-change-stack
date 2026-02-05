@@ -72,14 +72,8 @@
   const secretLink = secrets.find(secret => secret.type === 'link')
   const secretCode = secrets.find(secret => secret.type === 'code')
 
-  const owner = { sessionOrUserType: 'session_Session', sessionOrUser: data.session }
-  import { useLocale } from "@live-change/vue3-components"
-  const locale = useLocale()
-  const localePromise = locale.getOtherOwnerLocale(owner)
-  await Promise.all([localePromise])
   import { useI18n } from 'vue-i18n'
   const { locale: i18nLocale, t } = useI18n()
-  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
 
   import { useHead } from '@vueuse/head'
   useHead({ htmlAttrs: { class: 'email-rendering' } })
@@ -107,6 +101,13 @@
   }).href
 
   const code = secretCode.secret.secretCode
+
+  const owner = { sessionOrUserType: 'session_Session', sessionOrUser: data.session }
+  import { useLocale } from "@live-change/vue3-components"
+  const locale = useLocale()
+  const localePromise = locale.getOtherOwnerLocale(owner)
+  await Promise.all([localePromise])
+  if(locale.getLanguage()) i18nLocale.value = locale.getLanguage()
 
 </script>
 

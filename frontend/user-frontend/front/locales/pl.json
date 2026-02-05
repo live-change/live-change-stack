@@ -218,6 +218,30 @@
       "subject": "Potwierdź swój adres email.",
       "description": "Próbujesz zresetować hasło do swojego konta. Aby to potwierdzić, wprowadź tajny kod:",
       "textDescription": "Próbujesz zresetować hasło do swojego konta. Aby to potwierdzić, wprowadź tajny kod:"
+    },
+    "feedbackReceived": {
+      "subject": {
+        "feedback": "Otrzymano nowy feedback",
+        "error": "Otrzymano zgłoszenie błędu",
+        "delete": "Otrzymano feedback po usunięciu konta"
+      },
+      "description": "Otrzymałeś {type} od użytkownika.",
+      "textDescription": "Otrzymałeś {type} od użytkownika.",
+      "contentLabel": "Treść",
+      "contactLabel": "Informacje kontaktowe",
+      "userProvidedEmailLabel": "Email podany przez użytkownika",
+      "userContactLabel": "Kontakt użytkownika",
+      "detailsLabel": "Szczegóły",
+      "typeLabel": "Typ",
+      "ipLabel": "Adres IP",
+      "sessionLabel": "Sesja",
+      "userAgentLabel": "User Agent",
+      "traceLabel": "Trace",
+      "types": {
+        "feedback": "feedback",
+        "error": "zgłoszenie błędu",
+        "delete": "feedback po usunięciu konta"
+      }
     }
   },
   "smsTemplates": {

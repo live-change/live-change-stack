@@ -218,6 +218,30 @@
       "subject": "Confirm your email address.",
       "description": "You are trying to reset password to your account. In order to confirm that, please enter secret code:",
       "textDescription": "You are trying to reset password to your account. In order to confirm that, please enter secret code:"
+    },
+    "feedbackReceived": {
+      "subject": {
+        "feedback": "New feedback received",
+        "error": "Error report received",
+        "delete": "Feedback after account deletion received"
+      },
+      "description": "You have received {type} from a user.",
+      "textDescription": "You have received {type} from a user.",
+      "contentLabel": "Content",
+      "contactLabel": "Contact Information",
+      "userProvidedEmailLabel": "User provided email",
+      "userContactLabel": "User contact",
+      "detailsLabel": "Details",
+      "typeLabel": "Type",
+      "ipLabel": "IP Address",
+      "sessionLabel": "Session",
+      "userAgentLabel": "User Agent",
+      "traceLabel": "Trace",
+      "types": {
+        "feedback": "feedback",
+        "error": "error report",
+        "delete": "feedback after account deletion"
+      }
     }
   },
   "smsTemplates": {
