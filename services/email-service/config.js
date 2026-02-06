@@ -44,6 +44,11 @@ const renderMethod = getValue(definition.config.renderMethod, process.env.EMAIL_
 
 definition.clientConfig = {}
 
+const {
+  userEmailsReaderRoles = ['admin', 'owner'],
+  userEmailsWriterRoles = ['admin'],
+} = definition.config
+
 const config = { 
   browser, 
   smtp,
@@ -52,7 +57,9 @@ const config = {
     definition.config.browser?.ssrUrl, 
     process.env.SSR_URL, 
     'http://localhost:8001'
-  )
+  ),
+  userEmailsReaderRoles,
+  userEmailsWriterRoles,
 }
 
 export default config

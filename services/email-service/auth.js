@@ -1,5 +1,7 @@
 import definition from './definition.js'
 
+import config from './config.js'
+
 const User = definition.foreignModel('user', 'User')
 
 const preFilter = email => email.toLowerCase()
@@ -14,7 +16,9 @@ const Email = definition.model({
     }
   },
   userItem: {
-    userReadAccess: () => true
+    userReadAccess: () => true,
+    readAccess: config.userEmailsReaderRoles,
+    writeAccess: config.userEmailsWriterRoles,
   }
 })
 

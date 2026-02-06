@@ -53,7 +53,7 @@
   const selectedCountry = ref()
   watch(value, (newValue) => {
     if(!newValue) return
-    const found = availableCountries.value.find((country) => newValue.startsWith(country.name))
+    const found = availableCountries.value.find((country) => newValue.toLowerCase() == country.code.toLowerCase())
     if(found) selectedCountry.value = found
   })
 
@@ -71,7 +71,7 @@
   }
 
   watch(selectedCountry, (country) => {
-    value.value = country?.name || country
+    value.value = country ? country.code.toLowerCase() : null
   })
 
   import { usePath, live } from '@live-change/vue3-ssr'

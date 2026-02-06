@@ -37,7 +37,7 @@ export function serverEntry(App, createRouter, config = {}) {
       windowId
     })
 
-    const { app, router, head } = await createApp(
+    const { app, router, head, errorLog } = await createApp(
       config, api, App, createRouter, host, headers, response, url
     )
 
@@ -59,36 +59,45 @@ export function serverEntry(App, createRouter, config = {}) {
     let usedStyles = new Set()
     Base.setLoadedStyleName = async (name) => usedStyles.add(name)
 
-    const html = await renderToString(app, ctx)
-    // get the prerender cache data
-    const data = api.prerenderCache.cacheData()
+    try { 
+      const html = await renderToString(app, ctx)
+   
+      // get the prerender cache data
+      const data = api.prerenderCache.cacheData()
 
-    const renderedHead = await renderHeadToString(head) 
+      const renderedHead = await renderHeadToString(head) 
 
 
-    const styleSheets = []
-    styleSheets.push(`<style type="text/css" data-primevue-style-id="layer-order">${
-      BaseStyle.getLayerOrderThemeCSS()}</style>`)
-    BaseStyle.getLayerOrderThemeCSS()
+      const styleSheets = []
+      styleSheets.push(`<style type="text/css" data-primevue-style-id="layer-order">${
+        BaseStyle.getLayerOrderThemeCSS()}</style>`)
+      BaseStyle.getLayerOrderThemeCSS()
 
-    styleSheets.push(Theme.getCommonStyleSheet())
-    for(const name of usedStyles) {
-      styleSheets.push(Theme.getStyleSheet(name))
-      try {
-        //const styleObject = await import(/* @vite-ignore */`primevue/${name}/style`)
-        const component = components[name]
-        if(!component) continue;
-        //console.log("COMPONENT", component)
-        styleSheets.push(component.getThemeStyleSheet())        
-      } catch (e) {
-        console.error('Error loading '+name+' style', e)
+      styleSheets.push(Theme.getCommonStyleSheet())
+      for(const name of usedStyles) {
+        styleSheets.push(Theme.getStyleSheet(name))
+        try {
+          //const styleObject = await import(/* @vite-ignore */`primevue/${name}/style`)
+          const component = components[name]
+          if(!component) continue;
+          //console.log("COMPONENT", component)
+          styleSheets.push(component.getThemeStyleSheet())        
+        } catch (e) {
+          console.error('Error loading '+name+' style', e)
+        }
       }
+      styleSheets.push(BaseStyle.getThemeStyleSheet())
+
+      renderedHead.headTags += styleSheets.join('\n')
+
+      return { html, data, meta: renderedHead, modules: ctx.modules, response }
+    } catch (error) {
+      console.error('SSR renderToString error:', error.message, error.stack, "URL", url)
+      errorLog.push({ message: error.message, stack: error.stack, url: url })
+      /// concatente the error log to string, and throw it all
+      const errorString = errorLog.map(e => e.message + '\n' + e.stack + '\n' + e.url).join('\n')
+      throw new Error(errorString)
     }
-    styleSheets.push(BaseStyle.getThemeStyleSheet())
-
-    renderedHead.headTags += styleSheets.join('\n')
-
-    return { html, data, meta: renderedHead, modules: ctx.modules, response }
   }
 }
 
@@ -113,7 +122,7 @@ export function sitemapEntry(App, createRouter, routerSitemap, config = {}) {
       }
     }
 
-    const { app, router, head } = await createApp(
+    const { app, router, head, errorLog } = await createApp(
       config, api, App, createRouter, host, headers, response, url
     )
 
@@ -121,9 +130,17 @@ export function sitemapEntry(App, createRouter, routerSitemap, config = {}) {
 
     const sitemapPrefix = `https://${domain}`
 
-    return routerSitemap((location, opts) => {
-      write({ url: sitemapPrefix + router.resolve(location).href, changefreq: 'daily', priority: 0.5, ...opts })
-    }, api)
+    try {
+      return routerSitemap((location, opts) => {
+        write({ url: sitemapPrefix + router.resolve(location).href, changefreq: 'daily', priority: 0.5, ...opts })
+      }, api)
+    } catch (error) {
+      console.error('SSR sitemap error:', error.message, error.stack, "URL", url)
+      errorLog.push({ message: error.message, stack: error.stack, url: url })
+      /// concatente the error log to string, and throw it all
+      const errorString = errorLog.map(e => e.message + '\n' + e.stack + '\n' + e.url).join('\n')
+      throw new Error(errorString)
+    }
 
   }
 }

@@ -32,6 +32,24 @@ export async function createApp(config, api, App, createRouter, host, headers, r
 
   app.config.devtools = !isSSR//true
 
+  const errorLog = []
+
+  // Add error handler for SSR to capture setup function errors with full stack trace
+  if (isSSR) {
+    app.config.errorHandler = (err, instance, info) => {
+      console.error('Vue SSR Error:', err.message, err.stack,
+                    "IN", instance?.$?.type?.__name || instance?.$?.type?.name || 'Unknown',
+                    "AT", info, "URL", url)
+      errorLog.push({ message: err.message, stack: err.stack, component: instance?.$?.type?.__name || instance?.$?.type?.name || 'Unknown', info: info, url: url })
+      throw err
+    }
+    
+    app.config.warnHandler = (msg, instance, trace) => {
+      console.warn('Vue SSR Warning:', msg, "IN", instance?.$?.type?.__name || instance?.$?.type?.name || 'Unknown', "AT", trace, "URL", url)
+      errorLog.push({ message: msg, component: instance?.$?.type?.__name || instance?.$?.type?.name || 'Unknown', trace: trace, url: url })
+    }
+  }
+
   app.config.globalProperties.$response = response
   app.config.globalProperties.$host = host
 
@@ -119,5 +137,5 @@ export async function createApp(config, api, App, createRouter, host, headers, r
 
   if(config.configure) await config.configure({ app, api, router, locale, i18n })
 
-  return { app, router, head }
+  return { app, router, head, errorLog }
 }
