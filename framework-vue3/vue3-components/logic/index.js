@@ -1,10 +1,11 @@
 import Loading from "./Loading.vue"
 import LoadingZone from "./LoadingZone.vue"
 import WorkingZone from "./WorkingZone.vue"
+import LoadingWorkingZone from "./LoadingWorkingZone.vue"
 import Observe from "./Observe.vue"
 import ExternalLink from "./ExternalLink.vue"
 
-export { Loading, LoadingZone, WorkingZone, Observe, ExternalLink }
+export { Loading, LoadingZone, WorkingZone, LoadingWorkingZone, Observe, ExternalLink }
 
 import { analytics, useAnalytics, installRouterAnalytics } from "./analytics.js"
 export { analytics, useAnalytics, installRouterAnalytics }
