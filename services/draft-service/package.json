@@ -1,6 +1,6 @@
 {
   "name": "@live-change/draft-service",
-  "version": "0.9.190",
+  "version": "0.9.191",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/access-control-service": "0.9.190",
-    "@live-change/framework": "0.9.190",
-    "@live-change/relations-plugin": "0.9.190",
-    "@live-change/user-service": "0.9.190"
+    "@live-change/access-control-service": "^0.9.191",
+    "@live-change/framework": "^0.9.191",
+    "@live-change/relations-plugin": "^0.9.191",
+    "@live-change/user-service": "^0.9.191"
   },
   "gitHead": "9cb9fc01eebdafb342a419cde03eafdf467eaa32",
   "type": "module"
