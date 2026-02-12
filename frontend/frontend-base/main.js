@@ -24,7 +24,8 @@ export async function createApp(config, api, App, createRouter, host, headers, r
     
   if(config.beforeStart) await config.beforeStart({ api })
 
-  const isSSR = response !== undefined
+  const isSSR = !!response
+
   const isSPA = (typeof window !== 'undefined') && !window.__DAO_CACHE__
   //console.log("IS SPA", isSPA)
   //console.log("IS SSR", isSSR)
