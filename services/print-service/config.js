@@ -6,7 +6,8 @@ const {
   browserWebSocketDebuggerUrl,
   browserHost,
   browserPort = 9222,
-  concurrency = 1,
+  // how many screenshots and pdf prints can run in parallel
+  concurrency = 4,
   printAuthenticationKey = crypto.randomBytes(24).toString('hex'),
   ssrUrl = process.env.SSR_URL || 'http://localhost:8001'
 } = definition.config
