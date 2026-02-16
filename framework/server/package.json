@@ -1,6 +1,6 @@
 {
   "name": "@live-change/server",
-  "version": "0.9.192",
+  "version": "0.9.193",
   "description": "Live Change Framework - server",
   "main": "index.js",
   "scripts": {
@@ -22,12 +22,12 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao": "0.9.192",
-    "@live-change/dao-sockjs": "0.9.192",
-    "@live-change/db-server": "0.9.192",
-    "@live-change/framework": "0.9.192",
+    "@live-change/dao": "^0.9.193",
+    "@live-change/dao-sockjs": "^0.9.193",
+    "@live-change/db-server": "^0.9.193",
+    "@live-change/framework": "^0.9.193",
     "@live-change/sockjs": "0.4.1",
-    "@live-change/uid": "0.9.192",
+    "@live-change/uid": "^0.9.193",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.67.3",
     "@opentelemetry/exporter-logs-otlp-http": "^0.209.0",
