@@ -215,6 +215,8 @@ let globalServicesConfig
 export default function starter(servicesConfig = null, args = {}, extraArgs = {}) {
   argsDefaults = { ...argsDefaults, ...args }
   globalServicesConfig = servicesConfig
+  app.clientConfig = servicesConfig
+  
   yargs(process.argv.slice(2))
     .command('apiServer', 'start server', (yargs) => {
       apiServerOptions(yargs)

@@ -193,7 +193,6 @@ definition.action({
 
 import task from '@live-change/task-service/task.js' // need to import taks.js to avoid circular dependency
 
-
 for(const contactType of config.contactTypes) {
 
   const contactTypeUpperCaseName = contactType[0].toUpperCase() + contactType.slice(1)

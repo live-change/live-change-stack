@@ -15,9 +15,9 @@ const Agreement = definition.model({
       Object.fromEntries(
         config.agreements
           .map((agreement) => [agreement, {
-            type: Object,
+            type: String,
             softValidation: ['nonEmpty'],
-            default: false,
+            default: '',
           }])
       )
     ),

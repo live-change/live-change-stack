@@ -99,7 +99,8 @@ async function startTask(taskFunction, props, causeType, cause, expire, client:C
     taskObject,
     client
   }
-  const logger = logs.getLogger('task', '0.0.1')
+  const logger = logs.getLogger(taskFunction.definition.service+':task:'+taskFunction.definition.name, 
+                                app.config.version)
   logger.emit({
     severityNumber: SeverityNumber.INFO,
     severityText: 'INFO',
@@ -252,6 +253,8 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
   definition.service = serviceDefinition.name
   if(!definition.properties) throw new Error('Task properties are not defined in ' + definition.name)
 
+  const logger =  App.utils.loggingHelpers('xmlAlert', app.config.version || '0.0.1')
+
   const taskFunction = async (props, context,
                               emit = events => app.emitEvents(definition.name, Array.isArray(events) ? events : [events], {}),
                               reportProgress = (current, total, selfProgress) => {}) => {
@@ -289,7 +292,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         })
 
         taskObject = await app.serviceViewGet('task', 'task', { task: taskObject.id })
-        console.log("UPDATED TASK", taskObject, result)
+        //logger.info("UPDATED TASK", taskObject, result)
       })
     }
 
@@ -311,7 +314,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         setTimeout(updateProgress, progressThrottleTime - lastProgressUpdate - Date.now())
         return
       }
-      console.log("UPDATE", definition.name, "PROGRESS", current, total, selfProgress, subtasksProgress)
+      logger.log("UPDATE TASK", definition.name, "PROGRESS", current, total, selfProgress, subtasksProgress)
       updateTask({
         progress: { ...selfProgress, current, total }
       })
@@ -334,7 +337,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         const commonFunctions = {
           async run(taskFunction: TaskFunction, props, progressFactor = 1, expire = undefined) {
             if(typeof taskFunction !== 'function') {
-              console.log("TASK FUNCTION", taskFunction)
+              logger.log("TASK FUNCTION", taskFunction)
               throw new Error('Task function is not a function')
             }
             //console.log("SUBTASK RUN", taskFunction.definition.name, props)
@@ -417,7 +420,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             const taskWatchers = tasks.map(task => {
               const observable = Task.observable(task)
               if(!observable) {
-                console.error("SUBTASK OBSERVABLE NOT FOUND", task)
+                logger.error("SUBTASK OBSERVABLE NOT FOUND", task)
                 throw new Error("SUBTASK OBSERVABLE NOT FOUND")
               }
               const watcher: any = {          
@@ -492,7 +495,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
                 stack: error.stack
               }]
             })
-            console.error("TASK", taskObject.id, "OF TYPE", definition.name,
+            logger.error("TASK", taskObject.id, "OF TYPE", definition.name,
               "WITH PARAMETERS", props, "FAILED WITH ERROR", error.stack ?? error.message ?? error)
             if(definition.fallback && !error.taskNoFallback) {
               await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
@@ -522,7 +525,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
               }]
             })
             const retryDelay = definition.retryDelay ? definition.retryDelay(retriesCount) : 1000 * Math.pow(2, retriesCount)
-            console.log("RETRYING TASK", taskObject.id, "IN", retryDelay, "ms")   
+            logger.log("RETRYING TASK", taskObject.id, "IN", retryDelay, "ms")   
             await new Promise(resolve => setTimeout(resolve, retryDelay))
           }
           await triggerOnTaskStateChange(taskObject, context.causeType, context.cause)
@@ -539,9 +542,9 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
     }
     
     while(taskObject.state !== 'done' && taskObject.state !== 'fallbackDone' && taskObject.state !== 'failed') {
-      console.log("RUNNING TASK", definition.name, "STATE", taskObject.state, "OBJECT", taskObject)
+      logger.log("RUNNING TASK", definition.name, "STATE", taskObject.state, "OBJECT", taskObject)
       await runTask()
-      console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
+      logger.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
      // console.log("TASK", definition.name, "AFTER RUNTASK", taskObject)
     }
 
@@ -560,9 +563,9 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
         limit: 25
       })
       while(tasksToRestart.length > 0) {
-        console.log("FOUND", tasksToRestart.length, "TASKS", definition.name, "TO RESTART")
+        logger.log("FOUND", tasksToRestart.length, "TASKS", definition.name, "TO RESTART")
         for(const task of tasksToRestart) {
-          console.log("RESTARTING TASK", task)
+          logger.log("RESTARTING TASK", task)
           const taskObject = { ...task, id: task.to ?? task.id }
           const context = {
             causeType: task.causeType,
@@ -575,7 +578,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
             rootType: 'task_Task',
             root: taskObject.to ?? taskObject.id
           })
-          console.log("SUBTASKS", subtasks)
+          logger.log("SUBTASKS", subtasks)
           for(const subtask of subtasks) {
             if(subtask.state === 'running' && (subtask.to ?? subtask.id) !== (taskObject.to ?? taskObject.id)) {         
               await app.triggerService({ service: 'task', type: 'task_updateTask' }, {
@@ -591,7 +594,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
           await new Promise(resolve => setTimeout(resolve, 1000)) // wait a second
         }
         gt = tasksToRestart[tasksToRestart.length - 1].id
-        console.log("GT", gt)
+        logger.log("GT", gt)
         tasksToRestart = await app.viewGet('runningTaskRootsByName', {
           name: definition.name,
           gt,
