@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: TriggerServiceSettings
 
-Defined in: [lib/definition/types.ts:28](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L28)
+Defined in: [lib/definition/types.ts:29](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L29)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [lib/definition/types.ts:28](https://github.com/live-change/live-cha
 
 > **service**: `string`
 
-Defined in: [lib/definition/types.ts:29](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L29)
+Defined in: [lib/definition/types.ts:30](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L30)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [lib/definition/types.ts:29](https://github.com/live-change/live-cha
 
 > **type**: `string`
 
-Defined in: [lib/definition/types.ts:30](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L30)
+Defined in: [lib/definition/types.ts:31](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L31)

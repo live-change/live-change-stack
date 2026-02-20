@@ -1,8 +1,8 @@
-**@live-change/framework v0.9.84**
+**@live-change/framework v0.9.194**
 
 ***
 
-# @live-change/framework v0.9.84
+# @live-change/framework v0.9.194
 
 ## Classes
 
@@ -13,6 +13,7 @@
 - [IndexDefinition](classes/IndexDefinition.md)
 - [ModelDefinition](classes/ModelDefinition.md)
 - [PropertyDefinition](classes/PropertyDefinition.md)
+- [QueryDefinition](classes/QueryDefinition.md)
 - [ServiceDefinition](classes/ServiceDefinition.md)
 - [TriggerDefinition](classes/TriggerDefinition.md)
 - [ViewDefinition](classes/ViewDefinition.md)
@@ -29,6 +30,7 @@
 - [ModelIndexDefinitionSpecification](interfaces/ModelIndexDefinitionSpecification.md)
 - [ModelPropertyDefinitionSpecification](interfaces/ModelPropertyDefinitionSpecification.md)
 - [PropertyDefinitionSpecification](interfaces/PropertyDefinitionSpecification.md)
+- [QueryDefinitionSpecification](interfaces/QueryDefinitionSpecification.md)
 - [ServiceDefinitionSpecification](interfaces/ServiceDefinitionSpecification.md)
 - [TriggerContext](interfaces/TriggerContext.md)
 - [TriggerDefinitionSpecification](interfaces/TriggerDefinitionSpecification.md)
@@ -47,6 +49,7 @@
 - [AccessSpecification](type-aliases/AccessSpecification.md)
 - [ActionParameters](type-aliases/ActionParameters.md)
 - [EventParameters](type-aliases/EventParameters.md)
+- [QueryParameters](type-aliases/QueryParameters.md)
 - [TriggerParameters](type-aliases/TriggerParameters.md)
 - [ValidationSpecification](type-aliases/ValidationSpecification.md)
 - [ViewDefinitionSpecification](type-aliases/ViewDefinitionSpecification.md)

@@ -1,8 +1,8 @@
-[**@live-change/relations-plugin v0.9.84**](README.md)
+[**@live-change/relations-plugin v0.9.194**](README.md)
 
 ***
 
-# @live-change/relations-plugin v0.9.84
+# @live-change/relations-plugin v0.9.194
 
 ## Interfaces
 
@@ -10,7 +10,7 @@
 - [BoundToConfig](interfaces/BoundToConfig.md)
 - [ItemOfAnyConfig](interfaces/ItemOfAnyConfig.md)
 - [ItemOfConfig](interfaces/ItemOfConfig.md)
-- [MotelWithRelations](interfaces/MotelWithRelations.md)
+- [ModelWithRelations](interfaces/ModelWithRelations.md)
 - [PropertyOfAnyConfig](interfaces/PropertyOfAnyConfig.md)
 - [PropertyOfConfig](interfaces/PropertyOfConfig.md)
 - [RelatedToAnyConfig](interfaces/RelatedToAnyConfig.md)

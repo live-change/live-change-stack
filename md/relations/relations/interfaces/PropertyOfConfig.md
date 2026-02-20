@@ -1,4 +1,4 @@
-[**@live-change/relations-plugin v0.9.84**](../README.md)
+[**@live-change/relations-plugin v0.9.194**](../README.md)
 
 ***
 
@@ -18,7 +18,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:28](https://github.com/live-chan
 
 > `optional` **customDeleteTrigger**: `boolean`
 
-Defined in: [relations-plugin/src/utils.ts:99](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L99)
+Defined in: [relations-plugin/src/utils.ts:128](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L128)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [relations-plugin/src/utils.ts:99](https://github.com/live-change/li
 
 > `optional` **customParentCopyTrigger**: `boolean`
 
-Defined in: [relations-plugin/src/utils.ts:100](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L100)
+Defined in: [relations-plugin/src/utils.ts:129](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L129)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [relations-plugin/src/utils.ts:100](https://github.com/live-change/l
 
 > `optional` **globalView**: `boolean`
 
-Defined in: [relations-plugin/src/utils.ts:96](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L96)
+Defined in: [relations-plugin/src/utils.ts:125](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L125)
 
 #### Inherited from
 
@@ -62,7 +62,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:31](https://github.com/live-chan
 
 > `optional` **listAccessControl**: `AccessControlSettings`
 
-Defined in: [relations-plugin/src/propertyOf.ts:40](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L40)
+Defined in: [relations-plugin/src/propertyOf.ts:42](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L42)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:40](https://github.com/live-chan
 
 > `optional` **prefix**: `string`
 
-Defined in: [relations-plugin/src/utils.ts:94](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L94)
+Defined in: [relations-plugin/src/utils.ts:123](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L123)
 
 #### Inherited from
 
@@ -82,7 +82,7 @@ Defined in: [relations-plugin/src/utils.ts:94](https://github.com/live-change/li
 
 > `optional` **propertyNames**: `string`[]
 
-Defined in: [relations-plugin/src/utils.ts:92](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L92)
+Defined in: [relations-plugin/src/utils.ts:121](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L121)
 
 #### Inherited from
 
@@ -102,7 +102,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:29](https://github.com/live-chan
 
 > `optional` **readAccessControl**: `AccessControlSettings`
 
-Defined in: [relations-plugin/src/propertyOf.ts:38](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L38)
+Defined in: [relations-plugin/src/propertyOf.ts:40](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L40)
 
 ***
 
@@ -130,7 +130,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:35](https://github.com/live-chan
 
 > `optional` **resetAccessControl**: `AccessControlSettings`
 
-Defined in: [relations-plugin/src/propertyOf.ts:43](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L43)
+Defined in: [relations-plugin/src/propertyOf.ts:45](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L45)
 
 ***
 
@@ -146,7 +146,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:32](https://github.com/live-chan
 
 > `optional` **setAccessControl**: `AccessControlSettings`
 
-Defined in: [relations-plugin/src/propertyOf.ts:41](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L41)
+Defined in: [relations-plugin/src/propertyOf.ts:43](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L43)
 
 ***
 
@@ -162,7 +162,23 @@ Defined in: [relations-plugin/src/propertyOf.ts:34](https://github.com/live-chan
 
 > `optional` **setOrUpdateAccessControl**: `AccessControlSettings`
 
-Defined in: [relations-plugin/src/propertyOf.ts:44](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L44)
+Defined in: [relations-plugin/src/propertyOf.ts:46](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L46)
+
+***
+
+### singleAccess?
+
+> `optional` **singleAccess**: `AccessSpecification`
+
+Defined in: [relations-plugin/src/propertyOf.ts:37](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L37)
+
+***
+
+### singleAccessControl?
+
+> `optional` **singleAccessControl**: `AccessControlSettings`
+
+Defined in: [relations-plugin/src/propertyOf.ts:38](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L38)
 
 ***
 
@@ -170,7 +186,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:44](https://github.com/live-chan
 
 > `optional` **sortBy**: `string`[]
 
-Defined in: [relations-plugin/src/utils.ts:98](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L98)
+Defined in: [relations-plugin/src/utils.ts:127](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L127)
 
 #### Inherited from
 
@@ -182,7 +198,7 @@ Defined in: [relations-plugin/src/utils.ts:98](https://github.com/live-change/li
 
 > `optional` **suffix**: `string`
 
-Defined in: [relations-plugin/src/utils.ts:95](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L95)
+Defined in: [relations-plugin/src/utils.ts:124](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L124)
 
 #### Inherited from
 
@@ -202,7 +218,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:33](https://github.com/live-chan
 
 > `optional` **updateAccessControl**: `AccessControlSettings`
 
-Defined in: [relations-plugin/src/propertyOf.ts:42](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L42)
+Defined in: [relations-plugin/src/propertyOf.ts:44](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L44)
 
 ***
 
@@ -210,7 +226,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:42](https://github.com/live-chan
 
 > `optional` **views**: `object`[]
 
-Defined in: [relations-plugin/src/propertyOf.ts:45](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L45)
+Defined in: [relations-plugin/src/propertyOf.ts:47](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L47)
 
 #### fields?
 
@@ -238,7 +254,7 @@ Defined in: [relations-plugin/src/propertyOf.ts:45](https://github.com/live-chan
 
 > **what**: `string` \| `string`[]
 
-Defined in: [relations-plugin/src/utils.ts:91](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L91)
+Defined in: [relations-plugin/src/utils.ts:120](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L120)
 
 #### Inherited from
 
@@ -250,7 +266,7 @@ Defined in: [relations-plugin/src/utils.ts:91](https://github.com/live-change/li
 
 > `optional` **writeableProperties**: `string`[]
 
-Defined in: [relations-plugin/src/utils.ts:93](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L93)
+Defined in: [relations-plugin/src/utils.ts:122](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L122)
 
 #### Inherited from
 
@@ -270,4 +286,4 @@ Defined in: [relations-plugin/src/propertyOf.ts:30](https://github.com/live-chan
 
 > `optional` **writeAccessControl**: `AccessControlSettings`
 
-Defined in: [relations-plugin/src/propertyOf.ts:39](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L39)
+Defined in: [relations-plugin/src/propertyOf.ts:41](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/propertyOf.ts#L41)

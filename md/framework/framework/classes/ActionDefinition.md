@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ActionDefinition\<T\>
 
-Defined in: [lib/definition/ActionDefinition.ts:16](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L16)
+Defined in: [lib/definition/ActionDefinition.ts:18](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L18)
 
 ## Type Parameters
 
@@ -24,7 +24,7 @@ Defined in: [lib/definition/ActionDefinition.ts:16](https://github.com/live-chan
 
 > **new ActionDefinition**\<`T`\>(`definition`): `ActionDefinition`\<`T`\>
 
-Defined in: [lib/definition/ActionDefinition.ts:19](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L19)
+Defined in: [lib/definition/ActionDefinition.ts:21](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L21)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [lib/definition/ActionDefinition.ts:19](https://github.com/live-chan
 
 > **createAndAddProperty**(`name`, `definition`): `void`
 
-Defined in: [lib/definition/ActionDefinition.ts:34](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L34)
+Defined in: [lib/definition/ActionDefinition.ts:36](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L36)
 
 #### Parameters
 
@@ -64,7 +64,7 @@ Defined in: [lib/definition/ActionDefinition.ts:34](https://github.com/live-chan
 
 > **toJSON**(): `ActionDefinition`\<`T`\> & `object`
 
-Defined in: [lib/definition/ActionDefinition.ts:39](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L39)
+Defined in: [lib/definition/ActionDefinition.ts:41](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L41)
 
 #### Returns
 

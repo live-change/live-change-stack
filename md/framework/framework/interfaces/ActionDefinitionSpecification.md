@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -60,6 +60,14 @@ Defined in: [lib/definition/ActionDefinition.ts:7](https://github.com/live-chang
 
 ***
 
+### requestTimeout?
+
+> `optional` **requestTimeout**: `number`
+
+Defined in: [lib/definition/ActionDefinition.ts:15](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L15)
+
+***
+
 ### returns?
 
 > `optional` **returns**: [`PropertyDefinitionSpecification`](PropertyDefinitionSpecification.md)
@@ -73,6 +81,14 @@ Defined in: [lib/definition/ActionDefinition.ts:8](https://github.com/live-chang
 > `optional` **skipValidation**: `boolean`
 
 Defined in: [lib/definition/ActionDefinition.ts:11](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L11)
+
+***
+
+### timeout?
+
+> `optional` **timeout**: `number`
+
+Defined in: [lib/definition/ActionDefinition.ts:14](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ActionDefinition.ts#L14)
 
 ***
 

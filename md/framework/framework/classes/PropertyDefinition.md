@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: PropertyDefinition\<T\>
 
-Defined in: [lib/definition/PropertyDefinition.ts:21](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L21)
+Defined in: [lib/definition/PropertyDefinition.ts:22](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L22)
 
 ## Type Parameters
 
@@ -24,7 +24,7 @@ Defined in: [lib/definition/PropertyDefinition.ts:21](https://github.com/live-ch
 
 > **new PropertyDefinition**\<`T`\>(`definition`): `PropertyDefinition`\<`T`\>
 
-Defined in: [lib/definition/PropertyDefinition.ts:24](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L24)
+Defined in: [lib/definition/PropertyDefinition.ts:25](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L25)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [lib/definition/PropertyDefinition.ts:24](https://github.com/live-ch
 
 > **computeChanges**(`oldProperty`, `params`, `name`): `Record`\<`string`, `any`\>[]
 
-Defined in: [lib/definition/PropertyDefinition.ts:69](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L69)
+Defined in: [lib/definition/PropertyDefinition.ts:70](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L70)
 
 #### Parameters
 
@@ -68,7 +68,7 @@ Defined in: [lib/definition/PropertyDefinition.ts:69](https://github.com/live-ch
 
 > **createAndAddProperty**(`name`, `definition`): `void`
 
-Defined in: [lib/definition/PropertyDefinition.ts:41](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L41)
+Defined in: [lib/definition/PropertyDefinition.ts:42](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L42)
 
 #### Parameters
 
@@ -90,7 +90,7 @@ Defined in: [lib/definition/PropertyDefinition.ts:41](https://github.com/live-ch
 
 > **toJSON**(): `any`
 
-Defined in: [lib/definition/PropertyDefinition.ts:46](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L46)
+Defined in: [lib/definition/PropertyDefinition.ts:47](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/PropertyDefinition.ts#L47)
 
 #### Returns
 

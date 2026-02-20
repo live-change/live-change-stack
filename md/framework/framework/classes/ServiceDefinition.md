@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ServiceDefinition\<T\>
 
-Defined in: [lib/definition/ServiceDefinition.ts:79](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L79)
+Defined in: [lib/definition/ServiceDefinition.ts:103](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L103)
 
 ## Type Parameters
 
@@ -24,7 +24,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:79](https://github.com/live-cha
 
 > **new ServiceDefinition**\<`T`\>(`definition`): `ServiceDefinition`\<`T`\>
 
-Defined in: [lib/definition/ServiceDefinition.ts:82](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L82)
+Defined in: [lib/definition/ServiceDefinition.ts:106](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L106)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:82](https://github.com/live-cha
 
 > **action**\<`T`\>(`definition`): [`ActionDefinition`](ActionDefinition.md)\<`T`\>
 
-Defined in: [lib/definition/ServiceDefinition.ts:130](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L130)
+Defined in: [lib/definition/ServiceDefinition.ts:155](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L155)
 
 #### Type Parameters
 
@@ -66,7 +66,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:130](https://github.com/live-ch
 
 > **afterStart**(`callback`): `void`
 
-Defined in: [lib/definition/ServiceDefinition.ts:176](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L176)
+Defined in: [lib/definition/ServiceDefinition.ts:201](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L201)
 
 #### Parameters
 
@@ -84,7 +84,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:176](https://github.com/live-ch
 
 > **authenticator**(`authenticator`): `void`
 
-Defined in: [lib/definition/ServiceDefinition.ts:168](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L168)
+Defined in: [lib/definition/ServiceDefinition.ts:193](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L193)
 
 #### Parameters
 
@@ -102,7 +102,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:168](https://github.com/live-ch
 
 > **beforeStart**(`callback`): `void`
 
-Defined in: [lib/definition/ServiceDefinition.ts:172](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L172)
+Defined in: [lib/definition/ServiceDefinition.ts:197](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L197)
 
 #### Parameters
 
@@ -120,7 +120,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:172](https://github.com/live-ch
 
 > **callTrigger**(`trigger`, `data`): `void`
 
-Defined in: [lib/definition/ServiceDefinition.ts:225](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L225)
+Defined in: [lib/definition/ServiceDefinition.ts:259](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L259)
 
 #### Parameters
 
@@ -142,7 +142,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:225](https://github.com/live-ch
 
 > **clientSideFilter**(`filter`): `void`
 
-Defined in: [lib/definition/ServiceDefinition.ts:190](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L190)
+Defined in: [lib/definition/ServiceDefinition.ts:215](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L215)
 
 #### Parameters
 
@@ -160,7 +160,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:190](https://github.com/live-ch
 
 > **computeChanges**(`oldModuleParam`): `Record`\<`string`, `any`\>[]
 
-Defined in: [lib/definition/ServiceDefinition.ts:230](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L230)
+Defined in: [lib/definition/ServiceDefinition.ts:264](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L264)
 
 #### Parameters
 
@@ -178,7 +178,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:230](https://github.com/live-ch
 
 > **endpoint**(`endpoint`): `void`
 
-Defined in: [lib/definition/ServiceDefinition.ts:180](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L180)
+Defined in: [lib/definition/ServiceDefinition.ts:205](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L205)
 
 #### Parameters
 
@@ -196,7 +196,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:180](https://github.com/live-ch
 
 > **event**(`definition`): [`EventDefinition`](EventDefinition.md)\<`any`\>
 
-Defined in: [lib/definition/ServiceDefinition.ts:137](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L137)
+Defined in: [lib/definition/ServiceDefinition.ts:162](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L162)
 
 #### Parameters
 
@@ -214,7 +214,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:137](https://github.com/live-ch
 
 > **foreignIndex**(`serviceName`, `indexName`): `any`
 
-Defined in: [lib/definition/ServiceDefinition.ts:124](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L124)
+Defined in: [lib/definition/ServiceDefinition.ts:149](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L149)
 
 #### Parameters
 
@@ -236,7 +236,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:124](https://github.com/live-ch
 
 > **foreignModel**(`serviceName`, `modelName`): `any`
 
-Defined in: [lib/definition/ServiceDefinition.ts:111](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L111)
+Defined in: [lib/definition/ServiceDefinition.ts:136](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L136)
 
 #### Parameters
 
@@ -258,7 +258,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:111](https://github.com/live-ch
 
 > **index**(`definition`): `any`
 
-Defined in: [lib/definition/ServiceDefinition.ts:117](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L117)
+Defined in: [lib/definition/ServiceDefinition.ts:142](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L142)
 
 #### Parameters
 
@@ -276,7 +276,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:117](https://github.com/live-ch
 
 > **model**\<`T`\>(`definition`): `any`
 
-Defined in: [lib/definition/ServiceDefinition.ts:104](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L104)
+Defined in: [lib/definition/ServiceDefinition.ts:129](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L129)
 
 #### Type Parameters
 
@@ -300,7 +300,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:104](https://github.com/live-ch
 
 > **processor**(`processor`): `void`
 
-Defined in: [lib/definition/ServiceDefinition.ts:158](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L158)
+Defined in: [lib/definition/ServiceDefinition.ts:183](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L183)
 
 #### Parameters
 
@@ -314,15 +314,39 @@ Defined in: [lib/definition/ServiceDefinition.ts:158](https://github.com/live-ch
 
 ***
 
-### toJSON()
+### query()
 
-> **toJSON**(): `ServiceDefinition`\<`T`\> & `object`
+> **query**\<`T`\>(`definition`): `any`
 
-Defined in: [lib/definition/ServiceDefinition.ts:194](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L194)
+Defined in: [lib/definition/ServiceDefinition.ts:219](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L219)
+
+#### Type Parameters
+
+##### T
+
+`T` *extends* [`QueryDefinitionSpecification`](../interfaces/QueryDefinitionSpecification.md)
+
+#### Parameters
+
+##### definition
+
+`T`
 
 #### Returns
 
-`ServiceDefinition`\<`T`\> & `object`
+`any`
+
+***
+
+### toJSON()
+
+> **toJSON**(): `any`
+
+Defined in: [lib/definition/ServiceDefinition.ts:226](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L226)
+
+#### Returns
+
+`any`
 
 ***
 
@@ -330,7 +354,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:194](https://github.com/live-ch
 
 > **trigger**\<`T`\>(`definition`): [`TriggerDefinition`](TriggerDefinition.md)\<`T`\>
 
-Defined in: [lib/definition/ServiceDefinition.ts:151](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L151)
+Defined in: [lib/definition/ServiceDefinition.ts:176](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L176)
 
 #### Type Parameters
 
@@ -354,7 +378,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:151](https://github.com/live-ch
 
 > **validator**(`name`, `validator`): `void`
 
-Defined in: [lib/definition/ServiceDefinition.ts:184](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L184)
+Defined in: [lib/definition/ServiceDefinition.ts:209](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L209)
 
 #### Parameters
 
@@ -376,7 +400,7 @@ Defined in: [lib/definition/ServiceDefinition.ts:184](https://github.com/live-ch
 
 > **view**\<`T`\>(`definition`): [`ViewDefinition`](ViewDefinition.md)\<`T`\>
 
-Defined in: [lib/definition/ServiceDefinition.ts:144](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L144)
+Defined in: [lib/definition/ServiceDefinition.ts:169](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ServiceDefinition.ts#L169)
 
 #### Type Parameters
 

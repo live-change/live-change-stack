@@ -1,4 +1,4 @@
-[**@live-change/relations-plugin v0.9.84**](../README.md)
+[**@live-change/relations-plugin v0.9.194**](../README.md)
 
 ***
 
@@ -18,7 +18,7 @@ Defined in: [relations-plugin/src/boundTo.ts:26](https://github.com/live-change/
 
 > `optional` **customDeleteTrigger**: `boolean`
 
-Defined in: [relations-plugin/src/utils.ts:99](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L99)
+Defined in: [relations-plugin/src/utils.ts:128](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L128)
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: [relations-plugin/src/utils.ts:99](https://github.com/live-change/li
 
 > `optional` **customParentCopyTrigger**: `boolean`
 
-Defined in: [relations-plugin/src/utils.ts:100](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L100)
+Defined in: [relations-plugin/src/utils.ts:129](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L129)
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: [relations-plugin/src/utils.ts:100](https://github.com/live-change/l
 
 > `optional` **globalView**: `boolean`
 
-Defined in: [relations-plugin/src/utils.ts:96](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L96)
+Defined in: [relations-plugin/src/utils.ts:125](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L125)
 
 #### Inherited from
 
@@ -70,7 +70,7 @@ Defined in: [relations-plugin/src/boundTo.ts:38](https://github.com/live-change/
 
 > `optional` **prefix**: `string`
 
-Defined in: [relations-plugin/src/utils.ts:94](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L94)
+Defined in: [relations-plugin/src/utils.ts:123](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L123)
 
 #### Inherited from
 
@@ -82,7 +82,7 @@ Defined in: [relations-plugin/src/utils.ts:94](https://github.com/live-change/li
 
 > `optional` **propertyNames**: `string`[]
 
-Defined in: [relations-plugin/src/utils.ts:92](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L92)
+Defined in: [relations-plugin/src/utils.ts:121](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L121)
 
 #### Inherited from
 
@@ -170,7 +170,7 @@ Defined in: [relations-plugin/src/boundTo.ts:42](https://github.com/live-change/
 
 > `optional` **sortBy**: `string`[]
 
-Defined in: [relations-plugin/src/utils.ts:98](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L98)
+Defined in: [relations-plugin/src/utils.ts:127](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L127)
 
 #### Inherited from
 
@@ -182,7 +182,7 @@ Defined in: [relations-plugin/src/utils.ts:98](https://github.com/live-change/li
 
 > `optional` **suffix**: `string`
 
-Defined in: [relations-plugin/src/utils.ts:95](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L95)
+Defined in: [relations-plugin/src/utils.ts:124](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L124)
 
 #### Inherited from
 
@@ -238,7 +238,7 @@ Defined in: [relations-plugin/src/boundTo.ts:43](https://github.com/live-change/
 
 > **what**: `string` \| `string`[]
 
-Defined in: [relations-plugin/src/utils.ts:91](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L91)
+Defined in: [relations-plugin/src/utils.ts:120](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L120)
 
 #### Inherited from
 
@@ -250,7 +250,7 @@ Defined in: [relations-plugin/src/utils.ts:91](https://github.com/live-change/li
 
 > `optional` **writeableProperties**: `string`[]
 
-Defined in: [relations-plugin/src/utils.ts:93](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L93)
+Defined in: [relations-plugin/src/utils.ts:122](https://github.com/live-change/live-change-stack/blob/master/framework/relations-plugin/framework/relations-plugin/src/utils.ts#L122)
 
 #### Inherited from
 

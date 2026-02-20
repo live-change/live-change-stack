@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ModelDefinitionSpecification
 
-Defined in: [lib/definition/ModelDefinition.ts:18](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L18)
+Defined in: [lib/definition/ModelDefinition.ts:26](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L26)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [lib/definition/ModelDefinition.ts:18](https://github.com/live-chang
 
 > **indexes**: `Record`\<`string`, [`ModelIndexDefinitionSpecification`](ModelIndexDefinitionSpecification.md)\>
 
-Defined in: [lib/definition/ModelDefinition.ts:21](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L21)
+Defined in: [lib/definition/ModelDefinition.ts:29](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L29)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [lib/definition/ModelDefinition.ts:21](https://github.com/live-chang
 
 > **name**: `string`
 
-Defined in: [lib/definition/ModelDefinition.ts:19](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L19)
+Defined in: [lib/definition/ModelDefinition.ts:27](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L27)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [lib/definition/ModelDefinition.ts:19](https://github.com/live-chang
 
 > **onChange**: () => `void`[]
 
-Defined in: [lib/definition/ModelDefinition.ts:22](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L22)
+Defined in: [lib/definition/ModelDefinition.ts:30](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L30)
 
 #### Returns
 
@@ -42,4 +42,4 @@ Defined in: [lib/definition/ModelDefinition.ts:22](https://github.com/live-chang
 
 > **properties**: `Record`\<`string`, [`ModelPropertyDefinitionSpecification`](ModelPropertyDefinitionSpecification.md)\>
 
-Defined in: [lib/definition/ModelDefinition.ts:20](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L20)
+Defined in: [lib/definition/ModelDefinition.ts:28](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ModelDefinition.ts#L28)

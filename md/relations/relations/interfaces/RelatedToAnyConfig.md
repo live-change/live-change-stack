@@ -1,4 +1,4 @@
-[**@live-change/relations-plugin v0.9.84**](../README.md)
+[**@live-change/relations-plugin v0.9.194**](../README.md)
 
 ***
 

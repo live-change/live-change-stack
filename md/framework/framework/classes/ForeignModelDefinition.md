@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -48,6 +48,18 @@ Defined in: [lib/definition/ForeignModelDefinition.ts:2](https://github.com/live
 
 ## Methods
 
+### $\_toQueryDescription()
+
+> **$\_toQueryDescription**(): `string`
+
+Defined in: [lib/definition/ForeignModelDefinition.ts:21](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ForeignModelDefinition.ts#L21)
+
+#### Returns
+
+`string`
+
+***
+
 ### getTypeName()
 
 > **getTypeName**(): `string`
@@ -77,3 +89,15 @@ Defined in: [lib/definition/ForeignModelDefinition.ts:14](https://github.com/liv
 ##### serviceName
 
 > **serviceName**: `string`
+
+***
+
+### toString()
+
+> **toString**(): `string`
+
+Defined in: [lib/definition/ForeignModelDefinition.ts:25](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/ForeignModelDefinition.ts#L25)
+
+#### Returns
+
+`string`

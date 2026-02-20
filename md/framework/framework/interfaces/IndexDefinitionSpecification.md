@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -57,6 +57,14 @@ Defined in: [lib/definition/IndexDefinition.ts:6](https://github.com/live-change
 > **property**: `string` \| `string`[]
 
 Defined in: [lib/definition/IndexDefinition.ts:4](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/IndexDefinition.ts#L4)
+
+***
+
+### sourceName?
+
+> `optional` **sourceName**: `string`
+
+Defined in: [lib/definition/IndexDefinition.ts:9](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/IndexDefinition.ts#L9)
 
 ***
 

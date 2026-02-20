@@ -1,4 +1,4 @@
-[**@live-change/framework v0.9.84**](../README.md)
+[**@live-change/framework v0.9.194**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ActionContext
 
-Defined in: [lib/definition/types.ts:35](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L35)
+Defined in: [lib/definition/types.ts:36](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L36)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [lib/definition/types.ts:35](https://github.com/live-change/live-cha
 
 > **action**: `any`
 
-Defined in: [lib/definition/types.ts:36](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L36)
+Defined in: [lib/definition/types.ts:37](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L37)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [lib/definition/types.ts:11](https://github.com/live-change/live-cha
 
 > **trigger**: `ContextTriggerFunction`
 
-Defined in: [lib/definition/types.ts:37](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L37)
+Defined in: [lib/definition/types.ts:38](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L38)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [lib/definition/types.ts:37](https://github.com/live-change/live-cha
 
 > **triggerService**: `ContextTriggerServiceFunction`
 
-Defined in: [lib/definition/types.ts:38](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L38)
+Defined in: [lib/definition/types.ts:39](https://github.com/live-change/live-change-stack/blob/master/framework/framework/framework/framework/lib/definition/types.ts#L39)
 
 ***
 
