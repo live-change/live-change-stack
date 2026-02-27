@@ -13,7 +13,7 @@ definition.action({
   async execute({ passwordHash }, { client, service }, emit) {
     const user = client.user
     const passwordAuthenticationData = await PasswordAuthentication.get(user)
-    if(passwordAuthenticationData) throw 'exists'
+    if(passwordAuthenticationData) throw app.logicError("exists")
     emit({
       type: 'passwordAuthenticationSet',
       user, passwordHash
@@ -34,7 +34,7 @@ definition.action({
   async execute({ currentPasswordHash, passwordHash }, { client, service }, emit) {
     const user = client.user
     const passwordAuthenticationData = await PasswordAuthentication.get(user)
-    if(!passwordAuthenticationData) throw 'notFound'
+    if(!passwordAuthenticationData) throw app.logicError("notFound")
     if(currentPasswordHash !== passwordAuthenticationData.passwordHash) throw { properties: {
       currentPasswordHash: 'wrongPassword'
     } }

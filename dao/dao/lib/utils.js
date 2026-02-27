@@ -1,3 +1,4 @@
+
 export function errorToJSON(error) {
   if(typeof error == 'object') {
     if(error instanceof Error && error.stack) return error.stack.toString()

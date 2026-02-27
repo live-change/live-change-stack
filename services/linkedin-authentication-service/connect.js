@@ -45,9 +45,9 @@ definition.trigger({
           await downloadData(user, data, context)
           return
         }
-        throw 'alreadyConnectedElsewhere'
+        throw app.logicError("alreadyConnectedElsewhere")
       }
-      throw 'alreadyConnected'
+      throw app.logicError("alreadyConnected")
     }
     emit({
       type: 'accountConnected',
@@ -70,7 +70,7 @@ definition.trigger({
   },
   async execute({ account }, { client, service }, emit) {
     const accountData = await Account.get(account)
-    if(!accountData) throw 'notFound'
+    if(!accountData) throw app.logicError("notFound")
     const { user } = accountData
     emit({
       type: 'accountDisconnected',
@@ -101,7 +101,7 @@ definition.action({
   },
   async execute({ code, redirectUri, transferOwnership }, { client, service }, emit) {
     const user = client.user
-    if(!user) throw 'notAuthorized'
+    if(!user) throw app.logicError("notAuthorized")
     const tokens = await getTokensWithCode(code, redirectUri)
     debug("TOKENS", tokens)
 
@@ -139,9 +139,9 @@ definition.action({
   },
   async execute({ account }, { client, service }, emit) {
     const accountData = await Account.get(account)
-    if(!accountData) throw 'notFound'
+    if(!accountData) throw app.logicError("notFound")
     const { user } = accountData
-    if(user !== client.user) throw 'notAuthorized'
+    if(user !== client.user) throw app.logicError("notAuthorized")
     await service.trigger({ type: 'disconnectLinkedin' }, {
       user, account
     })

@@ -161,7 +161,7 @@ export function getCreateFunction( validators, validationContext, config, contex
   async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName] || app.generateUid()
     const entity = await modelRuntime().get(id)
-    if(entity) throw 'exists'
+    if(entity) throw app.logicError("exists")
     const data = extractObjectData(writeableProperties, properties,
       App.computeDefaults(model, properties, { client, service } ))
 
@@ -231,7 +231,7 @@ export function getUpdateFunction( validators, validationContext, config, contex
   async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
-    if(!entity) throw 'not_found'
+    if(!entity) throw app.logicError("not_found")
     const data = App.utils.mergeDeep({},
       extractObjectData(writeableProperties, properties, entity),
       App.computeUpdates(model, { ...entity, ...properties }, { client, service })

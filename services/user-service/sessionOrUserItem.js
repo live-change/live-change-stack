@@ -223,7 +223,7 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const id = properties[modelPropertyName] || app.generateUid()
             const entity = await modelRuntime().get(id)
-            if(entity) throw 'exists'
+            if(entity) throw app.logicError("exists")
             const identifiers = client.user ? {
                   sessionOrUserType: 'user_User',
                   sessionOrUser: client.user,
@@ -259,12 +259,12 @@ definition.processor(function(service, app) {
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
-            if(!entity) throw 'not_found'
+            if(!entity) throw app.logicError("not_found")
             if(entity.sessionOrUserType === 'user_User') {
-              if(entity.sessionOrUser !== client.user) throw 'not_authorized'
+              if(entity.sessionOrUser !== client.user) throw app.logicError("not_authorized")
             }
             if(entity.sessionOrUserType === 'session_Session') {
-              if(entity.sessionOrUser !== client.session) throw 'not_authorized'
+              if(entity.sessionOrUser !== client.session) throw app.logicError("not_authorized")
             }
             let updateObject = {}
             for(const propertyName of writeableProperties) {
@@ -310,12 +310,12 @@ definition.processor(function(service, app) {
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
-            if(!entity) throw 'not_found'
+            if(!entity) throw app.logicError("not_found")
             if(entity.sessionOrUserType === 'user_User') {
-              if(entity.sessionOrUser !== client.user) throw 'not_authorized'
+              if(entity.sessionOrUser !== client.user) throw app.logicError("not_authorized")
             }
             if(entity.sessionOrUserType === 'session_Session') {
-              if(entity.sessionOrUser !== client.session) throw 'not_authorized'
+              if(entity.sessionOrUser !== client.session) throw app.logicError("not_authorized")
             }
             const identifiers = client.user ? {
               sessionOrUserType: 'user_User',

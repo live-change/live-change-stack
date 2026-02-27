@@ -247,7 +247,7 @@ definition.processor(function(service, app) {
             for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
             const entity = await modelRuntime().get(id)
-            if(entity) throw 'alerady_exists'
+            if(entity) throw app.logicError("alerady_exists")
             let newObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -297,7 +297,7 @@ definition.processor(function(service, app) {
             for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
             const entity = await modelRuntime().get(id)
-            if(!entity) throw 'not_found'
+            if(!entity) throw app.logicError("not_found")
             let updateObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -408,7 +408,7 @@ definition.processor(function(service, app) {
             for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
             const entity = await modelRuntime().get(id)
-            if (!entity) throw 'not_found'
+            if (!entity) throw app.logicError("not_found")
             const identifiers = client.user ? {
               sessionOrUserType: 'user_User',
               sessionOrUser: client.user,

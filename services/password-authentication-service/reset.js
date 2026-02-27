@@ -140,9 +140,9 @@ definition.action({
   async execute({ key, passwordHash }, { client, service }, emit) {
     const resetPasswordAuthenticationData = await ResetPasswordAuthentication.indexObjectGet('byKey', key)
     console.log("RESET AUTH", resetPasswordAuthenticationData)
-    if(!resetPasswordAuthenticationData) throw 'authenticationNotFound'
-    if(resetPasswordAuthenticationData.state === 'used') throw 'authenticationUsed'
-    if(resetPasswordAuthenticationData.expire < (new Date().toISOString())) throw 'authenticationExpired'
+    if(!resetPasswordAuthenticationData) throw app.logicError("authenticationNotFound")
+    if(resetPasswordAuthenticationData.state === 'used') throw app.logicError("authenticationUsed")
+    if(resetPasswordAuthenticationData.expire < (new Date().toISOString())) throw app.logicError("authenticationExpired")
     const { user } = resetPasswordAuthenticationData
     emit([{
       type: 'passwordAuthenticationSet',

@@ -130,7 +130,7 @@ definition.action({
   },
   async execute({ code, redirectUri, scope }, { client, service }, emit) {
     const user = client.user
-    if(!user) throw 'notAuthorized'
+    if(!user) throw app.logicError("notAuthorized")
     const tokens = await getTokensWithCode(code, redirectUri)
     console.log("TOKENS", tokens)
     const scopes = tokens.scope.split(' ')

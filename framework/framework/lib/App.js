@@ -1,4 +1,4 @@
-import {randomString, uidGenerator} from '@live-change/uid'
+import { randomString, uidGenerator } from '@live-change/uid'
 
 import ReactiveDao from "@live-change/dao"
 
@@ -775,6 +775,11 @@ class App {
       result
     }
     await this.dao.request(['database', 'put'], this.databaseName, 'cache', cacheEntry)
+  }
+
+  logicError(code, details) {
+    console.trace('logicError', code, details)
+    return code
   }
 
 }

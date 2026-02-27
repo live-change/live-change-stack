@@ -144,7 +144,7 @@ definition.trigger({
     ])
     console.log("INVITATION", invitation)
     const invitationData = await AccessInvitation.get(invitation)
-    if(!invitationData) throw 'not_found'
+    if(!invitationData) throw app.logicError("not_found")
     const { roles } = invitationData
     /// Create account and sign-in:
     const user = app.generateUid()
@@ -177,12 +177,12 @@ definition.action({
     }
   },
   async execute({ objectType, object }, {client, service}, emit) {
-    if(!client.user) throw 'not_authorized'
+    if(!client.user) throw app.logicError("not_authorized")
     const user = client.user
     const invitation = App.encodeIdentifier(['user_User', user, objectType, object])
     const invitationData = await AccessInvitation.get(invitation)
     console.log("INVITATION", invitation, invitationData)
-    if(!invitationData) throw 'not_found'
+    if(!invitationData) throw app.logicError("not_found")
     const { roles } = invitationData
     emit({
       type: 'userInvitationAccepted',
@@ -280,7 +280,7 @@ for(const contactType of config.contactTypes) {
       const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
       if(!myRoles.includes('admin')) {
         for(const requestedRole of roles) {
-          if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+          if(!myRoles.includes(requestedRole)) throw app.logicError("notAuthorized")
         }
       }
 
@@ -401,7 +401,7 @@ for(const contactType of config.contactTypes) {
       const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
       if(!myRoles.includes('admin')) {
         for(const requestedRole of roles) {
-          if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+          if(!myRoles.includes(requestedRole)) throw app.logicError("notAuthorized")
         }
       }
 
@@ -463,7 +463,7 @@ for(const contactType of config.contactTypes) {
       )
       if(!myRoles.includes('admin')) {
         for(const requestedRole of roles) {
-          if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+          if(!myRoles.includes(requestedRole)) throw app.logicError("notAuthorized")
         }
       }
 

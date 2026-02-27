@@ -37,7 +37,7 @@ definition.processor({
         /* console.log("ACTION", service.name, action.name, "ACCESS CONTROL TO",
           objects, 'CLIENT', client, 'CONFIG', config, "ACCESSIBLE", accessible) */
 
-        if(!accessible) throw 'notAuthorized'
+        if(!accessible) throw app.logicError("notAuthorized")
 
         return oldExec.apply(action, args)
       }
@@ -69,7 +69,7 @@ definition.processor({
         console.log("ROLES", config.roles) */
         const accessible = await access.clientHasAccessRoles(client, { objects }, config.roles)
         //console.log("ACCESSIBLE", accessible)
-        if(!accessible) throw 'notAuthorized'
+        if(!accessible) throw app.logicError("notAuthorized")
         return oldGet.apply(view, args)
       }
       view.observable = (...args) => {

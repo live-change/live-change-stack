@@ -103,7 +103,7 @@ definition.processor(function(service, app) {
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(client.session)
-            if(!entity) throw 'not_found'
+            if(!entity) throw app.logicError("not_found")
             let updateObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -135,7 +135,7 @@ definition.processor(function(service, app) {
           waitForEvents: true,
           async execute(properties, {client, service}, emit) {
             const entity = await modelRuntime().indexObjectGet('bySession', client.session)
-            if (!entity) throw 'not_found'
+            if (!entity) throw app.logicError("not_found")
             emit({
               type: eventName,
               identifiers: {

@@ -98,7 +98,7 @@ function getCreateFunction( validators, validationContext, config, context) {
   return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName] || app.generateUid()
     const entity = await modelRuntime().get(id)
-    if(entity) throw 'exists'
+    if(entity) throw app.logicError("exists")
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const data = extractObjectData(writeableProperties, properties,
       App.computeDefaults(model, properties, { client, service } ))
@@ -173,11 +173,11 @@ function getUpdateFunction( validators, validationContext, config, context) {
   return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
-    if(!entity) throw 'not_found'
+    if(!entity) throw app.logicError("not_found")
     const entityIdParts = extractIdParts(otherPropertyNames, entity)
     const idParts = extractIdParts(otherPropertyNames, properties)
     if(JSON.stringify(entityIdParts) !== JSON.stringify(idParts)) {
-      throw 'not_authorized'
+      throw app.logicError("not_authorized")
     }
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
     const data = App.utils.mergeDeep({},
@@ -267,11 +267,11 @@ function getDeleteFunction( validators, validationContext, config, context) {
   return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
-    if(!entity) throw 'not_found'
+    if(!entity) throw app.logicError("not_found")
     const entityIdParts = extractIdParts(otherPropertyNames, entity)
     const idParts = extractIdParts(otherPropertyNames, properties)
     if(JSON.stringify(entityIdParts) !== JSON.stringify(idParts)) {
-      throw 'not_authorized'
+      throw app.logicError("not_authorized")
     }
     const identifiers = extractIdentifiers(otherPropertyNames, entity)
     await fireChangeTriggers(context, objectType, identifiers, id,

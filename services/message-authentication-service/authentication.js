@@ -176,7 +176,7 @@ definition.action({
     })
     authentication = checkResults[0]
     const authenticationData = await Authentication.get(authentication)
-    if(authenticationData.state === 'used') throw 'authenticationUsed'
+    if(authenticationData.state === 'used') throw app.logicError("authenticationUsed")
     const actionName = authenticationData.action
     const actionResults = await service.trigger({ type: actionName+'Authenticated' }, {
       ...authenticationData.actionProperties,
@@ -208,7 +208,7 @@ definition.action({
   },
   async execute({ authentication }, { client, service }, emit) {
     const authenticationData = await Authentication.get(authentication)
-    if(!authenticationData) throw 'notFound'
+    if(!authenticationData) throw app.logicError("notFound")
     const { contactType, contact, action } = authenticationData
     const secrets = await service.trigger({ type: 'refreshAuthenticationSecret' }, {
       authentication

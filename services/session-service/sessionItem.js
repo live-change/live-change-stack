@@ -75,7 +75,7 @@ definition.processor(function(service, app) {
           async execute(properties, { client, service }, emit) {
             const id = properties[modelPropertyName] || app.generateUid()
             const entity = await modelRuntime().get(id)
-            if(entity) throw 'exists'
+            if(entity) throw app.logicError("exists")
             emit({
               type: eventName,
               [modelPropertyName]: id,
@@ -106,8 +106,8 @@ definition.processor(function(service, app) {
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
-            if(!entity) throw 'not_found'
-            if(entity.session != client.session) throw 'not_authorized'
+            if(!entity) throw app.logicError("not_found")
+            if(entity.session != client.session) throw app.logicError("not_authorized")
             let updateObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -145,8 +145,8 @@ definition.processor(function(service, app) {
           waitForEvents: true,
           async execute(properties, { client, service }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
-            if(!entity) throw 'not_found'
-            if(entity.session != client.session) throw 'not_authorized'
+            if(!entity) throw app.logicError("not_found")
+            if(entity.session != client.session) throw app.logicError("not_authorized")
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,

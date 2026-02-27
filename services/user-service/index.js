@@ -48,7 +48,7 @@ definition.trigger({
   waitForEvents: true,
   async execute({ user, session }, { client, service }, emit) {
     const userData = await User.get(user)
-    if(!userData) throw 'userNotFound'
+    if(!userData) throw app.logicError("userNotFound")
     await service.trigger({ type: 'signedIn' }, {
       session, user
     })
@@ -63,7 +63,7 @@ definition.action({
   name: 'signOut',
   waitForEvents: true,
   async execute({ }, { client, service }, emit) {
-    if(!client.user) throw "notSignedIn"
+    if(!client.user) throw app.logicError("notSignedIn")
     await service.trigger({ type: 'signedOut' }, {
       session: client.session,
       user: client.user
@@ -119,7 +119,7 @@ definition.action({
   },
   async execute({ to }, { client, service }, emit) {
     const userData = await User.get(to)
-    if(!userData) throw 'userNotFound'
+    if(!userData) throw app.logicError("userNotFound")
     await service.trigger({ type: 'signedOut' }, {
       session: client.session,
       user: client.user

@@ -171,7 +171,7 @@ async function readVersion(document, documentType, version) {
   const snapshot = await Snapshot.rangePath([document], {
     reverse: true, limit: 1, lte: version.toFixed().padStart(10, '0')
   })?.[0]
-  if(!snapshot) throw 'not_found'
+  if(!snapshot) throw app.logicError("not_found")
   let content = schema.nodeFromJSON(snapshot.content)
   let current = snapshot.version
   while(current < version) {

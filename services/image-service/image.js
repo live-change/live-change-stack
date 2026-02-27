@@ -105,7 +105,7 @@ definition.action({
     } else {
       // TODO: check id source session
       const existing = await Image.get(image)
-      if (existing) throw 'already_exists'
+      if (existing) throw app.logicError("already_exists")
     }
     const uploadRow = await Upload.get(upload)
     if(!uploadRow) throw new Error("upload_not_found")
@@ -178,7 +178,7 @@ definition.trigger({
   async execute({ image, name, width, height, fileName, purpose, owner, ownerType, crop }, { client, service }, emit) {
     if(!image) throw new Error("image_not_found")
     const existing = await Image.get(image)
-    if (existing) throw 'already_exists'
+    if (existing) throw app.logicError("already_exists")
 
     let extension = fileName.match(/\.([A-Z0-9]+)$/i)[1].toLowerCase()
     if(extension === 'jpg') throw new Error('jpg should have jpeg extension')

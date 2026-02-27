@@ -39,7 +39,7 @@ definition.view({
   },
   async daoPath({ objectType, object, objects }, { client, service }, method) {
     const allObjects = ((objectType && object) ? [{ objectType, object }] : []).concat(objects || [])
-    if(allObjects.length === 0) throw 'empty_objects_list'
+    if(allObjects.length === 0) throw app.logicError("empty_objects_list")
     return access.accessPath(client, allObjects)
   }
 })
@@ -69,7 +69,7 @@ definition.view({
     }
   },
   async daoPath({ objects }, { client, service }, method) {
-    if(objects.length === 0) throw 'empty_objects_list'
+    if(objects.length === 0) throw app.logicError("empty_objects_list")
     return access.accessesPath(client, objects)
   }
 })

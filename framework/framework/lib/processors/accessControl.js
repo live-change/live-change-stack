@@ -10,7 +10,7 @@ export default function(module, app) {
       action.execute = async (...args) => {
         if(!(await access(...args))) {
           console.error("NOT AUTHORIZED ACTION", module.name, actionName)
-          throw "notAuthorized"
+          throw app.logicError("notAuthorized")
         }
         return oldExec.apply(action, args)
       }
@@ -25,7 +25,7 @@ export default function(module, app) {
       view.observable = async (...args) => {
         if(!(await access(...args))) {
           console.error("NOT AUTHORIZED VIEW", module.name, viewName)
-          throw "notAuthorized"
+          throw app.logicError("notAuthorized")
         }
         return oldObservable.apply(view, args)
       }
@@ -33,7 +33,7 @@ export default function(module, app) {
       view.get = async (...args) => {
         if(!(await access(...args))) {
           console.error("NOT AUTHORIZED VIEW", module.name, viewName)
-          throw "notAuthorized"
+          throw app.logicError("notAuthorized")
         }
         return oldGet.apply(view, args)
       }

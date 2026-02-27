@@ -180,7 +180,7 @@ async function getBalance(balance, triggerService) {
       amount: config.currencyZero
     }
   }
-  throw "balanceNotFound"
+  throw app.logicError("balanceNotFound")
 }
 
 definition.trigger({
@@ -207,7 +207,7 @@ definition.trigger({
   queuedBy: 'balance',
   async execute({ balance, causeType, cause, change }, { client, service, triggerService }, emit) {
     const balanceData = await getBalance(balance, triggerService)
-    if(!config.changePossible(balanceData.available, change)) throw "insufficientFunds"
+    if(!config.changePossible(balanceData.available, change)) throw app.logicError("insufficientFunds")
     const operation = await triggerService({
       service: definition.name,
       type: 'balance_createOperation',
@@ -253,11 +253,11 @@ definition.trigger({
   queuedBy: 'balance',
   async execute({ balance, operation }, { client, service, triggerService }) {
     const operationData = await Operation.get(operation)
-    if(!operationData) throw "operationNotFound"
-    if(operationData.state !== 'started') throw "operationNotStarted"
+    if(!operationData) throw app.logicError("operationNotFound")
+    if(operationData.state !== 'started') throw app.logicError("operationNotStarted")
     console.log("operationData", operationData, "balance", balance)
     balance = balance || operationData.balance
-    if(operationData.balance !== balance) throw "balanceMismatch"
+    if(operationData.balance !== balance) throw app.logicError("balanceMismatch")
     const balanceData = await getBalance(balance, triggerService)
     const newAmount = config.currencyAdd(balanceData.amount, operationData.change)
     await triggerService({
@@ -307,9 +307,9 @@ definition.trigger({
   queuedBy: 'balance',
   async execute({ balance, operation }, { client, service, triggerService }) {
     const operationData = await Operation.get(operation)
-    if(!operationData) throw "operationNotFound"
-    if(operationData.state !== 'started') throw "operationNotStarted"
-    if(operationData.balance !== balance) throw "balanceMismatch"
+    if(!operationData) throw app.logicError("operationNotFound")
+    if(operationData.state !== 'started') throw app.logicError("operationNotStarted")
+    if(operationData.balance !== balance) throw app.logicError("balanceMismatch")
     const balanceData = await getBalance(balance, triggerService)
     const newAmount = balanceData.amount
     await triggerService({
@@ -362,7 +362,7 @@ definition.trigger({
   async execute({ balance, causeType, cause, change, force }, { client, service, triggerService }) {
     const operation = app.generateUid()
     const balanceData = await getBalance(balance, triggerService)
-    if(!force && !config.changePossible(balanceData.available, change)) throw "insufficientFunds"
+    if(!force && !config.changePossible(balanceData.available, change)) throw app.logicError("insufficientFunds")
     const newAmount = config.currencyAdd(balanceData.amount, change)
     const newAvailable = config.currencyAdd(balanceData.available, change)
     await triggerService({

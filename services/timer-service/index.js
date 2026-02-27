@@ -65,7 +65,7 @@ definition.trigger({
   async execute({ timer }, { client, service }, emit) {
     if(!timer) throw new Error("timer is required")
     let timerRow = await Timer.get(timer)
-    if(!timerRow) throw 'notFound'
+    if(!timerRow) throw app.logicError("notFound")
     emit({
       type: "timerCanceled", timer
     })

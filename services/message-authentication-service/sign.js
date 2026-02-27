@@ -167,7 +167,7 @@ for(const contactType of config.contactTypes) {
           c.type === contactTypeName && c.contact === contact
         )
         if(!contactData) throw contactTypeName+'MotFound'
-        if(contacts.length === 1) throw 'lastOne'
+        if(contacts.length === 1) throw app.logicError("lastOne")
         console.log("DISCONNECT", contact)
         return await service.trigger({ type: 'disconnect' + contactTypeUName }, {
           [contactTypeName]: contact,

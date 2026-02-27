@@ -95,4 +95,8 @@ import DummyConnection from "./lib/DummyConnection.js"
 rd.DummyConnection = DummyConnection
 export { DummyConnection }
 
+import { errorToJSON } from "./lib/utils.js"
+rd.errorToJSON = errorToJSON
+export { errorToJSON }
+
 export default rd

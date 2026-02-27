@@ -61,7 +61,7 @@ definition.action({
         user
       }
     } else { // Sign up
-      throw 'notFound'
+      throw app.logicError("notFound")
     }
   }
 })
@@ -92,7 +92,7 @@ definition.action({
     const existingLogin = await Account.get(account)
     const { session } = client
     if(existingLogin) { /// Sign In
-      throw 'alreadyConnected'
+      throw app.logicError("alreadyConnected")
     } else { // Sign up
       const user = app.generateUid()
       await service.trigger({ type: 'connectGoogle' }, {

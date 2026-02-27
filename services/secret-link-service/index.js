@@ -137,8 +137,8 @@ definition.trigger({
   },
   async execute({ secret }, context, emit) {
     const linkData = await Link.indexObjectGet('bySecretCode', secret)
-    if(!linkData) throw 'linkNotFound'
-    if(new Date().toISOString() > linkData.expire) throw "linkExpired"
+    if(!linkData) throw app.logicError("linkNotFound")
+    if(new Date().toISOString() > linkData.expire) throw app.logicError("linkExpired")
     return linkData.authentication
   }
 })

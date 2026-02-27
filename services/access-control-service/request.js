@@ -40,14 +40,14 @@ definition.action({
     const [sessionOrUserType, sessionOrUser] =
       client.user ? ['user_User', client.user] : ['session_Session', client.session]
 
-    if(!publicAccess.availableRoles) throw 'notAuthorized'
+    if(!publicAccess.availableRoles) throw app.logicError("notAuthorized")
     for(const requestedRole of roles) {
-      if(!publicAccess.availableRoles.includes(requestedRole)) throw 'notAuthorized'
+      if(!publicAccess.availableRoles.includes(requestedRole)) throw app.logicError("notAuthorized")
     }
 
     const request = App.encodeIdentifier([ sessionOrUserType, sessionOrUser, objectType, object ])
     const requestData = await AccessRequest.get(request)
-    if(requestData) throw 'already_requested'
+    if(requestData) throw app.logicError("already_requested")
 
     if(publicAccess.autoGrantRequests) {
       emit({
@@ -108,12 +108,12 @@ definition.action({
     const myRoles = await access.getClientObjectRoles(client, { objectType, object }, true)
     if(!myRoles.includes('admin')) {
       for(const requestedRole of roles) {
-        if(!myRoles.includes(requestedRole)) throw 'notAuthorized'
+        if(!myRoles.includes(requestedRole)) throw app.logicError("notAuthorized")
       }
     }
     const request = App.encodeIdentifier([ sessionOrUserType, sessionOrUser, objectType, object ])
     const requestData = await AccessRequest.get(request)
-    if(!requestData) throw 'not_found'
+    if(!requestData) throw app.logicError("not_found")
     emit({
       type: 'accessRequestAccepted',
       objectType, object, sessionOrUserType, sessionOrUser, roles

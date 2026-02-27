@@ -34,7 +34,7 @@ definition.processor(function(service, app) {
 
       if(bans.find(ban => ban.type == 'block')) {
         /// TODO: report security violation if failed
-        throw 'securityBlock'
+        throw app.logicError("securityBlock")
       }
 
       if(bans.find(ban => ban.type == 'delay')) {
@@ -65,11 +65,11 @@ definition.processor(function(service, app) {
       const { client, ...otherProperties } = properties
       const bans = await getBans(client, actions)
 
-      if(bans.find(ban => ban.type == 'block')) throw 'securityBlock'
+      if(bans.find(ban => ban.type == 'block')) throw app.logicError("securityBlock")
 
       if(bans.find(ban => ban.type == 'block')) {
         /// TODO: report security violation if failed
-        throw 'securityBlock'
+        throw app.logicError("securityBlock")
       }
 
       if(bans.find(ban => ban.type == 'delay')) {

@@ -103,7 +103,7 @@ function getCreateFunction( validators, validationContext, config, context) {
   return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName] || app.generateUid()
     const entity = await modelRuntime().get(id)
-    if(entity) throw 'exists'
+    if(entity) throw app.logicError("exists")
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
     const data = extractObjectData(writeableProperties, properties,
       App.computeDefaults(model, properties, { client, service } ))
@@ -182,13 +182,13 @@ function getUpdateFunction( validators, validationContext, config, context) {
     const id = properties[modelPropertyName]
     if(!id) throw new Error('no_id')
     const entity = await modelRuntime().get(id)
-    if(!entity) throw 'not_found'
+    if(!entity) throw app.logicError("not_found")
     const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
     const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)    
     /* console.log("UPDATE MATCH", entityTypeAndIdParts, '===', typeAndIdParts,
       '=>', JSON.stringify(entityTypeAndIdParts) === JSON.stringify(typeAndIdParts)) */
     if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts)) {
-      throw 'not_authorized'
+      throw app.logicError("not_authorized")
     }
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
     const data = App.utils.mergeDeep({},
@@ -291,11 +291,11 @@ function getDeleteFunction(config, context) {
   return async function execute(properties, { client, service, trigger }, emit) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
-    if(!entity) throw 'not_found'
+    if(!entity) throw app.logicError("not_found")
     const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
     const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
     if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts)) {
-      throw 'not_authorized'
+      throw app.logicError("not_authorized")
     }
     await fireChangeTriggers(context, objectType, extractIdentifiers(otherPropertyNames, entity), id,
       extractObjectData(writeableProperties, entity, {}), null, trigger)

@@ -138,7 +138,7 @@ definition.action({
   },
   async execute({ code, redirectUri, scope }, { client, service }, emit) {
     const user = client.user
-    if(!user) throw 'notAuthorized'
+    if(!user) throw app.logicError("notAuthorized")
     const tokens = await getTokensWithCode(code, redirectUri)
     console.log("TOKENS", tokens)
     if(!tokens.refresh_token) throw new Error("No refresh token")
@@ -150,7 +150,7 @@ definition.action({
     const accountData = await Account.get(account)
     console.log("ACCOUNT DATA", accountData, 'CURRENT USER', user)
     if(accountData) {
-      if(accountData.user !== user) throw 'connectedToAnotherUser'
+      if(accountData.user !== user) throw app.logicError("connectedToAnotherUser")
     } else {
       await service.trigger({ type: 'connectGoogle' }, {
         user, account, data: googleUser,

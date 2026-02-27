@@ -238,7 +238,7 @@ definition.trigger({
 async function notificationAccess({ notification }, { client, visibilityTest }) {
   if(visibilityTest) return true
   const notificationRow = await Notification.get(notification)
-  if(!notificationRow) throw 'notFound'
+  if(!notificationRow) throw app.logicError("notFound")
   return client.user
       ? notificationRow.sessionOrUserType === 'user_User' && notificationRow.sessionOrUser === client.user
       : notificationRow.sessionOrUserType === 'session_Session' && notificationRow.sessionOrUser === client.session

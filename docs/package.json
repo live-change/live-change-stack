@@ -8,7 +8,7 @@
     "generate:framework": "cd ../framework/framework && typedoc",
     "generate:relations": "cd ../framework/relations-plugin && typedoc",
     "generate:all": "yarn generate:framework && yarn generate:relations",
-    "make:public": "mkdir -p docs/.vuepress/public/md && cp -r docs/framework docs/.vuepress/public/md/framework && cp -r docs/relations docs/.vuepress/public/md/relations",
+    "make:public": "mkdir -p docs/.vuepress/public/md && cp -r docs/framework docs/.vuepress/public/md/framework && cp -r docs/relations docs/.vuepress/public/md/relations && cp -r docs/server docs/.vuepress/public/md/server",
     "build": "yarn generate:all && yarn make:public && vuepress build docs",
     "clean-dev": "vuepress dev docs --clean-cache",
     "dev": "vuepress dev docs",
