@@ -79,6 +79,7 @@
     "services/scope-service",
     "services/cron-service",
     "services/feedback-service",
+    "services/codemirror-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",
@@ -99,6 +100,7 @@
     "frontend/video-call-frontend",
     "frontend/balance-frontend",
     "frontend/billing-frontend",
-    "frontend/survey-frontend"
+    "frontend/survey-frontend",
+    "frontend/codemirror-frontend"
   ]
 }
