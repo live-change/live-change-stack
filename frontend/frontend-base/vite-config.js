@@ -272,7 +272,8 @@ export default async ({ command, mode, version, isSsrBuild, isPreview }, options
         '@live-change/db-store-indexeddb',
         '@live-change/db-store-rbtree',
         'debug',
-        'pica'
+        'pica',
+        'pluralize'
       ],
       exclude: [
         'primevue',
