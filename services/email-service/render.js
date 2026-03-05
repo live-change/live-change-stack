@@ -79,7 +79,6 @@ function processElement(element, images) {
 async function renderEmailWithJuice(url) {
   const response = await got(url)
   let body = response.body
-  console.log("BASE URL", baseUrl)
 
   let dom = new JSDOM(body)
   //console.log("RENDER EMAIL HEADERS HTML:", dom.window.document.querySelector('[data-headers]').innerHTML)
@@ -422,7 +421,7 @@ export { renderEmailWithJuice, renderEmailWithBrowser }
 
 async function renderEmail(data) {
   console.log("RENDER EMAIL WITH CONFIG", config)
-  const baseUrl = config.ssrUrl
+  const baseUrl = config.ssrUrl || process.env.SSR_URL || 'http://localhost:8001'
 
   const encodedData = encodeURIComponent(JSON.stringify(data))
   const url = `${baseUrl}/_email/${data.action}/${data.contact}/${encodedData}`

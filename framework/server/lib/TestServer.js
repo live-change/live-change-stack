@@ -68,6 +68,7 @@ class TestServer {
         this.port = this.expressServer.address().port
         this.url = `http://localhost:${this.expressServer.address().port}`
         process.env.SSR_PORT = this.port
+        process.env.SSR_URL = this.url
         console.log("test ssr server listening at", this.expressServer.address().address, this.port)
         resolve()
       })

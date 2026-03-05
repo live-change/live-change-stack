@@ -80,7 +80,7 @@
   },
   "devDependencies": {
     "@live-change/codeceptjs-helper": "^0.9.196",
-    "codeceptjs": "^3.6.10",
+    "codeceptjs": "^3.7.6",
     "generate-password": "1.7.1",
     "playwright": "1.49.1",
     "random-profile-generator": "^2.3.0",
@@ -90,5 +90,5 @@
   "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "BSD-3-Clause",
   "description": "",
-  "gitHead": "9cb9fc01eebdafb342a419cde03eafdf467eaa32"
+  "gitHead": "7f358a1cc16fb35069f6ce3f897412232f766843"
 }

@@ -30,7 +30,7 @@ class TriggerHandler {
           (c) => JSON.stringify(c[queuedBy]) )
     }
 
-    this.loggingHelpers = loggingHelpers(service.name, service.app.config.clientConfig.version, {
+    this.loggingHelpers = loggingHelpers(service.name, service.app?.config?.clientConfig?.version || 'unknown', {
       triggerType: definition.name,
     })
   }

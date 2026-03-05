@@ -53,11 +53,7 @@ const config = {
   browser, 
   smtp,
   renderMethod,
-  ssrUrl: getValue(
-    definition.config.browser?.ssrUrl, 
-    process.env.SSR_URL, 
-    'http://localhost:8001'
-  ),
+  ssrUrl: definition.config.browser?.ssrUrl,
   userEmailsReaderRoles,
   userEmailsWriterRoles,
 }

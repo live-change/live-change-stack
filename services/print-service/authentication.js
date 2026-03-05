@@ -17,9 +17,8 @@ definition.authenticator({
   }
 })
 
-const baseUrl = config.ssrUrl
-
 export async function getAuthenticatedUrl(path, data) {
+  const baseUrl = config.ssrUrl || process.env.SSR_URL || 'http://localhost:8001'
   const encodedData = data && encodeURIComponent(JSON.stringify(data))
   return baseUrl + path + (data ? '/' + encodedData : '') +`?sessionKey=${await authenticationKey.getValue()}`
 }

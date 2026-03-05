@@ -9,7 +9,7 @@ const {
   // how many screenshots and pdf prints can run in parallel
   concurrency = 4,
   printAuthenticationKey = crypto.randomBytes(24).toString('hex'),
-  ssrUrl = process.env.SSR_URL || 'http://localhost:8001'
+  ssrUrl = definition.config.browser?.ssrUrl,
 } = definition.config
 
 definition.clientConfig = {

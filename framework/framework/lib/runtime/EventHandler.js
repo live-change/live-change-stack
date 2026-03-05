@@ -7,7 +7,7 @@ class EventHandler {
     this.definition = definition
     this.service = service
 
-    this.loggingHelpers = loggingHelpers(service.name, service.app.config.clientConfig.version, {
+    this.loggingHelpers = loggingHelpers(service.name, service.app?.config?.clientConfig?.version || 'unknown', {
       eventType: definition.name,
     })
   }

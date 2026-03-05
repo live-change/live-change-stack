@@ -24,6 +24,6 @@
     "@live-change/framework": "^0.9.196",
     "nodemailer": "^6.7.2"
   },
-  "gitHead": "9cb9fc01eebdafb342a419cde03eafdf467eaa32",
+  "gitHead": "7f358a1cc16fb35069f6ce3f897412232f766843",
   "type": "module"
 }

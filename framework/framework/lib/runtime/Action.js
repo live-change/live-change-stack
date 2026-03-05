@@ -12,7 +12,7 @@ class Action {
   constructor(definition, service) {
     this.definition = definition
     this.service = service
-    this.loggingHelpers = loggingHelpers(this.service.name, this.service.app.config.clientConfig.version, {
+    this.loggingHelpers = loggingHelpers(this.service.name, this.service.app?.config?.clientConfig?.version || 'unknown', {
       action: this.definition.name,
     })
   }
