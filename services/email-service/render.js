@@ -406,13 +406,13 @@ async function renderEmailWithBrowser(url) {
   email.html = dom.serialize()
   dom.window.close()
 
-  console.log("IMAGES", Array.from(images.entries()))
+  //console.log("IMAGES", Array.from(images.entries()))
   const imageAttachments = await processImageAttachments(images, url)
 
   email.attachments = email.attachments || []
   email.attachments.push(...imageAttachments)
 
-  console.log("EMAIL", email)
+  //console.log("EMAIL", email)
 
   return email
 }

@@ -89,20 +89,24 @@ export async function useSecretCode(
   assert.ok(codeData, 'code created')
 
   if (!happyPath) {
+    await sleep(200)
+    await page.waitForSelector('input#code', { state: 'visible' })
     const wrongCode = codeData!.secretCode === '123456' ? '654321' : '123456'
     await page.fill('input#code', wrongCode)
     await page.fill('input#code', wrongCode)
     await page.click('button[type=submit]')
-    await page.locator('#code-help.p-error').waitFor({ state: 'visible' })
+    // PrimeVue 4 uses <Message> with role=\"alert\" instead of a #code-help.p-error span
+    await page.getByRole('alert').waitFor({ state: 'visible' })
   }
 
   if (!happyPath) {
-    await new Promise((r) => setTimeout(r, 200))
+    await sleep(200)
+    await page.waitForSelector('input#code', { state: 'visible' })
     await Code.update(codeData!.id, { expire: new Date() })
     await page.fill('input#code', codeData!.secretCode)
     await page.fill('input#code', codeData!.secretCode)
     await page.click('button[type=submit]')
-    await page.locator('#code-help.p-error').waitFor({ state: 'visible' })
+    await page.getByRole('alert').waitFor({ state: 'visible' })
 
     await page.click('text=Resend')
     assert.ok(page.url().includes('/sent/'))
@@ -116,6 +120,11 @@ export async function useSecretCode(
     assert.notStrictEqual(oldCodeData!.id, codeData!.id, 'code is different from previous code')
   }
 
+  await page.waitForFunction(() => {
+    const input = document.querySelector('input#code') as HTMLInputElement
+    if(!input) return false
+    return input.value === ''
+  })
   await page.fill('input#code', codeData!.secretCode)
   await page.fill('input#code', codeData!.secretCode)
   await page.click('button[type=submit]')

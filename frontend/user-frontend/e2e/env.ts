@@ -84,6 +84,18 @@ export async function getTestEnv(): Promise<TestEnv> {
       server.dispose()
     })
 
+    // When running under node:test, register a global teardown that disposes the server
+    // and forces process exit so the test run finishes cleanly.
+    try {
+      const { after } = await import('node:test')
+      after(async () => {
+        await server.dispose()
+        process.exit(0)
+      })
+    } catch {
+      // not running under node:test, ignore
+    }
+
     const url = server.url!
     return {
       server,

@@ -43,6 +43,7 @@ test('connect email with code', async () => {
 
     await page.fill('input#email', email2)
     await page.click('button[type=submit]')
+    await page.waitForURL('**/sent/*', { timeout: 10000 })
     assert.ok(page.url().includes('/sent/'))
 
     const url = page.url()
