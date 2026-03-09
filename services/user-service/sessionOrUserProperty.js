@@ -304,8 +304,6 @@ definition.processor(function(service, app) {
                 updateObject[propertyName] = properties[propertyName]
               }
             }
-            const merged = App.utils.mergeDeep({}, entity, updateObject)
-            await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             const identifiers = client.user ? {
               sessionOrUserType: 'user_User',
               sessionOrUser: client.user,
@@ -317,10 +315,15 @@ definition.processor(function(service, app) {
               identifiers[key+'Type'] = properties[key+'Type']
               identifiers[key]=properties[key]
             }
+            const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+            const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
+            const merged = App.utils.mergeDeep({}, entity, data)
+            await App.validation.validate({ ...identifiers, ...merged }, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               identifiers,
-              data: properties || {}
+              data
             })
           }
         })
@@ -376,14 +379,16 @@ definition.processor(function(service, app) {
                 data
               })
             } else {
-              const merged = App.utils.mergeDeep({}, entity, updateObject)
+              const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+              const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
+              const merged = App.utils.mergeDeep({}, entity, data)
               //console.log('V', { ...identifiers, ...merged}, validators)
               await App.validation.validate({ ...identifiers, ...merged}, validators,
                   { source: action, action, service, app, client })
               emit({
                 type: updatedEventName,
                 identifiers,
-                data: updateObject || {}
+                data
               })
             }
           }

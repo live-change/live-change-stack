@@ -14,7 +14,7 @@
   </a>
   <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto
               bg-surface-0 dark:bg-surface-950 dark:border-1 dark:border-surface-800
-              right-0 top-full z-5 shadow">
+              right-0 md:right-auto top-full z-5 shadow">
     <loading-zone suspense>
       <template v-slot:loading>
         <div class="flex items-center justify-center top-0 left-0 notifications-loading">

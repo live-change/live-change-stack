@@ -120,14 +120,17 @@ definition.processor(function(service, app) {
                 updateObject[propertyName] = properties[propertyName]
               }
             }
-            const merged = App.utils.mergeDeep({}, entity, updateObject)
-            await App.validation.validate(merged, validators, { source: action, action, service, app, client })
+            const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+            const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
+            const merged = App.utils.mergeDeep({}, entity, data)
+            await App.validation.validate({ user: client.user, ...merged }, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               identifiers: {
                 user: client.user
               },
-              data: properties || {}
+              data
             })
           }
         })

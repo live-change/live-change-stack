@@ -241,7 +241,6 @@ definition.processor(function(service, app) {
             }
             const data = App.utils.mergeDeep({},
               App.computeDefaults(model, properties, { client, service } ), newObject)
-            await App.validation.validate(data, validators, { source: action, action, service, app, client })
             const identifiers = {
               contactOrUserType: 'user_User',
               contactOrUser: client.user,
@@ -250,6 +249,8 @@ definition.processor(function(service, app) {
               identifiers[key+'Type'] = properties[key+'Type']
               identifiers[key]=properties[key]
             }
+            await App.validation.validate({ ...identifiers, ...data }, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               identifiers,
@@ -288,8 +289,6 @@ definition.processor(function(service, app) {
                 updateObject[propertyName] = properties[propertyName]
               }
             }
-            const merged = App.utils.mergeDeep({}, entity, updateObject)
-            await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             const identifiers = {
               contactOrUserType: 'user_User',
               contactOrUser: client.user,
@@ -298,10 +297,15 @@ definition.processor(function(service, app) {
               identifiers[key+'Type'] = properties[key+'Type']
               identifiers[key]=properties[key]
             }
+            const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+            const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
+            const merged = App.utils.mergeDeep({}, entity, data)
+            await App.validation.validate({ ...identifiers, ...merged }, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               identifiers,
-              data: properties || {}
+              data
             })
           }
         })

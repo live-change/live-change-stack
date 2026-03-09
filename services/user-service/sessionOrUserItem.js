@@ -210,6 +210,7 @@ definition.processor(function(service, app) {
         const actionName = 'createMy' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
+          skipValidation: true,
           access: config.ownerCreateAccess || config.ownerWriteAccess,
           properties: {
             ...originalModelProperties,
@@ -225,21 +226,33 @@ definition.processor(function(service, app) {
             const entity = await modelRuntime().get(id)
             if(entity) throw app.logicError("exists")
             const identifiers = client.user ? {
-                  sessionOrUserType: 'user_User',
-                  sessionOrUser: client.user,
-                } : {
-                  sessionOrUserType: 'session_Session',
-                  sessionOrUser: client.session,
-                }
+              sessionOrUserType: 'user_User',
+              sessionOrUser: client.user,
+            } : {
+              sessionOrUserType: 'session_Session',
+              sessionOrUser: client.session,
+            }
+            let newObject = {}
+            for(const propertyName of writeableProperties) {
+              if(properties.hasOwnProperty(propertyName)) {
+                newObject[propertyName] = properties[propertyName]
+              }
+            }
+            const data = App.utils.mergeDeep({},
+              App.computeDefaults(model, properties, { client, service }), newObject)
+            await App.validation.validate({ ...identifiers, ...data }, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               [modelPropertyName]: id,
               identifiers,
-              data: properties
+              data
             })
             return id
           }
         })
+        const action = service.actions[actionName]
+        const validators = App.validation.getValidators(action, service, action)
       }
       if(config.ownerUpdateAccess || config.ownerWriteAccess) {
         const eventName = modelName + 'Updated'
@@ -272,10 +285,6 @@ definition.processor(function(service, app) {
                 updateObject[propertyName] = properties[propertyName]
               }
             }
-            const merged = App.utils.mergeDeep({ [modelPropertyName]: properties[modelPropertyName] },
-              entity, updateObject)
-
-            await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             const identifiers = client.user ? {
               sessionOrUserType: 'user_User',
               sessionOrUser: client.user,
@@ -283,11 +292,17 @@ definition.processor(function(service, app) {
               sessionOrUserType: 'session_Session',
               sessionOrUser: client.session,
             }
+            const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+            const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
+            const merged = App.utils.mergeDeep({ [modelPropertyName]: properties[modelPropertyName] },
+              entity, data)
+            await App.validation.validate({ ...identifiers, ...merged }, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,
               identifiers,
-              data: properties
+              data
             })
           }
         })

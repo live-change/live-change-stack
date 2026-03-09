@@ -88,6 +88,7 @@ definition.processor(function(service, app) {
         const actionName = 'createMyUser' + modelName
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
+          skipValidation: true,
           access: config.userCreateAccess || config.userWriteAccess,
           properties: {
             ...originalModelProperties,
@@ -102,17 +103,29 @@ definition.processor(function(service, app) {
             const id = properties[modelPropertyName] || app.generateUid()
             const entity = await modelRuntime().get(id)
             if(entity) throw app.logicError("exists")
+            let newObject = {}
+            for(const propertyName of writeableProperties) {
+              if(properties.hasOwnProperty(propertyName)) {
+                newObject[propertyName] = properties[propertyName]
+              }
+            }
+            const data = App.utils.mergeDeep({},
+              App.computeDefaults(model, properties, { client, service }), newObject)
+            await App.validation.validate(data, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               [modelPropertyName]: id,
               identifiers: {
                 user: client.user,
               },
-              data: properties
+              data
             })
             return id
           }
         })
+        const action = service.actions[actionName]
+        const validators = App.validation.getValidators(action, service, action)
       }
       if(config.userUpdateAccess || config.userWriteAccess) {
         const eventName = modelName + 'Updated'
@@ -140,7 +153,9 @@ definition.processor(function(service, app) {
                 updateObject[propertyName] = properties[propertyName]
               }
             }
-            const merged = App.utils.mergeDeep({}, entity, updateObject)
+            const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+            const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
+            const merged = App.utils.mergeDeep({}, entity, data)
             await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             emit({
               type: eventName,
@@ -148,7 +163,7 @@ definition.processor(function(service, app) {
               identifiers: {
                 user: client.user,
               },
-              data: properties
+              data
             })
           }
         })

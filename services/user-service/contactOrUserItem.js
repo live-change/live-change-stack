@@ -154,6 +154,7 @@ definition.processor(function(service, app) {
           name: actionName,
           access: (params, context) => context.client.user
               && (config.ownerCreateAccess || config.ownerWriteAccess)(params,context),
+          skipValidation: true,
           properties: {
             ...originalModelProperties,
             [modelPropertyName]: {
@@ -171,15 +172,27 @@ definition.processor(function(service, app) {
               ownerType: 'user_User',
               owner: client.user,
             }
+            let newObject = {}
+            for(const propertyName of writeableProperties) {
+              if(properties.hasOwnProperty(propertyName)) {
+                newObject[propertyName] = properties[propertyName]
+              }
+            }
+            const data = App.utils.mergeDeep({},
+              App.computeDefaults(model, properties, { client, service }), newObject)
+            await App.validation.validate({ ...identifiers, ...data }, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               [modelPropertyName]: id,
               identifiers,
-              data: properties
+              data
             })
             return id
           }
         })
+        const action = service.actions[actionName]
+        const validators = App.validation.getValidators(action, service, action)
       }
       if(config.ownerUpdateAccess || config.ownerWriteAccess) {
         const eventName = modelName + 'Updated'
@@ -210,8 +223,6 @@ definition.processor(function(service, app) {
                 updateObject[propertyName] = properties[propertyName]
               }
             }
-            const merged = App.utils.mergeDeep({}, entity, updateObject)
-            await App.validation.validate(merged, validators, { source: action, action, service, app, client })
             const identifiers = client.user ? {
               ownerType: 'user_User',
               owner: client.user,
@@ -219,11 +230,16 @@ definition.processor(function(service, app) {
               ownerType: 'session_Session',
               owner: client.session,
             }
+            const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
+            const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
+            const merged = App.utils.mergeDeep({}, entity, data)
+            await App.validation.validate({ ...identifiers, ...merged }, validators,
+              { source: action, action, service, app, client })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,
               identifiers,
-              data: properties
+              data
             })
           }
         })

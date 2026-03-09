@@ -186,7 +186,7 @@ async function checkIfThereIsMore() {
 
 
 export async function startTimers() {
-  console.error("START TIMERS")
+  //console.error("START TIMERS")
 
   let loadTime = Date.now() + queueDuration
 
@@ -201,7 +201,7 @@ export async function startTimers() {
       })
     }
   })`, { encodedFrom: '', encodedTo: (''+loadTime).padStart(16, '0')+'_' }])
-  console.error("NEXT TIMERS", timers)
+  //console.error("NEXT TIMERS", timers)
   lastLoadTime = loadTime
   appendTimers(timers)
   if(!timersLoopStarted) startTimersLoop()
