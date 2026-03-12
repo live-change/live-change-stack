@@ -28,8 +28,11 @@ definition.processor(function(service, app) {
         ...config
       }
 
+      if (!model.ownerCrud) model.ownerCrud = {}
+
       if(config.sessionReadAccess) {
         const viewName = 'mySession' + modelName
+        model.ownerCrud.read ??= viewName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access: config.sessionReadAccess,
@@ -85,6 +88,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.create ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -124,6 +128,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.update ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -147,6 +152,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.reset ??= actionName
       }
 
     }

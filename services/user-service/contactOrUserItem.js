@@ -115,8 +115,11 @@ definition.processor(function(service, app) {
         }
       })
 
+      if (!model.ownerCrud) model.ownerCrud = {}
+
       if(config.ownerReadAccess) {
         const viewName = 'my' + pluralize(modelName)
+        model.ownerCrud.range ??= viewName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access(params, context) {
@@ -191,6 +194,7 @@ definition.processor(function(service, app) {
             return id
           }
         })
+        model.ownerCrud.create ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -233,7 +237,7 @@ definition.processor(function(service, app) {
             const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
             const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
             const merged = App.utils.mergeDeep({}, entity, data)
-            await App.validation.validate({ ...identifiers, ...merged }, validators,
+            await App.validation.validate({ ...identifiers, ...merged, [modelPropertyName]: entity.id }, validators,
               { source: action, action, service, app, client })
             emit({
               type: eventName,
@@ -243,6 +247,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.update ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -281,6 +286,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.delete ??= actionName
       }
     }
   }

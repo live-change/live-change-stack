@@ -196,7 +196,8 @@ export function prepareObjectRelations(objectType, object, api = useApi()) {
       const name = 'rangeBy_' + objectType
       const typeView = from.crud?.[name]
         ? name
-        : undefined        
+        : undefined
+
       if(typeView) {
         views.push({
           name: typeView,
@@ -205,18 +206,27 @@ export function prepareObjectRelations(objectType, object, api = useApi()) {
           }
         })
       } else {
-        for(let i = 0; i < what.length; i++) {
-          if(what[i] !== objectType) continue
-          const propertyName = relationConfig.propertyNames?.[i]
-            ?? model[0].toLowerCase() + model.slice(1)
-          const name = 'rangeBy' + propertyName[0].toUpperCase() + propertyName.slice(1)          
-          if(!from.crud?.[name]) continue
+        if(singular) {
           views.push({
-            name,            
+            name: 'read',
             identifiers: {
-              [propertyName]: object
+              [model[0].toLowerCase() + model.slice(1)]: object
             }
           })
+        } else {
+          for(let i = 0; i < what.length; i++) {
+            if(what[i] !== objectType) continue
+            const propertyName = relationConfig.propertyNames?.[i]
+              ?? model[0].toLowerCase() + model.slice(1)
+            const name = 'rangeBy' + propertyName[0].toUpperCase() + propertyName.slice(1)          
+            if(!from.crud?.[name]) continue
+            views.push({
+              name,            
+              identifiers: {
+                [propertyName]: object
+              }
+            })
+          }
         }
       }
       console.log(objectType, "VIEWS", views, "FROM", from, "SINGULAR", singular)

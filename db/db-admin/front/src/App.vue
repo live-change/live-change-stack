@@ -50,7 +50,7 @@
       { charset: 'utf-8' },
       { name: 'viewport',
         content: "user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1," +
-            " width=device-width, viewport-fit=cover" }
+                 " width=device-width, viewport-fit=cover" }
     ],
     htmlAttrs: {
       lang: 'en',

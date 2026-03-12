@@ -142,8 +142,11 @@ definition.processor(function(service, app) {
         }
       })
 
+      if (!model.ownerCrud) model.ownerCrud = {}
+
       if(config.ownerReadAccess) { // single item view
         const viewName = 'my' + modelName
+        model.ownerCrud.read ??= viewName
         const identifiers = createIdentifiersProperties(extendedWith)
         service.views[viewName] = new ViewDefinition({
           name: viewName,
@@ -258,6 +261,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.create ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -309,6 +313,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.update ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -346,6 +351,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.reset ??= actionName
       }
 
     }

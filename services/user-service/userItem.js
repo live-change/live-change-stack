@@ -30,10 +30,13 @@ definition.processor(function(service, app) {
         ...config
       }
 
+      if (!model.ownerCrud) model.ownerCrud = {}
+
       /// TODO: delete on userDeleted trigger
 
       if(config.userReadAccess) {
         const viewName = 'myUser' + pluralize(modelName)
+        model.ownerCrud.range ??= viewName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access(params, context) {
@@ -66,6 +69,7 @@ definition.processor(function(service, app) {
 
       if(config.userReadAccess) {
         const viewName = 'myUser' + modelName
+        model.ownerCrud.read ??= viewName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           async access(params, context) {          
@@ -124,6 +128,7 @@ definition.processor(function(service, app) {
             return id
           }
         })
+        model.ownerCrud.create ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -156,7 +161,7 @@ definition.processor(function(service, app) {
             const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
             const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
             const merged = App.utils.mergeDeep({}, entity, data)
-            await App.validation.validate(merged, validators, { source: action, action, service, app, client })
+            await App.validation.validate({ ...merged, [modelPropertyName]: entity.id }, validators, { source: action, action, service, app, client })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,
@@ -167,6 +172,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.update ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -197,6 +203,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.delete ??= actionName
       }
     }
   }

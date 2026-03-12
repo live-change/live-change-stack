@@ -7,6 +7,7 @@ import userIdentification from '@live-change/user-identification-service'
 import identicon from '@live-change/identicon-service'
 import localeSettings from '@live-change/locale-settings-service'
 import accessControl from '@live-change/access-control-service'
+import scope from '@live-change/scope-service'
 import security from '@live-change/security-service'
 import notification from '@live-change/notification-service'
 import upload from '@live-change/upload-service'
@@ -37,6 +38,7 @@ export {
   identicon,
   localeSettings,
   accessControl,
+  scope,
   security,
   notification,
   upload,

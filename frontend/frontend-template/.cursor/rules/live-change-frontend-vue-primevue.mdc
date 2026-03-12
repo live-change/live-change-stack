@@ -1,0 +1,290 @@
+---
+description: Rules for Vue 3, PrimeVue, Tailwind frontend development on LiveChange
+globs: **/front/src/**/*.{vue,js,ts}
+alwaysApply: false
+---
+
+# Frontend na live-change-stack – Vue 3 + PrimeVue + Tailwind
+
+## Stack
+
+- Vue 3 + TypeScript
+- PrimeVue 4 – główna biblioteka komponentów UI
+- Tailwind CSS – podstawowe stylowanie (unikaj zbędnego custom CSS)
+- vite-plugin-pages – file-based routing w `src/pages/`
+- @live-change/vue3-ssr – integracja z backendem LiveChange
+
+## Pobieranie danych – `live` + `Promise.all`
+
+- **Nie** używaj `ref(null)` + `onMounted` do ładowania danych.
+- Dane ładuj w `setup`/`script setup` przez `await Promise.all(...)` na `live(path()....)`.
+- Rodzic powinien owijać stronę w `<Suspense>` (w projektach live-change robi to zazwyczaj `ViewRoot` globalnie).
+
+Przykład:
+
+```js
+import { path, live, api as useApi } from '@live-change/vue3-ssr'
+
+const api = useApi()
+
+const [devices] = await Promise.all([
+  live(path().deviceManager.myUserDevices({}))
+])
+
+const [device, connections] = await Promise.all([
+  live(path().deviceManager.myUserDevice({ device: deviceId })),
+  live(path().deviceManager.deviceOwnedDeviceConnections({ device: deviceId }))
+])
+```
+
+Dostęp w template:
+
+```vue
+<template>
+  <div v-if="device.value">
+    {{ device.value.name }}
+  </div>
+</template>
+```
+
+## Komendy i formularze – wybór wzorca
+
+Są 4 sposoby wywoływania akcji backendowych. Używaj właściwego:
+
+| Wzorzec | Kiedy używać |
+|---|---|
+| `editorData` | **Edycja rekordów modelu** (create/update). Drafty, walidacja, `AutoField`. Ustawienia, edytory, profile. |
+| `actionData` | **Jednorazowe formularze akcji** (nie CRUD). Submit → done. Publikacja, zaproszenie, import. |
+| `api.command` | **Pojedynczy przycisk lub wywołanie z kodu** (bez pól formularza). Usuwanie, toggle, akcje z kodu. |
+| `<command-form>` | **Unikaj.** Legacy, tylko trywialne prototypy. Preferuj `editorData` lub `actionData`. |
+
+Schemat decyzji:
+
+1. Użytkownik wypełnia pola formularza? → **Nie**: użyj `api.command` (owijaj w `workingZone.addPromise` dla przycisków).
+2. Edytuje rekord modelu (create/update)? → **Tak**: użyj `editorData`. **Nie**: użyj `actionData`.
+3. `<command-form>` tylko do najprostszych jednorazowych przypadków.
+
+### `api.command`
+
+```js
+await api.command(['deviceManager', 'createMyUserDevice'], {
+  name: 'Moje urządzenie'
+})
+
+await api.command(['deviceManager', 'deleteMyUserDevice'], {
+  device: id
+})
+```
+
+Format komendy:
+
+- tablica `[serviceName, actionName]`,
+- payload jako zwykły obiekt.
+
+## Routing – blok `<route>` i meta `signedIn`
+
+- Każda strona w `src/pages/` może mieć blok `<route>` z metadanymi.
+- Używaj `meta.signedIn` do oznaczania stron wymagających logowania.
+
+```vue
+<route>
+  { "name": "devices", "meta": { "signedIn": true } }
+</route>
+```
+
+Dynamiczne ścieżki:
+
+- plik `[id].vue` odpowiada ścieżce `/devices/:id`.
+
+```js
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const deviceId = route.params.id
+```
+
+## Confirm + Toast – wzorzec dla akcji destrukcyjnych
+
+```js
+import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
+
+const confirm = useConfirm()
+const toast = useToast()
+
+function deleteDevice(id) {
+  confirm.require({
+    message: 'Czy na pewno chcesz usunąć to urządzenie?',
+    header: 'Potwierdzenie',
+    icon: 'pi pi-exclamation-triangle',
+    accept: async () => {
+      await api.command(['deviceManager', 'deleteMyUserDevice'], { device: id })
+      toast.add({
+        severity: 'success',
+        summary: 'Usunięto',
+        life: 2000
+      })
+    }
+  })
+}
+```
+
+## Wzorce UI – lista i szczegóły
+
+### Lista
+
+```vue
+<template>
+  <div class="container mx-auto p-4">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Urządzenia</h1>
+      <Button label="Dodaj" icon="pi pi-plus" @click="openDialog" />
+    </div>
+
+    <Card v-if="devices.value?.length === 0">
+      <template #content>
+        <p class="text-center text-gray-500">
+          Brak urządzeń
+        </p>
+      </template>
+    </Card>
+
+    <div class="grid gap-4">
+      <Card v-for="device in devices.value" :key="device.id">
+        <template #content>
+          <!-- zawartość -->
+        </template>
+      </Card>
+    </div>
+  </div>
+</template>
+```
+
+### Tag statusu
+
+```vue
+<Tag
+  :value="conn.status"
+  :severity="conn.status === 'online' ? 'success' : 'secondary'"
+/>
+```
+
+## Computed paths – reaktywne parametry
+
+Gdy ścieżki zależą od reaktywnych wartości (route params, props), owijaj je w `computed()`:
+
+```js
+import { computed, unref } from 'vue'
+import { usePath, live } from '@live-change/vue3-ssr'
+
+const path = usePath()
+
+const articlePath = computed(() => path.blog.article({ article: unref(articleId) }))
+const [article] = await Promise.all([live(articlePath)])
+```
+
+Dla warunkowego ładowania (np. tylko gdy zalogowany), zwróć wartość falsy:
+
+```js
+import { useClient } from '@live-change/vue3-ssr'
+const client = useClient()
+
+const myDataPath = computed(() => client.value.user && path.blog.myArticles({}))
+const [myData] = await Promise.all([live(myDataPath)])
+```
+
+## Powiązane dane – `.with()`
+
+Dołączaj powiązane obiekty do elementów w jednym reaktywnym zapytaniu:
+
+```js
+path.blog.articles({})
+  .with(article => path.userIdentification.identification({
+    sessionOrUserType: article.authorType,
+    sessionOrUser: article.author
+  }).bind('authorProfile'))
+```
+
+Dostęp: `article.authorProfile?.firstName`. Działa zarówno z `live()` jak i `RangeViewer`.
+
+## WorkingZone dla akcji asynchronicznych
+
+`ViewRoot` opakowuje każdą stronę w `<WorkingZone>`. Używaj `inject('workingZone')` dla akcji przycisków poza formularzami:
+
+```js
+import { inject } from 'vue'
+const workingZone = inject('workingZone')
+
+function doAction() {
+  workingZone.addPromise('actionName', (async () => {
+    await actions.blog.publishArticle({ article: id })
+    toast.add({ severity: 'success', summary: 'Opublikowano', life: 2000 })
+  })())
+}
+```
+
+Aktywuje globalny spinner/blur na czas trwania promisy.
+
+## Kontrola dostępu z `useClient`
+
+```js
+import { useClient } from '@live-change/vue3-ssr'
+const client = useClient()
+```
+
+- `client.value.user` – truthy gdy zalogowany
+- `client.value.roles` – tablica ról (np. `['admin', 'owner']`)
+
+W template:
+
+```vue
+<Button v-if="client.roles.includes('admin')" label="Admin" />
+<div v-if="!client.user">Zaloguj się</div>
+```
+
+## Locale i czas
+
+- Wywołaj `useLocale().captureLocale()` w `App.vue` żeby zapisać locale przeglądarki do backendu.
+- Używaj `locale.localTime(date)` z `d()` z vue-i18n do wyświetlania dat bezpiecznego dla SSR.
+- `currentTime` z `@live-change/frontend-base` to reaktywny ref który tykuje co 500ms.
+- `useTimeSynchronization()` z `@live-change/vue3-ssr` koryguje różnicę zegarów – używaj gdy timing jest krytyczny (odliczanie, eventy real-time).
+
+## Analityka
+
+Używaj `analytics` z `@live-change/vue3-components`:
+
+```js
+import { analytics } from '@live-change/vue3-components'
+analytics.emit('article:published', { articleId: id })
+```
+
+Podpinaj providery (PostHog, GA4) w osobnym pliku importowanym z `App.vue`.
+
+## SSR i konfiguracja frontendu
+
+- Utrzymuj standardowy układ entry points:
+
+```js
+// entry-client.js
+import { clientEntry } from '@live-change/frontend-base/client-entry.js'
+export default clientEntry(App, createRouter, config)
+
+// entry-server.js
+import { serverEntry, sitemapEntry } from '@live-change/frontend-base/server-entry.js'
+export const render = serverEntry(App, createRouter, config)
+export const sitemap = sitemapEntry(App, createRouter, routerSitemap, config)
+```
+
+- Konfigurację PrimeVue trzymaj w jednym miejscu (`config.js`) i używaj `definePreset` do nadpisania motywu.
+
+## Odkrywanie widoków i akcji z `describe`
+
+Komenda CLI `describe` pozwala znaleźć dostępne widoki (do `live()`) i akcje (do `api.command` / `editorData` / `actionData`):
+
+```bash
+node server/start.js describe --service blog
+node server/start.js describe --service blog --view articlesByCreatedAt --output yaml
+node server/start.js describe --service blog --action createMyUserArticle --output yaml
+```
+
+To najszybszy sposób na odkrycie jakie ścieżki i akcje są dostępne, w tym te wygenerowane automatycznie przez relacje.

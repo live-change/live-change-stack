@@ -157,10 +157,13 @@ definition.processor(function(service, app) {
       })
 */
 
+      if (!model.ownerCrud) model.ownerCrud = {}
+
       const extendedIdentifiersProperties = createIdentifiersProperties(extendedWith)
 
       if(config.ownerReadAccess) { // single item view
         const viewName = 'my' + modelName
+        model.ownerCrud.read ??= viewName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           properties: {
@@ -187,6 +190,7 @@ definition.processor(function(service, app) {
           const indexName = 'by' + (['SessionOrUser', ...combination])
             .map(prop => prop[0].toUpperCase() + prop.slice(1))
           const viewName = 'my' + propsUpperCase.join('And') + pluralize(modelName)
+          model.ownerCrud.range ??= viewName
           const identifiers = createIdentifiersProperties(combination)
           service.views[viewName] = new ViewDefinition({
             name: viewName,
@@ -275,6 +279,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.create ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -327,6 +332,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.update ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -393,6 +399,7 @@ definition.processor(function(service, app) {
             }
           }
         })
+        model.ownerCrud.createOrUpdate ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -431,6 +438,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.reset ??= actionName
       }
 
     }

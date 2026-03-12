@@ -1,0 +1,107 @@
+---
+description: LiveChange service file structure — every service must be a directory with separate definition.js, index.js, etc.
+globs: server/**/*.js
+alwaysApply: true
+---
+
+# LiveChange Service Structure
+
+Every LiveChange service **must** be a directory, not a single file.
+
+## Required structure
+
+```
+server/<serviceName>/
+  definition.js   # creates app.createServiceDefinition({ name }) – nothing else
+  index.js        # imports definition, imports all domain files, exports definition
+  config.js       # required – resolves definition.config, sets definition.clientConfig, exports plain config object
+  <domain>.js     # one file per domain area (models, views, actions, triggers)
+```
+
+## definition.js
+
+Only creates and exports the definition. No models, no actions here.
+
+```js
+import App from '@live-change/framework'
+const app = App.app()
+
+const definition = app.createServiceDefinition({ name: 'myService' })
+
+export default definition
+```
+
+## index.js
+
+Imports definition and all domain files (side-effect imports), then re-exports definition.
+
+```js
+import App from '@live-change/framework'
+const app = App.app()
+
+import definition from './definition.js'
+
+import './authenticator.js'
+import './myModel.js'
+import './otherModel.js'
+
+export default definition
+```
+
+## config.js (required)
+
+Reads `definition.config` (passed from `app.config.js`), resolves defaults, sets `definition.clientConfig` (for frontend),
+and exports a plain config object used by other domain files.
+
+```js
+import definition from './definition.js'
+
+const {
+  defaultAccess = {
+    writeAccessControl: ['owner', 'admin'],
+    readAllAccess: ['admin']
+  }
+} = definition.config || {}
+
+definition.clientConfig = {
+  // values exposed to frontend, if needed
+}
+
+export default { defaultAccess }
+```
+
+## Domain files (e.g. myModel.js)
+
+Each file imports `definition` (and `config` if needed) and registers models/views/actions/triggers.
+
+```js
+import App from '@live-change/framework'
+const app = App.app()
+
+import definition from './definition.js'
+import config from './config.js'
+
+export const MyModel = definition.model({ name: 'MyModel', ... })
+
+definition.view({ name: 'myList', ... })
+definition.action({ name: 'doThing', ... })
+```
+
+Rule of thumb:
+
+- Domain files should read configuration from `config` (exported from `config.js`), not directly from `definition.config`.
+
+## services.list.js import
+
+Always import from the directory index, not a flat file:
+
+```js
+import myService from './myService/index.js'   // ✓
+import myService from './myService.js'         // ✗
+```
+
+## Why
+
+A flat single-file service makes it hard to add new domain files (auth, models, triggers, etc.)
+without the file growing unmanageably. The directory structure mirrors the pattern used in
+`@live-change/live-change-stack/services/*`.

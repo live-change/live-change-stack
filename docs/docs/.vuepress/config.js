@@ -11,7 +11,7 @@ export default defineUserConfig({
   theme: defaultTheme({
     logo: '/images/logo.svg',
 
-    navbar: ['/', '/framework/', '/server/', '/relations/globals.md'],
+    navbar: ['/', '/framework/', '/server/', '/frontend/', '/relations/globals.md'],
     sidebar: {
       '/server/': [
         { text: 'Server manual', link: '/server/README.md' },
@@ -38,6 +38,21 @@ export default defineUserConfig({
         { text: '15 Cron and intervals', link: '/server/15-cron-and-intervals.md' },
         { text: '16 Timers', link: '/server/16-timers.md' },
         { text: '17 Email and SMS', link: '/server/17-email-and-sms.md' },
+      ],
+      '/frontend/': [
+        { text: 'Frontend manual', link: '/frontend/README.md' },
+        { text: '01 Getting started', link: '/frontend/01-getting-started.md' },
+        { text: '02 Project structure', link: '/frontend/02-project-structure.md' },
+        { text: '03 SSR and routing', link: '/frontend/03-ssr-and-routing.md' },
+        { text: '04 Logic and data layer', link: '/frontend/04-logic-and-data-layer.md' },
+        { text: '05 Forms and auto-form', link: '/frontend/05-forms-and-auto-form.md' },
+        { text: '06 UI and components', link: '/frontend/06-ui-and-components.md' },
+        { text: '07 Analytics and marketing', link: '/frontend/07-analytics-and-marketing.md' },
+        { text: '08 Best practices and patterns', link: '/frontend/08-best-practices-and-patterns.md' },
+        { text: '10 Path and live', link: '/frontend/10-path-and-live.md' },
+        { text: '09 API – vue3-components', link: '/frontend/09-api-vue3-components.md' },
+        { text: '09 API – vue3-ssr', link: '/frontend/09-api-vue3-ssr.md' },
+        { text: '09 API – frontend-auto-form', link: '/frontend/09-api-frontend-auto-form.md' },
       ],
     },
   }),

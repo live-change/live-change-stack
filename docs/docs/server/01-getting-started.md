@@ -69,6 +69,9 @@ The starter registers commands such as:
 | `memDev` | In-memory DB dev with optional `--initScript`, `--dbAccess`. |
 | `ssrServer` | Production SSR server; use `--withApi --withServices --updateServices` to run API and services in same process. |
 | `serve` | Production serve (SSR) without extra services. |
+| `describe` | Inspect service structure: models, actions, views, triggers, indexes, events. Use `--service <name>` and `--output yaml\|json`. |
+| `changes` | Show pending schema changes for a service (`--service <name>`). |
+| `update` | Apply schema changes to the database (`--service <name>`, `--force` to force). |
 
 ## Environment variables
 

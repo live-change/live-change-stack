@@ -1,4 +1,5 @@
 import definition from './definition.js'
+import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
 } from '@live-change/framework'
@@ -32,8 +33,11 @@ definition.processor(function(service, app) {
         ...config
       }
 
+      if (!model.ownerCrud) model.ownerCrud = {}
+
       if(config.sessionReadAccess) {
         const viewName = 'mySession' + pluralize(modelName)
+        model.ownerCrud.range ??= viewName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access: config.sessionReadAccess,
@@ -55,6 +59,26 @@ definition.processor(function(service, app) {
             }
           })
         }
+      }
+
+      if(config.sessionReadAccess) {
+        const viewName = 'mySession' + modelName
+        model.ownerCrud.read ??= viewName
+        service.views[viewName] = new ViewDefinition({
+          name: viewName,
+          async access(params, context) {
+            if(!context.client.session) return false
+            if(context.visibilityTest) return true
+            const data = await modelRuntime().get(params[modelPropertyName])
+            if(data.session !== context.client.session) return false
+            return config.sessionReadAccess ? config.sessionReadAccess(params, context) : true
+          },
+          properties: App.rangeProperties,
+          daoPath(params, { client, context }) {
+            const path = modelRuntime().path(params[modelPropertyName])
+            return path
+          }
+        })
       }
 
       if(config.sessionCreateAccess || config.sessionWriteAccess) {
@@ -97,6 +121,7 @@ definition.processor(function(service, app) {
             return id
           }
         })
+        model.ownerCrud.create ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -129,7 +154,7 @@ definition.processor(function(service, app) {
             const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
             const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
             const merged = App.utils.mergeDeep({}, entity, data)
-            await App.validation.validate(merged, validators, validationContext)
+            await App.validation.validate({ ...merged, [modelPropertyName]: entity.id }, validators, validationContext)
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,
@@ -140,6 +165,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.update ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -170,6 +196,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.delete ??= actionName
       }
     }
   }

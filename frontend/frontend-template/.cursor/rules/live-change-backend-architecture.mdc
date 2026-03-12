@@ -1,0 +1,131 @@
+---
+description: Rules for LiveChange backend service architecture and directory structure
+globs: **/services/**/*.js
+alwaysApply: false
+---
+
+# LiveChange backend – architektura serwisów
+
+## Główna zasada
+
+- Każdy serwis LiveChange **musi być katalogiem**, nie pojedynczym plikiem.
+- Serwis ma czytelną, powtarzalną strukturę plików.
+
+## Struktura katalogu serwisu
+
+```
+server/services/<serviceName>/
+  definition.js  # createServiceDefinition + use – żadnych modeli/akcji
+  index.js       # import definition, import plików domenowych, export definition
+  config.js      # opcjonalnie – rozwiązywanie definition.config do plain object
+  <domain>.js    # pliki domenowe: modele, widoki, akcje, triggery
+```
+
+### `definition.js`
+
+- Importuj `app` z `@live-change/framework`.
+- Twórz definicję serwisu **bez** modeli/akcji/widoków w tym pliku.
+- Jeśli serwis używa relacji lub kontroli dostępu, **od razu** podłącz pluginy w `use`.
+
+Przykład:
+
+```js
+import { app } from '@live-change/framework'
+import relationsPlugin from '@live-change/relations-plugin'
+import accessControlService from '@live-change/access-control-service'
+
+const definition = app.createServiceDefinition({
+  name: 'myService',
+  use: [relationsPlugin, accessControlService]
+})
+
+export default definition
+```
+
+### `index.js`
+
+- Importuj `definition`.
+- Importuj wszystkie pliki domenowe tylko po to, żeby wykonały się side-effecty (rejestracja modeli/akcji/widoków/triggerów).
+- Eksportuj `definition` jako default.
+
+```js
+import definition from './definition.js'
+
+import './modelA.js'
+import './modelB.js'
+import './authenticator.js'
+
+export default definition
+```
+
+### `config.js` (opcjonalnie)
+
+- Czyta `definition.config` (ustawiane w `app.config.js`).
+- Nadaje wartości domyślne i eksportuje zwykły obiekt.
+
+```js
+import definition from './definition.js'
+
+const {
+  someOption = 'default'
+} = definition.config
+
+export default { someOption }
+```
+
+## Rejestracja serwisu w projekcie
+
+### `services.list.js`
+
+- Importuj serwis z jego `index.js` w katalogu, nie z płaskiego pliku.
+
+```js
+import myService from './services/myService/index.js'
+
+export default {
+  // ...
+  myService
+}
+```
+
+### `app.config.js`
+
+- Upewnij się, że nazwa serwisu w configu odpowiada nazwie z `createServiceDefinition`.
+- Zachowaj **sensowną kolejność** serwisów:
+  - na początku serwisy bazowe, wspólne i pluginy,
+  - na końcu serwisy właściwe dla aplikacji, które z nich korzystają.
+
+```js
+services: [
+  // serwisy bazowe / wspólne
+  { name: 'user' },
+  { name: 'session' },
+  { name: 'accessControl' },
+  // ...
+  // serwisy własne aplikacji
+  { name: 'myService' }
+]
+```
+
+## Podgląd serwisów komendą `describe`
+
+Komenda CLI `describe` pokazuje co framework wygenerował z twoich definicji (modele, widoki, akcje, triggery, indeksy, eventy):
+
+```bash
+# Przegląd wszystkich serwisów
+node server/start.js describe
+
+# Jeden serwis w YAML (z wygenerowanym kodem)
+node server/start.js describe --service myService --output yaml
+
+# Konkretna encja
+node server/start.js describe --service myService --model MyModel --output yaml
+```
+
+Szczególnie przydatne po użyciu relacji (`userItem`, `itemOf`, `propertyOf`) — `describe` pokaże wszystkie automatycznie wygenerowane widoki, akcje, triggery i indeksy.
+
+## Kiedy tworzyć nowy serwis
+
+- Gdy masz wyraźnie wydzieloną domenę (np. urządzenia, płatności, powiadomienia).
+- Gdy zestaw modeli/akcji/widoków ma własną konfigurację i zależności.
+- Gdy logika nie mieści się sensownie w istniejącym serwisie bez mieszania odpowiedzialności.

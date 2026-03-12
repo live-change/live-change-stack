@@ -66,7 +66,7 @@ function defineSingleView(config, context, external = true) {
     validation: ['nonEmpty']
   })
   const viewName = modelName[0].toLowerCase() + modelName.slice(1)
-  model.crud.read = viewName
+  model.crud.read ??= viewName
   const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
   const accessControl = cloneAndPrepareAccessControl(
     sourceAccessControl, [modelPropertyName], [objectType]
@@ -120,7 +120,7 @@ function defineCreateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'create' + modelName
-  model.crud.create = actionName
+  model.crud.create ??= actionName
   const sourceAccessControl = config.createAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -204,7 +204,7 @@ function defineUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'update' + modelName
-  model.crud.update = actionName
+  model.crud.update ??= actionName
   const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(
     sourceAccessControl, [modelPropertyName], [objectType]
@@ -290,7 +290,7 @@ function defineDeleteAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'delete' + modelName
-  model.crud.delete = actionName
+  model.crud.delete ??= actionName
   const sourceAccessControl = config.deleteAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(
     sourceAccessControl, [modelPropertyName], [objectType]

@@ -1,9 +1,5 @@
 import definition from './definition.js'
-const config = definition.config
-const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'],
-  writerRoles = ['speaker', 'vip', 'moderator', 'owner']
-} = config
+import config from './config.js'
 
 import accessControl from '@live-change/access-control-service/access.js'
 const { clientHasAccessRoles } = accessControl(definition)
@@ -61,7 +57,7 @@ definition.action({
     if(visibilityTest) return true
     const [toType, toId, toSession] = peer.split(':')
     if(client.session !== toSession) return false
-    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
+    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, config.writerRoles)
     return hasRole
   },
   async execute(props, { client, service }, emit) {

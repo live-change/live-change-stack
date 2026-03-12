@@ -1,13 +1,5 @@
 import definition from './definition.js'
-const config = definition.config
-const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'],
-  writerRoles = ['speaker', 'vip', 'moderator', 'owner'],
-  messageWaitForEvents = false,
-  messageSkipEmit = false,
-  groupMessages = false
-} = config
-
+import config from './config.js'
 
 import accessControl from '@live-change/access-control-service/access.js'
 const { clientHasAccessRoles } = accessControl(definition)
@@ -148,7 +140,7 @@ async function postMessage(props, { client, service }, emit) {
   if(!data.user) {
     data.session = client.session
   }
-  if(messageSkipEmit) {
+  if(config.messageSkipEmit) {
     await Message.create({
       id: message,
       ...data
@@ -175,12 +167,12 @@ definition.action({
     //console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
     if(toType !== fromType || toId !== fromId) return false // different channel
     if(client.session !== fromSession) return false
-    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
+    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, config.writerRoles)
     return hasRole
   },
   queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed
   // and it will block ice connection state
-  waitForEvents: messageWaitForEvents,
+  waitForEvents: config.messageWaitForEvents,
   async execute(props, { client, service }, emit) {
     console.error('postMessage is deprecated, use postMessages instead')
     await postMessage(props, { client, service }, emit)
@@ -216,16 +208,16 @@ definition.action({
    // console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
     if(toType !== fromType || toId !== fromId) return false // different channel
     if(client.session !== fromSession) return false
-    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, writerRoles)
+    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, config.writerRoles)
     return hasRole
   },
   queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed
                                                       // and it will block ice connection state
-  waitForEvents: messageWaitForEvents,
+  waitForEvents: config.messageWaitForEvents,
   async execute(props, { client, service }, emit) {
     let lastSent = ''
     let lastMessages
-    if(messageWaitForEvents) {
+    if(config.messageWaitForEvents) {
       lastMessages = await Message.rangeGet({
         gte: `${props.to}_`,
         lte: `${props.to}_\xFF\xFF\xFF\xFF`,
@@ -236,7 +228,7 @@ definition.action({
     }
     const messages = props.messages
     for(const message of messages) {
-      if(messageWaitForEvents) {
+      if(config.messageWaitForEvents) {
         const sent = new Date(message.sent).toISOString()
         if(lastSent > sent) {
           console.error("Message out of order", lastSent, '>', sent, "BY", props.from)
@@ -248,7 +240,7 @@ definition.action({
         lastSent = sent
       }
     }
-    if(groupMessages) {
+    if(config.groupMessages) {
       await postMessage({
         from: props.from,
         to: props.to,

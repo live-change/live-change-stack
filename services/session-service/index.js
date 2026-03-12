@@ -2,6 +2,7 @@ import App from '@live-change/framework'
 const app = App.app()
 import definition from './definition.js'
 import { Session } from './model.js'
+import localIdValidator from './localIdValidator.js'
 
 definition.view({
   name: 'currentSession',
@@ -76,8 +77,9 @@ definition.trigger({
   }
 })
 
+definition.validator('localId', localIdValidator)
+
 import './authenticator.js'
-import './localIdValidator.js'
 import './sessionProperty.js'
 import './sessionItem.js'
 

@@ -1,0 +1,194 @@
+---
+description: Rules for defining models, relations, indexes and access control in LiveChange
+globs: **/services/**/*.js
+alwaysApply: false
+---
+
+# LiveChange backend – modele i relacje
+
+## Ogólne zasady
+
+- Modele zapisuj w plikach domenowych (`<domain>.js`) importowanych w `index.js` serwisu.
+- Dbaj o czytelność definicji – **właściwości wieloliniowo**, z jasnymi polami `type`, `default`, `validation` itd.
+- Tam, gdzie to możliwe, używaj relacji (`userItem`, `itemOf`, `propertyOf`, `foreignModel`) zamiast ręcznego klepania CRUD i widoków.
+
+## Styl definicji `properties`
+
+- Każde pole opisane wieloliniowo, jedna rzecz na linię.
+- Unikaj upychania typu i walidacji w jednej linii, jeśli zmniejsza to czytelność.
+
+```js
+properties: {
+  name: {
+    type: String,
+    validation: ['nonEmpty']
+  },
+  status: {
+    type: String,
+    default: 'offline'
+  },
+  capabilities: {
+    type: Array,
+    of: {
+      type: String
+    }
+  }
+}
+```
+
+## `userItem` – zasób należący do użytkownika
+
+Używaj, gdy model należy do zalogowanego użytkownika.
+
+```js
+definition.model({
+  name: 'Device',
+  properties: {
+    name: {
+      type: String
+    }
+  },
+  userItem: {
+    readAccessControl: { roles: ['owner', 'admin'] },
+    writeAccessControl: { roles: ['owner', 'admin'] },
+    writeableProperties: ['name']
+  }
+})
+```
+
+Skutek:
+
+- automatyczne widoki typu „moje X”,
+- automatyczne akcje create/update/delete dla właściciela.
+
+## `itemOf` – dziecko należy do rodzica
+
+Używaj, gdy model jest listą elementów powiązanych z innym modelem.
+
+```js
+definition.model({
+  name: 'DeviceConnection',
+  properties: {
+    connectionType: {
+      type: String
+    },
+    status: {
+      type: String,
+      default: 'offline'
+    }
+  },
+  itemOf: {
+    what: Device,
+    readAccessControl: { roles: ['owner', 'admin'] },
+    writeAccessControl: { roles: ['owner', 'admin'] }
+  }
+})
+```
+
+Zasady:
+
+- rodzic `what` to model zadeklarowany wcześniej w tym lub innym serwisie,
+- relacja generuje standardowe widoki/akcje dla listy i elementów.
+
+## `propertyOf` – właściwość z ID równym rodzicowi
+
+Używaj, gdy model przechowuje „stan” jednego obiektu (ID dziecka = ID rodzica).
+
+```js
+definition.model({
+  name: 'DeviceCursorState',
+  properties: {
+    x: { type: Number },
+    y: { type: Number }
+  },
+  propertyOf: {
+    what: Device,
+    readAccessControl: { roles: ['owner', 'admin'] },
+    writeAccessControl: { roles: ['owner', 'admin'] }
+  }
+})
+```
+
+Skutek:
+
+- prosty dostęp: `DeviceCursorState.get(deviceId)`,
+- bez potrzeby dodatkowych indeksów po polu `device`.
+
+## `propertyOf` dla wielu modeli (relacja 1:1 do każdego z nich)
+
+W niektórych domenach model jest „łącznikiem 1:1” pomiędzy rekordami (np. faktura ↔ kontrahent w roli dostawcy/klienta).
+Najczęściej są to 2 modele, ale `propertyOf` może wskazywać na **dowolnie wiele** modeli (np. relacja łącząca 3+ encje), jeśli taka jest semantyka domeny.
+
+Wtedy:
+
+- **nie** przechowuj „drugiej strony” jako zwykłego `contractorId` (albo ogólnie `someId`) w `properties`
+- **nie** dodawaj ręcznie pól `...Id` w modelu relacyjnym, jeśli to ma być relacja – to utrudnia generatorowi CRUD/relacji poprawne wnioskowanie o powiązaniach
+- zamiast tego zdefiniuj relacje jako `propertyOf` do **każdego** z modeli, które mają być rodzicami relacji
+
+To jest istotne, bo generator CRUD/relacji rozumie wtedy, że encja jest powiązaniem pomiędzy dwiema encjami, a nie „zwykłym obiektem z polem id”.
+
+Przykład (schematycznie):
+
+```js
+const CostInvoice = definition.foreignModel('invoice', 'CostInvoice')
+const Contractor = definition.foreignModel('company', 'Contractor')
+
+definition.model({
+  name: 'Supplier',
+  properties: {
+    // dodatkowe pola relacji (opcjonalnie)
+  },
+  propertyOf: [
+    { what: CostInvoice },
+    { what: Contractor }
+  ]
+})
+```
+
+## `foreignModel` – relacja do modelu z innego serwisu
+
+Używaj, gdy `itemOf`/`propertyOf` ma wskazywać na model spoza aktualnego serwisu.
+
+```js
+const Device = definition.foreignModel('deviceManager', 'Device')
+
+definition.model({
+  name: 'BotSession',
+  properties: {
+    // ...
+  },
+  itemOf: {
+    what: Device,
+    readAccessControl: { roles: ['owner', 'admin'] }
+  }
+})
+```
+
+Zasady:
+
+- pierwszy argument to nazwa serwisu,
+- drugi to nazwa modelu w tamtym serwisie.
+
+## Indeksy
+
+- Definiuj indeksy jawnie w modelu, gdy będziesz często wyszukiwać po danym polu lub kombinacji pól.
+- Nazwy indeksów powinny być opisowe, bez skrótów trudnych do odczytania.
+
+```js
+indexes: {
+  bySessionKey: {
+    property: ['sessionKey']
+  },
+  byDeviceAndStatus: {
+    property: ['device', 'status']
+  }
+}
+```
+
+Poza serwisem indeks bywa widoczny pod nazwą z prefiksem serwisu, np. `myService_Model_byDeviceAndStatus`.
+
+## Access control na relacjach
+
+- Zawsze ustawiaj `readAccessControl` i `writeAccessControl` na relacjach (`userItem`, `itemOf`, `propertyOf`), zamiast polegać na domyślnym zachowaniu.
+- Traktuj to jako część modelu, nie dodatek na końcu.
+

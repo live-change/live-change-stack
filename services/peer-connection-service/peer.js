@@ -2,11 +2,7 @@ import App from '@live-change/framework'
 const app = App.app()
 
 import definition from './definition.js'
-const config = definition.config
-const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner', 'member'].
-  writerRoles = ['speaker', 'vip', 'moderator', 'owner']
-} = config
+import config from './config.js'
 
 import accessControl from '@live-change/access-control-service/access.js'
 const { clientHasAccessRoles } = accessControl(definition)
@@ -42,7 +38,7 @@ definition.view({
     if(visibilityTest) return true
     const { channelType, channel } = params
     //console.log("CHECK PEERS ACCESS", params, client, visibilityTest)
-    return clientHasAccessRoles(client, { objectType: channelType, object: channel }, readerRoles)
+    return clientHasAccessRoles(client, { objectType: channelType, object: channel }, config.readerRoles)
   },
   async daoPath({ channelType, channel }, { client, service }, method) {
     return Peer.indexRangePath('byChannel', [ channelType, channel.split(':')[0] ])

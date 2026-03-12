@@ -6,6 +6,7 @@ import path from 'path'
 import http from 'http'
 import fs from 'fs'
 import yargs from 'yargs'
+import YAML from 'yaml'
 
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { readFile } from 'fs/promises'
@@ -364,8 +365,41 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
         default: '*'
       })
       yargs.option('json', {
-        describe: 'print json',
+        describe: 'print json (deprecated, use --output json)',
         type: 'boolean'
+      })
+      yargs.option('output', {
+        describe: 'output format: text | json | yaml',
+        type: 'string',
+        choices: ['text', 'json', 'yaml']
+      })
+      yargs.option('model', {
+        describe: 'filter by model name',
+        type: 'string'
+      })
+      yargs.option('index', {
+        describe: 'filter by index name',
+        type: 'string'
+      })
+      yargs.option('action', {
+        describe: 'filter by action name',
+        type: 'string'
+      })
+      yargs.option('view', {
+        describe: 'filter by view name',
+        type: 'string'
+      })
+      yargs.option('trigger', {
+        describe: 'filter by trigger name',
+        type: 'string'
+      })
+      yargs.option('event', {
+        describe: 'filter by event name',
+        type: 'string'
+      })
+      yargs.option('query', {
+        describe: 'filter by query name',
+        type: 'string'
       })
     }, async (argv) => {
       await setupTelemetry(argv, servicesConfig)
@@ -478,62 +512,148 @@ export async function describe(argv) {
   const services = new Services(argv.services)
   await services.loadServices()
   await services.processDefinitions()
-  function describeService(service) {
-    console.log("Service", service.name)
-    if(argv.json) {
-      console.log(JSON.stringify(service.toJSON(), null, "  "))
-      return
+
+  const output = argv.output || (argv.json ? 'json' : 'text')
+  const hasFilters =
+    argv.model || argv.index || argv.action ||
+    argv.view || argv.trigger || argv.event || argv.query
+
+  function buildFilteredDescription(service) {
+    const json = service.toJSON ? service.toJSON() : service
+    const result = {
+      service: service.name
     }
-    if(Object.keys(service.models).length > 0) console.log("  models:")
-    for(const modelName in service.models) {
-      const model = service.models[modelName]
-      const properties = Object.keys(model.properties ?? {})
-      console.log("    ", modelName, "(", properties.join(', '), ")")
-      for(const indexName in model.indexes) {
-        const index = model.indexes[indexName]
-        console.log("      ", indexName)
+
+    if(argv.model) {
+      const model = json.models && json.models[argv.model]
+      result.model = model ? { [argv.model]: model } : null
+    }
+
+    if(argv.index) {
+      const globalIndex = json.indexes && json.indexes[argv.index]
+      let modelIndex = null
+      if(json.models) {
+        for(const modelName in json.models) {
+          const model = json.models[modelName]
+          if(model.indexes && model.indexes[argv.index]) {
+            modelIndex = {
+              model: modelName,
+              index: model.indexes[argv.index]
+            }
+            break
+          }
+        }
+      }
+      result.index = {
+        global: globalIndex || null,
+        model: modelIndex
       }
     }
-    if(Object.keys(service.indexes).length > 0) console.log("  indexes:")
-    for(const indexName in service.indexes) {
-      const index = service.indexes[indexName]
-      console.log("    ", indexName)
+
+    if(argv.action) {
+      const action = json.actions && json.actions[argv.action]
+      result.action = action ? { [argv.action]: action } : null
     }
-    if(Object.keys(service.actions).length > 0) console.log("  actions:")
-    for(const actionName in service.actions) {
-      const action = service.actions[actionName]
-      const properties = Object.keys(action.properties ?? {})
-      console.log("    ", actionName, "(", properties.join(', '), ")")
+
+    if(argv.view) {
+      const view = json.views && json.views[argv.view]
+      result.view = view ? { [argv.view]: view } : null
     }
-    if(Object.keys(service.views).length > 0) console.log("  views:")
-    for(const viewName in service.views) {
-      const view = service.views[viewName]
-      const properties = Object.keys(view.properties ?? {})
-      console.log("    ", viewName, "(", properties.join(', '), ")",
-          view.global ? "global" : "", view.internal ? "internal" : "", view.remote ? "remote" : "")
+
+    if(argv.trigger) {
+      const trigger = json.triggers && json.triggers[argv.trigger]
+      result.trigger = trigger ? { [argv.trigger]: trigger } : null
     }
-    if(Object.keys(service.triggers).length > 0) console.log("  triggers:")
-    for(const triggerName in service.triggers) {
-      const triggers = service.triggers[triggerName]
-      for(const trigger of triggers) {
-        const properties = Object.keys(trigger.properties ?? {})
-        console.log("    ", triggerName, "(", properties.join(', '), ")")
-      }
+
+    if(argv.event) {
+      const event = json.events && json.events[argv.event]
+      result.event = event ? { [argv.event]: event } : null
     }
-    if(Object.keys(service.events).length > 0) console.log("  events:")
-    for(const eventName in service.events) {
-      const event = service.events[eventName]
-      const properties = Object.keys(event.properties ?? {})
-      console.log("    ", eventName, "(", properties.join(', '), ")")
+
+    if(argv.query) {
+      const query = json.queries && json.queries[argv.query]
+      result.query = query ? { [argv.query]: query } : null
     }
-    if(Object.keys(service.queries).length > 0) console.log("  queries:")
-    for(const queryName in service.queries) {
-      const query = service.queries[queryName]
-      const properties = Object.keys(query.properties ?? {})
-      console.log("    ", queryName, "(", properties.join(', '), ")")
+
+    return result
+  }
+
+  function printStructured(data) {
+    if(output === 'json') {      
+      console.log(JSON.stringify(data, null, 2))
+    } else {
+      console.log(YAML.stringify(JSON.parse(JSON.stringify(data))))
     }
   }
+
+  function describeService(service) {
+    if(output === 'text' && !hasFilters) {
+      console.log("Service", service.name)
+      if(Object.keys(service.models).length > 0) console.log("  models:")
+      for(const modelName in service.models) {
+        const model = service.models[modelName]
+        const properties = Object.keys(model.properties ?? {})
+        console.log("    ", modelName, "(", properties.join(', '), ")")
+        for(const indexName in model.indexes) {
+          const index = model.indexes[indexName]
+          console.log("      ", indexName)
+        }
+      }
+      if(Object.keys(service.indexes).length > 0) console.log("  indexes:")
+      for(const indexName in service.indexes) {
+        const index = service.indexes[indexName]
+        console.log("    ", indexName)
+      }
+      if(Object.keys(service.actions).length > 0) console.log("  actions:")
+      for(const actionName in service.actions) {
+        const action = service.actions[actionName]
+        const properties = Object.keys(action.properties ?? {})
+        console.log("    ", actionName, "(", properties.join(', '), ")")
+      }
+      if(Object.keys(service.views).length > 0) console.log("  views:")
+      for(const viewName in service.views) {
+        const view = service.views[viewName]
+        const properties = Object.keys(view.properties ?? {})
+        console.log("    ", viewName, "(", properties.join(', '), ")",
+          view.global ? "global" : "", view.internal ? "internal" : "", view.remote ? "remote" : "")
+      }
+      if(Object.keys(service.triggers).length > 0) console.log("  triggers:")
+      for(const triggerName in service.triggers) {
+        const triggers = service.triggers[triggerName]
+        for(const trigger of triggers) {
+          const properties = Object.keys(trigger.properties ?? {})
+          console.log("    ", triggerName, "(", properties.join(', '), ")")
+        }
+      }
+      if(Object.keys(service.events).length > 0) console.log("  events:")
+      for(const eventName in service.events) {
+        const event = service.events[eventName]
+        const properties = Object.keys(event.properties ?? {})
+        console.log("    ", eventName, "(", properties.join(', '), ")")
+      }
+      if(Object.keys(service.queries).length > 0) console.log("  queries:")
+      for(const queryName in service.queries) {
+        const query = service.queries[queryName]
+        const properties = Object.keys(query.properties ?? {})
+        console.log("    ", queryName, "(", properties.join(', '), ")")
+      }
+      return
+    }
+
+    if(hasFilters) {
+      const filtered = buildFilteredDescription(service)
+      printStructured(filtered)
+    } else {
+      const json = service.toJSON ? service.toJSON() : service
+      printStructured(json)
+    }
+  }
+
   if(argv.service === '*') {
+    if(hasFilters) {
+      console.error("When using filters like --model, --action, etc. you must specify a concrete --service")
+      process.exit(1)
+    }
     for(const service of services.serviceDefinitions) {
       describeService(service)
     }

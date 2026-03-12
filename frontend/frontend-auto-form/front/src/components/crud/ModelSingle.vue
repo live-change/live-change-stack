@@ -107,8 +107,8 @@
       required: true,
     },
     views: {
-      type: Object,
-      default: () => ({})
+      type: Array,
+      default: () => ([{}])
     },
   })
   const { service, model, views } = toRefs(props)
@@ -124,7 +124,7 @@
     }, AutoObjectIdentification)
   )
 
-  import { useApi, usePath, live } from '@live-change/vue3-ssr'
+  import { useApi, usePath, live, view } from '@live-change/vue3-ssr'
   const api = useApi()
   const path = usePath()
 

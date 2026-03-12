@@ -40,3 +40,4 @@ This manual documents the **server-side** part of the Live Change framework: how
 15. [Cron and intervals](/server/15-cron-and-intervals.html) — cron-service: Schedule and Interval, triggers
 16. [Timers](/server/16-timers.html) — timer-service: createTimer, cancelTimer, one-shot and repeating
 17. [Email and SMS](/server/17-email-and-sms.html) — Sending email and SMS via triggers; rendering (frontend) note
+18. [Describe command](/server/18-describe-command.html) — Inspecting services, models, indexes, triggers, events; changes and update commands

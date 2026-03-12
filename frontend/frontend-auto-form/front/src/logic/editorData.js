@@ -25,6 +25,7 @@ export default function editorData(options) {
     recursive = true,
     debounce = 600,
     timeField = 'lastUpdate',
+    crudSource = 'crud',
 
     savedToast = "Saved",
     savedDraftToast = "Draft saved",
@@ -56,7 +57,7 @@ export default function editorData(options) {
   const service = api.services[serviceName]
   const model = service.models[modelName]
   const {
-    crudMethods = model.crud,
+    crudMethods = model[crudSource],
     identifiersNames = model.identifiers,
     editableProperties = model.editableProperties ?? Object.keys(model.properties),
   } = options
@@ -130,7 +131,8 @@ export default function editorData(options) {
       const savedIdentifiers = {}
       for(const identifier of identifiersNames) {
         if(typeof identifier === 'object') {
-          savedIdentifiers[identifier.name] = savedData.value?.[identifier.name] ?? draftData.value?.data?.[identifier.name]
+          savedIdentifiers[identifier.name] = savedData.value?.[identifier.field] ?? savedData.value?.[identifier.name] 
+            ?? draftData.value?.data?.[identifier.field] ?? draftData.value?.data?.[identifier.name]
         } else {
           savedIdentifiers[identifier] = savedData.value?.[identifier] ?? draftData.value?.data?.[identifier]
         }

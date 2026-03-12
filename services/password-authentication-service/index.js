@@ -7,8 +7,6 @@ import './reset.js'
 
 import passwordValidator from './passwordValidator.js'
 
-definition.processor(function(service, app) {
-  service.validators.password = passwordValidator
-})
+definition.validator('password', passwordValidator)
 
 export default definition

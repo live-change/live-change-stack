@@ -349,7 +349,7 @@ export function defineGlobalRangeView(config: {
      prefix
      + pluralize(prefix ? modelName : modelPropertyName) 
      + (config.suffix || '')
-  if(external) model.crud.range = viewName
+  if(external) model.crud.range ??= viewName
   service.views[viewName] = new ViewDefinition({
     name: viewName,
     properties: {

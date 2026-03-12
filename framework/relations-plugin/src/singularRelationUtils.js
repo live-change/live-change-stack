@@ -39,7 +39,7 @@ export function defineObjectView(config, context, external = true) {
   const viewProperties = createIdentifiersProperties(otherPropertyNames, others, modelPropertyName)
   const viewName = config.name
     || ((config.prefix ? config.prefix + modelName : modelName[0].toLowerCase() + modelName.slice(1)) + (config.suffix || ''))
-  model.crud.read = viewName
+  model.crud.read ??= viewName
   const sourceAccessControl = external && (config.singleAccessControl || config.readAccessControl || config.writeAccessControl)
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, 
     otherPropertyNames.concat(modelPropertyName), 
@@ -174,7 +174,7 @@ export function defineSetAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'set' + modelName
-  model.crud.create = actionName
+  model.crud.create ??= actionName
   const sourceAccessControl = config.setAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -250,7 +250,7 @@ export function defineUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'update' + modelName
-  model.crud.update = actionName
+  model.crud.update ??= actionName
   const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -328,7 +328,7 @@ export function defineSetOrUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName, others
   } = context
   const actionName = 'setOrUpdate' + modelName
-  model.crud.createOrUpdate = actionName
+  model.crud.createOrUpdate ??= actionName
   const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames, others)
   const action = new ActionDefinition({
@@ -464,7 +464,7 @@ export function defineResetAction(config, context) {
     joinedOthersClassName, model, others, writeableProperties
   } = context
   const actionName = 'reset' + modelName
-  model.crud.delete = actionName
+  model.crud.delete ??= actionName
   const properties = {}
   for (let i = 0; i < others.length; i++) {
     properties[otherPropertyNames[i]] = new PropertyDefinition({

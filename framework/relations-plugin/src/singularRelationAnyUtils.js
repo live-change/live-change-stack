@@ -40,7 +40,7 @@ function defineObjectView(config, context, external = true) {
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const viewName = config.name
     || ((config.prefix ? config.prefix + modelName : modelName[0].toLowerCase() + modelName.slice(1)) + (config.suffix || ''))
-  model.crud.read = viewName
+  model.crud.read ??= viewName
   service.view({
     name: viewName,
     properties: {
@@ -126,7 +126,7 @@ function defineSetAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'set' + modelName
-  model.crud.create = actionName
+  model.crud.create ??= actionName
   const sourceAccessControl = config.setAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -201,7 +201,7 @@ function defineUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'update' + modelName
-  model.crud.update = actionName
+  model.crud.update ??= actionName
   const sourceAccessControl = config.updateAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -280,7 +280,7 @@ function defineSetOrUpdateAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'setOrUpdate' + modelName
-  model.crud.createOrUpdate = actionName
+  model.crud.createOrUpdate ??= actionName
   const sourceAccessControl = config.setOrUpdateAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
   const action = new ActionDefinition({
@@ -378,7 +378,7 @@ function defineResetTrigger(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
   } = context
   const actionName = 'reset' + modelName
-  model.crud.reset = actionName
+  model.crud.reset ??= actionName
   const triggerName = `${service.name}_${actionName}`
   service.triggers[triggerName] = [new TriggerDefinition({
     name: triggerName,
@@ -397,7 +397,7 @@ function defineDeleteAction(config, context) {
     otherPropertyNames, joinedOthersPropertyName, modelName, joinedOthersClassName, model
   } = context
   const actionName = 'delete' + modelName
-  model.crud.delete = actionName
+  model.crud.delete ??= actionName
   const sourceAccessControl = config.resetAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(
     sourceAccessControl, [modelPropertyName], [objectType]

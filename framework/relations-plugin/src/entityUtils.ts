@@ -65,7 +65,7 @@ export function entityAccessControl({service, modelName, modelPropertyName}, acc
 export function defineView(config, context, external) {
   const { service, modelRuntime, modelPropertyName, modelName, model } = context
   const viewName = (config.prefix || '' ) + (config.prefix ? modelName : modelPropertyName) + (config.suffix || '')
-  if(external) model.crud.read = viewName
+  if(external) model.crud.read ??= viewName
   const view = service.view({
     name: viewName,
     properties: {
@@ -186,7 +186,7 @@ export function defineCreateAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'create' + modelName
-  model.crud.create = actionName
+  model.crud.create ??= actionName
   const action = (service as ServiceDefinition<ServiceDefinitionSpecification>).action<ActionDefinitionSpecificationAC>({
     name: actionName,
     properties: { ...model.properties },
@@ -255,7 +255,7 @@ export function defineUpdateAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'update' + modelName
-  model.crud.update = actionName
+  model.crud.update ??= actionName
   const action = new ActionDefinition({
     name: actionName,
     properties: {
@@ -328,7 +328,7 @@ export function defineDeleteAction(config, context) {
     modelName, writeableProperties
   } = context
   const actionName = 'delete' + modelName
-  model.crud.delete = actionName
+  model.crud.delete ??= actionName
   service.actions[actionName] = new ActionDefinition({
     name: actionName,
     properties: {

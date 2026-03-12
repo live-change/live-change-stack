@@ -30,10 +30,13 @@ definition.processor(function(service, app) {
         ...config
       }
 
+      if (!model.ownerCrud) model.ownerCrud = {}
+
       /// TODO: delete on userDeleted trigger
 
       if(config.userReadAccess) {
         const viewName = 'myUser' + modelName
+        model.ownerCrud.read ??= viewName
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access(params, context) {
@@ -95,6 +98,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.create ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -134,6 +138,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.update ??= actionName
         const action = service.actions[actionName]
         const validators = App.validation.getValidators(action, service, action)
       }
@@ -157,6 +162,7 @@ definition.processor(function(service, app) {
             })
           }
         })
+        model.ownerCrud.reset ??= actionName
       }
 
     }

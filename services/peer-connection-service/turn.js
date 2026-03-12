@@ -7,11 +7,6 @@ const urls = config?.turn?.urls || process.env.TURN_URLS?.split(';')
 const secret = config?.turn?.secret || process.env.TURN_SECRET
 const turnExpireTime = config?.turn?.expire || (+process.env.TURN_EXPIRE) || (60 * 60) // 1 hour for default
 
-const {
-  readerRoles = ['reader', 'speaker', 'vip', 'moderator', 'owner'],
-  writerRoles = ['speaker', 'vip', 'moderator', 'owner']
-} = config
-
 import accessControl from '@live-change/access-control-service/access.js'
 const { clientHasAccessRoles } = accessControl(definition)
 
@@ -65,7 +60,7 @@ definition.view({
     const [ channelType, channel, session, instance ] = peer.split(':')
     if(session !== client.session) throw new Error('wrongSession')
     const result = await clientHasAccessRoles(client, { objectType: channelType.split('.')[0], object: channel },
-        writerRoles)
+        config.writerRoles)
     return result
   },
   observable({ peer }, context) {

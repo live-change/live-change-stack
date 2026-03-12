@@ -1,0 +1,202 @@
+---
+description: Rules for implementing actions, views, and triggers in LiveChange services
+globs: **/services/**/*.js
+alwaysApply: false
+---
+
+# LiveChange backend – akcje, widoki, triggery
+
+## Akcje – ogólne zasady
+
+- Akcje umieszczaj w plikach domenowych, razem z modelami, których dotyczą.
+- Każda akcja powinna:
+  - jasno określać wejście (`properties`),
+  - wykonywać minimalną potrzebną walidację,
+  - używać indeksów zamiast pełnych skanów,
+  - zwracać sensowny wynik (ID obiektu, fragment stanu itp.).
+
+### Wzorzec prostej akcji
+
+```js
+definition.action({
+  name: 'registerDeviceConnection',
+  properties: {
+    pairingKey: {
+      type: String
+    },
+    connectionType: {
+      type: String
+    },
+    capabilities: {
+      type: Array
+    }
+  },
+  async execute({ pairingKey, connectionType, capabilities }, { client, service }) {
+    const device = await Device.indexObjectGet('byPairingKey', { pairingKey })
+    if(!device) throw new Error('notFound')
+
+    const id = app.generateUid()
+    const sessionKey = app.generateUid() + app.generateUid()
+
+    await DeviceConnection.create({
+      id,
+      device: device.id,
+      connectionType,
+      capabilities,
+      sessionKey,
+      status: 'offline'
+    })
+
+    return { connectionId: id, sessionKey }
+  }
+})
+```
+
+## Widoki – ogólne zasady
+
+- Widok ma być prostym, czytelnym wejściem do danych:
+  - korzystaj z indeksów (`indexObjectGet`, `indexRangeGet`),
+  - nie implementuj skomplikowanej logiki w widokach, jeśli można ją przenieść do akcji.
+
+### Wzorzec widoku zakresowego
+
+```js
+definition.view({
+  name: 'pendingCommands',
+  properties: {
+    connectionId: {
+      type: String
+    }
+  },
+  async get({ connectionId }, { client, service }) {
+    return BotCommand.indexRangeGet('byConnectionAndStatus', {
+      connection: connectionId,
+      status: 'pending'
+    })
+  }
+})
+```
+
+## Triggery – online/offline i batchowanie
+
+- Triggery są do reakcji na zdarzenia (np. zmiana stanu sesji, start serwera).
+- Dwie podstawowe kategorie:
+  - triggery dla pojedynczych obiektów (np. połączenie online/offline),
+  - triggery „hurtowe” (np. ustawienie wszystkich na offline przy starcie).
+
+### Wzorzec triggerów online/offline
+
+```js
+definition.trigger({
+  name: 'sessionDeviceConnectionOnline',
+  properties: {
+    connection: {
+      type: String
+    }
+  },
+  async execute({ connection }, { service }) {
+    await DeviceConnection.update(connection, {
+      status: 'online',
+      lastSeenAt: new Date()
+    })
+  }
+})
+
+definition.trigger({
+  name: 'sessionDeviceConnectionOffline',
+  properties: {
+    connection: {
+      type: String
+    }
+  },
+  async execute({ connection }, { service }) {
+    await DeviceConnection.update(connection, {
+      status: 'offline'
+    })
+  }
+})
+```
+
+### Wzorzec batchowania odczytów (unikaj pełnych skanów)
+
+- Przy triggerach, które mają przejść po wielu rekordach, **zawsze** używaj paginacji:
+  - stały `limit` (np. 32 lub 128),
+  - zakres po kluczu (`gt: lastId`),
+  - pętla aż do pustego batcha.
+
+```js
+definition.trigger({
+  name: 'allOffline',
+  async execute({}, { service }) {
+    let last = ''
+    while(true) {
+      const connections = await DeviceConnection.rangeGet({
+        gt: last,
+        limit: 32
+      })
+      if(connections.length === 0) break
+
+      for(const conn of connections) {
+        await DeviceConnection.update(conn.id, {
+          status: 'offline'
+        })
+      }
+
+      last = connections[connections.length - 1].id
+    }
+  }
+})
+```
+
+## Wzorzec „pending + resolve” (asynchroniczny wynik)
+
+- Używaj, gdy akcja w serwisie musi poczekać na wynik z zewnętrznego procesu (np. urządzenie, worker).
+- Struktura:
+  1. Akcja tworzy rekord „pending”.
+  2. Akcja czeka na `Promise` powiązany z ID.
+  3. Inna akcja/trigger aktualizuje rekord i rozwiązuje `Promise`.
+
+Szkic:
+
+```js
+// pendingCommands.js – singleton w pamięci
+const pendingCommands = new Map()
+
+export function waitForCommand(commandId, timeoutMs = 115000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      pendingCommands.delete(commandId)
+      reject(new Error('timeout'))
+    }, timeoutMs)
+    pendingCommands.set(commandId, { resolve, reject, timer })
+  })
+}
+
+export function resolveCommand(commandId, result) {
+  const pending = pendingCommands.get(commandId)
+  if(pending) {
+    clearTimeout(pending.timer)
+    pendingCommands.delete(commandId)
+    pending.resolve(result)
+  }
+}
+```
+
+W akcji wywołującej:
+
+```js
+await SomeCommand.create({ id, status: 'pending', ... })
+const result = await waitForCommand(id)
+return result
+```
+
+W akcji raportującej:
+
+```js
+await SomeCommand.update(id, {
+  status: 'completed',
+  result
+})
+resolveCommand(id, result)
+```
+
