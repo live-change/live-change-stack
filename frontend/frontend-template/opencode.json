@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    ".claude/rules/live-change-backend-architecture.md",
+    ".claude/rules/live-change-backend-actions-views-triggers.md",
+    ".claude/rules/live-change-backend-models-and-relations.md",
+    ".claude/rules/live-change-service-structure.md",
+    ".claude/rules/live-change-frontend-vue-primevue.md"
+  ]
+}

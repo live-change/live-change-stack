@@ -33,7 +33,7 @@ export function defaultData(definition, otherSrc) {
 
 export function validateData(definition, data, validationType = 'validation',
                              context = undefined, propName = '', props = data,
-                             outputValidatorParams = false) {
+                             outputValidatorParams = false, validatedProperties = undefined) {
   context = context || getCurrentInstance().appContext
   //console.log("VALIDATIE DATA", definition, data, validationType, context, propName, props)
   if(!context) throw new Error("No context")
@@ -60,8 +60,10 @@ export function validateData(definition, data, validationType = 'validation',
   if(definition.properties) {
     const propertyErrors = {}
     for(let name in definition.properties) {
+      const computedName = propName ? propName + '.' + name : name
+      if(validatedProperties && !validatedProperties.includes(computedName)) continue
       const error = validateData(definition.properties[name], data?.[name], validationType, context,
-        propName ? propName + '.' + name: name, props, outputValidatorParams)
+        computedName, props, outputValidatorParams)
       if(error) {
         if(error.propertyErrors) {
           for(let internalName in error.propertyErrors) {

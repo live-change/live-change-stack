@@ -9,6 +9,40 @@ From **relations plugin** (`use: [ relationsPlugin ]`). Parent is a **single mod
 - **propertyOf** — One child record per parent (e.g. one Settings per Session, one Balance per owner). Adds a single identifier (e.g. billing, session) and Set/Update/Reset events and actions.
 - **itemOf** — Many child records per parent (e.g. many TopUp per Billing, many Operation per Balance). Adds parent identifier and Created/Updated/Deleted events and actions, plus range views.
 
+## Auto-added fields
+
+Both `propertyOf` and `itemOf` automatically add identifier fields and indexes to the model. **Do not re-declare these in `properties`.**
+
+The field name is derived from the parent model name with the first letter lowercased:
+
+| Relation | Field added | Index added | ID behavior |
+|---|---|---|---|
+| `propertyOf: { what: Billing }` | `billing` | `byBilling` | ID = parent ID |
+| `itemOf: { what: Billing }` | `billing` | `byBilling` | Own ID |
+| `propertyOf: [{ what: A }, { what: B }]` | `a`, `b` | `byA`, `byB`, `byAAndB` | Composite ID |
+
+Each auto-added field has `type: ParentModelType` and `validation: ['nonEmpty']`.
+
+For multi-parent relations, all combinations of indexes are auto-created. You can override field names with `propertyNames` in the config.
+
+Example — `itemOf: { what: Billing }` adds `billing` field automatically:
+
+```javascript
+const TopUp = definition.model({
+  name: "TopUp",
+  itemOf: {
+    what: Billing,         // auto-adds: billing field + byBilling index
+    readAccessControl: { roles: ['owner', 'admin'] }
+  },
+  properties: {
+    // only define YOUR fields — 'billing' is already added by itemOf
+    value: { type: Number },
+    price: { type: Number },
+    state: { type: String, default: 'created' }
+  }
+})
+```
+
 ## propertyOf — configuration
 
 ```javascript

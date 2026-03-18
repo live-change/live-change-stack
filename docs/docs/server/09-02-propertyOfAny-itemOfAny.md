@@ -9,19 +9,38 @@ From **relations plugin** (`use: [ relationsPlugin ]`). Parent is **polymorphic*
 - **propertyOfAny** — One child per parent; parent type can vary.
 - **itemOfAny** — Many children per parent; parent type can vary.
 
+## Auto-added fields
+
+Polymorphic relations add **two fields** per identifier in the `to` array — a type discriminator and the value:
+
+- `{name}Type` — type: `'type'`, enum of allowed types, validation: `['nonEmpty']`
+- `{name}` — type: `'any'`, validation: `['nonEmpty']`
+
+For example, `propertyOfAny: { to: ['owner', 'topic'] }` automatically adds four fields: `ownerType`, `owner`, `topicType`, `topic`. It also creates hash indexes: `byOwner`, `byTopic`, `byOwnerAndTopic`.
+
+**Do not re-declare these fields in `properties`** — they are already added by the relation.
+
 ## propertyOfAny — configuration
 
 Same access options as propertyOf, plus:
 
-- **to** — Array of identifier names (e.g. `['owner', 'topic']`, `['sessionOrUser']`).
-- **ownerTypes** / **topicTypes** / etc. — Allowed parent type names for each “to” dimension (depending on plugin/service usage).
+- **to** — Array of identifier names (e.g. `['owner', 'topic']`, `['sessionOrUser']`). Defaults to `['owner']` if omitted.
+- **{name}Types** — Allowed parent type names for each entry in `to` (e.g. `ownerTypes`, `topicTypes`, `jobTypes`).
+
+Example (default `to: ['owner']`):
+
+```javascript
+propertyOfAny: {
+  ownerTypes: ['invoice_CostInvoice', 'invoice_IncomeInvoice']
+}
+```
 
 ## itemOfAny — configuration
 
 Same access options as itemOf, plus:
 
-- **to** — Array of identifier names or single string (e.g. `['sessionOrUser']`, `'cause'`).
-- **ownerTypes** / **sessionOrUserTypes** / **jobTypes** / **contactOrUserTypes** — Allowed parent type names.
+- **to** — Array of identifier names or single string (e.g. `['sessionOrUser']`, `'cause'`). Defaults to `['owner']` if omitted.
+- **{name}Types** — Allowed parent type names (e.g. `ownerTypes`, `sessionOrUserTypes`, `jobTypes`, `contactOrUserTypes`), depending on `to`.
 
 ## Example: propertyOfAny (Schedule, Interval — cron-service)
 

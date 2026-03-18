@@ -9,10 +9,10 @@ async function fireChangeTriggers(context, objectType, identifiers, object, oldD
   const { service, modelName, app } = context
   //if(!trigger) trigger = (...args) => app.trigger(...args)
   assert(trigger, "trigger is required")
-  const changeType = data ? (oldData ? 'update' : 'create') : 'delete'
-  //console.log("FIRE CHANGE TRIGGERS", { context, objectType, identifiers, object, oldData, data })
-  //console.trace()
+  const changeType = data ? (oldData ? 'update' : 'create') : 'delete'  
   const triggerParameters = { objectType, object, identifiers, data, oldData, changeType }
+  //console.log("FIRE CHANGE TRIGGERS", triggerParameters)
+  //console.trace()
   await Promise.all([
     trigger({
       type: changeType + service.name[0].toUpperCase() + service.name.slice(1) + '_' + modelName,
@@ -32,7 +32,7 @@ async function fireChangeTriggers(context, objectType, identifiers, object, oldD
 async function iterateChildren(context, propertyName, path, cb) {
   const {
     service, modelRuntime, objectType: myType, writeableProperties, modelName,
-    reverseRelationWord, app, otherPropertyNames, sameIdAsParent
+    reverseRelationWord, app, otherPropertyNames, sameIdAsParent, isAny
   } = context
   assert(modelRuntime, "modelRuntime is required")
   assert(modelRuntime().sortedIndexRangeGet, "sortedIndexRangeGet is required")
@@ -41,7 +41,8 @@ async function iterateChildren(context, propertyName, path, cb) {
   assert(path, "path is required")
   assert(cb, "cb is required")
   if(sameIdAsParent) {
-    const entity = await modelRuntime().get(path)
+    const id = Array.isArray(path) ? (path.length > 1 ? path.map(p => JSON.stringify(p)).join(':') : path[0]) : path
+    const entity = await modelRuntime().get(id)
     if(entity) await cb(entity)
   } else {
     const indexName = 'by' + propertyName[0].toUpperCase() + propertyName.slice(1)
@@ -72,7 +73,7 @@ async function triggerDeleteOnParentDeleteTriggers(
   } = context
 
   let found = false
-  await iterateChildren(context, propertyName, path, async entity => {
+  await iterateChildren(context, propertyName, path, async entity => {    
     found = true
     const identifiers = extractIdentifiers(otherPropertyNames, entity)
     await fireChangeTriggers(context, myType, identifiers, entity.id,

@@ -6,6 +6,15 @@ title: userProperty and userItem
 
 From **user service** (`use: [ userService ]`). A **processor** in user-service scans your models for **userProperty** or **userItem** and turns them into **propertyOf User** or **itemOf User**, then adds views and actions (myUserXxx, setMyUserXxx, createMyUserXxx, etc.). Use when the owner is always a **User** (logged-in).
 
+## Auto-added fields
+
+Both `userProperty` and `userItem` are internally converted to `propertyOf: { what: User }` and `itemOf: { what: User }` respectively. This means they automatically add:
+
+- **`user`** field (type: User, validation: `['nonEmpty']`)
+- **`byUser`** index
+
+**Do not re-declare `user` in your `properties`** — it is already added by the relation.
+
 ## userProperty
 
 One record per user. The processor sets `model.propertyOf = { what: User, ...config }` and adds:

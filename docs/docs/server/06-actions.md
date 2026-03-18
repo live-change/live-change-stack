@@ -99,6 +99,95 @@ definition.action({
 })
 ```
 
+## Event-sourcing: how actions change data
+
+LiveChange uses an event-sourcing pattern. Actions do **not** call `Model.create()` / `Model.update()` / `Model.delete()` directly. Instead, they change data in one of two ways:
+
+1. **`emit()`** — publish an event that will be handled by a `definition.event()` handler (see [Events](./06b-events.md)). The event handler performs the actual database write.
+2. **`triggerService()`** — invoke a relation-declared trigger on the same or another service. The trigger's internal event handler performs the write.
+
+This separation ensures that all state changes are recorded as events and can be replayed.
+
+### Flow diagram
+
+```
+Action  ──emit()──▶  Event handler  ──▶  Model.create/update/delete
+   │
+   └──triggerService()──▶  Other service's trigger  ──emit()──▶  ...
+```
+
+### Example: action emits an event
+
+```javascript
+// Source: live-change-stack/services/notification-service/notification.js
+
+definition.action({
+  name: 'createNotification',
+  waitForEvents: true,
+  async execute({ message }, { client }, emit) {
+    const id = app.generateUid()
+    emit({
+      type: 'created',
+      notification: id,
+      data: { message, sessionOrUserType: 'user_User', sessionOrUser: client.user }
+    })
+    return id
+  }
+})
+
+// The event handler that performs the actual write:
+definition.event({
+  name: 'created',
+  async execute({ notification, data }) {
+    await Notification.create({ ...data, id: notification })
+  }
+})
+```
+
+### Example: action uses triggerService for relation-declared CRUD
+
+When a model has relations (`userItem`, `itemOf`, `propertyOf`, etc.), the relations plugin auto-generates CRUD triggers. Use `triggerService()` to call them:
+
+```javascript
+// Source: speed-dating/server/business-card-service/card.js
+
+await triggerService({
+  service: definition.name,
+  type: 'businessCard_setReceivedCard',
+}, {
+  sessionOrUserType: receiverType,
+  sessionOrUser: receiver,
+  // ... other fields
+})
+```
+
+### `waitForEvents: true`
+
+By default, `emit()` is asynchronous — the action returns before events are processed. Set `waitForEvents: true` when you need events to be fully processed before the action returns its result:
+
+```javascript
+definition.action({
+  name: 'createImage',
+  waitForEvents: true,  // wait for ImageCreated event to complete
+  async execute({ name, width, height }, { client }, emit) {
+    const id = app.generateUid()
+    emit({ type: 'ImageCreated', image: id, data: { name, width, height } })
+    return id
+  }
+})
+```
+
+### Cross-service writes
+
+Actions cannot write to models from other services directly (`foreignModel` is read-only). Use `triggerService()` to invoke the target service's triggers:
+
+```javascript
+await triggerService({
+  service: 'balance',
+  type: 'balance_setOrUpdateBalance',
+}, { ownerType: 'billing_Billing', owner: object })
+```
+
 ## Context and helpers
 
 - **execute(params, context, emit)** — params come from the client; context includes **client** (user, session), **triggerService**, **trigger**, **service**.
@@ -106,5 +195,5 @@ definition.action({
 - **client.session** — Current session id.
 - **triggerService({ service, type }, payload)** — Invokes an action/command on another (or same) service.
 - **trigger({ type }, payload)** — Fires a trigger (e.g. startPayment) that may be handled by another service.
-- **emit(event)** — Appends an event to the event log (e.g. TopUpCreated); processors update model state.
+- **emit(event)** — Appends an event to the event log; event handlers update model state. See [Events](./06b-events.md).
 - **app.generateUid()** — Generates a unique id for new entities.

@@ -65,6 +65,32 @@ Decision flow:
 2. Is it editing a model record (create/update)? → **Yes**: use `editorData`. **No**: use `actionData`.
 3. Only use `<command-form>` for the simplest throwaway cases.
 
+## Form validation feedback
+
+Every field in a form using `editorData` or `actionData` **must** show validation errors. Never use bare `InputText`, `Dropdown`, or other PrimeVue inputs without error feedback.
+
+Three approaches (pick whichever fits the layout):
+
+1. **AutoField without slot** — auto-picks input and shows errors. Simplest, use by default.
+2. **AutoField with slot** — wrap a custom input inside `<AutoField>`. Still renders label + error automatically.
+3. **Manual `Message`** — add `<Message v-if="editor.propertiesErrors?.field" severity="error" variant="simple" size="small">` below the input. Use when AutoField wrapper doesn't fit.
+
+Always pass `:error="editor.propertiesErrors?.fieldName"` (or `formData.propertiesErrors?.fieldName` for `actionData`).
+
+## Form element requirement
+
+Forms using `editorData` or `actionData` with `EditorButtons` or `ActionButtons` **must** be wrapped in a `<form>` element with submit/reset handlers:
+
+```vue
+<!-- editorData -->
+<form @submit.prevent="editor.save()" @reset.prevent="editor.reset()">
+
+<!-- actionData -->
+<form @submit.prevent="formData.submit()" @reset.prevent="formData.reset()">
+```
+
+`EditorButtons` and `ActionButtons` use `type="submit"` / `type="reset"` on their internal buttons. Without a `<form>` parent, these buttons do nothing.
+
 ### `api.command`
 
 ```js

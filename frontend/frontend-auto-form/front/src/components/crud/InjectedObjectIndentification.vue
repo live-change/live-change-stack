@@ -115,7 +115,7 @@
       params: {
         serviceName: service.value,
         modelName: model.value,
-        id: objectData.value?.to ?? objectData.value?.id
+        id: objectData.value?.to ?? objectData.value?.id ?? object.value
       }
     }
   })

@@ -132,6 +132,68 @@ definition.trigger({
 })
 ```
 
+## Change triggers – reacting to model changes
+
+Models with relations (`propertyOf`, `itemOf`, `userItem`, etc.) automatically fire change triggers on every create/update/delete. The naming convention is `{changeType}{ServiceName}_{ModelName}`:
+
+- `changeSvc_Model` — fires on any change (recommended, covers all cases)
+- `createSvc_Model` / `updateSvc_Model` / `deleteSvc_Model` — specific lifecycle
+
+Parameters: `{ objectType, object, identifiers, data, oldData, changeType }`.
+
+```js
+// React to any change in Schedule model from cron service
+definition.trigger({
+  name: 'changeCron_Schedule',
+  properties: {
+    object: { type: Schedule, validation: ['nonEmpty'] },
+    data: { type: Object },
+    oldData: { type: Object }
+  },
+  async execute({ object, data, oldData }, { triggerService }) {
+    if(oldData) { /* cleanup old state */ }
+    if(data) { /* setup new state */ }
+  }
+})
+```
+
+Check `data`/`oldData`: both present = update, only `data` = create, only `oldData` = delete.
+
+## Granting access on object creation
+
+When a model uses `entity` with `writeAccessControl` / `readAccessControl`, the auto-generated CRUD checks roles but does **not** grant them automatically. The creator must be explicitly granted roles — typically `'owner'` — otherwise they cannot access their own object.
+
+Use a change trigger that fires on creation (`data` exists, `oldData` does not):
+
+```js
+definition.trigger({
+  name: 'changeMyService_MyModel',
+  properties: {
+    object: { type: MyModel, validation: ['nonEmpty'] },
+    data: { type: Object },
+    oldData: { type: Object }
+  },
+  async execute({ object, data, oldData }, { client, triggerService }) {
+    if (!data || oldData) return   // only on create
+    if (!client?.user) return
+
+    await triggerService({ service: 'accessControl', type: 'accessControl_setAccess' }, {
+      objectType: 'myService_MyModel',
+      object,
+      roles: ['owner'],
+      sessionOrUserType: 'user_User',
+      sessionOrUser: client.user,
+      lastUpdate: new Date()
+    })
+  }
+})
+```
+
+Key details:
+- `objectType` format: `serviceName_ModelName` (e.g. `company_Company`)
+- For public access (readable by everyone), use `accessControl_setPublicAccess` with `userRoles` / `sessionRoles`
+- For anonymous users, use `sessionOrUserType: 'session_Session'` and `sessionOrUser: client.session`
+
 ## Pending + resolve pattern (async result)
 
 Use this pattern when an action must wait for a result from an external process (device, worker, etc.).

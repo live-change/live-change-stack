@@ -1,46 +1,41 @@
 ---
+name: live-change-design-actions-views-triggers
 description: Design actions, views, triggers with indexes and batch processing patterns
 ---
 
-# Skill: live-change-design-actions-views-triggers
+# Skill: live-change-design-actions-views-triggers (Claude Code)
 
-Ten skill opisuje **krok po kroku**, jak projektować akcje, widoki i triggery w serwisach LiveChange, korzystając z indeksów i unikając pełnych skanów.
+Use this skill to design **actions, views, and triggers** in LiveChange services while making good use of indexes and avoiding full-table scans.
 
-## Kiedy używać
+## When to use
 
-Użyj tego skilla, gdy:
+- You add or change actions on existing models.
+- You define new views (especially list/range views).
+- You implement triggers (online/offline, batch processing, async result flows).
 
-- dodajesz nowe akcje do istniejących modeli,
-- tworzysz widoki (szczególnie zakresowe) dla list,
-- implementujesz triggery (online/offline, batchowe przetwarzanie, asynchroniczne wyniki).
+## Step 1 – Design an action
 
-## 1. Projekt akcji
+1. **Clarify the goal**:
+   - create / update / delete a record,
+   - or create a “command” that will be completed later.
+2. **Define `properties`** clearly:
+   - only include what the client must provide,
+   - fetch the rest from the database via indexes.
+3. **Use indexes**, not full scans:
+   - `indexObjectGet('bySomething', { ... })` for single-object lookups,
+   - `indexRangeGet('bySomething', { ... })` for lists.
+4. **Return a useful result**:
+   - new object id,
+   - session keys,
+   - any data needed for the next step.
 
-1. **Określ cel akcji**
-   - Czy tworzy/aktualizuje/usunie obiekt?
-   - Czy ma czekać na zewnętrzny wynik (np. urządzenie)?
-
-2. **Zdefiniuj `properties`**
-   - Każde pole opisane wieloliniowo,
-   - tylko to, co faktycznie potrzebne – resztę pobieraj z bazy na podstawie kluczy.
-
-3. **Użyj indeksów do wyszukiwania**
-   - Zamiast pełnych skanów, korzystaj z `indexObjectGet` / `indexRangeGet`.
-
-4. **Zwróć sensowny wynik**
-   - ID utworzonego obiektu,
-   - klucze sesyjne, jeśli trzeba je przechować po stronie klienta,
-   - dane potrzebne do dalszych kroków.
-
-### Szkic wzorca
+Example:
 
 ```js
 definition.action({
   name: 'someAction',
   properties: {
-    someKey: {
-      type: String
-    }
+    someKey: { type: String }
   },
   async execute({ someKey }, { client, service }) {
     const obj = await SomeModel.indexObjectGet('bySomeKey', { someKey })
@@ -49,7 +44,7 @@ definition.action({
     const id = app.generateUid()
 
     await SomeOtherModel.create({
-      id,
+      id
       // ...
     })
 
@@ -58,56 +53,106 @@ definition.action({
 })
 ```
 
-## 2. Projekt widoku
+## Step 2 – Design a view
 
-1. **Zdecyduj, czy to pojedynczy obiekt czy lista**
-   - pojedynczy: użyj `get` lub `indexObjectGet`,
-   - lista: użyj `indexRangeGet` z indeksem.
+1. Decide what kind of data source you have, then pick the **view variant** (exactly one):
 
-2. **Zdefiniuj `properties` widoku**
-   - tylko parametry potrzebne do wyszukiwania,
-   - typy zgodne z modelem (String/Number/itp.).
+| Variant | When to use |
+| --- | --- |
+| `daoPath` | Data is stored in the framework DAO (preferred). The framework auto-generates both `get` and `observable` from `daoPath`. |
+| `get` + `observable` | External or custom reactive data source (eg. WebSocket client, RPC stream). **Both are required together.** |
+| `fetch` | Remote, non-reactive request/response data (eg. GeoIP). Often paired with `remote: true`. |
 
-3. **Użyj indeksów**
+2. Decide if you need:
+   - a **single** object view, or
+   - a **list/range** view.
+3. Define `properties` for the view:
+   - only parameters needed for filtering,
+   - types consistent with model fields.
+4. Prefer `daoPath` when you are reading from the DAO:
+   - use model paths (`Model.path`, `Model.rangePath`, `Model.sortedIndexRangePath`, `Model.indexObjectPath`)
+   - use `...App.rangeProperties` + `App.extractRange(props)` for range views
 
-Przykład widoku zakresowego:
+### Example: `daoPath` (preferred, DAO-backed)
 
 ```js
 definition.view({
-  name: 'myItemsByStatus',
+  name: 'costInvoice',
   properties: {
-    status: {
+    costInvoice: {
       type: String
     }
   },
-  async get({ status }, { client, service }) {
-    return MyModel.indexRangeGet('byStatus', {
-      status
-    })
+  returns: { type: Object },
+  async daoPath({ costInvoice }) {
+    return CostInvoice.path(costInvoice)
   }
 })
 ```
 
-## 3. Triggery – online/offline
+### Example: `get` + `observable` together (external / reactive)
 
-1. **Zidentyfikuj zdarzenie**
-   - np. „połączenie online/offline”, „sesja utworzona”, „serwer się uruchomił”.
+```js
+definition.view({
+  name: 'session',
+  properties: {},
+  returns: { type: Number },
+  async get(params, { client }) {
+    return onlineClient.get(['online', 'session', { ...params, session: client.session }])
+  },
+  async observable(params, { client }) {
+    return onlineClient.observable(
+      ['online', 'session', { ...params, session: client.session }],
+      ReactiveDao.ObservableValue
+    )
+  }
+})
+```
 
-2. **Zdefiniuj trigger z `properties`**
-   - triggery online/offline zwykle potrzebują tylko ID obiektu.
+### Example: `fetch` (remote / non-reactive)
 
-3. **Aktualizuj minimalny zestaw pól**
-   - np. `status`, `lastSeenAt`.
+```js
+definition.view({
+  name: 'myCountry',
+  properties: {},
+  returns: { type: String },
+  remote: true,
+  async fetch(props, { client }) {
+    return await getGeoIp(client.ip)
+  }
+})
+```
 
-Przykład:
+### Anti-pattern: `get` without `observable` (do not do this)
+
+```js
+definition.view({
+  name: 'brokenView',
+  properties: {
+    id: { type: String }
+  },
+  returns: { type: Object },
+  async get({ id }) {
+    return await SomeModel.get(id)
+  }
+})
+```
+
+## Step 3 – Online/offline triggers
+
+1. Identify events:
+   - session or connection goes online,
+   - session or connection goes offline.
+2. Define triggers with minimal `properties` (usually just an id).
+3. Update only the necessary fields (`status`, `lastSeenAt`, etc.).
+
+Example:
 
 ```js
 definition.trigger({
   name: 'sessionConnectionOnline',
   properties: {
-    connection: {
-      type: String
-    }
+    connection: { type: String }
   },
   async execute({ connection }, { service }) {
     await Connection.update(connection, {
@@ -116,17 +161,29 @@ definition.trigger({
     })
   }
 })
+
+definition.trigger({
+  name: 'sessionConnectionOffline',
+  properties: {
+    connection: { type: String }
+  },
+  async execute({ connection }, { service }) {
+    await Connection.update(connection, {
+      status: 'offline'
+    })
+  }
+})
 ```
 
-## 4. Triggery batchowe – unikaj pełnych skanów
+## Step 4 – Batch triggers (avoid full scans)
 
-1. **Ustal limit batcha** (np. 32 lub 128 rekordów).
-2. **Wykorzystaj `rangeGet` z `gt: lastId`**
-   - inicjalnie `last = ''`,
-   - po każdym batchu ustaw `last` na ID ostatniego rekordu.
-3. **Kończ, gdy batch jest pusty**.
+1. Pick a **batch size** (e.g. 32 or 128).
+2. Use `rangeGet` with `gt: lastId` in a loop:
+   - start with `last = ''`,
+   - after each batch, set `last` to the last record’s id,
+   - stop when the batch is empty.
 
-Przykład:
+Example:
 
 ```js
 definition.trigger({
@@ -141,9 +198,7 @@ definition.trigger({
       if(items.length === 0) break
 
       for(const item of items) {
-        await Connection.update(item.id, {
-          status: 'offline'
-        })
+        await Connection.update(item.id, { status: 'offline' })
       }
 
       last = items[items.length - 1].id
@@ -152,25 +207,69 @@ definition.trigger({
 })
 ```
 
-## 5. Wzorzec „pending + resolve” dla asynchronicznych wyników
+## Step 5 – Grant access on entity creation
 
-Użyj tego wzorca, gdy:
+When a model uses `entity` with `writeAccessControl` / `readAccessControl`, the auto-generated CRUD checks roles but does **not** grant them. Add a change trigger to grant the creator `'owner'` after creation:
 
-- akcja tworzy zlecenie/komendę,
-- wynik przychodzi później z innego procesu (urządzenie, worker, itp.),
-- chcesz, żeby akcja czekała na wynik z timeoutem.
+```js
+definition.trigger({
+  name: 'changeMyService_MyModel',
+  properties: {
+    object: { type: MyModel, validation: ['nonEmpty'] },
+    data: { type: Object },
+    oldData: { type: Object }
+  },
+  async execute({ object, data, oldData }, { client, triggerService }) {
+    if (!data || oldData) return   // only on create (data present, no oldData)
+    if (!client?.user) return
 
-### Kroki
+    await triggerService({ service: 'accessControl', type: 'accessControl_setAccess' }, {
+      objectType: 'myService_MyModel',   // format: serviceName_ModelName
+      object,
+      roles: ['owner'],
+      sessionOrUserType: 'user_User',
+      sessionOrUser: client.user,
+      lastUpdate: new Date()
+    })
+  }
+})
+```
 
-1. Utwórz helper `pendingCommands` (Map) w osobnym module.
-2. W akcji tworzącej:
-   - utwórz rekord z `status: 'pending'`,
-   - wywołaj `waitForCommand(id, timeoutMs)`.
-3. W akcji raportującej:
-   - zaktualizuj rekord (`status: 'completed'`, `result`),
-   - wywołaj `resolveCommand(id, result)`.
+For publicly accessible objects, also call `accessControl_setPublicAccess`:
 
-### Szkic helpera
+```js
+await triggerService({ service: 'accessControl', type: 'accessControl_setPublicAccess' }, {
+  objectType: 'myService_MyModel',
+  object,
+  userRoles: ['reader'],       // roles for all logged-in users
+  sessionRoles: ['reader'],    // roles for all sessions (including anonymous)
+  lastUpdate: new Date()
+})
+```
+
+Key points:
+- `objectType` format: `serviceName_ModelName` (e.g. `company_Company`, `uploadedFiles_File`)
+- `sessionOrUserType`: `'user_User'` for logged-in users, `'session_Session'` for anonymous
+- For anonymous users: `sessionOrUser: client.session`
+- Use `Promise.all([...])` when setting both public and per-user access
+
+## Step 6 – Pending + resolve pattern for async results
+
+Use this pattern when an action initiates a command that will be completed by an external process (device, worker, etc.) and you want the action to wait with a timeout.
+
+### Steps
+
+1. Implement a helper module with an in-memory `Map`:
+   - `waitForCommand(id, timeoutMs)` – returns a Promise,
+   - `resolveCommand(id, result)` – resolves and clears timeout.
+2. In the main action:
+   - create a record with `status: 'pending'`,
+   - call `waitForCommand(id, timeoutMs)` and `return` the result.
+3. In the reporting action:
+   - update the record (`status: 'completed'`, `result`),
+   - call `resolveCommand(id, result)`.
+
+Helper sketch:
 
 ```js
 const pendingCommands = new Map()

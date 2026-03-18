@@ -19,3 +19,76 @@ Two groups:
    - [contactOrUserProperty and contactOrUserItem](/server/09-05-contactOrUserProperty-contactOrUserItem.html) — Owner is Contact or User; supports contact types (email, phone) and transfer on connect.
 
 Use **use: [ relationsPlugin ]** and/or **use: [ userService ]** in your service definition when you use these annotations.
+
+## Auto-added fields and indexes
+
+Every relation automatically adds **identifier fields** and **indexes** to the model. You do **not** need to define these in `properties` — they are injected by the relations plugin.
+
+### Naming convention
+
+The field name is the parent model name with the first letter lowercased:
+- `Device` → `device`
+- `CostInvoice` → `costInvoice`
+- `User` → `user`
+
+You can override this with `propertyNames` in the relation config.
+
+### Fixed-type relations
+
+For relations where the parent type is known at definition time (`propertyOf`, `itemOf`, `boundTo`, `relatedTo`):
+
+| Relation | Field(s) added | Index(es) | Notes |
+|---|---|---|---|
+| `propertyOf: { what: Device }` | `device` | `byDevice` | ID = parent ID |
+| `itemOf: { what: Device }` | `device` | `byDevice` | Many children per parent |
+| `propertyOf: [{ what: A }, { what: B }]` | `a`, `b` | `byA`, `byB`, `byAAndB` | Multi-parent, all index combinations |
+| `userItem` | `user` | `byUser` | Internally becomes `itemOf: { what: User }` |
+| `userProperty` | `user` | `byUser` | Internally becomes `propertyOf: { what: User }` |
+| `boundTo: { what: Device }` | `device` | `byDevice` (hash) | One-directional pointer |
+| `relatedTo: { what: Device }` | `device` | `byDevice` | Many-to-many |
+
+Each field has `type: ParentModelType` and `validation: ['nonEmpty']`.
+
+### Polymorphic relations
+
+For relations where the parent type varies at runtime (`propertyOfAny`, `itemOfAny`, `sessionOrUserProperty`, etc.), **two fields** are added per identifier — a type discriminator and the value:
+
+| Relation | Fields added | Index(es) |
+|---|---|---|
+| `propertyOfAny: { to: ['owner'] }` | `ownerType`, `owner` | `byOwner` (hash) |
+| `itemOfAny: { to: ['owner'] }` | `ownerType`, `owner` | `byOwner` (hash) |
+| `sessionOrUserProperty` | `sessionOrUserType`, `sessionOrUser` | `bySessionOrUser` (hash) |
+| `sessionOrUserItem` | `sessionOrUserType`, `sessionOrUser` | `bySessionOrUser` (hash) |
+| `contactOrUserProperty` | `contactOrUserType`, `contactOrUser` | `byContactOrUser` (hash) |
+| `boundToAny: { to: ['target'] }` | `targetType`, `target` | `byTarget` (hash) |
+
+The `Type` field has `type: 'type'` with an enum of possible types. The value field has `type: 'any'`.
+
+With `extendedWith`, additional type+value pairs are added (e.g. `sessionOrUserProperty: { extendedWith: ['object'] }` adds `objectType` + `object`).
+
+### Important: do not re-declare auto-added fields
+
+Do **not** add the identifier fields to your `properties` block — they are already added by the relation. Adding them again can cause conflicts.
+
+```javascript
+// ❌ Wrong — 'device' is already added by itemOf
+definition.model({
+  name: 'Connection',
+  properties: {
+    device: { type: String },  // ❌ redundant, auto-added by itemOf
+    status: { type: String }
+  },
+  itemOf: { what: Device }
+})
+
+// ✅ Correct — only define your own fields
+definition.model({
+  name: 'Connection',
+  properties: {
+    status: { type: String }
+  },
+  itemOf: { what: Device }  // automatically adds 'device' field + 'byDevice' index
+})
+```
+
+Use `node server/start.js describe --service myService --model MyModel --output yaml` to see all fields and indexes including auto-added ones.

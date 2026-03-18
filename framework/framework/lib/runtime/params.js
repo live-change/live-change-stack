@@ -59,7 +59,7 @@ async function prepareParameters(parameters, definition, service) {
   }
   for(let propName in definition) {
     let prop = definition[propName]
-    if(prop.default && typeof out[propName] === 'undefined') {
+    if(prop.default && (typeof prop.default !== 'function') && typeof out[propName] === 'undefined') {
       out[propName] = prop.default
     }
   }

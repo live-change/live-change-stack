@@ -1,0 +1,185 @@
+---
+description: Event-sourcing data flow rules — emit events for DB writes, use triggerService for cross-service writes
+globs: **/services/**/*.js
+alwaysApply: false
+---
+
+# LiveChange backend – event-sourcing i przepływ danych
+
+## Jak płyną dane w LiveChange
+
+LiveChange stosuje wzorzec event-sourcing:
+
+1. **Akcje i triggery** walidują dane i publikują eventy przez `emit()`.
+2. **Eventy** (`definition.event()`) wykonują faktyczne zapisy do bazy (`Model.create`, `Model.update`, `Model.delete`).
+3. Dla modeli z **relacjami** (`userItem`, `itemOf`, `propertyOf`, itp.) relations plugin auto-generuje eventy i triggery CRUD — używaj ich przez `triggerService()`.
+4. Dla **zapisów między serwisami** zawsze używaj `triggerService()` — `foreignModel` jest tylko do odczytu.
+
+```
+Akcja/Trigger  ──emit()──▶  Event handler  ──▶  Model.create/update/delete
+       │
+       └──triggerService()──▶  Trigger innego serwisu  ──emit()──▶  ...
+```
+
+## Reguła 1: Nie używaj Model.create/update/delete bezpośrednio w akcjach i triggerach
+
+Akcje i triggery **nie powinny** wywoływać `Model.create()`, `Model.update()` ani `Model.delete()` bezpośrednio. Zamiast tego:
+
+- **Jeśli model ma relacje** (auto-generowane CRUD) → użyj `triggerService()` do wywołania triggera relacji (np. `serviceName_createModelName`, `serviceName_updateModelName`, `serviceName_setModelName`).
+- **Jeśli nie ma triggera relacji** → użyj `emit()` do opublikowania eventu, a potem zdefiniuj `definition.event()`, który wykona zapis.
+
+### Poprawnie: emit z akcji
+
+```js
+definition.action({
+  name: 'createImage',
+  properties: { /* ... */ },
+  waitForEvents: true,
+  async execute({ image, name, width, height }, { client, service }, emit) {
+    const id = image || app.generateUid()
+    // walidacja, logika biznesowa...
+    emit({
+      type: 'ImageCreated',
+      image: id,
+      data: { name, width, height }
+    })
+    return id
+  }
+})
+
+definition.event({
+  name: 'ImageCreated',
+  async execute({ image, data }) {
+    await Image.create({ ...data, id: image })
+  }
+})
+```
+
+### Poprawnie: triggerService dla triggerów relacji
+
+```js
+definition.action({
+  name: 'giveCard',
+  properties: { /* ... */ },
+  async execute({ receiverType, receiver }, { client, triggerService }, emit) {
+    // Użyj auto-generowanego triggera z relations plugin
+    await triggerService({
+      service: definition.name,
+      type: 'businessCard_setReceivedCard',
+    }, {
+      sessionOrUserType: receiverType,
+      sessionOrUser: receiver,
+      // ...
+    })
+  }
+})
+```
+
+### Źle: bezpośredni zapis w akcji
+
+```js
+// ❌ NIE RÓB TEGO
+definition.action({
+  name: 'createSomething',
+  async execute({ name }, { client }, emit) {
+    const id = app.generateUid()
+    await Something.create({ id, name })  // ❌ bezpośredni zapis w akcji
+    return id
+  }
+})
+```
+
+## Reguła 2: Eventy mogą modyfikować tylko modele tego samego serwisu
+
+Handlery eventów (`definition.event()`) mogą zapisywać tylko do modeli zdefiniowanych w **tym samym serwisie**. Nie próbuj zapisywać do `foreignModel` — jest tylko do odczytu (`.get()`, `.indexObjectGet()`, `.indexRangeGet()`, ale nie `.create()`, `.update()`, `.delete()`).
+
+Do zapisów między serwisami używaj `triggerService()` z akcji lub triggera:
+
+```js
+// ✅ Poprawnie: zapis między serwisami przez triggerService
+definition.trigger({
+  name: 'chargeCollected_billing_TopUp',
+  async execute(props, { triggerService }, emit) {
+    // Zapis do innego serwisu przez jego zadeklarowany trigger
+    await triggerService({
+      service: 'balance',
+      type: 'balance_setOrUpdateBalance',
+    }, { ownerType: 'billing_Billing', owner: props.cause })
+
+    // Zapis do własnego serwisu przez triggerService (trigger relacji)
+    await triggerService({
+      service: definition.name,
+      type: 'billing_updateTopUp'
+    }, { topUp: props.cause, state: 'paid' })
+  }
+})
+```
+
+```js
+// ❌ NIE RÓB TEGO — foreignModel jest tylko do odczytu
+const ExternalModel = definition.foreignModel('otherService', 'SomeModel')
+
+definition.event({
+  name: 'SomethingHappened',
+  async execute({ id }) {
+    await ExternalModel.update(id, { status: 'done' })  // ❌ nie zadziała
+  }
+})
+```
+
+## `waitForEvents: true`
+
+Gdy akcja lub trigger emituje eventy i musi poczekać na ich przetworzenie przed zwróceniem wyniku, ustaw `waitForEvents: true`:
+
+```js
+definition.action({
+  name: 'createNotification',
+  waitForEvents: true,
+  async execute({ message }, { client }, emit) {
+    const id = app.generateUid()
+    emit({
+      type: 'created',
+      notification: id,
+      data: { message, sessionOrUserType: 'user_User', sessionOrUser: client.user }
+    })
+    return id  // event jest przetworzony zanim to się zwróci
+  }
+})
+```
+
+Bez `waitForEvents: true` akcja zwraca wynik natychmiast, a eventy są przetwarzane asynchronicznie.
+
+## Triggery relacji (auto-generowane)
+
+Gdy model ma relacje (`userItem`, `itemOf`, `propertyOf`, itp.), relations plugin auto-generuje triggery CRUD. Użyj `describe`, żeby je odkryć:
+
+```bash
+node server/start.js describe --service myService --output yaml
+```
+
+Typowe auto-generowane triggery:
+- `serviceName_createModelName` — tworzenie rekordu
+- `serviceName_updateModelName` — aktualizacja rekordu
+- `serviceName_deleteModelName` — usuwanie rekordu
+- `serviceName_setModelName` — upsert (utwórz lub nadpisz)
+- `serviceName_setOrUpdateModelName` — ustaw jeśli nie istnieje, zaktualizuj jeśli istnieje
+
+Wywołuj je przez `triggerService()`:
+
+```js
+await triggerService({
+  service: 'myService',
+  type: 'myService_createMyModel'
+}, {
+  // właściwości pasujące do pól modelu
+})
+```
+
+## Podsumowanie
+
+| Gdzie | Może wywoływać Model.create/update/delete? | Jak zmieniać dane |
+|---|---|---|
+| `definition.event()` | ✅ Tak (tylko modele tego samego serwisu) | Bezpośredni zapis |
+| `definition.action()` | ❌ Nie | `emit()` lub `triggerService()` |
+| `definition.trigger()` | ❌ Nie | `emit()` lub `triggerService()` |
+| Między serwisami | ❌ Nigdy przez foreignModel | `triggerService()` do docelowego serwisu |

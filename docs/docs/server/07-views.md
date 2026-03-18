@@ -4,7 +4,21 @@ title: Views
 
 # Views
 
-Views are defined with **definition.view({ name, properties, returns, daoPath | get | observable })**. They expose read-only data to the client. Most views use **daoPath** to map parameters to a DAO path (range or index); some use **get** and **observable** when data comes from an external source (e.g. RPC).
+Views are defined with **definition.view({ name, properties, returns, daoPath | get | observable | fetch })**. They expose read-only data to the client.
+
+## View types (choose one)
+
+Each view must use exactly one of these variants:
+
+| Variant | When to use |
+| --- | --- |
+| `daoPath` | Data stored in the framework DB (preferred). The framework auto-generates both `get` and `observable` from `daoPath`. |
+| `get` + `observable` | External or custom reactive data source (eg. WebSocket client, RPC stream). **Both are required together.** |
+| `fetch` | Remote, non-reactive request/response data (eg. GeoIP). Often paired with `remote: true`. |
+
+Important rule:
+
+- If you write a view with `get`, you must also implement `observable` (and vice versa). Do not define only one of them. Use `daoPath` instead when the data comes from the DAO.
 
 ## View with daoPath to model path (topUp)
 
@@ -139,6 +153,40 @@ definition.view({
   },
   async observable({ address, denom }, { client, context }) {
     return await getBalanceObservable(address, denom)
+  }
+})
+```
+
+### Anti-pattern: `get` without `observable` (do not do this)
+
+This will break reactive usage and can also break processors (eg. access control) that wrap both methods.
+
+```javascript
+definition.view({
+  name: 'example',
+  properties: {
+    id: { type: String }
+  },
+  returns: { type: Object },
+  async get({ id }) {
+    return await SomeModel.get(id)
+  }
+})
+```
+
+## View with fetch (remote, non-reactive)
+
+Use `fetch` when you want a one-shot remote response (no reactive observable stream). Example:
+
+```javascript
+// Source: live-change-stack/services/geoip-service/geoip.js
+definition.view({
+  name: 'myCountry',
+  properties: {},
+  returns: { type: String },
+  remote: true,
+  async fetch(props, { client }) {
+    return await getGeoIp(client.ip)
   }
 })
 ```

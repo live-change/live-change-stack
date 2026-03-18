@@ -169,6 +169,68 @@ Zasady:
 - pierwszy argument to nazwa serwisu,
 - drugi to nazwa modelu w tamtym serwisie.
 
+## Automatycznie dodawane pola z relacji
+
+Relacje automatycznie dodają **pola identyfikatorów** i **indeksy** do modelu. **Nie definiuj ich ponownie** w `properties`.
+
+**Konwencja nazw:** nazwa pola = nazwa modelu rodzica z małą pierwszą literą (`Device` → `device`, `CostInvoice` → `costInvoice`).
+
+| Relacja | Dodane pole/pola | Dodane indeksy |
+|---|---|---|
+| `itemOf: { what: Device }` | `device` | `byDevice` |
+| `propertyOf: { what: Device }` | `device` | `byDevice` |
+| `userItem` | `user` | `byUser` |
+| `userProperty` | `user` | `byUser` |
+| `sessionOrUserProperty` | `sessionOrUserType`, `sessionOrUser` | `bySessionOrUser` (hash) |
+| `sessionOrUserProperty: { extendedWith: ['object'] }` | + `objectType`, `object` | indeksy złożone |
+| `propertyOfAny: { ownerTypes: [...] }` | `ownerType`, `owner` | `byOwner` (hash) |
+| `boundTo: { what: Device }` | `device` | `byDevice` (hash) |
+
+Dla relacji z wieloma rodzicami (np. `propertyOf: [{ what: A }, { what: B }]`) tworzone są wszystkie kombinacje indeksów (`byA`, `byB`, `byAAndB`).
+
+## `propertyOfAny` — typy rodzica (`{name}Types`)
+
+`propertyOfAny` jest relacją polimorficzną. Lista dozwolonych typów jest podawana w polach `{name}Types`, gdzie `{name}` pochodzi z `to`.
+
+- Gdy `to` nie jest podane, domyślnie jest `['owner']`, więc użyj `ownerTypes`.
+- Gdy `to: ['invoice']`, użyj `invoiceTypes`.
+
+```js
+// domyślnie to: ['owner']
+propertyOfAny: {
+  ownerTypes: ['invoice_CostInvoice', 'invoice_IncomeInvoice']
+}
+
+// jawnie
+propertyOfAny: {
+  to: ['invoice'],
+  invoiceTypes: ['invoice_CostInvoice', 'invoice_IncomeInvoice']
+}
+```
+
+```js
+// ✅ Poprawnie — definiuj tylko SWOJE pola
+definition.model({
+  name: 'Connection',
+  properties: {
+    status: { type: String }  // 'device' NIE jest tutaj — dodaje go itemOf
+  },
+  itemOf: { what: Device }   // automatycznie dodaje pole 'device' + indeks 'byDevice'
+})
+
+// ❌ Źle — redundantne pole
+definition.model({
+  name: 'Connection',
+  properties: {
+    device: { type: String },  // ❌ już dodane przez itemOf
+    status: { type: String }
+  },
+  itemOf: { what: Device }
+})
+```
+
+Użyj `node server/start.js describe --service myService --model MyModel --output yaml` żeby zobaczyć wszystkie pola łącznie z automatycznie dodanymi.
+
 ## Indeksy
 
 - Definiuj indeksy jawnie w modelu, gdy będziesz często wyszukiwać po danym polu lub kombinacji pól.

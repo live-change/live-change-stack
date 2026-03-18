@@ -64,7 +64,7 @@ export default function(service, app) {
     context.reverseRelationWord = 'Owned'
     context.partialReverseRelationWord = 'Owned'
 
-    context.sameIdAsParent = true
+    context.sameIdAsParent = context.otherPropertyNames.length === 1
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
     context.model.identifiers = [

@@ -16,28 +16,34 @@ import { fireChangeTriggers } from "./changeTriggers.js"
 
 import pluralize from 'pluralize'
 
-export function createIdentifiersProperties(keys) {
+export function createIdentifiersProperties(keys, idField) {
   const identifiers = {}
   if(keys) for(const key of keys) {
     identifiers[key + 'Type'] = {
       type: String,
-      validation: ['nonEmpty']
+      validation: idField ? [{ name: 'ifEmpty', prop: idField, then: ['nonEmpty'] }] : ['nonEmpty']
     }
     identifiers[key] = {
       type: String,
-      validation: ['nonEmpty']
+      validation: idField ? [{ name: 'ifEmpty', prop: idField, then: ['nonEmpty'] }] : ['nonEmpty']
     }
+  }
+  if(idField) identifiers[idField] = {
+    type: String,
+    validation: keys.map(key => ({ name: 'ifEmpty', prop: key+'Type', then: ['nonEmpty'] }))
   }
   return identifiers
 }
 
 function defineObjectView(config, context, external = true) {
   const { service, modelRuntime, otherPropertyNames, joinedOthersPropertyName, joinedOthersClassName,
-    modelName, others, model } = context
-  const viewProperties = createIdentifiersProperties(otherPropertyNames)
+    modelName, others, model, modelPropertyName } = context
+  const viewProperties = createIdentifiersProperties(otherPropertyNames, modelPropertyName)
   const sourceAccessControl = external
     && (config.singleAccessControl || config.readAccessControl || config.writeAccessControl)
-  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, 
+    otherPropertyNames.concat(modelPropertyName), 
+    new Array(otherPropertyNames.length).fill(undefined).concat(model))
   const viewName = config.name
     || ((config.prefix ? config.prefix + modelName : modelName[0].toLowerCase() + modelName.slice(1)) + (config.suffix || ''))
   model.crud.read ??= viewName
@@ -54,6 +60,11 @@ function defineObjectView(config, context, external = true) {
     global: config.globalView,
     accessControl,
     daoPath(properties, { client, context }) {
+      const idProp = modelPropertyName ? properties[modelPropertyName] : null
+      if(idProp) {
+        const path = config.fields ? modelRuntime().limitedPath(idProp, config.fields) : modelRuntime().path(idProp)
+        return path
+      }
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
       const id = typeAndIdParts.length > 1 ? typeAndIdParts.map(p => JSON.stringify(p)).join(':') : typeAndIdParts[0]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
@@ -106,7 +117,6 @@ function getSetFunction( validators, validationContext, config, context) {
   return async function execute(properties, { client, service, trigger }, emit) {
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
     const id = generateAnyId(otherPropertyNames, properties)
-    const entity = await modelRuntime().get(id)
     const data = extractObjectData(writeableProperties, properties,
       App.computeDefaults(model, properties, { client, service } ))
     await App.validation.validate({ ...identifiers, ...data }, validators,

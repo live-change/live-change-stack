@@ -1,4 +1,5 @@
 ---
+name: live-change-design-service
 description: Create or restructure a LiveChange backend service with proper directory layout
 ---
 

@@ -163,6 +163,48 @@ Notes:
 - First argument is the service name.
 - Second is the model name in that service.
 
+## Auto-added fields from relations
+
+Relations automatically add **identifier fields** and **indexes** to the model. Do **not** re-declare these in `properties`.
+
+**Naming convention:** field name = parent model name with first letter lowercased (`Device` → `device`, `CostInvoice` → `costInvoice`).
+
+| Relation | Field(s) auto-added | Index(es) auto-added |
+|---|---|---|
+| `itemOf: { what: Device }` | `device` | `byDevice` |
+| `propertyOf: { what: Device }` | `device` | `byDevice` |
+| `userItem` | `user` | `byUser` |
+| `userProperty` | `user` | `byUser` |
+| `sessionOrUserProperty` | `sessionOrUserType`, `sessionOrUser` | `bySessionOrUser` (hash) |
+| `sessionOrUserProperty: { extendedWith: ['object'] }` | + `objectType`, `object` | composite indexes |
+| `propertyOfAny: { to: ['owner'] }` | `ownerType`, `owner` | `byOwner` (hash) |
+| `boundTo: { what: Device }` | `device` | `byDevice` (hash) |
+
+For multi-parent relations (e.g. `propertyOf: [{ what: A }, { what: B }]`), all index combinations are created (`byA`, `byB`, `byAAndB`).
+
+```js
+// ✅ Correct — only define YOUR fields
+definition.model({
+  name: 'Connection',
+  properties: {
+    status: { type: String }  // 'device' is NOT here — auto-added by itemOf
+  },
+  itemOf: { what: Device }   // adds 'device' field + 'byDevice' index
+})
+
+// ❌ Wrong — redundant field
+definition.model({
+  name: 'Connection',
+  properties: {
+    device: { type: String },  // ❌ already added by itemOf
+    status: { type: String }
+  },
+  itemOf: { what: Device }
+})
+```
+
+Use `node server/start.js describe --service myService --model MyModel --output yaml` to see all fields including auto-added ones.
+
 ## Indexes
 
 - Declare indexes explicitly when you frequently query by a field or field combination.
@@ -185,4 +227,34 @@ In other services, the same index may be visible with a prefixed name such as `m
 
 - Always set `readAccessControl` and `writeAccessControl` on relations (`userItem`, `itemOf`, `propertyOf`).
 - Treat access control as part of the model definition, not an afterthought.
+
+## `entity` models – granting access on creation
+
+Models with `entity` and `writeAccessControl` / `readAccessControl` check roles on every CRUD operation, but do **not** auto-grant roles to the creator. You must add a change trigger to grant the creator `'owner'` (or other roles) after creation:
+
+```js
+definition.trigger({
+  name: 'changeMyService_MyModel',
+  properties: {
+    object: { type: MyModel, validation: ['nonEmpty'] },
+    data: { type: Object },
+    oldData: { type: Object }
+  },
+  async execute({ object, data, oldData }, { client, triggerService }) {
+    if (!data || oldData) return   // only on create
+    if (!client?.user) return
+
+    await triggerService({ service: 'accessControl', type: 'accessControl_setAccess' }, {
+      objectType: 'myService_MyModel',
+      object,
+      roles: ['owner'],
+      sessionOrUserType: 'user_User',
+      sessionOrUser: client.user,
+      lastUpdate: new Date()
+    })
+  }
+})
+```
+
+Without this trigger, the creator cannot read or modify their own object. The `objectType` format is `serviceName_ModelName`.
 

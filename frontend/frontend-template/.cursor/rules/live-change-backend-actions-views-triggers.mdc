@@ -58,6 +58,67 @@ definition.action({
   - korzystaj z indeksów (`indexObjectGet`, `indexRangeGet`),
   - nie implementuj skomplikowanej logiki w widokach, jeśli można ją przenieść do akcji.
 
+## Widoki – reguła: `get` + `observable` zawsze razem
+
+Widok musi być dokładnie jednym z trzech wariantów:
+
+- `daoPath` (preferowane) — framework wygeneruje zarówno `get`, jak i `observable`
+- `get` + `observable` — oba wymagane, jeśli źródło danych jest zewnętrzne lub custom-reactive
+- `fetch` — jednorazowy request/response (często `remote: true`), bez reaktywnego strumienia
+
+Nigdy nie definiuj samego `get` bez `observable` ani samego `observable` bez `get`. To psuje użycie reaktywne i może kończyć się błędami w processorach, które owijają oba callbacki (np. access control).
+
+### Poprawnie: `daoPath` zamiast ręcznego `get`/`observable`
+
+```js
+definition.view({
+  name: 'costInvoice',
+  properties: {
+    costInvoice: {
+      type: String
+    }
+  },
+  returns: { type: Object },
+  async daoPath({ costInvoice }) {
+    return CostInvoice.path(costInvoice)
+  }
+})
+```
+
+### Poprawnie: `get` + `observable` razem (zewnętrzne źródło)
+
+```js
+definition.view({
+  name: 'session',
+  properties: {},
+  returns: { type: Number },
+  async get(params, { client }) {
+    return onlineClient.get(['online', 'session', { ...params, session: client.session }])
+  },
+  async observable(params, { client }) {
+    return onlineClient.observable(
+      ['online', 'session', { ...params, session: client.session }],
+      ReactiveDao.ObservableValue
+    )
+  }
+})
+```
+
+### Źle: samo `get` bez `observable`
+
+```js
+definition.view({
+  name: 'brokenView',
+  properties: {
+    id: { type: String }
+  },
+  returns: { type: Object },
+  async get({ id }) {
+    return await SomeModel.get(id)
+  }
+})
+```
+
 ### Wzorzec widoku zakresowego
 
 ```js
@@ -147,6 +208,33 @@ definition.trigger({
   }
 })
 ```
+
+## Change triggers – reakcja na zmiany modeli
+
+Modele z relacjami (`propertyOf`, `itemOf`, `userItem`, itp.) automatycznie odpalają change triggery przy każdym create/update/delete. Konwencja nazw: `{changeType}{ServiceName}_{ModelName}`:
+
+- `changeSvc_Model` — odpala się przy każdej zmianie (rekomendowane, obsługuje wszystkie przypadki)
+- `createSvc_Model` / `updateSvc_Model` / `deleteSvc_Model` — konkretne zdarzenia cyklu życia
+
+Parametry: `{ objectType, object, identifiers, data, oldData, changeType }`.
+
+```js
+// Reaguj na dowolną zmianę modelu Schedule z serwisu cron
+definition.trigger({
+  name: 'changeCron_Schedule',
+  properties: {
+    object: { type: Schedule, validation: ['nonEmpty'] },
+    data: { type: Object },
+    oldData: { type: Object }
+  },
+  async execute({ object, data, oldData }, { triggerService }) {
+    if(oldData) { /* wyczyść stary stan */ }
+    if(data) { /* ustaw nowy stan */ }
+  }
+})
+```
+
+Sprawdzaj `data`/`oldData`: oba obecne = update, tylko `data` = create, tylko `oldData` = delete.
 
 ## Wzorzec „pending + resolve” (asynchroniczny wynik)
 

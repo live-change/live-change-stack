@@ -1,4 +1,5 @@
 ---
+name: live-change-frontend-ssr-setup
 description: Set up SSR entry points, router, PrimeVue theme and Suspense data loading
 ---
 

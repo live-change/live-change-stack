@@ -10,7 +10,7 @@ import {
 
 import { dbAdminRoutes } from "@live-change/db-admin"
 import { autoFormRoutes } from "@live-change/frontend-auto-form"
-import { taskAdminRoutes } from "@live-change/task-frontend"
+import { taskAdminRoutes, cronAdminRoutes } from "@live-change/task-frontend"
 import { userRoutes } from "@live-change/user-frontend"
 import { catchAllPagesRoute, contentEditRoutes, pagesSitemap } from "@live-change/content-frontend"
 
@@ -27,6 +27,7 @@ export function routes(config = {}) {
     ...contentEditRoutes({ ...config }),
 
     ...taskAdminRoutes({ ...config, prefix: '/_task' }),
+    ...cronAdminRoutes({ ...config, prefix: '/_cron' }),
     ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
     ...catchAllPagesRoute({ ...config }),
   ]

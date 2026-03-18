@@ -6,7 +6,7 @@
     <pre>selectedPaths = {{ selectedPaths }}</pre>
     <pre>selectedPathWithElements = {{ selectedPathWithElements }}</pre> -->
     <div v-for="path in selectedPathsWithElements" :key="path">
-      <Breadcrumb :model="more ? [...path, 'dupa'] : path"
+      <Breadcrumb :model="more ? [...path, ...pathObjects, 'placeholder'] : [...path, ...pathObjects]"
        :pt="{      
         list: {
           class: 'text-sm flex flex-row flex-wrap gap-2 first:negative-margin-left pl-[1.5rem]'
@@ -46,9 +46,13 @@
     more: {
       type: Boolean,
       default: false
+    },
+    pathObjects: {
+      type: Array,
+      default: () => []
     }
   })
-  const { objectType, object, more } = toRefs(props)
+  const { objectType, object, more, pathObjects } = toRefs(props)
 
   import { usePath, live } from '@live-change/vue3-ssr'
   const path = usePath()
@@ -87,7 +91,7 @@
       } else {
         elements.push({ objectType, object, propertyFrom: propertyName })
       }
-    }   
+    }
     return elements
   }
 
@@ -114,13 +118,13 @@
     live(pathsPath)
   ])
 
-  const selectedPaths = computed(() => {
-    return objectPathConfig.scopeSelector(paths.value)
-  })
+  const selectedPaths = computed(() => objectPathConfig.scopeSelector(paths.value))
 
-  const selectedPathsWithElements = computed(
-    () => selectedPaths.value.map(scopePath => objectPathConfig.pathElements(scopePath))
-  )
+  const selectedPathsWithElements = computed(() => {
+    const result = selectedPaths.value.map(scopePath => objectPathConfig.pathElements(scopePath))
+    if(result.length == 0) return [[{objectType: objectType.value, object: object.value}]]
+    return result
+  })
 
 
 

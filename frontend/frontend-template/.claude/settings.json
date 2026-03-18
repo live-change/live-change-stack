@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -d /home/m8/IdeaProjects/live-change/*/.claude/skills/)",
+      "Bash(ls -d /home/m8/IdeaProjects/live-change/*/.cursor/skills/)",
+      "Bash(node -e \"const p = require.resolve\\(''''@live-change/vue3-components''''\\); console.log\\(p\\)\")",
+      "Bash(find /home/m8/IdeaProjects/live-change/live-change-stack -path *vue3-components* -name *.js)",
+      "Read(//home/m8/IdeaProjects/**)",
+      "Bash(find /home/m8/IdeaProjects/live-change -name \"*.vue\" -type f ! -path \"*/node_modules/*\" ! -path \"*/.history/*\" -exec grep -l \"AutoField\" {})",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/skills/live-change-frontend-editor-form/SKILL.md /home/m8/IdeaProjects/live-change/.cursor/skills/live-change-frontend-editor-form.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/skills/live-change-frontend-action-form/SKILL.md /home/m8/IdeaProjects/live-change/.cursor/skills/live-change-frontend-action-form.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-frontend-vue-primevue.md /home/m8/IdeaProjects/live-change/auto-firma/.claude/rules/live-change-frontend-vue-primevue.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-frontend-vue-primevue.md /home/m8/IdeaProjects/live-change/automation/.claude/rules/live-change-frontend-vue-primevue.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-frontend-vue-primevue.md /home/m8/IdeaProjects/live-change/live-change-stack/frontend/frontend-template/.claude/rules/live-change-frontend-vue-primevue.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/skills/live-change-design-models-relations/SKILL.md /home/m8/IdeaProjects/live-change/.cursor/skills/live-change-design-models-relations.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/skills/live-change-design-actions-views-triggers/SKILL.md /home/m8/IdeaProjects/live-change/.cursor/skills/live-change-design-actions-views-triggers.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-backend-actions-views-triggers.md /home/m8/IdeaProjects/live-change/auto-firma/.claude/rules/live-change-backend-actions-views-triggers.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-backend-models-and-relations.md /home/m8/IdeaProjects/live-change/auto-firma/.claude/rules/live-change-backend-models-and-relations.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-backend-actions-views-triggers.md /home/m8/IdeaProjects/live-change/automation/.claude/rules/live-change-backend-actions-views-triggers.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-backend-models-and-relations.md /home/m8/IdeaProjects/live-change/automation/.claude/rules/live-change-backend-models-and-relations.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-backend-event-sourcing.md /home/m8/IdeaProjects/live-change/auto-firma/.claude/rules/live-change-backend-event-sourcing.md)",
+      "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-backend-event-sourcing.md /home/m8/IdeaProjects/live-change/automation/.claude/rules/live-change-backend-event-sourcing.md)",
+      "Bash(find /home/m8/IdeaProjects/live-change/live-change-stack/framework -type f \\\\\\(-name *.ts -o -name *.js \\\\\\))",
+      "Bash(find /home/m8/IdeaProjects/live-change/live-change-stack/services -type f -name *.js)",
+      "Bash(grep -r \"userItem\\\\|userProperty\" /home/m8/IdeaProjects/live-change/live-change-stack/services/user-service --include=*.js)"
+    ],
+    "additionalDirectories": [
+      "/home/m8/IdeaProjects/live-change/.claude/skills/create-skills-and-rules",
+      "/home/m8/IdeaProjects/live-change/.claude/rules"
+    ]
+  }
+}

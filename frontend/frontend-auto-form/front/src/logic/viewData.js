@@ -28,7 +28,9 @@ export default async function viewData(options) {
 
   const savedDataPath = path[serviceName][crudMethods.read]({ 
     [modelName[0].toLowerCase() + modelName.slice(1)]: id
-   })
+  })
+
+  console.log("SAVED DATA PATH", savedDataPath)
 
   let data
   let error

@@ -6,6 +6,21 @@ title: sessionOrUserProperty and sessionOrUserItem
 
 From **user service** (`use: [ userService ]`). The owner is either a **Session** or a **User**. Useful for data created before login (session) that can later be transferred to the user on sign-in. A processor turns **sessionOrUserProperty** / **sessionOrUserItem** into **propertyOfAny** / **itemOfAny** with **to: ['sessionOrUser', ...extendedWith]** and **sessionOrUserTypes: ['session_Session', 'user_User']**, then adds views and actions and a **signedIn** trigger to transfer or merge session data to the user.
 
+## Auto-added fields
+
+Both `sessionOrUserProperty` and `sessionOrUserItem` are internally converted to `propertyOfAny` / `itemOfAny` with `to: ['sessionOrUser', ...extendedWith]`. This means they automatically add:
+
+- **`sessionOrUserType`** field (type: `'type'`, enum: `['session_Session', 'user_User']`)
+- **`sessionOrUser`** field (type: `'any'`)
+- **`bySessionOrUser`** hash index
+
+When `extendedWith` is used, additional type+value pairs are added. For example, `extendedWith: ['giver']` also adds:
+- **`giverType`** field
+- **`giver`** field
+- Composite indexes like `bySessionOrUserAndGiver`
+
+**Do not re-declare these fields in your `properties`** — they are already added by the relation.
+
 ## sessionOrUserProperty
 
 One record per session-or-user (and optionally per extra dimensions from **extendedWith**). The processor adds:

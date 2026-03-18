@@ -225,7 +225,7 @@ export function prepareAccessControl(accessControl, names, types = undefined) {
     accessControl.objects = accessControl.objects ?? ((params) => names.map((name, index) => ({
       objectType: types?.[index] ?? params[name + 'Type'],
       object: params[name]
-    })))
+    })).filter(obj => obj.object && obj.objectType))
   }
 }
 
@@ -241,7 +241,8 @@ export function cloneAndPrepareAccessControl(accessControl, names, types = undef
 
 export function defineDeleteByOwnerEvents(config, context) {
   const {
-    service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames, reverseRelationWord
+    service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames,
+    reverseRelationWord, sameIdAsParent
   } = context
   for(const propertyName of otherPropertyNames) {
     const eventName = modelName + 'DeleteByOwner'
@@ -259,6 +260,9 @@ export function defineDeleteByOwnerEvents(config, context) {
       },
       async execute({ ownerType, owner }) {
         const runtime = modelRuntime()
+        if(sameIdAsParent) {
+          return await runtime.delete(JSON.stringify(ownerType) + ':' + JSON.stringify(owner))
+        } 
         const tableName = runtime.tableName
         const prefix = JSON.stringify(ownerType) + ':' + JSON.stringify(owner)
         const indexName = tableName + '_by' + propertyName[0].toUpperCase() + propertyName.slice(1)

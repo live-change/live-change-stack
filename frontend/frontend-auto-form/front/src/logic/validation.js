@@ -1,6 +1,6 @@
 import { validateData } from "@live-change/vue3-components"
 
-export function propertiesValidationErrors(rootValue, parameters, definition, lastData, propertiesServerErrors, appContext) {
+export function propertiesValidationErrors(rootValue, parameters, definition, lastData, propertiesServerErrors, appContext, validatedProperties) {  
   const currentValue = {
     ...parameters,
     ...rootValue,
@@ -10,10 +10,10 @@ export function propertiesValidationErrors(rootValue, parameters, definition, la
     lastData, propertiesServerErrors, appContext) */
 
   const validationResult = validateData(definition, currentValue, 'validation', appContext,
-    '', rootValue, true)
+    '', rootValue, true, validatedProperties)
 
   const softValidationResult = validateData(definition, currentValue, 'softValidation', appContext,
-    '', rootValue, true)
+    '', rootValue, true, validatedProperties)
 
   const serverValidationResult = {}
   if(propertiesServerErrors) {

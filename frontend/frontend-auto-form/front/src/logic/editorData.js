@@ -211,7 +211,7 @@ export default function editorData(options) {
 
       const propertiesErrors = computed(() => propertiesValidationErrors(
         synchronizedData.value.value, identifiers, model, lastUploadedData.value,
-         propertiesServerErrors.value, appContext))
+        propertiesServerErrors.value, appContext, editableProperties))
 
       async function save() {
         const saveResult = await saveData(synchronizedData.value.value)
@@ -242,6 +242,7 @@ export default function editorData(options) {
       return {
         identifiers,
         value: synchronizedData.value,
+        data: synchronizedData.value,
         changed,
         save,
         saving,
@@ -257,6 +258,8 @@ export default function editorData(options) {
         saved: savedData,
         savedPath: savedDataPath,
         editableSavedData,
+        editableDraftData,
+        defaultData: defaultData(model),
         draft: draftData,
         sourceChanged /// needed for draft discard on concurrent save
       }
@@ -283,7 +286,7 @@ export default function editorData(options) {
 
       const propertiesErrors = computed(() => propertiesValidationErrors(
         synchronizedData.value.value, identifiers, model, lastUploadedData.value,
-         propertiesServerErrors.value, appContext))
+         propertiesServerErrors.value, appContext, editableProperties))
 
       async function reset() {
         synchronizedData.value.value = editableSavedData.value || deepmerge(defaultData(model), initialData)
@@ -294,11 +297,15 @@ export default function editorData(options) {
       return {
         identifiers,
         value: synchronizedData.value,
+        data: synchronizedData.value,
         changed: synchronizedData.changed,
         save: synchronizedData.save,
         saving: synchronizedData.saving,
         saved: savedData,
         savedPath: savedDataPath,
+        editableProperties,
+        editableSavedData,
+        defaultData: defaultData(model),
         isNew,
         propertiesErrors,
         reset,
