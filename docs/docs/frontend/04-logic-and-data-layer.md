@@ -51,6 +51,25 @@ In the template:
 </template>
 ```
 
+### One-time fetches with `useFetch`
+
+Use `useFetch` when you need data once without a live subscription (e.g. after an upload, in an event handler):
+
+```javascript
+import { usePath, useFetch } from '@live-change/vue3-ssr'
+const path = usePath()
+
+const data = await useFetch(path.paperInvoice.invoiceFileInfo({ invoiceFile: fileId }))
+```
+
+> **Warning:** `path.service.view({ params })` returns a **Path object**, not a raw array. Do NOT pass it to `api.get()` — it expects raw arrays like `['service', 'view', { params }]`. Use `useFetch` instead.
+
+| Method | Input | Returns | Use when |
+|---|---|---|---|
+| `live(path)` | Path or array | Reactive Ref | You need live-updating data |
+| `useFetch(path)` | Path or array | Promise | One-time fetch in setup or event handler |
+| `api.get(['svc', 'view', params])` | Raw array | Promise | Low-level, avoid in application code |
+
 ### Calling actions
 
 ```javascript

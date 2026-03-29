@@ -42,6 +42,12 @@ Here `identificationPath` resolves to a path array like:
 
 `live` then subscribes to this path and returns a reactive reference that stays in sync with the backend.
 
+### Path objects vs raw arrays
+
+`path.service.view({ params })` returns a **Path object** (with `.what`, `.more`, `.to` properties) — not a raw array. The `live()` and `useFetch()` functions handle Path objects correctly. However, `api.get()` expects a raw array and will **not** work with Path objects.
+
+For one-time fetches, use `useFetch(path.service.view({ params }))` — never `api.get(path.service.view({ params }))`.
+
 ## The Path class
 
 Internally, complex queries use the `Path` class from `dao/lib/Path.js`. It wraps a basic `what` path and augments it with:

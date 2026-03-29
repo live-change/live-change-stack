@@ -12,9 +12,9 @@
              class="mr-0 rounded-full border-1 border-surface-400 dark:border-surface-600 w-12 max-w-none" />
       </span>
   </a>
-  <div class="align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto
-              bg-surface-0 dark:bg-surface-950 dark:border-1 dark:border-surface-800
-              right-0 md:right-auto top-full z-5 shadow">
+  <div :class="['align-items-center flex-grow-1 justify-content-between hidden absolute w-full md:w-auto',
+                'bg-surface-0 dark:bg-surface-950 dark:border-1 dark:border-surface-800',
+                'right-0 md:right-auto top-full z-5 shadow', menuClass]" :style="menuStyle">
     <loading-zone suspense>
       <template v-slot:loading>
         <div class="flex items-center justify-center top-0 left-0 notifications-loading">
@@ -44,13 +44,22 @@
   import ProgressSpinner from "primevue/progressspinner"
   import UserMenu from "./UserMenu.vue"
 
-  import { ref, computed, onMounted, toRefs } from 'vue'
+  import { ref, computed, onMounted, toRefs, defineProps } from 'vue'
 
   const isMounted = ref(false)
   onMounted(() => isMounted.value = true)
 
-  import { usePath, live, useClient } from '@live-change/vue3-ssr'
+  const props = defineProps({
+    menuClass: {      
+      default: ''
+    },
+    menuStyle: {      
+      default: ''
+    }
+  })
+  const { menuClass, menuStyle } = toRefs(props)
 
+  import { usePath, live, useClient } from '@live-change/vue3-ssr'
   const client = useClient()
 
   const ownerData = computed(

@@ -286,7 +286,7 @@ export default function editorData(options) {
 
       const propertiesErrors = computed(() => propertiesValidationErrors(
         synchronizedData.value.value, identifiers, model, lastUploadedData.value,
-         propertiesServerErrors.value, appContext, editableProperties))
+        propertiesServerErrors.value, appContext, editableProperties))
 
       async function reset() {
         synchronizedData.value.value = editableSavedData.value || deepmerge(defaultData(model), initialData)

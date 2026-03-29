@@ -7,6 +7,19 @@ export { AutoInput, AutoField, AutoEditor }
 export * from './front/src/components/form/provideAutoInputConfiguration.js'
 export * from './front/src/components/form/inputConfigInjection.js'
 
+import ObjectInput from './front/src/components/form/ObjectInput.vue'
+export { ObjectInput }
+import JsonInput from './front/src/components/form/JsonInput.vue'
+export { JsonInput }
+import TriggerInput from './front/src/components/form/TriggerInput.vue'
+export { TriggerInput }
+import ArrayInput from './front/src/components/form/ArrayInput.vue'
+export { ArrayInput }
+import Calendar from './front/src/components/form/Calendar.vue'
+export { Calendar }
+import CodeEditor from './front/src/components/form/CodeEditor.vue'
+export { CodeEditor }
+
 import editorData from './front/src/logic/editorData.js'
 export { editorData }
 
@@ -44,6 +57,8 @@ import AutoObjectIdentification from './front/src/components/crud/AutoObjectIden
 export { AutoObjectIdentification }
 import ActionForm from './front/src/components/crud/ActionForm.vue'
 export { ActionForm }
+import ActionButtons from './front/src/components/crud/ActionButtons.vue'
+export { ActionButtons }
 
 export * from './front/src/router.js'
 

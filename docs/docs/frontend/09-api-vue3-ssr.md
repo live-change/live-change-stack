@@ -51,7 +51,18 @@ Returns a `Ref` to the data.
 
 ### useFetch(path, context?)
 
-One-off fetch of a view (PROMISE), useful in composables.
+One-off fetch of a view (returns a Promise). Accepts a Path object or raw array.
+
+Use this instead of `api.get()` when you need a one-time fetch with a Path object:
+
+```javascript
+import { usePath, useFetch } from '@live-change/vue3-ssr'
+const path = usePath()
+
+const data = await useFetch(path.myService.myView({ id: someId }))
+```
+
+> `api.get()` does **not** accept Path objects — it expects raw arrays. Always prefer `useFetch` for one-time data loading.
 
 ### useClient(), useUid(), useTimeSynchronization()
 
