@@ -24,6 +24,7 @@ types.Array = inputs.list = inputConfig(() => import('./ArrayInput.vue'), {
 })
 
 types.Date = inputs.datetime = inputConfig(() => import('./Calendar.vue'), { attributes: { showTime: true } })
+inputs.date = inputConfig(() => import('./Calendar.vue'), { attributes: { showTime: false } })
 
 inputs.select = inputConfig(() => import('primevue/dropdown'), {
   attributes: (config) => {

@@ -4,10 +4,32 @@ title: propertyOf and itemOf
 
 # propertyOf and itemOf
 
-From **relations plugin** (`use: [ relationsPlugin ]`). Parent is a **single model** in the same or another service.
+From **relations plugin** (`use: [ relationsPlugin ]`).
 
 - **propertyOf** — One child record per parent (e.g. one Settings per Session, one Balance per owner). Adds a single identifier (e.g. billing, session) and Set/Update/Reset events and actions.
 - **itemOf** — Many child records per parent (e.g. many TopUp per Billing, many Operation per Balance). Adds parent identifier and Created/Updated/Deleted events and actions, plus range views.
+
+## Arity rules
+
+- `propertyOf` and `itemOf` are **single-config annotations**. Use one config object, not a list of config objects.
+- Inside that config, `what` may be:
+  - one parent model (`what: Billing`)
+  - a parent tuple (`what: [Billing, Session]`)
+
+Valid:
+
+```javascript
+propertyOf: {
+  what: [A, B]
+}
+```
+
+Invalid:
+
+```javascript
+// do not use a list of relation config objects here
+propertyOf: [configA, configB]
+```
 
 ## Auto-added fields
 
@@ -19,7 +41,7 @@ The field name is derived from the parent model name with the first letter lower
 |---|---|---|---|
 | `propertyOf: { what: Billing }` | `billing` | `byBilling` | ID = parent ID |
 | `itemOf: { what: Billing }` | `billing` | `byBilling` | Own ID |
-| `propertyOf: [{ what: A }, { what: B }]` | `a`, `b` | `byA`, `byB`, `byAAndB` | Composite ID |
+| `propertyOf: { what: [A, B] }` | `a`, `b` | `byA`, `byB`, `byAAndB` | Composite ID |
 
 Each auto-added field has `type: ParentModelType` and `validation: ['nonEmpty']`.
 

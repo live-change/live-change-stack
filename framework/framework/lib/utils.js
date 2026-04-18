@@ -409,7 +409,11 @@ export function loggingHelpers(name, version, attributes, options) {
   }
 }
 
-export function expandObjectAttributes(object, prefix = '', acc = {}) {
+export function expandObjectAttributes(object, prefix = '', acc = {}, maxLength = 100) {
+  if(typeof object === 'string' && object.length >= maxLength) {
+    acc[prefix] = object.slice(0, maxLength-3) + '...'
+    return
+  }
   if(typeof object !== 'object') {
     acc[prefix] = object
     return

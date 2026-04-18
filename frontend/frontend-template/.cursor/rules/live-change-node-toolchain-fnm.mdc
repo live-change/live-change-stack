@@ -1,0 +1,40 @@
+---
+description: Run Node, npm, npx, tsx with fnm exec using project .node-version or .nvmrc
+alwaysApply: true
+---
+
+# Node.js toolchain – use `fnm exec`
+
+Do **not** rely on whatever Node.js version the agent sandbox or shell happens to use. That often differs from the project and breaks the LiveChange stack, tests, and `describe`.
+
+Use **fnm** so the version from the project dotfiles (`.node-version` or `.nvmrc`) is selected.
+
+## Required pattern
+
+Work in the directory that contains the relevant `.node-version` or `.nvmrc` (app or package root). Prefix **every** `node`, `npm`, `npx`, `corepack`, or `tsx` invocation with:
+
+```bash
+fnm exec -- <command and arguments>
+```
+
+Examples:
+
+```bash
+fnm exec -- node server/start.js describe --service myService --output yaml
+fnm exec -- npm test
+fnm exec -- npm run build
+fnm exec -- npx eslint .
+fnm exec -- tsx scripts/example.ts
+```
+
+If the dotfile lives only under a subfolder (e.g. `auto-firma/app/`), `cd` there first, then run `fnm exec -- ...`.
+
+## When this applies
+
+- Tests, CI scripts, linters, builds
+- Framework CLI: `describe`, dev servers, migrations, anything touching `@live-change/*`
+- Any `npm` / `node` / `npx` / `tsx` for this monorepo or its subprojects
+
+## If `fnm` is unavailable
+
+Tell the user to install fnm or align the environment; do not proceed assuming an arbitrary `node` on `PATH` is correct.

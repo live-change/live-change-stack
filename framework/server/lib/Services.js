@@ -176,13 +176,13 @@ class Services {
   async update() {
     for(const defn of this.serviceDefinitions) {
       console.group()
-      console.log("#### UPDATE SERVICE", defn.name)
+      //console.log("#### UPDATE SERVICE", defn.name)
       if(!defn.processed) {
         app.processServiceDefinition(defn)
         defn.processed = true
       }
       await app.updateService(defn)
-      console.log("#### UPDATED SERVICE", defn.name)
+      //console.log("#### UPDATED SERVICE", defn.name)
       console.groupEnd()
     }
   }

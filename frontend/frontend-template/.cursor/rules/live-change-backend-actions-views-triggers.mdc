@@ -138,6 +138,41 @@ definition.view({
 })
 ```
 
+### Widoki zakresowe: prefiksy indeksów i opcjonalne filtry
+
+W `sortedIndexRangePath(indexName, keyPrefix, range)` najpierw działa `keyPrefix`, a dopiero potem `range` (`gt/gte/lt/lte`) na pełnym kluczu indeksu.
+
+To oznacza:
+
+- nie przekazuj surowych wartości pola (np. samej daty miesiąca) do `gt/lt`, jeśli klucz zaczyna się od innych części
+- filtr domenowy (`month`, `state`, `company`) przekazuj jako osobny parametr widoku
+- `range` zostaw do paginacji/cursora (RangeViewer i podobne mechanizmy)
+
+```js
+definition.view({
+  name: 'bankTransactionsByBankAccountAndDate',
+  properties: {
+    bankAccount: { type: String },
+    month: { type: String },
+    ...App.rangeProperties
+  },
+  async daoPath({ bankAccount, month, ...props }) {
+    const range = App.extractRange(props)
+    if(month) {
+      const prefix = [bankAccount, month].map(v => JSON.stringify(v)).join(':')
+      return BankTransaction.rangePath(App.utils.prefixRange(range, prefix, prefix + ':'))
+    }
+    return BankTransaction.sortedIndexRangePath('byBankAccountAndDate', [bankAccount], range)
+  }
+})
+```
+
+Jeśli filtr po miesiącu jest częsty, lepiej dodać indeks z bucketem miesiąca (`byBankAccountAndMonthAndDate`) i użyć:
+
+```js
+BankTransaction.sortedIndexRangePath('byBankAccountAndMonthAndDate', [bankAccount, month], range)
+```
+
 ## Triggery – online/offline i batchowanie
 
 - Triggery są do reakcji na zdarzenia (np. zmiana stanu sesji, start serwera).

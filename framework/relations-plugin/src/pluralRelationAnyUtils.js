@@ -185,9 +185,12 @@ function getUpdateFunction( validators, validationContext, config, context) {
     if(!entity) throw app.logicError("not_found")
     const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
     const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)    
-    /* console.log("UPDATE MATCH", entityTypeAndIdParts, '===', typeAndIdParts,
-      '=>', JSON.stringify(entityTypeAndIdParts) === JSON.stringify(typeAndIdParts)) */
-    if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts)) {
+/*     console.log("EXISTING ENTITY:", entity)
+    console.log("PROP NAMES:", otherPropertyNames)
+    console.log("PROPERTIES:", properties)
+    console.log(modelName, "UPDATE MATCH", entityTypeAndIdParts, '===', typeAndIdParts,
+      '=>', JSON.stringify(entityTypeAndIdParts) === JSON.stringify(typeAndIdParts))  */
+    if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts) && !config.allowMove) {
       throw app.logicError("not_authorized")
     }
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
@@ -195,16 +198,6 @@ function getUpdateFunction( validators, validationContext, config, context) {
       extractObjectData(writeableProperties, properties, entity),
       App.computeUpdates(model, { ...entity, ...properties }, { client, service })
     )
-    if(entityTypeAndIdParts[0] == 'task_Task' && data.retries.length == 0 && entity.retries.length > 0)  {
-      console.log("TASK UPDATE!!!!!!!!")
-      console.log("CURRENT STATE:", entity)
-      console.log("UPDATE:", properties)
-      console.log("IDENTIFIERS:", identifiers)
-      console.log("EXTRACTED ENTITY DATA:", extractObjectData(writeableProperties, properties, entity))
-      console.log("COMPUTED UPDATES:", App.computeUpdates(model, { ...entity, ...properties }, { client, service }))
-      console.log("DATA:", data)
-      debugger
-    }
     await App.validation.validate({ ...identifiers, ...data, [modelPropertyName]: id }, validators,
       validationContext)
     await fireChangeTriggers(context, objectType, identifiers, id,
@@ -277,7 +270,7 @@ function defineUpdateTrigger(config, context) {
   })
   const validators = App.validation.getValidators(trigger, service, trigger)
   const validationContext = { source: trigger, trigger }
-  trigger.execute = getUpdateFunction( validators, validationContext, config, context)
+  trigger.execute = getUpdateFunction( validators, validationContext, {...config, allowMove: true }, context)
   if(service.triggers[triggerName]) throw new Error('Trigger ' + triggerName + ' already defined')
   service.triggers[triggerName] = [trigger]
 }
@@ -292,11 +285,6 @@ function getDeleteFunction(config, context) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
     if(!entity) throw app.logicError("not_found")
-    const entityTypeAndIdParts = extractTypeAndIdParts(otherPropertyNames, entity)
-    const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
-    if(JSON.stringify(entityTypeAndIdParts) !== JSON.stringify(typeAndIdParts)) {
-      throw app.logicError("not_authorized")
-    }
     await fireChangeTriggers(context, objectType, extractIdentifiers(otherPropertyNames, entity), id,
       extractObjectData(writeableProperties, entity, {}), null, trigger)
     emit({
@@ -309,7 +297,7 @@ function getDeleteFunction(config, context) {
 
 function defineDeleteAction(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName, identifiers, objectType,
+    service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'delete' + modelName
@@ -324,8 +312,7 @@ function defineDeleteAction(config, context) {
       [modelPropertyName]: {
         type: model,
         validation: ['nonEmpty']
-      },
-      ...identifiers
+      }
     },
     access: config.deleteAccess || config.writeAccess,
     accessControl,
@@ -341,7 +328,7 @@ function defineDeleteAction(config, context) {
 
 function defineDeleteTrigger(config, context) {
   const {
-    service, app, model, modelRuntime, modelPropertyName, identifiers, objectType,
+    service, app, model, modelRuntime, modelPropertyName, objectType,
     otherPropertyNames, joinedOthersPropertyName, modelName, writeableProperties, joinedOthersClassName
   } = context
   const actionName = 'delete' + modelName
@@ -352,8 +339,7 @@ function defineDeleteTrigger(config, context) {
       [modelPropertyName]: {
         type: model,
         validation: ['nonEmpty']
-      },
-      ...identifiers
+      }
     },
     access: config.deleteAccess || config.writeAccess,
     skipValidation: true,
@@ -371,7 +357,7 @@ function defineSortIndex(context, sortFields) {
   const sortFieldsUc = sortFields.map(fd => fd.slice(0, 1).toUpperCase() + fd.slice(1))
   const indexName = 'by' + context.joinedOthersClassName + 'And' + sortFieldsUc.join('And')
   const property = [...(context.otherPropertyNames.map(prop => [prop + 'Type', prop]).flat()), ...sortFields]
-  console.log("DEFINE SORT INDEX", sortFields, "NAME", indexName, "PROP", property)
+  //console.log("DEFINE SORT INDEX", sortFields, "NAME", indexName, "PROP", property)
   context.model.indexes[indexName] = new IndexDefinition({
     property
   })

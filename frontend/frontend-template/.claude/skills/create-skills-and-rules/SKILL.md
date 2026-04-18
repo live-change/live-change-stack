@@ -137,6 +137,22 @@ globs: **/front/src/**/*.{vue,js,ts}
 | `description` | What this rule covers (used for matching) |
 | `globs` | File patterns that trigger this rule (e.g. `**/*.js`, `**/services/**/*.js`) |
 
+### Backend / LiveChange service rules — standard `globs`
+
+Rules for **server-side** LiveChange code (models, actions, triggers, service layout) should use a **comma-separated** `globs` line so they still match when a project stores services under different folder names (many teams copy `.cursor/rules` into other repos):
+
+```yaml
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
+```
+
+| Pattern | Covers |
+|---|---|
+| `**/services/**/*.js` | Trees such as `live-change-stack/services/<service>/` |
+| `**/server/**/*.js` | Any nested `server/` directory (e.g. `app/server/`, `packages/foo/server/`) |
+| `server/**/*.js` | Backend rooted at top-level `server/` |
+
+Frontend rules keep their own globs (e.g. `**/front/src/**/*.{vue,js,ts}`). Do not drop the `server` variants for backend-only rules — otherwise Cursor will miss files after a layout change.
+
 ### Body structure
 
 ```markdown
@@ -181,6 +197,7 @@ alwaysApply: false
 - Do NOT quote glob patterns in frontmatter
 - Keep rules short (target 25 lines, max 50 lines for best Cursor performance)
 - The `.mdc` extension is required for Cursor
+- For **backend** LiveChange rules, use the same **`globs`** standard as in Claude rules: `**/services/**/*.js, **/server/**/*.js, server/**/*.js`
 
 ## Step 5 – Register rules in OpenCode (`opencode.json`)
 
@@ -198,7 +215,11 @@ OpenCode reads `.claude/skills/<name>/SKILL.md` natively for skills (no extra st
 
 When you **create a new rule**, add its path to the `instructions` array in `opencode.json`.
 
+Project rule **`live-change-node-toolchain-fnm`** should stay **first** (or early) in `instructions` so agents always load the requirement to run `node`, `npm`, `npx`, and `tsx` via `fnm exec` using `.node-version` / `.nvmrc`.
+
 When you **create a new skill**, no `opencode.json` change is needed — OpenCode discovers skills from `.claude/skills/<name>/SKILL.md` automatically.
+
+When a skill or rule shows shell examples that invoke **`node`**, **`npm`**, **`npx`**, or **`tsx`**, use the **`fnm exec -- …`** form (see `.claude/rules/live-change-node-toolchain-fnm.md` and skill `live-change-node-toolchain-fnm`).
 
 **Important:** OpenCode ignores the `globs` frontmatter from Claude Code rules. All instructions listed in `opencode.json` are always loaded.
 
@@ -239,10 +260,12 @@ done
 
 ## Checklist
 
+- [ ] Shell examples for Node/npm use `fnm exec --` per `live-change-node-toolchain-fnm`
 - [ ] Directory created: `.claude/skills/<name>/SKILL.md`
 - [ ] Frontmatter has both `name` (matching dir) and `description`
 - [ ] `.cursor/skills/<name>.md` mirrored (flat file, same content)
 - [ ] `.claude/rules/*.md` created (if rule)
 - [ ] `.cursor/rules/*.mdc` created with `globs` + `alwaysApply` (if rule)
+- [ ] Backend rules use standard `globs`: `**/services/**/*.js, **/server/**/*.js, server/**/*.js` (when the rule targets LiveChange server code)
 - [ ] `opencode.json` `instructions` array updated (if new rule)
 - [ ] Sub-projects updated (automation, auto-firma)

@@ -60,6 +60,33 @@ const synchronizedEvent = synchronized({
 const editable = synchronizedEvent.value
 ```
 
+Przykład użycia `synchronizedList` (fragment z `rcstreamer`):
+
+```javascript
+import { synchronizedList } from '@live-change/vue3-components'
+
+const synchronizedAccessesList = synchronizedList({
+  source: accesses,
+  update: accessControlApi.updateSessionOrUserAndObjectOwnedAccess,
+  delete: accessControlApi.resetSessionOrUserAndObjectOwnedAccess,
+  identifiers: { object, objectType },
+  objectIdentifiers: ({ to, sessionOrUser, sessionOrUserType }) => ({
+    access: to, sessionOrUser, sessionOrUserType, object, objectType
+  }),
+  recursive: true
+})
+
+const synchronizedAccesses = synchronizedAccessesList.value
+await synchronizedAccessesList.delete(synchronizedAccesses.value[0])
+```
+
+`synchronizedList` jest przeznaczony do edycji list elementów (np. role dostępów), gdzie:
+
+- `source` jest tablicą z `live(...)`,
+- każdy element ma stabilne `id`,
+- `identifiers` przekazuje kontekst wspólny dla listy,
+- `objectIdentifiers` mapuje identyfikatory pojedynczego elementu pod akcje backendu.
+
 ### Formularze: `DefinedForm`, `CommandForm`, `FormBind`
 
 - **`DefinedForm`** – renderuje formularz na podstawie definicji (np. definicji akcji)

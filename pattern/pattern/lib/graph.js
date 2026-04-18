@@ -5,7 +5,7 @@ function updateGraph(event, transitions, aggregation, addToNode, addToRelation) 
   for(const transition of transitions) {
     if(transition.relation && mark) mark(transition.relation)
     const ids = aggregation.nodes(transition, event.keys)
-    console.log("TR", transition, 'KEYS', event.keys, 'IDS', ids)
+    //console.log("TR", transition, 'KEYS', event.keys, 'IDS', ids)
     for(let id of ids) {
       addToNode(id, transition, event, !transition.relation)
       if (transition.relation != null) {

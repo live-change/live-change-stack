@@ -11,7 +11,7 @@ definition.processor(function(service, app) {
     const model = service.models[modelName]
 
     if(model.userProperty) {
-      console.log("MODEL " + modelName + " IS USER PROPERTY, CONFIG:", model.userProperty)
+      //console.log("MODEL " + modelName + " IS USER PROPERTY, CONFIG:", model.userProperty)
       if (model.properties.user) throw new Error('user property already exists!!!')
 
       const originalModelProperties = { ...model.properties }

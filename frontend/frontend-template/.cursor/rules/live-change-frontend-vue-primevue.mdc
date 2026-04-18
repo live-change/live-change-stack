@@ -6,6 +6,10 @@ alwaysApply: false
 
 # Frontend na live-change-stack – Vue 3 + PrimeVue + Tailwind
 
+## i18n i `front/locales`
+
+Za każdym razem gdy dodajesz lub zmieniasz teksty pod tłumaczenia, stosuj **`live-change-frontend-i18n-locales`**: te same klucze muszą trafić do **wszystkich** plików w **`front/locales/`** danej aplikacji (każdy język / wariant — nie tylko jeden plik).
+
 ## Stack
 
 - Vue 3 + TypeScript
@@ -206,6 +210,27 @@ path.blog.articles({})
 ```
 
 Dostęp: `article.authorProfile?.firstName`. Działa zarówno z `live()` jak i `RangeViewer`.
+
+## Listy zakresowe z reaktywnymi filtrami
+
+Jeśli `pathFunction` dla listy zakresowej zależy od reaktywnych filtrów (np. miesiąc/status/szukaj), preferuj `ReactiveRangeViewer`.
+
+Zasady:
+
+- nie polegaj na samej zmianie `pathFunction` w `RangeViewer`
+- nie rozrzucaj workaroundów typu ręczne `:key` po stronach
+- użyj `sourceKey` jako jawnego triggera przeładowania
+- gdy UX wymaga stabilności układu, ustaw `preserveHeightOnReload`
+
+```vue
+<ReactiveRangeViewer
+  :pathFunction="transactionsPathRange"
+  :sourceKey="JSON.stringify({ accountId, month: filterByMonth ? month : null })"
+  :preserveHeightOnReload="true"
+  :canLoadTop="false"
+  canDropBottom
+/>
+```
 
 ## WorkingZone dla akcji asynchronicznych
 

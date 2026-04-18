@@ -69,3 +69,21 @@ Typowy flow tworzenia nowej aplikacji:
 
 Dokładny „manual” tego flow znajdzie się w sekcji `frontend/01-getting-started.md` dokumentacji.
 
+### E2E starter (node:test + Playwright)
+
+Szablon zawiera przykładowy zestaw E2E w katalogu `e2e/`:
+
+- `env.ts` - lazy start `TestServer` i `disposeTestEnv()`
+- `withBrowser.ts` - lifecycle przeglądarki per test
+- `e2eSuite.ts` - wrapper `describe` + `after` z finalnym teardown
+- `homepage.test.ts`, `client-session.test.ts` - przykładowe testy
+
+Uruchamianie:
+
+```bash
+fnm exec -- npm run e2e
+fnm exec -- npm run e2e:headed
+```
+
+Ważne: nie rejestruj `after(...process.exit(...))` w `e2e/env.ts`. Finalny `process.exit(0)` powinien być tylko w `e2eSuite.ts`.
+

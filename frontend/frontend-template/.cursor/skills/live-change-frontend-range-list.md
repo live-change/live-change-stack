@@ -127,3 +127,27 @@ Iterate in the template:
   </div>
 </template>
 ```
+
+## Step 5 – Reactive filters and safe reloads
+
+When your `pathFunction` depends on changing filters (month, status, company, search), prefer `ReactiveRangeViewer`.
+
+Why:
+
+- reactivity in `pathFunction` can be subtle and lead to stale bucket state
+- ad-hoc `:key` resets spread fragile logic in pages
+- `ReactiveRangeViewer` centralizes reload logic and can preserve list height while reloading
+
+```vue
+<ReactiveRangeViewer
+  :pathFunction="transactionsPathRange"
+  :sourceKey="JSON.stringify({ accountId, month: filterByMonth ? month : null })"
+  :preserveHeightOnReload="true"
+  :canLoadTop="false"
+  canDropBottom
+>
+  <template #default="{ item }">
+    <BankTransactionListItem :transaction="item" />
+  </template>
+</ReactiveRangeViewer>
+```

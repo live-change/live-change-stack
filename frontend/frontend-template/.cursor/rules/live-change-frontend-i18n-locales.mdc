@@ -1,0 +1,26 @@
+---
+description: Keep all locale files under front/locales in sync when adding or changing i18n strings
+globs: **/front/locales/**/*.{json,js,ts}, **/front/src/**/*.{vue,js,ts}
+alwaysApply: false
+---
+
+# Frontend i18n – every file in `front/locales`
+
+When you add or change **user-visible strings** (labels, messages, buttons, errors, page titles, etc.) that go through **vue-i18n** or the project’s locale files, you must update **every** locale resource in that app’s **`front/locales/`** directory — not only one language.
+
+## Required workflow
+
+1. **Identify the app root** for the frontend you are editing (the folder whose tree contains `front/src` and `front/locales`).
+2. **List all locale files** in `front/locales/` for that app (`en.json`, `pl.json`, `en.js`, `pl.js`, `landing-en.json`, … — whatever exists).
+3. **Add or update the same keys** in **each** of those files. Structure and nesting must stay consistent across languages (same key paths).
+4. **Do not** add a new key to a single locale file and leave others missing — that breaks builds or shows raw keys at runtime.
+
+## Translations you are unsure about
+
+- Prefer a correct string in the primary locales (e.g. `en` + `pl`) when the product supports them.
+- For other files, use a sensible placeholder, copy from English, or add a clearly marked temporary string — but **still add the key** everywhere so nothing is omitted.
+
+## Scope
+
+- Applies to any work under `front/src` that introduces or changes translated text, and to direct edits in `front/locales`.
+- If a project uses multiple locale formats (`.json` and `.js`), update **all** files that participate in i18n for that app, not only one extension.

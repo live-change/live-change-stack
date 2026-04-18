@@ -112,7 +112,7 @@ const Ban = definition.model({
               res[i * v + j] = `${ban.actions[j]}:${key.key}:${key.value}:${ban.type}:${ban.expire}`
             }
           }
-          output.debug("BAN PREFIXES", res)
+          //output.debug("BAN PREFIXES", res)
           return res
         }
         function indexObject(prefix, obj) {
@@ -268,19 +268,19 @@ definition.trigger({
   },
   async execute({ keys, event, ban: { actions, expire, type } }, { service }, emit) {
 
-    console.log("SECURITY BAN!", arguments[0])
+    //console.log("SECURITY BAN!", arguments[0])
 
     const banKeys = []
     for(const key of keys) {
       //keys[key] = event.keys[key]
       banKeys.push({ key, value: event.keys[key] })
     }
-    console.log("ACTION KEYS", event.keys, '=>', banKeys)
+    //console.log("ACTION KEYS", event.keys, '=>', banKeys)
 
     const banExpire = expire && new Date(new Date().getTime() + lcp.parseDuration(expire))
 
-    console.log("BAN KEYS", banKeys)
-    console.log("BAN EXPIRE", banExpire)
+    //console.log("BAN KEYS", banKeys)
+    //console.log("BAN EXPIRE", banExpire)
 
     const ban = app.generateUid()
 
@@ -311,7 +311,7 @@ definition.trigger({
     ...banProperties
   },
   async execute({ ban }, { client, service }, emit) {
-    console.log("REMOVE EXPIRED BAN", ban)
+    //console.log("REMOVE EXPIRED BAN", ban)
     emit({
       type: "banRemoved",
       ban

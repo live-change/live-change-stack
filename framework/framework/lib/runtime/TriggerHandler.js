@@ -26,8 +26,8 @@ class TriggerHandler {
     if(definition.queuedBy) {
       const queuedBy = definition.queuedBy
       this.queueKeyFunction = typeof queuedBy == 'function' ? queuedBy : (
-        Array.isArray(queuedBy) ? (c) => JSON.stringify(queuedBy.map(k=>c[k])) :
-          (c) => JSON.stringify(c[queuedBy]) )
+        Array.isArray(queuedBy) ? (c) => JSON.stringify(queuedBy.map(k=>c.data[k])) :
+          (c) => JSON.stringify(c.data[queuedBy]) )
     }
 
     this.loggingHelpers = loggingHelpers(service.name, service.app?.config?.clientConfig?.version || 'unknown', {

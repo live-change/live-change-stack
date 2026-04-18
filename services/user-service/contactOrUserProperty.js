@@ -15,7 +15,7 @@ definition.processor(function(service, app) {
     const model = service.models[modelName]
 
     if(model.contactOrUserProperty) {
-      console.log("MODEL " + modelName + " IS SESSION OR USER PROPERTY, CONFIG:", model.userProperty)
+      //console.log("MODEL " + modelName + " IS SESSION OR USER PROPERTY, CONFIG:", model.userProperty)
       if (model.properties.contactOrUser) throw new Error('owner property already exists!!!')
 
       const originalModelProperties = { ...model.properties }

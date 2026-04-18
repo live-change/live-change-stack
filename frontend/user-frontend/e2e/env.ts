@@ -42,7 +42,17 @@ export type TestEnv = {
   grabObject: (serviceName: string, modelName: string, id: string) => Promise<unknown>
 }
 
+type TestServerInstance = InstanceType<typeof TestServer>
+
 let envPromise: Promise<TestEnv> | null = null
+let testServer: TestServerInstance | null = null
+
+export async function disposeTestEnv(): Promise<void> {
+  const server = testServer
+  testServer = null
+  envPromise = null
+  if (server) await server.dispose()
+}
 
 function haveService(server: InstanceType<typeof TestServer>, name: string) {
   const service = server.apiServer.services.services.find((s: { name: string }) => s.name === name)
@@ -79,22 +89,11 @@ export async function getTestEnv(): Promise<TestEnv> {
     console.log('waiting for front to be ready...')
     await waitForServerReady(server.url!)
     console.log('front ready')
+    testServer = server
 
     process.on('beforeExit', () => {
-      server.dispose()
+      void disposeTestEnv()
     })
-
-    // When running under node:test, register a global teardown that disposes the server
-    // and forces process exit so the test run finishes cleanly.
-    try {
-      const { after } = await import('node:test')
-      after(async () => {
-        await server.dispose()
-        process.exit(0)
-      })
-    } catch {
-      // not running under node:test, ignore
-    }
 
     const url = server.url!
     return {

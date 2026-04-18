@@ -1,6 +1,6 @@
 ---
 description: Event-sourcing data flow rules — emit events for DB writes, use triggerService for cross-service writes
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 ---
 
 # LiveChange backend – event-sourcing data flow (Claude Code)
@@ -155,7 +155,7 @@ Without `waitForEvents: true`, the action returns immediately and events are pro
 When a model uses relations (`userItem`, `itemOf`, `propertyOf`, etc.), the relations plugin auto-generates CRUD triggers. Use `describe` to discover them:
 
 ```bash
-node server/start.js describe --service myService --output yaml
+fnm exec -- node server/start.js describe --service myService --output yaml
 ```
 
 Common auto-generated trigger patterns:

@@ -5,11 +5,13 @@ import randomProfile from 'random-profile-generator'
 import passwordGenerator from 'generate-password'
 import { withBrowser } from './withBrowser.js'
 import { useSecretLink } from './steps.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const email = randomProfile.profile().firstName.toLowerCase() + '@test.com'
 
-test('reset password with email link', async () => {
+e2eSuite('resetPasswordWithEmailLink', () => {
+  test('reset password with email link', async () => {
   await withBrowser(async (page, env) => {
     const user = app.generateUid()
 
@@ -56,5 +58,6 @@ test('reset password with email link', async () => {
     await page.click('button[type=submit]')
     await page.waitForURL('**/reset-password-finished', { timeout: 10000 })
     assert.ok(page.url().includes('/reset-password-finished'))
+  })
   })
 })

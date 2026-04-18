@@ -77,7 +77,7 @@ export function defineProperties(model: ModelDefinitionSpecificationWithAccessCo
 
 export function defineIndex(model: ModelDefinitionSpecificationWithAccessControl,
                             what: string, props: string[], multi = undefined, prefix = 'by') {
-  console.log("DEFINE INDEX", model.name, what, props)
+  //console.log("DEFINE INDEX", model.name, what, props)
   model.indexes[prefix + what] = {
     property: props,
     multi
@@ -86,7 +86,7 @@ export function defineIndex(model: ModelDefinitionSpecificationWithAccessControl
 
 export function defineIndexes(model: ModelDefinitionSpecificationWithAccessControl,
                               props: Record<string, any>, types: string[]) {
-  console.log("DEFINE INDEXES!", model.name, props, types)
+  //console.log("DEFINE INDEXES!", model.name, props, types)
   const propCombinations = allCombinations(Object.keys(props)) /// combinations of indexes
   for(const propCombination of propCombinations) {
     const upperCaseProps = propCombination.map(id => {
@@ -199,7 +199,7 @@ export function processModelsAnnotation<PreparedConfig extends RelationConfig>
         }
 
         // @ts-ignore
-        console.log("MODEL " + modelName + " IS " + annotation + " " + config.what ?? '')
+        //console.log("MODEL " + modelName + " IS " + annotation + " " + config.what ?? '')
 
         const what = (Array.isArray(config.what) ? config.what : [config.what])
         const others = what.map(other => other.getTypeName ? other.getTypeName() : (other.name ? other.name : other))

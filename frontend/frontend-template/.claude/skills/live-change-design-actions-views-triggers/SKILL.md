@@ -7,6 +7,12 @@ description: Design actions, views, triggers with indexes and batch processing p
 
 Use this skill to design **actions, views, and triggers** in LiveChange services while making good use of indexes and avoiding full-table scans.
 
+## Reads vs writes (CQRS-like)
+
+**Frontend (Vue):** load data with `usePath` + `live` / `useFetch` on **views**. Do **not** use `api.command` or `useActions()` only to fetch, preview, or compute display-only values — add a `definition.view` on the server and read it on the client.
+
+**Backend (services):** **`definition.view`** is the read surface (including computed or preview data). From triggers/actions use **`app.viewGet`** / **`app.serviceViewGet`** when you need the same view layer as the client, or direct model/index reads where appropriate. **Actions and triggers** change state via **`emit`** / **`trigger`** / **`triggerService`**, not via fake “read-only actions.”
+
 ## When to use
 
 - You add or change actions on existing models.

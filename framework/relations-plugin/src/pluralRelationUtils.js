@@ -176,7 +176,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
     if(!entity) throw app.logicError("not_found")
     const entityIdParts = extractIdParts(otherPropertyNames, entity)
     const idParts = extractIdParts(otherPropertyNames, properties)
-    if(JSON.stringify(entityIdParts) !== JSON.stringify(idParts)) {
+    if(JSON.stringify(entityIdParts) !== JSON.stringify(idParts) && !config.allowMove) {
       throw app.logicError("not_authorized")
     }
     const identifiers = extractIdentifiers(otherPropertyNames, properties)
@@ -254,7 +254,7 @@ function defineUpdateTrigger(config, context) {
   })
   const validators = App.validation.getValidators(trigger, service, trigger)
   const validationContext = { source: trigger, trigger }
-  trigger.execute = getUpdateFunction( validators, validationContext, config, context)
+  trigger.execute = getUpdateFunction( validators, validationContext, {...config, allowMove: true }, context)
   service.triggers[triggerName] = [trigger]
 }
 
@@ -268,11 +268,6 @@ function getDeleteFunction( validators, validationContext, config, context) {
     const id = properties[modelPropertyName]
     const entity = await modelRuntime().get(id)
     if(!entity) throw app.logicError("not_found")
-    const entityIdParts = extractIdParts(otherPropertyNames, entity)
-    const idParts = extractIdParts(otherPropertyNames, properties)
-    if(JSON.stringify(entityIdParts) !== JSON.stringify(idParts)) {
-      throw app.logicError("not_authorized")
-    }
     const identifiers = extractIdentifiers(otherPropertyNames, entity)
     await fireChangeTriggers(context, objectType, identifiers, id,
       extractObjectData(writeableProperties, entity, {}), null, trigger)
@@ -301,8 +296,7 @@ function defineDeleteAction(config, context) {
       [modelPropertyName]: {
         type: model,
         validation: ['nonEmpty']
-      },
-      ...(model.properties)
+      }
     },
     access: config.deleteAccess || config.writeAccess,
     accessControl,
@@ -331,8 +325,7 @@ function defineDeleteTrigger(config, context) {
       [modelPropertyName]: {
         type: model,
         validation: ['nonEmpty']
-      },
-      ...(model.properties)
+      }
     },
     skipValidation: true,
     //queuedBy: otherPropertyNames,
@@ -549,7 +542,7 @@ function defineCopyOnParentCopyTrigger(config, context) {
 
 function defineSortIndex(context, sortFields) {
   if(!Array.isArray(sortFields)) sortFields = [sortFields]
-  console.log("DEFINE SORT INDEX", sortFields)
+  //console.log("DEFINE SORT INDEX", sortFields)
   const sortFieldsUc = sortFields.map(fd=>fd.slice(0, 1).toUpperCase() + fd.slice(1))
   const indexName = 'by' + context.joinedOthersClassName + sortFieldsUc.join('')
   context.model.indexes[indexName] = new IndexDefinition({

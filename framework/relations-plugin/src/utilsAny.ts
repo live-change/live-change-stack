@@ -160,7 +160,7 @@ export function processModelsAnyAnnotation<PreparedConfig extends AnyRelationCon
       for(let config of configs) {
         if (typeof config == 'string' || Array.isArray(config)) config = {what: config}
 
-        console.log("MODEL " + modelName + " IS " + annotation + " " + config.what)
+        //console.log("MODEL " + modelName + " IS " + annotation + " " + config.what)
 
         const to = (Array.isArray(config.to) ? config.to : [config.to ?? 'owner'])
 

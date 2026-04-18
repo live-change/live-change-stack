@@ -19,15 +19,16 @@ Before using this skill, pick the right approach:
 |---|---|
 | `editorData` | **Editing model records** (create/update). Drafts, validation, `AutoField`. See `live-change-frontend-editor-form` skill. |
 | `actionData` | **One-shot action forms** (not CRUD). Submit once → done. See `live-change-frontend-action-form` skill. |
-| `api.command` | **Single button or programmatic calls** (no form fields). This skill, Step 1. |
+| `api.command` | **Mutations only** — single button or programmatic calls that **change persisted state** (no form fields). This skill, Step 1. Not for loading or previewing data (use views + `live` / `useFetch`; see `live-change-frontend-data-views`). |
 | `<command-form>` | **Avoid.** Legacy. Only for trivial prototypes without drafts or `AutoField`. This skill, Step 2. |
 
 **Decision flow:**
 
-1. Does the user fill in form fields? → **No**: use `api.command` (this skill).
-2. Is it editing a model record? → **Yes**: use `editorData`.
-3. Is it a one-shot action? → **Yes**: use `actionData`.
-4. Only use `<command-form>` for the simplest throwaway cases.
+1. Do you only need to **read** data (including previews)? → **Use views** (`live` / `useFetch`), not this skill.
+2. Does the user fill in form fields? → **No**: use `api.command` (this skill) **only if** the operation **mutates** state.
+3. Is it editing a model record? → **Yes**: use `editorData`.
+4. Is it a one-shot action? → **Yes**: use `actionData`.
+5. Only use `<command-form>` for the simplest throwaway cases.
 
 ## Step 1 – Use `api.command` directly
 

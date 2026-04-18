@@ -105,7 +105,7 @@ class ModelBuilder {
       if(model.relations[r.id]) throw new Error(`relation ${r.id} already exists`)
       model.relations[r.id] = r
     }
-    console.log("NR", relations.map(r => r.id))
+    //console.log("NR", relations.map(r => r.id))
     model.elements[prev.last].next.push(...relations.map(r => r.id))
     if(nextElement) {
       if(!model.elements[nextElement.id]) model.elements[nextElement.id] = nextElement

@@ -1,6 +1,6 @@
 ---
 description: Rules for LiveChange backend service architecture and directory structure
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 ---
 
 # LiveChange backend – service architecture (Claude Code)
@@ -104,17 +104,17 @@ services: [
 
 ## Inspecting services with `describe`
 
-Use the `describe` CLI command to see what the framework generated from your definitions (models, views, actions, triggers, indexes, events):
+Use the `describe` CLI command to see what the framework generated from your definitions (models, views, actions, triggers, indexes, events). From the app root (directory with `.node-version` / `.nvmrc`), run Node via **fnm** so the toolchain matches the project — see rule `live-change-node-toolchain-fnm`.
 
 ```bash
 # All services overview
-node server/start.js describe
+fnm exec -- node server/start.js describe
 
 # One service in YAML (shows all generated code)
-node server/start.js describe --service myService --output yaml
+fnm exec -- node server/start.js describe --service myService --output yaml
 
 # Specific entity
-node server/start.js describe --service myService --model MyModel --output yaml
+fnm exec -- node server/start.js describe --service myService --model MyModel --output yaml
 ```
 
 This is especially useful after using relations (`userItem`, `itemOf`, `propertyOf`) — `describe` shows all the auto-generated views, actions, triggers, and indexes.

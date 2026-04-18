@@ -4,12 +4,14 @@ import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import passwordGenerator from 'generate-password'
 import { withBrowser } from './withBrowser.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const name = randomProfile.profile().firstName.toLowerCase()
 const email = name + '@test.com'
 
-test('set password', async () => {
+e2eSuite('setPassword', () => {
+  test('set password', async () => {
   await withBrowser(async (page, env) => {
     const user = app.generateUid()
     const User = env.haveModel('user', 'User')
@@ -66,5 +68,6 @@ test('set password', async () => {
       (firstPasswordAuthenticationData as { passwordHash: string }).passwordHash,
       'password changed'
     )
+  })
   })
 })

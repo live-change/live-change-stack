@@ -5,7 +5,7 @@ import { synchronized, defaultData } from '@live-change/vue3-components'
 
 import { propertiesValidationErrors } from './validation.js'
 
-import { cyrb128 } from './utils.js'
+import { cyrb128, deepUnref } from './utils.js'
 import deepmerge from 'deepmerge'
 
 export default async function actionData(options) {
@@ -97,7 +97,7 @@ export default async function actionData(options) {
   let commandPromise = null
   const submitting = ref(false)
   async function submitData(data){
-    const requestData = JSON.parse(JSON.stringify({ ...data, ...parameters }))
+    const requestData = JSON.parse(JSON.stringify({ ...data, ...deepUnref(parameters) }))
     if(commandPromise) await commandPromise // wait for previous save
     submitting.value = true
     commandPromise = (async () => {

@@ -3,12 +3,14 @@ import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const name = randomProfile.profile().firstName.toLowerCase()
 const email = name + '@test.com'
 
-test('delete account', async () => {
+e2eSuite('delete', () => {
+  test('delete account', async () => {
   await withBrowser(async (page, env) => {
     const user = app.generateUid()
 
@@ -48,5 +50,6 @@ test('delete account', async () => {
 
     const deletedEmail = await Email.get(email)
     assert.strictEqual(!!deletedEmail, false, 'email deleted')
+  })
   })
 })

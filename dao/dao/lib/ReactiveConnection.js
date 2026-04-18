@@ -395,8 +395,6 @@ class Connection extends EventEmitter {
     if(this.settings.logLevel > 0) debug("connected")
     this.connected = true
     if(!this.settings.fastAuth) {
-      console.log("SENDING CREDENTIALS", this.credentials)
-      console.log("ORIGINAL CREDENTIALS", this.credentials[originalCredentialsSymbol])
       this.send({
         ...this.credentials[originalCredentialsSymbol],
         ...this.credentials,

@@ -7,7 +7,7 @@ export async function withBrowser(
   fn: (page: Page, env: TestEnv) => Promise<void>
 ): Promise<void> {
   const env = await getTestEnv()
-  const browser = await chromium.launch({ headless: false })
+  const browser = await chromium.launch({ headless: process.env.SHOW_BROWSER ? false : true })
   const context = await browser.newContext()
   const page = await context.newPage()
   try {

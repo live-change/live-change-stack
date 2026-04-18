@@ -5,13 +5,15 @@ import randomProfile from 'random-profile-generator'
 import crypto from 'crypto'
 import passwordGenerator from 'generate-password'
 import { withBrowser } from './withBrowser.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const randomUserData = randomProfile.profile()
 ;(randomUserData as { email?: string }).email =
   (randomUserData as { firstName: string }).firstName.toLowerCase() + '@test.com'
 
-test('sign in with email and password', async () => {
+e2eSuite('signInEmailPassword', () => {
+  test('sign in with email and password', async () => {
   await withBrowser(async (page, env) => {
     const user = app.generateUid()
     const email = (randomUserData as { email: string }).email
@@ -47,5 +49,6 @@ test('sign in with email and password', async () => {
       () => (window as unknown as { api: { client: { value: { user: string } } } }).api.client.value.user
     )
     assert.strictEqual(clientUser, (authenticatedUserData as { user: string }).user, 'user authenticated')
+  })
   })
 })

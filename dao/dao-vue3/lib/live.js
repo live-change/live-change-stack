@@ -50,7 +50,7 @@ async function fetch(api, path) {
       )
     }
     const data = JSON.parse(JSON.stringify(res.data))
-    if(data) data[sourceSymbol] = what
+    if(typeof data === 'object' && data) data[sourceSymbol] = what
     if(data && more) {
       if(Array.isArray(data)) {
         for(let i = 0; i < data.length; i ++) {

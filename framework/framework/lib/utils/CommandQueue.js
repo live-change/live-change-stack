@@ -23,7 +23,7 @@ class CommandQueue {
     }
   }
   async start() {
-    console.log("START COMMAND QUEUE", this.database, this.tableName, this.indexName, this.config)
+    //console.log("START COMMAND QUEUE", this.database, this.tableName, this.indexName, this.config)
     //console.log("START QUEUE", this.tableName, this.indexName)
     await this.connection.request(['database', 'createTable'], this.database, this.tableName,
       this.config.storage ?? {}).catch(e => 'ok')

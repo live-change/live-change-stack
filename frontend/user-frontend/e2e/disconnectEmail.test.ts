@@ -3,6 +3,7 @@ import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const name = randomProfile.profile().firstName.toLowerCase()
@@ -10,7 +11,8 @@ const email = name + '@test.com'
 const email2 = name + '2@test.com'
 const happyPath = false
 
-test('disconnect email', async () => {
+e2eSuite('disconnectEmail', () => {
+  test('disconnect email', async () => {
   await withBrowser(async (page, env) => {
     const user = app.generateUid()
 
@@ -39,5 +41,6 @@ test('disconnect email', async () => {
     if (!happyPath) {
       await page.locator('span.pi-times').waitFor({ state: 'hidden' })
     }
+  })
   })
 })

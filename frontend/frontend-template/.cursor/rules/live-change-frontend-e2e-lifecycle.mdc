@@ -1,0 +1,15 @@
+---
+description: Stable node:test E2E lifecycle with env, withBrowser and e2eSuite
+globs: **/e2e/**/*.{js,ts}
+alwaysApply: false
+---
+
+# Frontend E2E lifecycle
+
+- Keep teardown out of shared `e2e/env.ts`.
+- Never use `after(...process.exit(...))` in `env.ts`.
+- Add `disposeTestEnv()` in `env.ts` and call it from `process.on('beforeExit', ...)`.
+- Put `after(async () => { await disposeTestEnv(); process.exit(0) })` in `e2eSuite.ts`.
+- Wrap each `e2e/*.test.ts` file in one `e2eSuite('<suite-name>', () => { ... })`.
+- Keep startup failure `process.exit(1)` in `getTestEnv()` catch.
+- Run test commands with `fnm exec -- ...`.

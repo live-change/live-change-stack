@@ -209,7 +209,6 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
   validator(name, validator) {
     if(this.validators[name]) throw new Error('validator ' + name + ' already exists')
     this.validators[name] = validator
-    console.log("VALIDATOR DEFINED", name, validator)
   }
 
   clientSideFilter(filter) {

@@ -15,7 +15,7 @@ definition.processor(function(service, app) {
     const model = service.models[modelName]
 
     if(model.sessionOrUserProperty) {
-      console.log("MODEL " + modelName + " IS SESSION OR USER PROPERTY, CONFIG:", model.sessionOrUserProperty)
+      //console.log("MODEL " + modelName + " IS SESSION OR USER PROPERTY, CONFIG:", model.sessionOrUserProperty)
       if (model.properties.sessionOrUser) throw new Error('sessionOrUser property already exists!!!')
 
       const originalModelProperties = { ...model.properties }

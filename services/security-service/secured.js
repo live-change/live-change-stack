@@ -24,7 +24,7 @@ definition.processor(function(service, app) {
     const config = action.secured
     const actions = config.actions || actionName
 
-    console.log("SECURED ACTION", service.name, action.name)
+    //console.log("SECURED ACTION", service.name, action.name)
 
     const oldExec = action.execute
     action.execute = async (...args) => {
@@ -57,7 +57,7 @@ definition.processor(function(service, app) {
     const config = trigger.secured
     const actions = config.actions || triggerName
 
-    console.log("SECURED TRIGGER", service.name, trigger.name)
+    //console.log("SECURED TRIGGER", service.name, trigger.name)
 
     const oldExec = trigger.execute
     trigger.execute = async (...args) => {

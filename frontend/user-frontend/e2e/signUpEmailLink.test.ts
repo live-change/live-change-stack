@@ -3,13 +3,15 @@ import assert from 'node:assert'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
 import { useSecretLink } from './steps.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const user = randomProfile.profile()
 ;(user as { email?: string }).email =
   (user as { firstName: string }).firstName.toLowerCase() + '@test.com'
 const happyPath = false
 
-test('sign up with email link', async () => {
+e2eSuite('signUpEmailLink', () => {
+  test('sign up with email link', async () => {
   await withBrowser(async (page, env) => {
     await page.goto(env.url + '/user/sign-up-email', { waitUntil: 'networkidle' })
     await page.fill('input#email', (user as { email: string }).email)
@@ -42,5 +44,6 @@ test('sign up with email link', async () => {
       await page.goto(env.url + '/user/link/' + linkData.secretCode, { waitUntil: 'networkidle' })
       await page.getByText('Link used').waitFor({ state: 'visible' })
     }
+  })
   })
 })

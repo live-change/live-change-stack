@@ -3,12 +3,14 @@ import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const name = randomProfile.profile().firstName.toLowerCase()
 const email = name + '@test.com'
 
-test('sign out', async () => {
+e2eSuite('signOut', () => {
+  test('sign out', async () => {
   await withBrowser(async (page, env) => {
     const user = app.generateUid()
     const User = env.haveModel('user', 'User')
@@ -41,5 +43,6 @@ test('sign out', async () => {
 
     assert.strictEqual(!!authenticatedUserData, false, 'no server user')
     assert.strictEqual(!!clientUser2, false, 'no client user')
+  })
   })
 })

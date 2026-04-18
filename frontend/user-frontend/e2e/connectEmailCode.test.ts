@@ -4,13 +4,15 @@ import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
 import { useSecretCode, sleep } from './steps.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const email = randomProfile.profile().firstName.toLowerCase() + '@test.com'
 const email2 = randomProfile.profile().firstName.toLowerCase() + '2@test.com'
 const happyPath = false
 
-test('connect email with code', async () => {
+e2eSuite('connectEmailCode', () => {
+  test('connect email with code', async () => {
   await withBrowser(async (page, env) => {
     const user = app.generateUid()
 
@@ -61,5 +63,6 @@ test('connect email with code', async () => {
       await page.goto(url, { waitUntil: 'networkidle' })
       assert.ok(page.url().includes('/connect-finished'))
     }
+  })
   })
 })

@@ -18,3 +18,28 @@ export function cyrb128(str) {
   const data8 = new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
   return btoa(String.fromCharCode(...data8))
 }
+
+import {
+  unref,
+  isRef,
+  isReactive,
+  isProxy,
+} from 'vue'
+
+export function deepUnref(sourceObj) {
+  const objectIterator = (input) => {
+    if (Array.isArray(input)) {
+      return input.map((item) => objectIterator(item));
+    } if (isRef(input) || isReactive(input) || isProxy(input)) {
+      return objectIterator(unref(input));
+    } if (input && typeof input === 'object') {
+      return Object.keys(input).reduce((acc, key) => {
+        acc[key] = objectIterator(input[key]);
+        return acc;
+      }, {});
+    }
+    return input;
+  };
+
+  return objectIterator(sourceObj);
+}

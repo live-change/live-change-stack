@@ -4,6 +4,7 @@ import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
 import { useSecretLink } from './steps.js'
+import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const randomUserData = randomProfile.profile()
@@ -11,7 +12,8 @@ const randomUserData = randomProfile.profile()
   (randomUserData as { firstName: string }).firstName.toLowerCase() + '@test.com'
 const happyPath = false
 
-test('sign in with email link', async () => {
+e2eSuite('signInEmailLink', () => {
+  test('sign in with email link', async () => {
   await withBrowser(async (page, env) => {
     const user = app.generateUid()
     const email = (randomUserData as { email: string }).email
@@ -54,5 +56,6 @@ test('sign in with email link', async () => {
       await page.goto(env.url + '/user/link/' + linkData.secretCode, { waitUntil: 'networkidle' })
       await page.getByText('Link used').waitFor({ state: 'visible' })
     }
+  })
   })
 })

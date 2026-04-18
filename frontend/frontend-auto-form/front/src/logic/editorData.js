@@ -1,13 +1,13 @@
 import { useToast } from 'primevue/usetoast'
 import { usePath, live, useApi } from '@live-change/vue3-ssr'
-import { ref, computed, inject, watch, getCurrentInstance } from 'vue'
+import { ref, computed, inject, watch, getCurrentInstance, unref } from 'vue'
 import { synchronized, defaultData } from '@live-change/vue3-components'
 
 import deepmerge from 'deepmerge';
 
 import { propertiesValidationErrors } from './validation.js'
 
-import { cyrb128 } from './utils.js'
+import { cyrb128, deepUnref } from './utils.js'
 
 export default function editorData(options) {
   if(!options) throw new Error('options must be provided')
@@ -141,7 +141,7 @@ export default function editorData(options) {
         ...(updateDataProperty ? { [updateDataProperty]: data } : data),
         ...savedIdentifiers,        
         ...identifiers,
-        ...parameters,
+        ...deepUnref(parameters),
       }    
       if(savePromise) await savePromise // wait for previous save
       saving.value = true

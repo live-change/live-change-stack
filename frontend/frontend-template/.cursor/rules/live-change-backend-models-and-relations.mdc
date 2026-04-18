@@ -249,6 +249,39 @@ indexes: {
 
 Poza serwisem indeks bywa widoczny pod nazwą z prefiksem serwisu, np. `myService_Model_byDeviceAndStatus`.
 
+### Indeksy `function` dla pól wyliczanych
+
+Gdy część klucza indeksu nie istnieje jako zwykłe pole modelu (np. `month` wyliczany z `date`), użyj indeksu `function` zamiast `property`.
+
+Zasady:
+
+- buduj stabilny klucz jako `JSON.stringify(part1):JSON.stringify(part2):... + '_' + id`
+- zwracaj obiekty `{ id, to }`, gdzie `to` wskazuje źródłowy rekord
+- preferuj `table.map(mapper).to(output)` zamiast ręcznego `.onChange(...output.change...)`
+- `map()` automatycznie odfiltrowuje `null`, więc mapper może zwracać tylko docelowy obiekt
+
+```js
+indexes: {
+  byBankAccountAndMonthAndDate: {
+    function: async (input, output, { tableName }) => {
+      const table = await input.table(tableName)
+      const mapper = obj => ({
+        id: [
+          obj.bankAccount,
+          obj.date?.slice(0, 7),
+          obj.date
+        ].map(v => JSON.stringify(v)).join(':') + '_' + obj.id,
+        to: obj.id
+      })
+      await table.map(mapper).to(output)
+    },
+    parameters: {
+      tableName: definition.name + '_BankTransaction'
+    }
+  }
+}
+```
+
 ## Access control na relacjach
 
 - Zawsze ustawiaj `readAccessControl` i `writeAccessControl` na relacjach (`userItem`, `itemOf`, `propertyOf`), zamiast polegać na domyślnym zachowaniu.

@@ -8,6 +8,7 @@ import { SpanKind } from '@opentelemetry/api'
 const tracer = trace.getTracer('live-change:triggerExecutor')
 
 import { expandObjectAttributes } from '../utils.js'
+import { useFetch } from '@live-change/vue3-ssr'
 
 async function spanAttributes(trig, service) {
   return {
@@ -41,6 +42,7 @@ async function startTriggerExecutor(service, config) {
         { id: triggerName + '=>' + service.name, trigger: triggerName, service: service.name })
     service.triggerQueue.addCommandHandler(triggerName,
       async (trig) => {
+        //if(triggerName == 'ksef_setOrUpdateKsefXml') debugger      
         if(trig._trace) {
           propagation.extract(context.active(), trig._trace)
         }

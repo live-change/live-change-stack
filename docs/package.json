@@ -13,7 +13,7 @@
     "clean-dev": "vuepress dev docs --clean-cache",
     "dev": "vuepress dev docs",
     "update-package": "yarn dlx vp-update",
-    "deploy": "yarn build && touch docs/.vuepress/dist/.nojekyll && gh-pages -d docs/.vuepress/dist"
+    "deploy": "yarn build && touch docs/.vuepress/dist/.nojekyll && gh-pages -d docs/.vuepress/dist -r git@github.com:live-change/live-change.github.io.git"
   },
   "devDependencies": {
     "@vuepress/bundler-vite": "2.0.0-rc.20",

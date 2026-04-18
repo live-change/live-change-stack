@@ -33,4 +33,5 @@ This manual documents the **frontend** part of the Live Change Framework:
 10. [Path and live](/frontend/10-path-and-live.md) — reactive path builder and live subscriptions
 11. [Locale and time](/frontend/11-locale-and-time.md) — language, timezone, time utilities, emails
 12. [Describe command](/frontend/12-describe-command.md) — discovering views, actions, and models for frontend development
+13. [E2E lifecycle pattern](/frontend/13-e2e-lifecycle-pattern.md) — stable node:test teardown with `e2eSuite`, `env`, and `withBrowser`
 

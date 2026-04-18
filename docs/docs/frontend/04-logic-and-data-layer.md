@@ -83,6 +83,13 @@ const api = useApi()
 await api.command(['blog', 'deleteArticle'], { article: props.article })
 ```
 
+### Reads vs writes (CQRS-like)
+
+- **Reads** — any data the UI needs, including computed values, previews, or “what would the next invoice number be”, must come from **views**: use `live(path.to.view(...))` or `useFetch(path.to.view(...))`. Do **not** call `api.command` or `useActions()` only to load or preview data.
+- **Writes** — use `api.command` / `useActions()` when the action **changes persisted state** (create/update/delete via the action → events pipeline).
+
+Anti-pattern: an action that only returns a string or object for display without mutating the database — add a **view** on the server and subscribe or fetch it on the client instead.
+
 ## Logic components from vue3-components
 
 `@live-change/vue3-components` provides components and helpers:
@@ -241,6 +248,40 @@ onMounted(() => window.addEventListener('beforeunload', beforeUnload))
 onUnmounted(() => window.removeEventListener('beforeunload', beforeUnload))
 ```
 
+### synchronizedList – editable list with autosave
+
+Use `synchronizedList` when your `source` is a list and users edit item fields inline (roles, flags, labels) while changes should be persisted automatically.
+
+```javascript
+import { synchronizedList } from '@live-change/vue3-components'
+
+const synchronizedAccessesList = synchronizedList({
+  source: accesses,
+  update: actions.accessControl.updateSessionOrUserAndObjectOwnedAccess,
+  delete: actions.accessControl.resetSessionOrUserAndObjectOwnedAccess,
+  identifiers: { object, objectType },
+  objectIdentifiers: ({ to, sessionOrUser, sessionOrUserType }) => ({
+    access: to, sessionOrUser, sessionOrUserType, object, objectType
+  }),
+  recursive: true,
+  onSave: () => toast.add({ severity: 'info', summary: 'Access saved', life: 1500 })
+})
+
+const synchronizedAccesses = synchronizedAccessesList.value
+
+async function revoke(access) {
+  await synchronizedAccessesList.delete(access)
+}
+```
+
+Pattern used in production (rcstreamer):
+
+- `source`: list from `live(...)`,
+- `identifiers`: context shared by all rows (for example `{ object, objectType }`),
+- `objectIdentifiers`: row-specific keys required by backend actions,
+- inline edits on `synchronizedAccesses` items (for example `access.roles`),
+- removal via list helper method (`synchronizedAccessesList.delete(access)`).
+
 ### synchronized + draft – user drafts
 
 For user-facing forms where you want to auto-save a draft before the final submit:
@@ -297,6 +338,20 @@ This gives you:
 - an easy bridge to the final save action,
 - a way to detect and warn about unsaved changes.
 
+### Choosing between synchronized, synchronizedList and editorData
+
+| Pattern | Use when | Typical output |
+|---|---|---|
+| `synchronized` | Editing one object loaded from `live(...)` or computed source | `{ value, changed, saving, save }` |
+| `synchronizedList` | Editing many list items inline, with per-row identifiers and list operations | `{ value, changed, save, insert, delete }` |
+| `editorData` | CRUD form centered on model/action definition and integrated validation UI | editor object used with `AutoField` / `AutoEditor` |
+
+Quick decision:
+
+1. One editable object with autosave/manual save -> use `synchronized`
+2. Editable list where each row can change and be removed/inserted -> use `synchronizedList`
+3. Definition-driven create/update forms with strong validation UX -> use `editorData`
+
 ## Range buckets and RangeViewer
 
 For long, scrollable lists backed by DAO ranges the stack provides:
@@ -333,6 +388,28 @@ Key props:
 | `dropBottomSensorSize` | `'5000px'` | How far to keep before dropping |
 | `frozen` | `false` | Pause live updates |
 | `softClose` | `false` | Soft closing of bucket boundaries |
+
+### Range safety rules for index-based lists
+
+For `RangeViewer` / `rangeBuckets` backed by index views:
+
+- backend should use `Model.sortedIndexRangePath(...)`, not `Model.indexRangePath(...)`,
+- keep `range.gt/gte/lt/lte` as pagination cursor fields controlled by bucket loading,
+- do not override `gt/lt` with ad-hoc filter values inside frontend `pathFunction`.
+
+Why this matters:
+
+- `RangeViewer` appends next ranges using cursor boundaries from previous buckets,
+- if you replace these boundaries manually, next requests repeat the same slice,
+- repeated slices produce broken infinite loading behavior.
+
+Correct pattern:
+
+1. Keep cursor fields untouched (`...range` or `...reverseRange(range)`).
+2. Send domain filters as separate params (`month`, `year`, `status`).
+3. Apply narrowing in backend via index prefix design (preferred) or `prefixRange` fallback.
+
+See backend details in [Server – Views](../server/07-views.md) and [Server – Indexes and foreign models](../server/11-indexes-and-foreign-models.md).
 
 Slots:
 

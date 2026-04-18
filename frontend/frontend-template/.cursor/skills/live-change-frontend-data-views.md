@@ -14,6 +14,8 @@ Use this skill when you build **reactive data views** using `usePath`, `live`, `
 - You need to load related objects alongside the main data.
 - You need to restrict data loading for unauthenticated users.
 
+**Do not use `api.command` / `useActions()` to load data.** Commands are for **mutations**. For every read (lists, details, previews, “next number”), use **views** with `live` or `useFetch` as in this skill.
+
 ## Step 1 – Basic data loading with computed paths
 
 When paths depend on reactive values (route params, props), wrap them in `computed()`:

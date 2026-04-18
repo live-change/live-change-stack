@@ -9,7 +9,7 @@ definition.processor(function(service, app) {
     const model = service.models[modelName]
 
     if(model.sessionProperty) {
-      console.log("MODEL " + modelName + " IS SESSION PROPERTY, CONFIG:", model.sessionProperty)
+      //console.log("MODEL " + modelName + " IS SESSION PROPERTY, CONFIG:", model.sessionProperty)
       if (model.properties.session) throw new Error('session property already exists!!!')
 
       const originalModelProperties = {...model.properties}

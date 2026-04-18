@@ -20,6 +20,29 @@ Two groups:
 
 Use **use: [ relationsPlugin ]** and/or **use: [ userService ]** in your service definition when you use these annotations.
 
+## Arity rules (annotation vs parent tuple)
+
+There are two independent arity dimensions:
+
+1. **Annotation arity** — whether an annotation can be a single config object or a list of config objects.
+2. **Parent tuple arity** — whether one config may point to multiple parents (`what: [A, B]`) or multiple polymorphic dimensions (`to: ['owner', 'topic']`).
+
+| Relation annotation | Annotation arity | Parent tuple arity |
+|---|---|---|
+| `propertyOf` | single config only | `what` may be one model or tuple: `what: [A, B, ...]` |
+| `itemOf` | single config only | `what` may be one model or tuple: `what: [A, B, ...]` |
+| `boundTo` | single config only | `what` may be one model or tuple: `what: [A, B, ...]` |
+| `relatedTo` | single config or config list | each config uses `what`, which may be one model or tuple |
+| `propertyOfAny` | single config only | `to` may contain one or many dimensions |
+| `itemOfAny` | single config only | `to` may contain one or many dimensions |
+| `boundToAny` | single config only | `to` may contain one or many dimensions |
+| `relatedToAny` | single config or config list | each config uses `to`, which may contain one or many dimensions |
+
+Examples:
+
+- `propertyOf` multi-parent tuple: `propertyOf: { what: [Device, Session] }`
+- `relatedTo` multiple configs: `relatedTo: [{ what: Device }, { what: Team }]`
+
 ## Auto-added fields and indexes
 
 Every relation automatically adds **identifier fields** and **indexes** to the model. You do **not** need to define these in `properties` — they are injected by the relations plugin.
@@ -41,7 +64,7 @@ For relations where the parent type is known at definition time (`propertyOf`, `
 |---|---|---|---|
 | `propertyOf: { what: Device }` | `device` | `byDevice` | ID = parent ID |
 | `itemOf: { what: Device }` | `device` | `byDevice` | Many children per parent |
-| `propertyOf: [{ what: A }, { what: B }]` | `a`, `b` | `byA`, `byB`, `byAAndB` | Multi-parent, all index combinations |
+| `propertyOf: { what: [A, B] }` | `a`, `b` | `byA`, `byB`, `byAAndB` | Multi-parent tuple, all index combinations |
 | `userItem` | `user` | `byUser` | Internally becomes `itemOf: { what: User }` |
 | `userProperty` | `user` | `byUser` | Internally becomes `propertyOf: { what: User }` |
 | `boundTo: { what: Device }` | `device` | `byDevice` (hash) | One-directional pointer |

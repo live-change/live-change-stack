@@ -4,13 +4,13 @@ const crypto = require("crypto")
 function relationsStore(dao, database, table) {
 
   async function createTable() {
-    console.log("CREATE TABLE", table)
+    //console.log("CREATE TABLE", table)
     try {
       await dao.request(['database', 'createTable'], database, table)
     } catch(e) {
       // console.error(e)
     }
-    console.log("CREATE INDEX", table+'_eventTypeAndKeys')
+    //console.log("CREATE INDEX", table+'_eventTypeAndKeys')
     try {
       await dao.request(['database', 'createIndex'], database, table+'_eventTypeAndKeys', `(${
           async function(input, output, { table }) {
@@ -22,7 +22,7 @@ function relationsStore(dao, database, table) {
     } catch(e) {
       // console.error(e)
     }
-    console.log("CREATE INDEX", table+'_sourceRelation')
+    //console.log("CREATE INDEX", table+'_sourceRelation')
     try {
       await dao.request(['database', 'createIndex'], database, table+'_sourceRelation', `(${
           async function(input, output, { table }) {
@@ -37,7 +37,7 @@ function relationsStore(dao, database, table) {
   }
 
   async function getRelations(type, keys) {
-    console.log("GET RELATIONS", type, keys)
+    //console.log("GET RELATIONS", type, keys)
     let keysList = Object.keys(keys).map(k => [k, keys[k]]).filter(([a,b]) => !!b)
     keysList.sort((a,b) => a[0] == b[0] ? 0 : (a[0] > b[0] ? 1 : -1))
     let keySets = lcp.allCombinations(keysList)
@@ -109,7 +109,7 @@ function relationsStore(dao, database, table) {
             //console.log("CHANGED RELATION", currentRelation)
             if (currentRelation) {
               if(!currentRelation.id) currentRelation.id = crypto.randomBytes(16).toString("hex")
-              console.log("PUT RELATION", currentRelation)
+              //console.log("PUT RELATION", currentRelation)
               await dao.request(['database', 'put', database, table, currentRelation])
               //console.log("RELATION WRITTEN!")
             }

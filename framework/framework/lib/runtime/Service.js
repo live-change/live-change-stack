@@ -96,7 +96,7 @@ class Service {
       }
     }
 
-    console.log("Service", this.definition.name, "started")
+    //console.log("Service", this.definition.name, "started")
   }
 
   async afterStart(config){

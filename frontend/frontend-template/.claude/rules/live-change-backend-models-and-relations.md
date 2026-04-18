@@ -1,6 +1,6 @@
 ---
 description: Rules for defining models, relations, indexes and access control in LiveChange
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 ---
 
 # LiveChange backend – models and relations (Claude Code)
@@ -203,7 +203,7 @@ definition.model({
 })
 ```
 
-Use `node server/start.js describe --service myService --model MyModel --output yaml` to see all fields including auto-added ones.
+Use `fnm exec -- node server/start.js describe --service myService --model MyModel --output yaml` (from the app root, with fnm — see `live-change-node-toolchain-fnm`) to see all fields including auto-added ones.
 
 ## Indexes
 
@@ -222,6 +222,45 @@ indexes: {
 ```
 
 In other services, the same index may be visible with a prefixed name such as `myService_Model_byDeviceAndStatus`.
+
+### When index should be outside a model
+
+If an index is a union/projection over multiple peer tables (no single natural owner model), do not force it into `model.indexes`.
+
+- Use service-level `definition.index(...)` (prefer a dedicated `indexes.js` file).
+- Keep `model.indexes` for indexes semantically owned by one model.
+
+### Function index serialization constraint
+
+Function indexes (both `definition.index({ function })` and model `indexes: { name: { function } }`) are **serialized via `toString()`** and run on a remote server. All helpers, mappers, and variables used inside the function **must be defined inside the function body**. References to outer scope (module-level functions, imports, closures) will be `undefined` at runtime.
+
+```js
+// ❌ BROKEN — mapper defined outside, invisible after serialization
+const mapper = obj => ({
+  id: obj.name + '_' + obj.id, to: obj.id
+})
+indexes: {
+  byDerived: {
+    function: async (input, output, { tableName }) => {
+      const table = await input.table(tableName)
+      await table.map(mapper).to(output)  // mapper is undefined!
+    }
+  }
+}
+
+// ✅ CORRECT — mapper defined inside the function
+indexes: {
+  byDerived: {
+    function: async (input, output, { tableName }) => {
+      const mapper = obj => ({
+        id: obj.name + '_' + obj.id, to: obj.id
+      })
+      const table = await input.table(tableName)
+      await table.map(mapper).to(output)
+    }
+  }
+}
+```
 
 ## Access control on relations
 

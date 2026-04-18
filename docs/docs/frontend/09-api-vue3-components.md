@@ -24,6 +24,52 @@ registerComponents(app, {
 })
 ```
 
+## Range lists: `RangeViewer` and `ReactiveRangeViewer`
+
+Use `RangeViewer` for stable range sources, and `ReactiveRangeViewer` when the source changes due to reactive filters.
+
+### RangeViewer
+
+- best when `pathFunction` semantics stay stable
+- ideal for standard infinite scroll where only `range` cursor changes
+
+### ReactiveRangeViewer
+
+- wraps `RangeViewer` without breaking old API
+- rebuilds buckets when `sourceKey` changes
+- can preserve visual height during reload with a placeholder
+
+```vue
+<ReactiveRangeViewer
+  :pathFunction="transactionsPathRange"
+  :sourceKey="JSON.stringify({ accountId, month: filterByMonth ? month : null })"
+  :preserveHeightOnReload="true"
+  :canLoadTop="false"
+  canDropBottom
+>
+  <template #default="{ item }">
+    <BankTransactionListItem :transaction="item" />
+  </template>
+</ReactiveRangeViewer>
+```
+
+Recommended:
+
+- keep pagination in `range` (`gt/gte/lt/lte`)
+- use `sourceKey` for domain filter changes (`month`, `status`, `company`, search text)
+- avoid page-local rerender workarounds with ad-hoc `:key`
+
+Do not:
+
+- do not build range lists from backend views that use `indexRangePath` semantics for object ids,
+- do not overwrite `range.gt/gte/lt/lte` with custom values in `pathFunction`.
+
+For range UI (`RangeViewer`, `ReactiveRangeViewer`, `rangeBuckets`), the backend view should use index-key-compatible cursor flow (`sortedIndexRangePath`) so bucket pagination stays consistent.
+
+If you need narrowing (for example by month/year/status), pass these as separate view properties and keep range cursor untouched. Prefer dedicated index prefixes; `prefixRange` is a backend fallback.
+
+See backend guidance: [Server – Views](../server/07-views.md) and [Server – Indexes and foreign models](../server/11-indexes-and-foreign-models.md).
+
 ## Loading and working zones
 
 ### WorkingZone
@@ -142,6 +188,45 @@ Returns an object containing:
 - `changed` – `Ref` (boolean), whether there are unsaved changes
 - `saving` – `Ref` (boolean), whether a save is in progress
 - `save()` – manual save trigger
+
+## synchronizedList(options)
+
+Creates editable list data from a list `source` and list item update/delete actions.
+Internally it maps list elements to `synchronized(...)` instances and exposes a list-level API.
+
+Options:
+
+- `source` – `Ref` / `computed` with source array (items should have stable `id`)
+- `update` – action function used to save edited list elements
+- `delete` – action function used to remove an element
+- `insert` – action function used to insert an element
+- `identifiers` – shared identifier object added to every list action payload
+- `objectIdentifiers` – function mapping item -> per-item identifiers
+- `prefix` – optional ID prefix for locally inserted elements
+- `recursive` – deep change tracking for each item editor
+- `autoSave` – auto-save item changes
+- `throttle` – item save throttling in ms
+- `timeField` – version field for conflict resolution (`lastUpdate` by default)
+- `timeSource` – timestamp source function
+- `mapper` – custom per-item mapper (defaults to `synchronized(...)`)
+- `onChange` / `onSave` / `onSaveError` – lifecycle callbacks
+- `resetOnError` – reset edited item to source on save error
+
+Returns an object containing:
+
+- `value` – `Ref<Array<object>>` with editable list items
+- `changed` – `Ref<boolean>` true when any item changed or local add/remove happened
+- `save()` – save all changed items
+- `insert(element)` – insert a new list element
+- `delete(element)` – delete an element
+- `move(element, toId)` – reorder operation hook (if implemented in your mapper/action flow)
+- `locallyAdded` – `Ref<Array<object>>` with pending local insertions
+
+Usage notes:
+
+- Use `identifiers` for shared context (for example object scope), and `objectIdentifiers` for item keys.
+- In templates, read and edit `synchronizedListResult.value` items directly.
+- Use list-level methods (`delete`, `insert`, `save`) on the `synchronizedList(...)` result object, not on raw `live(...)` data.
 
 ## analytics
 

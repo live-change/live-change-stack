@@ -10,11 +10,6 @@
   const model = defineModel({
   })
 
-  const convertedDate = computed({ // convert from iso to Date
-    get: () => model.value ? new Date(model.value) : null,
-    set: val => model.value = val ? new Date(val) : null
-  })
-
   const props = defineProps({
     selectionMode: {
       type: String,
@@ -255,6 +250,11 @@
     }
   })
 
+
+  const convertedDate = computed({ // convert from iso to Date
+    get: () => model.value ? new Date(model.value) : null,
+    set: val => model.value = val ? (props.showTime ? new Date(val).toISOString() : `${val.getFullYear()}-${(val.getMonth()+1).toString().padStart(2, '0')}-${val.getDate().toString().padStart(2, '0')}`) : null
+  })
 
 </script>
 

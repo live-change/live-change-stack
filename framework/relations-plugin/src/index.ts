@@ -38,8 +38,8 @@ export interface ModelWithRelations extends ModelDefinitionSpecificationWithAcce
   itemOf?: ItemOfConfig
   propertyOfAny?: PropertyOfAnyConfig
   itemOfAny?: ItemOfAnyConfig
-  relatedTo?: RelatedToConfig
-  relatedToAny?: RelatedToAnyConfig
+  relatedTo?: RelatedToConfig | RelatedToConfig[]
+  relatedToAny?: RelatedToAnyConfig | RelatedToAnyConfig[]
   boundTo?: BoundToConfig
   boundToAny?: BoundToAnyConfig
   saveAuthor?: SaveAuthorConfig        

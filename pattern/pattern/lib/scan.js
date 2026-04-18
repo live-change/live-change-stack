@@ -103,12 +103,12 @@ async function findAllRelatedEvents(events, reverse, model, from, to, getEventsB
   let all = new Map()
   let newFound
   do {
-    console.log("SEARCH FOR MORE")
+    //console.log("SEARCH FOR MORE")
     const next = await findRelatedEvents(workingSet, reverse, model, from, to, getEventsByRelation)
-    console.log("NEXT", next.size)
-    console.log("ALL", all.size)
+    //console.log("NEXT", next.size)
+    //console.log("ALL", all.size)
     workingSet = Array.from(next.values()).filter(ev => !all.has(ev.id))
-    console.log("WORKING SET", workingSet.length)
+    //console.log("WORKING SET", workingSet.length)
     all = new Map([...all, ...next])
   } while(workingSet.length)
   return all

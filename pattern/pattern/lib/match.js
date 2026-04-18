@@ -13,14 +13,14 @@ function matchProperties(match, properties) {
 }
 
 function eventElementMatch(event, element) {
-  console.log("CHECK ELEMENT", element)
+  //console.log("CHECK ELEMENT", element)
   if(element.type != event.type) return false
   if(element.match) {
-    console.log("MATCH PROPERTIES", event, element)
+    //console.log("MATCH PROPERTIES", event, element)
     if(!event.properties) return false
     if(!matchProperties(element.match, event.properties)) return false
   }
-  console.log("ELEMENT FOUND", event, element)
+  //console.log("ELEMENT FOUND", event, element)
   return true
 }
 

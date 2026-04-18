@@ -197,7 +197,7 @@ class App {
 
   async startService( serviceDefinition, config = {}) {
     if(!config.processes) config.processes = this.defaultProcesses
-    console.log("Starting service", serviceDefinition.name, "!")
+    //console.log("Starting service", serviceDefinition.name, "!")
     const profileOp = await this.profileLog.begin({
       operation: "startService", serviceName: serviceDefinition.name, config
     })
@@ -209,7 +209,7 @@ class App {
       if(viewDefinition.global) this.globalViews[viewName] = service.views[viewName]
     }
     await service.start(config)
-    console.log("service started", serviceDefinition.name, "!")
+    //console.log("service started", serviceDefinition.name, "!")
     await this.profileLog.end(profileOp)
     this.startedServices[serviceDefinition.name] = service
 

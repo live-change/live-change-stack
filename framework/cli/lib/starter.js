@@ -485,10 +485,9 @@ export async function update(argv) {
     }
     const oldServiceJson = await app.getOldServiceDefinition(serviceDefinition.name)
     const changes = serviceDefinition.computeChanges(oldServiceJson)
-    console.log("#### UPDATE SERVICE", serviceDefinition.name)
+    if(!argv.dbBackend === 'mem') console.log("#### UPDATE SERVICE", serviceDefinition.name)
     await app.applyChanges(changes, serviceDefinition, undefined, Boolean(argv.force))
-
-    console.log("#### UPDATED SERVICE", serviceDefinition.name)
+    if(!argv.dbBackend === 'mem') console.log("#### UPDATED SERVICE", serviceDefinition.name)
     await app.dao.request(['database', 'put'], app.databaseName, 'services',
       { id: serviceDefinition.name , ...serviceDefinition })
   }

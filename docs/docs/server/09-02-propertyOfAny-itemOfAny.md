@@ -9,6 +9,31 @@ From **relations plugin** (`use: [ relationsPlugin ]`). Parent is **polymorphic*
 - **propertyOfAny** — One child per parent; parent type can vary.
 - **itemOfAny** — Many children per parent; parent type can vary.
 
+## Arity rules
+
+- `propertyOfAny` and `itemOfAny` are **single-config annotations**.
+- Multi-dimensional ownership is expressed by `to` inside one config (for example `to: ['owner', 'topic']`).
+- Do not use a list of config objects for these annotations.
+
+Valid:
+
+```javascript
+propertyOfAny: {
+  to: ['owner', 'topic'],
+  ownerTypes: [...],
+  topicTypes: [...]
+}
+```
+
+Invalid:
+
+```javascript
+propertyOfAny: [
+  { to: ['owner'], ownerTypes: [...] },
+  { to: ['topic'], topicTypes: [...] }
+]
+```
+
 ## Auto-added fields
 
 Polymorphic relations add **two fields** per identifier in the `to` array — a type discriminator and the value:

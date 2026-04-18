@@ -9,6 +9,15 @@ From **relations plugin** (`use: [ relationsPlugin ]`).
 - **boundTo** — Like propertyOf: one child record per parent. Used when the child is “bound” to a single parent entity.
 - **relatedTo** — Many-to-many style: model has a relation to another model (or several) with a joint index; used for “related” or “friend” links rather than strict ownership.
 
+## Arity rules
+
+- `boundTo` is a **single-config annotation**.
+  - valid multi-parent tuple: `boundTo: { what: [A, B] }`
+  - invalid form: `boundTo: [configA, configB]`
+- `relatedTo` supports **single config or config list**.
+  - list of independent relations: `relatedTo: [{ what: A }, { what: B }]`
+  - one relation with tuple parent key: `relatedTo: { what: [A, B] }`
+
 ## boundTo — configuration
 
 Same style of options as propertyOf:
@@ -20,7 +29,7 @@ Same style of options as propertyOf:
 
 ## relatedTo — configuration
 
-- **what** — Related model (or array of models for multiple relations).
+- **what** — Related model (or tuple of models inside one relation config).
 - **readAccess**, **writeAccess**, **createAccess**, **updateAccess**, **deleteAccess**, **copyAccess**, **readAllAccess**
 - **readAccessControl**, **writeAccessControl**, **createAccessControl**, **updateAccessControl**, **deleteAccessControl**, **copyAccessControl**, **readAllAccessControl**
 - **sortBy** — Optional sort fields for range views.
