@@ -1,6 +1,6 @@
 {
   "name": "@live-change/vue3-components",
-  "version": "0.9.201",
+  "version": "0.9.202",
   "description": "Live Change Framework - vue components",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,8 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
+    "@live-change/vue3-ssr": "^0.9.202",
     "@vueuse/core": "^12.3.0",
-    "@live-change/vue3-ssr": "0.9.201",
     "debug": "^4.3.4",
     "mitt": "3.0.1",
     "vue": "^3.5.12",
