@@ -1,6 +1,6 @@
 {
   "name": "@live-change/vue3-components",
-  "version": "0.9.202",
+  "version": "0.9.203",
   "description": "Live Change Framework - vue components",
   "main": "index.js",
   "scripts": {
@@ -21,12 +21,12 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/vue3-ssr": "^0.9.202",
+    "@live-change/vue3-ssr": "^0.9.203",
     "@vueuse/core": "^12.3.0",
     "debug": "^4.3.4",
     "mitt": "3.0.1",
     "vue": "^3.5.12",
     "vue3-scroll-border": "0.1.7"
   },
-  "gitHead": "7f358a1cc16fb35069f6ce3f897412232f766843"
+  "gitHead": "733d4ce62d5ebce3287edb61f44fd1299612ea6d"
 }
