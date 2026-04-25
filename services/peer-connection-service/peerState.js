@@ -5,6 +5,7 @@ import accessControl from '@live-change/access-control-service/access.js'
 const { clientHasAccessRoles } = accessControl(definition)
 
 import { Peer } from './peer.js'
+import { decodePeerId } from './decodePeerId.js'
 
 
 const peerStateFields = {
@@ -55,7 +56,7 @@ definition.action({
   access: async ({ peer }, context) => {
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
-    const [toType, toId, toSession] = peer.split(':')
+    const { channelType: toType, channel: toId, peerSession: toSession } = decodePeerId(peer)
     if(client.session !== toSession) return false
     const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, config.writerRoles)
     return hasRole

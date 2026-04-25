@@ -6,10 +6,6 @@ alwaysApply: false
 
 # Frontend na live-change-stack – Vue 3 + PrimeVue + Tailwind
 
-## i18n i `front/locales`
-
-Za każdym razem gdy dodajesz lub zmieniasz teksty pod tłumaczenia, stosuj **`live-change-frontend-i18n-locales`**: te same klucze muszą trafić do **wszystkich** plików w **`front/locales/`** danej aplikacji (każdy język / wariant — nie tylko jeden plik).
-
 ## Stack
 
 - Vue 3 + TypeScript
@@ -23,6 +19,8 @@ Za każdym razem gdy dodajesz lub zmieniasz teksty pod tłumaczenia, stosuj **`l
 - **Nie** używaj `ref(null)` + `onMounted` do ładowania danych.
 - Dane ładuj w `setup`/`script setup` przez `await Promise.all(...)` na `live(path()....)`.
 - Rodzic powinien owijać stronę w `<Suspense>` (w projektach live-change robi to zazwyczaj `ViewRoot` globalnie).
+- Sekwencyjnego `await live(...)` używaj tylko wtedy, gdy drugi path zależy od wyniku pierwszego.
+- Gdy zależność da się opisać przez `.with(...)`, preferuj jedno zapytanie Path DSL zamiast imperatywnego łączenia wyników.
 
 Przykład:
 
@@ -67,6 +65,50 @@ Schemat decyzji:
 1. Użytkownik wypełnia pola formularza? → **Nie**: użyj `api.command` (owijaj w `workingZone.addPromise` dla przycisków).
 2. Edytuje rekord modelu (create/update)? → **Tak**: użyj `editorData`. **Nie**: użyj `actionData`.
 3. `<command-form>` tylko do najprostszych jednorazowych przypadków.
+
+## Autosave helpery – `synchronized` i `synchronizedList`
+
+Używaj helperów dla danych z `live(...)`:
+
+- `synchronized` dla pojedynczego obiektu do edycji.
+- `synchronizedList` dla edytowalnych list (wierszy).
+- Kontekst wspólny przekazuj przez `identifiers`, a identyfikatory wiersza przez `objectIdentifiers`.
+- Dla draftów z payloadem zagnieżdżonym używaj `updateDataProperty: 'data'`.
+
+Kiedy traktować ekran jako listę:
+
+- UI ma `v-for` z wieloma edytowalnymi wierszami (tabela/lista konfiguracji/admin).
+- Użytkownik edytuje wiele rekordów inline, a zapis ma działać per wiersz.
+- Akcje backendowe potrzebują wspólnego kontekstu listy i kluczy konkretnego wiersza.
+
+W takich przypadkach stosuj jeden `synchronizedList(...)` i edytuj dane bezpośrednio przez `syncList.value`.
+Dla takich list nie buduj osobnej mapy `id -> synchronized(...)`.
+
+```js
+const sync = synchronized({
+  source: sourceRef,
+  update: actions.service.updateThing,
+  identifiers: { thing: thingId },
+  recursive: true,
+  autoSave: true,
+  debounce: 600
+})
+
+const syncList = synchronizedList({
+  source: rowsRef,
+  update: actions.service.updateRow,
+  delete: actions.service.deleteRow,
+  identifiers: { object, objectType },
+  objectIdentifiers: row => ({ row: row.to, object, objectType }),
+  recursive: true
+})
+```
+
+Przykłady ekranów, gdzie to dotyczy:
+
+- listy uprawnień i ról,
+- słowniki i konfiguracje wielowierszowe,
+- tabele administracyjne z inline edycją pól.
 
 ### `api.command`
 
@@ -187,6 +229,8 @@ const articlePath = computed(() => path.blog.article({ article: unref(articleId)
 const [article] = await Promise.all([live(articlePath)])
 ```
 
+`usePath()` wywołuj synchronicznie w `setup` i zapisz wynik w zmiennej `path`. W getterze `computed` buduj tylko `path.<service>.<view>(...)` — nie wywołuj ponownie `usePath()` ani aliasu `path()` w środku `computed` (brak aktywnej instancji → błąd przy `appContext`).
+
 Dla warunkowego ładowania (np. tylko gdy zalogowany), zwróć wartość falsy:
 
 ```js
@@ -211,6 +255,21 @@ path.blog.articles({})
 
 Dostęp: `article.authorProfile?.firstName`. Działa zarówno z `live()` jak i `RangeViewer`.
 
+### Guardrails Path DSL (`.with`, `$switch`)
+
+- Callback `.with(item => ...)` traktuj jako deklarację query DSL, nie jako kod biznesowy wykonywany na realnym rekordzie.
+- W callbacku `.with` nie rób side effects, `api.command`, ani imperatywnego `if/else` porównującego pola proxy.
+- Dla warunkowego wyboru ścieżki używaj `item.field.$switch({...}).$bind('target')`.
+
+```js
+path.accounting.settlementsByTransaction({ transactionType, transaction, range })
+  .with(settlement => settlement.subjectType.$switch({
+    invoice_CostInvoice: path.invoice.costInvoice({ costInvoice: settlement.subject }),
+    invoice_IncomeInvoice: path.invoice.incomeInvoice({ incomeInvoice: settlement.subject }),
+    hr_CivilContract: path.hr.civilContract({ civilContract: settlement.subject })
+  }).$bind('subjectDoc'))
+```
+
 ## Listy zakresowe z reaktywnymi filtrami
 
 Jeśli `pathFunction` dla listy zakresowej zależy od reaktywnych filtrów (np. miesiąc/status/szukaj), preferuj `ReactiveRangeViewer`.
@@ -231,6 +290,13 @@ Zasady:
   canDropBottom
 />
 ```
+
+## Guardrails dla kursora zakresu (`RangeViewer` / `rangeBuckets`)
+
+- Dla list opartych o indeks backend powinien udostępniać widoki oparte o `sortedIndexRangePath`.
+- Nigdy nie nadpisuj `range.gt/gte/lt/lte` we frontendowym `pathFunction`.
+- Pole `range` zostaw jako kursor paginacji; filtry domenowe (`month`, `year`, `status`) przekazuj osobno.
+- Jeśli pojawia się pokusa ręcznego przepisywania kursora, przenieś logikę do projektu indeksu po stronie backendu (ew. fallback `prefixRange`), nie do hacków we froncie.
 
 ## WorkingZone dla akcji asynchronicznych
 

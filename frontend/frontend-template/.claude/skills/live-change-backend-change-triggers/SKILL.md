@@ -112,6 +112,21 @@ definition.trigger({
 
 This means: when a user creates a Schedule via the UI or API, the timer is automatically set up. When they update it, the old timer is canceled and a new one created. When they delete it, the timer is canceled.
 
+## Cron-service — planning and admin UI guardrails
+
+When the domain needs **wall-clock schedules** or **fixed repeating intervals** that run a **trigger**, default to **`@live-change/cron-service`** (models **Schedule** / **Interval**, internal **timer** + **changeCron_*** lifecycle), not ad-hoc timers only.
+
+**Backend:** define the **target `definition.trigger`** in your service; put **Schedule** / **Interval** rows in **cron** with **`trigger: { name, service, properties, returnTask }`**. Rely on **`changeCron_Schedule`** / **`changeCron_Interval`** for timer repair (already implemented in cron-service).
+
+**Admin / task-frontend-style UI:** use the same integration as the reference pages:
+
+- **Create:** `ActionForm` with `service="cron"` and `action="setSchedule"` or `action="setInterval"` (relations-driven forms).
+- **List:** `RangeViewer` + `path.cron.schedules` / `path.cron.intervals` with **`reverseRange(range)`** as needed.
+- **Per row:** `.with()` → `scheduleInfo` / `intervalInfo`, `runState` (`jobType` **`cron_Schedule`** or **`cron_Interval`**, **`job`** = id), and `task.tasksByCauseAndCreatedAt` for recent runs.
+- **Delete:** `api.actions.cron.deleteSchedule` / `deleteInterval`.
+
+See **server doc** `15-cron-and-intervals.md` → section **“API used by task-frontend”** for path examples and **Schedule** field semantics (**`NaN`** = “every” for that field).
+
 ## Step 4 – Specific lifecycle triggers (alternative)
 
 If you only care about one lifecycle event, use the specific variant:

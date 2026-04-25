@@ -22,7 +22,9 @@
       "Bash(cp /home/m8/IdeaProjects/live-change/.claude/rules/live-change-backend-event-sourcing.md /home/m8/IdeaProjects/live-change/automation/.claude/rules/live-change-backend-event-sourcing.md)",
       "Bash(find /home/m8/IdeaProjects/live-change/live-change-stack/framework -type f \\\\\\(-name *.ts -o -name *.js \\\\\\))",
       "Bash(find /home/m8/IdeaProjects/live-change/live-change-stack/services -type f -name *.js)",
-      "Bash(grep -r \"userItem\\\\|userProperty\" /home/m8/IdeaProjects/live-change/live-change-stack/services/user-service --include=*.js)"
+      "Bash(grep -r \"userItem\\\\|userProperty\" /home/m8/IdeaProjects/live-change/live-change-stack/services/user-service --include=*.js)",
+      "Bash(find /home/m8/IdeaProjects/live-change/auto-firma/app -maxdepth 2 -type f \\\\\\(-name jest.config.* -o -name vitest.config.* -o -name *.test.js -o -name *.test.ts \\\\\\))",
+      "Bash(find /home/m8/IdeaProjects/live-change/auto-firma/app -maxdepth 3 -type d -not -path */node_modules* -not -path */dist* -not -path */backups* -not -path */dev_docker_home* -not -path */storage* -not -path */tmp.db*)"
     ],
     "additionalDirectories": [
       "/home/m8/IdeaProjects/live-change/.claude/skills/create-skills-and-rules",

@@ -1,6 +1,6 @@
 ---
 description: LiveChange service file structure — every service must be a directory with separate definition.js, index.js, etc.
-globs: server/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 alwaysApply: true
 ---
 

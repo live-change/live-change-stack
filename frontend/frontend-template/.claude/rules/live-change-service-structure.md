@@ -1,13 +1,13 @@
 ---
 description: Rules for LiveChange service directory structure and file organization
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 ---
 
 # LiveChange Service Structure
 
 Every LiveChange service **must** be a directory, not a single file.
 
-## Required structure
+## Required structureW
 
 ```
 server/services/<serviceName>/

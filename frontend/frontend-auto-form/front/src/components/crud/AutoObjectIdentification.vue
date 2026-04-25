@@ -1,8 +1,8 @@
 <template>
   <router-link v-if="link" :to="viewRoute">
-    <ObjectIdentification :objectType="objectType" :object="object" :data="data" />
+    <ObjectIdentification :objectType="objectType" :object="object" :data="data" v-bind="$attrs" />
   </router-link>
-  <ObjectIdentification v-else :objectType="objectType" :object="object" :data="data" />
+  <ObjectIdentification v-else :objectType="objectType" :object="object" :data="data" v-bind="$attrs" />
 </template>
 
 <script setup>
@@ -25,7 +25,7 @@
     link: {
       type: Boolean,
       default: false
-    }
+    }    
   })
   const { objectType, object, data, link } = toRefs(props)
 

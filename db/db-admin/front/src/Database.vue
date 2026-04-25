@@ -313,7 +313,7 @@
     })())
   }
 
-  console.log("WAIT FOR LIVE!")
+  //console.log("WAIT FOR LIVE!")
   const [ tables, indexes, logs ] = await Promise.all([
     live(dao, {
       what: [dbApi, 'tables', dbName],
@@ -329,8 +329,8 @@
     })
   ])
 
-  console.log("DATABASE FETCHED!")
+  //console.log("DATABASE FETCHED!")
 
-  console.log("FETCHED", tables.value, indexes.value, logs.value)
+  //console.log("FETCHED", tables.value, indexes.value, logs.value)
 
 </script>

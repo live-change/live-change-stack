@@ -1,6 +1,9 @@
 import App from '@live-change/framework'
 const app = App.app()
 
+import { ChangeSet } from '@codemirror/state'
+import { rebaseUpdates } from '@codemirror/collab'
+
 import definition from './definition.js'
 const config = definition.config
 const {
@@ -22,31 +25,6 @@ const readerAccessControl = {
 import { Document, StepsBucket, Snapshot, documentTypes, getDocument } from "./model.js"
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
-/*
-definition.view({
-  name: 'document',
-  accessControl: readerAccessControl,
-  properties: {
-    targetType: {
-      type: String,
-      validation: ['nonEmpty']
-    },
-    target: {
-      type: String,
-      validation: ['nonEmpty']
-    },
-  },
-  returns: {
-    type: Document
-  },
-  async daoPath(props, { client, context }) {
-    if(testLatency) await sleep(testLatency)
-    const { targetType, target } = props
-    const document = App.encodeIdentifier([targetType, target])
-    //console.log("DOCUMENT DAO PATH", Document.path( document ))
-    return Document.path( document )
-  }
-})*/
 
 definition.view({
   name: 'steps',
@@ -114,7 +92,9 @@ definition.view({
     },
     ...App.rangeProperties
   },
-  async daoPath({ targetType, target, version }, { client, context }) {
+  async daoPath(props, { client, context }) {
+    if(testLatency) await sleep(testLatency)
+    const { targetType, target } = props
     const document = App.encodeIdentifier([targetType, target])
     return Snapshot.indexRangePath( [document], App.extractRange(props) )
   }
@@ -252,6 +232,40 @@ definition.action({
     if(version > openDocument.version) {
       return 'rejected'
     }
+
+    let received = steps.map(s => ({
+      clientID: s.clientID,
+      changes: ChangeSet.fromJSON(s.changes)
+    }))
+
+    const serverVersion = openDocument.version
+    if(version < serverVersion) {
+      const buckets = await StepsBucket.rangeGet([document], {
+        gt: version.toFixed().padStart(10, '0'),
+        lte: serverVersion.toFixed().padStart(10, '0')
+      })
+      const intermediateUpdates = []
+      for(const bucket of buckets || []) {
+        for(const s of bucket.steps) {
+          intermediateUpdates.push({
+            clientID: s.clientID,
+            changes: ChangeSet.fromJSON(s.changes)
+          })
+        }
+      }
+      try {
+        received = rebaseUpdates(received, intermediateUpdates)
+      } catch (err) {
+        console.error('codemirror edit rebase failed', err)
+        return 'rejected'
+      }
+    }
+
+    const stepsForEvent = received.map(u => ({
+      clientID: u.clientID,
+      changes: u.changes.toJSON()
+    }))
+
     const [sessionOrUserType, sessionOrUser] =
       client.user ? ['user_User', client.user] : ['session_Session', client.session]
     if(continuation) {
@@ -267,7 +281,7 @@ definition.action({
     }
     emit({
       type: 'documentEdited',
-      document, documentType: type, version, steps, window,
+      document, documentType: type, version: serverVersion, steps: stepsForEvent, window,
       sessionOrUserType,
       sessionOrUser,
       timestamp: new Date()

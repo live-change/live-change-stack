@@ -74,9 +74,7 @@ class RemoteAuthority {
     const identifiers = { targetType: this.targetType, target: this.target }
     this.stepsReader = inboxReader(
       (rawPosition, bucketSize) => {
-        const positionCounter = +rawPosition.split(':').pop().replace(/"/g, '') + 1
-        const position = inboxPrefix + JSON.stringify(positionCounter.toFixed().padStart(10, '0'))
-        const path = ['codemirror', 'steps', { ...identifiers, gt: position, limit: bucketSize }]
+        const path = ['codemirror', 'steps', { ...identifiers, gt: rawPosition, limit: bucketSize }]
         return path
       },
       message => {
@@ -91,7 +89,7 @@ class RemoteAuthority {
         )
         this.handleUpdates()
       },
-      inboxPrefix + JSON.stringify((this.remoteVersion - 1).toFixed().padStart(10, '0')),
+      inboxPrefix + JSON.stringify(this.remoteVersion.toFixed().padStart(10, '0')),
       {
         bucketSize: 32,
         context: this.appContext
@@ -101,7 +99,9 @@ class RemoteAuthority {
 
   async loadDocument() {
     const identifier = { targetType: this.targetType, target: this.target }
-    let documentData = await this.api.get(['codemirror', 'document', identifier])
+    // Matches generated propertyOfAny object view (default owner): ownerType + owner
+    const documentViewProps = { ownerType: this.targetType, owner: this.target }
+    let documentData = await this.api.get(['codemirror', 'document', documentViewProps])
     if (!documentData) {
       documentData = {
         ...identifier,
@@ -118,7 +118,6 @@ class RemoteAuthority {
     if (typeof window != 'undefined') {
       await this.startInboxReader()
     }
-    this.synchronizationState.value = 'loaded'
     return documentData
   }
 
@@ -145,15 +144,44 @@ class RemoteAuthority {
       update: {
         clientID: update.clientID ?? clientID,
         changes: update.changes.toJSON()
-      }
+      },
+      json: JSON.stringify(update.changes.toJSON())
     }))
 
     if (updatesJson.length === 0) return
 
+    let firstOriginalStepIndex = 0
+    let resynchronization = false
+    if (version <= this.sentVersion - this.sentUpdates.length) {
+      this.waitingForResync = true
+      return
+    }
+    if (version <= this.sentVersion) {
+      for (let i = 0; i < updatesJson.length; i++) {
+        const step = updatesJson[i]
+        const sentStep = this.sentUpdates.find(({ version }) => version === step.version)
+        if (sentStep) {
+          if (sentStep.json !== step.json) {
+            resynchronization = true
+            break
+          }
+          firstOriginalStepIndex = i + 1
+        } else break
+      }
+    }
+    updatesJson.splice(0, firstOriginalStepIndex)
+    if (resynchronization && this.sentUpdates.length > 0) {
+      const firstVersion = updatesJson[0]?.version
+      if (typeof firstVersion === 'number') {
+        this.sentUpdates = this.sentUpdates.filter(({ version }) => version < firstVersion)
+      }
+    }
     this.sentUpdates = this.sentUpdates.concat(updatesJson)
     if (this.sentUpdates.length > 200) {
       this.sentUpdates = this.sentUpdates.slice(-100)
     }
+
+    if (updatesJson.length === 0) return
 
     this.sentVersion = updatesJson[0].version
 
@@ -171,7 +199,7 @@ class RemoteAuthority {
         version: this.sentVersion,
         steps: updatesJson.map(({ update }) => update),
         window: this.api.windowId,
-        continuation: false
+        continuation: firstOriginalStepIndex > 0
       })
     } finally {
       this.pendingRequests--

@@ -32,6 +32,25 @@ properties: {
 }
 ```
 
+## Relation arity (critical)
+
+Always separate:
+
+- **annotation arity** — can the annotation be a list of configs
+- **parent tuple arity** — can one config include multiple parents/dimensions
+
+| Relation | Annotation arity | Parent tuple arity |
+|---|---|---|
+| `propertyOf`, `itemOf`, `boundTo` | single config only | `what` can be one model or `[A, B, ...]` |
+| `relatedTo` | single config or config list | each config uses `what` with one model or `[A, B, ...]` |
+| `propertyOfAny`, `itemOfAny`, `boundToAny` | single config only | `to` can contain one or many names |
+| `relatedToAny` | single config or config list | each config uses `to` with one or many names |
+
+Guardrail:
+
+- valid: `propertyOf: { what: [A, B] }`
+- invalid: `propertyOf: [configA, configB]`
+
 ## `userItem` – belongs to the signed-in user
 
 Use when the model is owned by the currently signed-in user.
@@ -113,7 +132,7 @@ Effects:
 ## `propertyOf` with multiple parents (1:1 link to each)
 
 Sometimes a model is a dedicated 1:1 link between entities (for example: invoice ↔ contractor in a specific role).
-Most commonly this is 1–2 parents, but `propertyOf` can point to **any number** of parent models (including 3+), if that matches the domain semantics.
+Most commonly this is 1–2 parents, but `what` can point to **any number** of parent models (including 3+), if that matches the domain semantics.
 
 In that case:
 
@@ -132,10 +151,9 @@ definition.model({
   properties: {
     // optional extra fields
   },
-  propertyOf: [
-    { what: CostInvoice },
-    { what: Contractor }
-  ]
+  propertyOf: {
+    what: [CostInvoice, Contractor]
+  }
 })
 ```
 
@@ -180,7 +198,7 @@ Relations automatically add **identifier fields** and **indexes** to the model. 
 | `propertyOfAny: { to: ['owner'] }` | `ownerType`, `owner` | `byOwner` (hash) |
 | `boundTo: { what: Device }` | `device` | `byDevice` (hash) |
 
-For multi-parent relations (e.g. `propertyOf: [{ what: A }, { what: B }]`), all index combinations are created (`byA`, `byB`, `byAAndB`).
+For multi-parent relations (e.g. `propertyOf: { what: [A, B] }`), all index combinations are created (`byA`, `byB`, `byAAndB`).
 
 ```js
 // ✅ Correct — only define YOUR fields

@@ -326,8 +326,8 @@ export function defineAnyTypeIndexes(config, context, useId = false) {
       //property: [propertyName+'Type'],
       function:  async function(input, output, { indexName }) {
         const index = await input.index(indexName)
-        await index.onChange(async (obj, oldObj) => {
-          const id = obj?.id ?? oldObj?.id
+        await index.onChange(async (indexEntry, oldIndexEntry) => {
+          const id = indexEntry?.id ?? oldIndexEntry?.id
           const typeJson = id.slice(0, id.indexOf(':'))
           try {           
             const type = JSON.parse(typeJson)

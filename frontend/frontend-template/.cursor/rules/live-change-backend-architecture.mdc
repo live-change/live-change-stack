@@ -1,6 +1,6 @@
 ---
 description: Rules for LiveChange backend service architecture and directory structure
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 alwaysApply: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Rules for implementing actions, views, and triggers in LiveChange services
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 alwaysApply: false
 ---
 
@@ -54,9 +54,9 @@ definition.action({
 
 ## Widoki – ogólne zasady
 
-- Widok ma być prostym, czytelnym wejściem do danych:
-  - korzystaj z indeksów (`indexObjectGet`, `indexRangeGet`),
-  - nie implementuj skomplikowanej logiki w widokach, jeśli można ją przenieść do akcji.
+- Widok ma być **kanałem odczytu** (DAO, indeksy, agregacje, wyliczenia). Logika odczytu należy do widoku (ew. funkcji pomocniczej wywołanej z `daoPath` / `get`), a nie do akcji „tylko po to, żeby zwrócić dane bez zmiany stanu”.
+- W implementacji ścieżek korzystaj z indeksów (`indexObjectGet`, `indexRangeGet`) zamiast pełnych skanów.
+- Odczyt vs zapis (CQRS-like): [live-change-backend-views-vs-triggers-for-reads-writes.mdc](./live-change-backend-views-vs-triggers-for-reads-writes.mdc).
 
 ## Widoki – reguła: `get` + `observable` zawsze razem
 
@@ -173,6 +173,19 @@ Jeśli filtr po miesiącu jest częsty, lepiej dodać indeks z bucketem miesiąc
 BankTransaction.sortedIndexRangePath('byBankAccountAndMonthAndDate', [bankAccount, month], range)
 ```
 
+### Guardrails dla widoków pod RangeViewer/rangeBuckets
+
+- Dla list paginowanych po indeksie preferuj `Model.sortedIndexRangePath(indexName, keyPrefix, App.extractRange(props))`.
+- Nie stosuj semantyki `indexRangePath` dla widoków konsumowanych przez bucketowe UI zakresowe.
+- `gt/gte/lt/lte` zostaw wyłącznie jako kursor paginacji, nie jako filtry domenowe.
+- Dla filtrów typu miesiąc/rok/status najpierw projektuj indeks z odpowiednim prefiksem.
+- `App.utils.prefixRange` traktuj jako fallback backendowy, gdy zmiana indeksu nie jest możliwa.
+
+### Guardrail dla indeksów standalone
+
+- Gdy indeks łączy równorzędne strumienie danych (union wielu tabel), definiuj go jako serwisowy `definition.index(...)` (najlepiej w osobnym `indexes.js`), a nie jako `model.indexes` przypisany do przypadkowego modelu.
+- `model.indexes` stosuj tylko wtedy, gdy semantycznym właścicielem indeksu jest jeden model.
+
 ## Triggery – online/offline i batchowanie
 
 - Triggery są do reakcji na zdarzenia (np. zmiana stanu sesji, start serwera).
@@ -270,6 +283,12 @@ definition.trigger({
 ```
 
 Sprawdzaj `data`/`oldData`: oba obecne = update, tylko `data` = create, tylko `oldData` = delete.
+
+## Cron-service — harmonogramy, interwały i UI admina
+
+- Dla wykonywania **triggerów** wg **czasu ściennego** lub **stałego interwału** używaj **`@live-change/cron-service`** (**Schedule** / **Interval**) wraz z **task-service** — nie planuj „tylko timera” bez modeli cron i cyklu życia **`changeCron_Schedule`** / **`changeCron_Interval`**.
+- Wzorzec admina (jak **task-frontend**): **`setSchedule`** / **`setInterval`** przez **`ActionForm`**, listy przez **`path.cron.schedules`** / **`path.cron.intervals`**, wzbogacanie wierszy **`.with()`** o **`scheduleInfo`** / **`intervalInfo`**, **`runState`** (`jobType` **`cron_Schedule`** lub **`cron_Interval`**), **`task.tasksByCauseAndCreatedAt`**; usuwanie przez **`deleteSchedule`** / **`deleteInterval`**.
+- Pola czasu **Schedule** (**minute**, **hour**, **day**, **dayOfWeek**, **month**): **`NaN`** = „każdy” na danym poziomie — szczegóły w **`15-cron-and-intervals.md`** (sekcja **API used by task-frontend**).
 
 ## Wzorzec „pending + resolve” (asynchroniczny wynik)
 

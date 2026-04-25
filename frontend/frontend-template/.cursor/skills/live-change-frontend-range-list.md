@@ -27,6 +27,19 @@ function articlesPathRange(range) {
 }
 ```
 
+## Step 1a – Hard rules for index-backed ranges
+
+For lists loaded with `RangeViewer` / `rangeBuckets`:
+
+- backend views should use `sortedIndexRangePath`, not `indexRangePath`,
+- keep `range.gt/gte/lt/lte` for pagination cursor only,
+- never override `gt/lt` in frontend `pathFunction` with ad-hoc filters.
+
+Why:
+
+- RangeViewer computes next buckets from previous cursor boundaries,
+- replacing cursor fields causes repeated slices and broken infinite loading.
+
 ## Step 2 – Attach related objects with `.with()`
 
 Chain `.with()` calls to load related data for each item:
@@ -151,3 +164,11 @@ Why:
   </template>
 </ReactiveRangeViewer>
 ```
+
+## Checklist – range pagination safety
+
+- [ ] backend index view is based on `sortedIndexRangePath`
+- [ ] frontend `pathFunction` forwards `range` unchanged (`...range` or `...reverseRange(range)`)
+- [ ] domain filters (`month`, `year`, `status`) are separate view params
+- [ ] no manual cursor overrides (`gt/gte/lt/lte`) in frontend code
+- [ ] if narrowing is needed, backend uses index prefix design first, `prefixRange` only as fallback

@@ -1,0 +1,28 @@
+---
+description: LiveChange backend — views/viewGet for reads; actions/triggers + emit for writes (CQRS-like)
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
+alwaysApply: false
+---
+
+# LiveChange backend — widoki do odczytu, akcja/trigger do zapisu
+
+Na serwerze **inne ścieżki niż na froncie**: nie ma `live` / `useFetch` — odczyt definiujesz jako **`definition.view`** i ewentualnie wywołujesz go z kodu przez **`app.viewGet`** / **`app.serviceViewGet`**.
+
+## Odczyt
+
+- **Widok** (`definition.view`) — jedyny kanał wystawienia danych do klienta (DAO, indeksy, wyliczenia, `fetch` zewnętrzny). Może zwracać dane złożone lub wyliczone (np. podgląd „następnego numeru”).
+- **Z kodu serwera** (trigger, akcja, batch):
+  - `await app.viewGet('viewName', { ...properties })` — widok **w tym samym** serwisie co `app`.
+  - `await app.serviceViewGet('otherService', 'viewName', { ...properties })` — widok w **innym** serwisie.
+- Bezpośredni odczyt modelu (`Model.get`, `indexObjectGet`, …) jest OK tam, gdzie nie potrzebujesz warstwy widoku/access control widoku — ale **nie** zamieniaj tego na „akcję tylko po to, żeby coś zwrócić”.
+
+## Zapis / zmiana stanu
+
+- **Akcja** (`definition.action`) i **trigger** (`definition.trigger`) — walidacja, orchestracja, **`emit`** do eventów, **`trigger`** / **`triggerService`** do zapisu zgodnie z [live-change-backend-event-sourcing.mdc](./live-change-backend-event-sourcing.mdc).
+- Nie dodawaj `definition.action`, której jedynym celem jest zwrócenie danych **bez** trwałej zmiany stanu — użyj **widoku**.
+
+## Antywzorzec
+
+- Akcja/command po stronie klienta tylko po to, żeby pobrać podgląd — błąd projektu po obu stronach: na backendzie powinien być **widok**, na froncie `live`/`useFetch` (reguła frontendowa).
+
+Szczegóły: `live-change-stack/docs/docs/server/07-views.md`, `06-actions.md`, `08-triggers.md`. API klienta (Vue) — `live-change-stack/docs/docs/frontend/04-logic-and-data-layer.md`, nie ta reguła.

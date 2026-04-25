@@ -1,6 +1,6 @@
 ---
 description: Event-sourcing data flow rules — emit events for DB writes, use triggerService for cross-service writes
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 alwaysApply: false
 ---
 

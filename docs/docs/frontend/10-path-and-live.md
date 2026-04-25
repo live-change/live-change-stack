@@ -34,6 +34,8 @@ const identificationPath = computed(() =>
 const identification = await live(identificationPath)
 ```
 
+`computed` wraps **reactive path parameters** (the result of `path.service.view(...)`). It does **not** wrap the `usePath()` call — that must run once in `setup`, not inside the getter.
+
 Here `identificationPath` resolves to a path array like:
 
 ```javascript
@@ -88,7 +90,7 @@ The `.with` method on `Path` is what feeds the `more` array that `live` uses.
 
 ### Examples from the codebase
 
-Real usage of `.with` in the stack:
+Real usage of `.with` in the stack. In each snippet, `path` is the object from `const path = usePath()` in component `setup` (see above: do not call `usePath()` inside `computed` getters).
 
 **Billing + balance** (`billing-frontend`, e.g. `BillingBalance.vue`): load the user’s billing and attach the balance in one query:
 
@@ -103,8 +105,8 @@ path.billing.myUserBilling({})
 **Access list + identification** (`access-control-frontend`, `AccessList.vue`): for each access entry, load the corresponding user identification:
 
 ```javascript
-path().accessControl.objectOwnedAccesses({ object, objectType })
-  .with(access => path().userIdentification.identification({
+path.accessControl.objectOwnedAccesses({ object, objectType })
+  .with(access => path.userIdentification.identification({
     sessionOrUserType: access.sessionOrUserType,
     sessionOrUser: access.sessionOrUser
   }).bind('identification'))
@@ -124,12 +126,41 @@ path.cron.schedules({ ...reverseRange(range) })
 **Image + original image** (`image-frontend`, `ImageEditor.vue`): load an image and its original (e.g. for crop) in one go:
 
 ```javascript
-path().image.image({ image: props.modelValue }).with(
-  image => path().image.image({ image: image.crop.originalImage }).bind('originalImage')
+path.image.image({ image: props.modelValue }).with(
+  image => path.image.image({ image: image.crop.originalImage }).bind('originalImage')
 )
 ```
 
 In each case, the builder receives a proxy of the main result (e.g. `billing`, `access`, `schedule`, `image`); you use it to build a path for the related view and call `.bind('fieldName')` so the result is attached on that field. One `live(...)` call then returns the main data with all related objects already loaded and kept in sync.
+
+### `.with()` is declarative DSL, not runtime logic
+
+The callback passed to `.with(item => ...)` receives a Path DSL proxy, not a hydrated record from the backend. Treat it as a query builder function:
+
+- describe pointers and related paths,
+- avoid side effects and imperative runtime branching,
+- avoid `if/else` checks against proxy fields.
+
+Use `$switch` when path selection depends on a field value:
+
+```javascript
+path.accounting.settlementsByTransaction({ transaction, transactionType })
+  .with(settlement => settlement.subjectType.$switch({
+    invoice_CostInvoice: path.invoice.costInvoice({ costInvoice: settlement.subject }),
+    invoice_IncomeInvoice: path.invoice.incomeInvoice({ incomeInvoice: settlement.subject }),
+    hr_CivilContract: path.hr.civilContract({ civilContract: settlement.subject })
+  }).$bind('subjectDoc'))
+```
+
+Another production example (URL resolving) uses the same pattern:
+
+```javascript
+p.url.urlsByTargetAndPath({ targetType, domain, path: urlPath })
+  .with(url => url.type.$switch({
+    canonical: null,
+    redirect: p.url.canonical({ targetType, target: url.target })
+  }).$bind('canonical'))
+```
 
 ### How it works
 
@@ -214,7 +245,22 @@ const articlePath = computed(() => path.blog.article({ article: unref(articleId)
 const [article] = await Promise.all([live(articlePath)])
 ```
 
+**Important:** `usePath()` must run in `setup` (see [`09-api-vue3-ssr`](./09-api-vue3-ssr.md#usepathcontext)). The `computed` factory should only build paths using the existing `path` object — never call `usePath()` or `path()` inside the getter.
+
 When `articleId` changes (e.g. via navigation), the path recomputes and `live` automatically resubscribes to the new data.
+
+### Parallel vs sequential `live(...)`
+
+For independent reads, start subscriptions together:
+
+```javascript
+const [article, comments] = await Promise.all([
+  live(articlePath),
+  live(commentsPath)
+])
+```
+
+Use sequential loading only when the second path requires data returned by the first one. If that dependency can be modeled with `.with()` and `$switch`, prefer one declarative query.
 
 ### Null guard for conditional loading
 

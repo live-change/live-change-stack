@@ -38,6 +38,21 @@ const [article, comments] = await Promise.all([
 ])
 ```
 
+- Call `usePath()` **once** at the top of `setup` (synchronously). Inside `computed`, use only the returned `path` object to build paths — **never** call `usePath()` or the legacy `path()` inside the getter (there is often no active component instance, which breaks `getCurrentInstance()` / `appContext`).
+
+Wrong:
+
+```javascript
+computed(() => usePath().blog.article({ article: id }))
+```
+
+Right:
+
+```javascript
+const path = usePath()
+const articlePath = computed(() => path.blog.article({ article: id }))
+```
+
 In templates access `.value`:
 
 ```vue
@@ -47,7 +62,26 @@ In templates access `.value`:
 </div>
 ```
 
-## Step 2 – Load related objects with `.with()`
+## Step 2 – One-time fetches with `useFetch`
+
+When you need data once (e.g. after an upload, in an event handler), use `useFetch` instead of `live`:
+
+```javascript
+import { usePath, useFetch } from '@live-change/vue3-ssr'
+
+const path = usePath()
+const data = await useFetch(path.paperInvoice.invoiceFileInfo({ invoiceFile: fileId }))
+```
+
+**Do NOT use `api.get()` with Path objects.** `path.service.view()` returns a Path object (with `.what`, `.more`, `.to` properties), not a raw array. `api.get()` only accepts raw arrays like `['service', 'view', { params }]`.
+
+| Method | Input | Returns | Use when |
+|---|---|---|---|
+| `live(path)` | Path or array | Reactive Ref | Live-updating data |
+| `useFetch(path)` | Path or array | Promise | One-time fetch |
+| `api.get([...])` | Raw array only | Promise | Low-level, avoid in app code |
+
+## Step 3 – Load related objects with `.with()`
 
 Chain `.with()` to attach related data to each item:
 
@@ -62,6 +96,40 @@ const articlesPath = computed(() =>
 )
 
 const [articles] = await Promise.all([live(articlesPath)])
+```
+
+### `.with()` callback guardrails
+
+Treat `.with(item => ...)` as a declarative Path DSL builder:
+
+- the callback receives a proxy, not a hydrated runtime record
+- do not place side effects or command calls inside `.with(...)`
+- do not use imperative branching like `if(item.type === '...')` in the callback
+
+Use `$switch` for conditional path branching:
+
+```javascript
+const settlementsPath = computed(() =>
+  path.accounting.settlementsByTransaction({
+    transactionType: 'bankAccount_BankTransaction',
+    transaction: transactionId,
+    range: { limit: 256 }
+  }).with(settlement => settlement.subjectType.$switch({
+    invoice_CostInvoice: path.invoice.costInvoice({ costInvoice: settlement.subject }),
+    invoice_IncomeInvoice: path.invoice.incomeInvoice({ incomeInvoice: settlement.subject }),
+    hr_CivilContract: path.hr.civilContract({ civilContract: settlement.subject })
+  }).$bind('subjectDoc'))
+)
+```
+
+Production-style pattern reference:
+
+```javascript
+p.url.urlsByTargetAndPath({ targetType, domain, path: urlPath })
+  .with(url => url.type.$switch({
+    canonical: null,
+    redirect: p.url.canonical({ targetType, target: url.target })
+  }).$bind('canonical'))
 ```
 
 Access in template:
@@ -88,7 +156,7 @@ const eventPath = computed(() =>
 )
 ```
 
-## Step 3 – Conditional loading with `useClient`
+## Step 4 – Conditional loading with `useClient`
 
 Use `useClient()` to check authentication state and conditionally build paths:
 
@@ -134,7 +202,7 @@ When the path is `null` / `false` / `undefined`, `live()` returns a ref with `nu
 </template>
 ```
 
-## Step 4 – Dependent paths
+## Step 5 – Dependent paths
 
 When one path depends on data from another, load them sequentially:
 
@@ -154,7 +222,7 @@ const [author] = await Promise.all([live(authorPath)])
 
 Or use `.with()` to combine them in a single query (preferred when possible).
 
-## Step 5 – Props-based paths in components
+## Step 6 – Props-based paths in components
 
 When building reusable components that receive IDs as props:
 
@@ -179,6 +247,7 @@ When building reusable components that receive IDs as props:
 | Pattern | When to use |
 |---|---|
 | `computed(() => path.xxx(...))` | Path depends on reactive values |
+| `useFetch(path.xxx(...))` | One-time data fetch (not reactive) |
 | `.with(item => path.yyy(...).bind('field'))` | Attach related objects |
 | `client.value.user && path.xxx(...)` | Load only when authenticated |
 | `client.value.roles.includes('admin')` | Load/show only for specific roles |

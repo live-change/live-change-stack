@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "setup": "INSTALL=true node index.js",
-    "test": "NODE_ENV=test blue-tape tests/*"
+    "test": "node --test tests/"
   },
   "author": "Michał Łaszczewski <michal@emikse.com>",
   "license": "BSD-3-Clause",

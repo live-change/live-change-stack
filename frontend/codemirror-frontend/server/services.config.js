@@ -40,8 +40,21 @@ module.exports = {
       path: '@live-change/url-service'
     },
     {
+      name: 'task',
+      path: '@live-change/task-service'
+    },
+    {
       name: 'codemirror',
-      path: '@live-change/codemirror-service'
+      path: '@live-change/codemirror-service',
+      documentTypes: {
+        markdown: {
+          format: 'text'
+        },
+        code: {
+          format: 'text'
+        }
+      },
+      testLatency: 200
     }
   ]
 }

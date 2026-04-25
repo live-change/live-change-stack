@@ -1,0 +1,47 @@
+---
+description: Zasady komunikacji przez surowy protokół DAO (C++, Python, inne klienty)
+globs: *.cpp, *.py, *.rs, *.go
+---
+
+# LiveChange DAO Protocol Arguments
+
+When communicating with the LiveChange framework using the raw `@live-change/dao` protocol (e.g., from C++, Python, Rust, Go, or any other non-JS client), you MUST ALWAYS pass arguments as an **array**.
+
+The framework treats DAO request and observable arguments like function arguments and uses the spread operator (`...args`) to pass them to the underlying action or view functions. If you pass an object instead of an array, the server will throw a `TypeError: Spread syntax requires ...iterable[Symbol.iterator] to be a function`.
+
+Even if an action or view expects a single object as its parameter, that object MUST be wrapped in a single-element array.
+
+## C++ Example (using nlohmann/json)
+
+### Incorrect ❌
+```cpp
+nlohmann::json args = {
+  {"pairingKey", "123"},
+  {"connectionType", "device"}
+};
+connection->request({"serviceName", "actionName"}, args, settings);
+```
+
+### Correct ✅
+```cpp
+// Wrap the object in an array
+auto args = {
+  nlohmann::json::object({
+    {"pairingKey", "123"},
+    {"connectionType", "device"}
+  })
+};
+connection->request({"serviceName", "actionName"}, args, settings);
+```
+
+Or explicitly:
+```cpp
+nlohmann::json args = nlohmann::json::array({
+  nlohmann::json::object({
+    {"pairingKey", "123"},
+    {"connectionType", "device"}
+  })
+});
+```
+
+Always double-check that your `args` payload is an array before sending it over the DAO connection.

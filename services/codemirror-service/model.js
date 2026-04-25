@@ -4,15 +4,20 @@ import definition from './definition.js'
 const config = definition.config
 import LRU from 'lru-cache'
 import { ChangeSet, Text } from '@codemirror/state'
-import { rebaseUpdates } from '@codemirror/collab'
 
-const { snapshotAfterSteps = 230 } = config
+const { snapshotAfterSteps = 230, readerRoles = ['writer'] } = config
 
 const documentTypes = new Set(Object.keys(config.documentTypes || {}))
+
+const documentReadAccessControl = {
+  roles: readerRoles,
+  objects: (p) => [{ objectType: p.ownerType, object: p.owner }]
+}
 
 const Document = definition.model({
   name: 'Document',
   propertyOfAny: {
+    readAccessControl: documentReadAccessControl
   },
   properties: {
     type: {
@@ -129,27 +134,14 @@ definition.event({
     const openDocument = await getDocument(document, documentType)
     if(!openDocument) throw new Error('critical error - document not found') /// impossible
 
-    let received = steps.map(s => ({
+    if(version !== openDocument.version) {
+      throw app.logicError('codemirror_document_edited_version_mismatch')
+    }
+
+    const received = steps.map(s => ({
       clientID: s.clientID,
       changes: ChangeSet.fromJSON(s.changes)
     }))
-
-    if(version != openDocument.version) {
-      const buckets = await StepsBucket.rangePath([document], {
-        gt: (version + 1).toFixed().padStart(10, '0'),
-        lte: openDocument.version.toFixed().padStart(10, '0')
-      })
-      const intermediateUpdates = []
-      for(const bucket of buckets || []) {
-        for(const s of bucket.steps) {
-          intermediateUpdates.push({
-            clientID: s.clientID,
-            changes: ChangeSet.fromJSON(s.changes)
-          })
-        }
-      }
-      received = rebaseUpdates(received, intermediateUpdates)
-    }
 
     for(const update of received) {
       openDocument.content = update.changes.apply(openDocument.content)
@@ -183,14 +175,15 @@ definition.event({
 })
 
 async function readVersion(document, documentType, version) {
-  const snapshot = await Snapshot.rangePath([document], {
+  const snapshots = await Snapshot.rangeGet([document], {
     reverse: true, limit: 1, lte: version.toFixed().padStart(10, '0')
-  })?.[0]
+  })
+  const snapshot = snapshots?.[0]
   if(!snapshot) throw app.logicError("not_found")
   let content = Text.of(snapshot.content)
   let current = snapshot.version
   while(current < version) {
-    const stepsBuckets = await StepsBucket.rangePath([document], {
+    const stepsBuckets = await StepsBucket.rangeGet([document], {
       gt: current.toFixed().padStart(10, '0')
     })
     for(const stepsBucket of stepsBuckets || []) {

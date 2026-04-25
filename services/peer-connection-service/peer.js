@@ -3,6 +3,7 @@ const app = App.app()
 
 import definition from './definition.js'
 import config from './config.js'
+import { decodePeerId } from './decodePeerId.js'
 
 import accessControl from '@live-change/access-control-service/access.js'
 const { clientHasAccessRoles } = accessControl(definition)
@@ -80,7 +81,7 @@ definition.trigger({
   },
   async execute({ session, peer }, context, emit) {
     console.log("PEER ONLINE PARAMS", { session, peer })
-    const [ channelType, channel, peerSession, instance ] = peer.split(':')
+    const { channelType, channel, peerSession, instance } = decodePeerId(peer)
     if(peerSession !== session) throw new Error('wrongSession')
     /// TODO: check channel access
     emit({
@@ -96,7 +97,7 @@ definition.trigger({
   },
   async execute({ session, peer }, context, emit) {
     console.log("PEER OFFLINE PARAMS", { session, peer })
-    const [ channelType, channel, peerSession, instance ] = peer.split(':')
+    const { channelType, channel, peerSession, instance } = decodePeerId(peer)
     if(peerSession !== session) throw new Error('wrongSession')
     emit({
       type: 'peerOffline',

@@ -1,0 +1,30 @@
+---
+description: LiveChange frontend — use views (live/useFetch) for reads; commands only for mutations
+globs: **/front/**/*.{vue,js,ts}
+alwaysApply: false
+---
+
+# LiveChange frontend — odczyt przez widoki, nie przez command
+
+Ten sam **model mentalny** co na backendzie (odczyt vs zapis), ale **inne API**: na froncie nie ma `app.viewGet` — klient korzysta ze **ścieżek widoków** z `usePath()`.
+
+## Odczyt danych
+
+- Buduj ścieżkę: `usePath()` (tylko synchronicznie w `setup`) → `path.<service>.<viewName>({ ...params })`; w `computed` używaj już utworzonego obiektu `path`, nie wywołuj ponownie `usePath()` / `path()`.
+- Subskrypcja: `live(computed(() => path...))` albo `await Promise.all([live(...), ...])`.
+- Jednorazowo: `useFetch(path.service.view({ ... }))` (np. w handlerze, po uploadzie).
+- Dla niezależnych odczytów uruchamiaj `live(...)` równolegle (`Promise.all`), a sekwencyjnie tylko gdy drugi path zależy od wyniku pierwszego.
+- W `Path.with(...)` buduj deklaratywnie ścieżki; do branchingu po typie/polu używaj `$switch`, nie runtime `if` na callbacku `.with`.
+
+Nie używaj `api.command` ani `useActions()` do „załadowania” danych, podglądu, wyliczenia tylko do UI, ani „jakiego będzie następny numer” — to **zawsze** powinno iść przez **widok** (`definition.view` po stronie serwera) i `live` / `useFetch` po stronie klienta.
+
+## Mutacja stanu
+
+- `api.command(['service', 'actionName'], props)` lub `useActions()` → wywołanie **akcji** zmieniającej trwały stan (create/update/delete przez eventy itd.).
+- `workingZone` i spinner przy commandach mają sens przy **zapisie**, nie przy odczycie.
+
+## Antywzorzec
+
+- Wywołanie akcji/command tylko po to, żeby dostać zwrócony string (np. podgląd numeru faktury) **bez** zmiany bazy — **źle**. Zamiast tego dodaj **widok** zwracający ten podgląd i pobierz go przez `live` / `useFetch`.
+
+Szczegóły API: `live-change-stack/docs/docs/frontend/04-logic-and-data-layer.md`. Backend (`app.viewGet`, triggery): reguła `live-change-backend-views-vs-triggers-for-reads-writes.mdc` — nie stosuj jej w plikach Vue.

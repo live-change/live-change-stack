@@ -1,6 +1,11 @@
+.env
 node_modules
 dist
 tmp.db
 tmp
 *.log
+e2e/output
+front/dist
+build-stats
+front/components.d.ts
 

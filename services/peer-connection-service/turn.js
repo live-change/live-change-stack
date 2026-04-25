@@ -12,6 +12,7 @@ const { clientHasAccessRoles } = accessControl(definition)
 
 
 import { Peer } from './peer.js'
+import { decodePeerId } from './decodePeerId.js'
 
 function randomHexString(size) {
   return new Promise((resolve, reject) => {
@@ -57,8 +58,8 @@ definition.view({
   },
   access: async ({ peer },  { client, service, visibilityTest }) => {
     if(visibilityTest) return true
-    const [ channelType, channel, session, instance ] = peer.split(':')
-    if(session !== client.session) throw new Error('wrongSession')
+    const { channelType, channel, peerSession } = decodePeerId(peer)
+    if(peerSession !== client.session) throw new Error('wrongSession')
     const result = await clientHasAccessRoles(client, { objectType: channelType.split('.')[0], object: channel },
         config.writerRoles)
     return result

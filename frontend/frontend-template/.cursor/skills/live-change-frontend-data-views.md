@@ -38,6 +38,21 @@ const [article, comments] = await Promise.all([
 ])
 ```
 
+- Call `usePath()` **once** at the top of `setup` (synchronously). Inside `computed`, use only the returned `path` object to build paths — **never** call `usePath()` or the legacy `path()` inside the getter (there is often no active component instance, which breaks `getCurrentInstance()` / `appContext`).
+
+Wrong:
+
+```javascript
+computed(() => usePath().blog.article({ article: id }))
+```
+
+Right:
+
+```javascript
+const path = usePath()
+const articlePath = computed(() => path.blog.article({ article: id }))
+```
+
 In templates access `.value`:
 
 ```vue

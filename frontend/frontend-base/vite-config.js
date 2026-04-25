@@ -104,7 +104,8 @@ export default async ({ command, mode, version, isSsrBuild, isPreview }, options
           '@live-change/survey-frontend/src',
           '@live-change/peer-connection-frontend/src',
           '@live-change/video-call-frontend/src',
-          '@live-change/frontend-auto-form/src',
+          '@live-change/frontend-auto-form/src',          
+          '@live-change/codemirror-frontend/src',
           '@live-change/db-web/src',          
         ].map(p => {
           try {
@@ -244,6 +245,7 @@ export default async ({ command, mode, version, isSsrBuild, isPreview }, options
         '@live-change/survey-frontend',
         '@live-change/peer-connection-frontend',
         '@live-change/video-call-frontend',
+        '@live-change/codemirror-frontend',
         '@live-change/frontend-auto-form',
         '@live-change/db-web',
         '@live-change/db',

@@ -1,6 +1,6 @@
 ---
 description: Rules for implementing actions, views, and triggers in LiveChange services
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 ---
 
 # LiveChange backend – actions, views, triggers (Claude Code)
@@ -51,6 +51,48 @@ definition.action({
 
 - Views should be simple query endpoints over models.
 - Prefer `indexObjectGet` / `indexRangeGet` instead of scanning whole tables.
+
+### Range view guardrails (for RangeViewer/rangeBuckets consumers)
+
+- For index-backed paginated lists, prefer `Model.sortedIndexRangePath(indexName, keyPrefix, App.extractRange(props))`.
+- Do not use `indexRangePath` semantics for views consumed by bucket-based range UI.
+- Keep `gt/gte/lt/lte` as cursor pagination fields, not domain filter fields.
+- If you need filtering by month/year/status, design index prefix for it first.
+- Use `App.utils.prefixRange` as backend fallback only when index redesign is not feasible.
+
+### Standalone index guardrail
+
+- If an index combines peer data streams (union of multiple tables), define it as service-level `definition.index(...)` (prefer separate `indexes.js`), not as `model.indexes` inside one arbitrary model.
+- Use model `indexes` only when one model is the clear owner of index semantics.
+
+### Index function serialization constraint
+
+Index functions (`definition.index({ function })` and model-level `indexes: { name: { function } }`) are **serialized via `toString()`** and executed on a remote server. They **cannot reference anything outside their own function body** — no outer variables, no imported functions, no module-scope helpers.
+
+```js
+// ❌ BROKEN — helper is outside the function, undefined at runtime
+function mapRow(obj) { return { id: obj.name + '_' + obj.id, to: obj.id } }
+
+definition.index({
+  name: 'myIndex',
+  function: async (input, output, { tableName }) => {
+    const table = await input.table(tableName)
+    await table.map(mapRow).to(output)       // mapRow is undefined!
+  },
+  parameters: { tableName: definition.name + '_MyModel' }
+})
+
+// ✅ CORRECT — helper is inside the function body
+definition.index({
+  name: 'myIndex',
+  function: async (input, output, { tableName }) => {
+    const mapRow = obj => ({ id: obj.name + '_' + obj.id, to: obj.id })
+    const table = await input.table(tableName)
+    await table.map(mapRow).to(output)
+  },
+  parameters: { tableName: definition.name + '_MyModel' }
+})
+```
 
 Example of a range view:
 
@@ -158,6 +200,12 @@ definition.trigger({
 ```
 
 Check `data`/`oldData`: both present = update, only `data` = create, only `oldData` = delete.
+
+## Cron-service — schedules, intervals, and admin UI
+
+- For **cron-like** or **repeating-interval** execution of a **trigger**, use **`@live-change/cron-service`** (**Schedule** / **Interval**) plus **task-service** triggers — do not sketch “only a timer” without considering cron models and **`changeCron_Schedule`** / **`changeCron_Interval`** timer lifecycle.
+- Reference admin flow (see **task-frontend**): **`setSchedule`** / **`setInterval`** via **`ActionForm`**, lists via **`path.cron.schedules`** / **`path.cron.intervals`**, enrich rows with **`.with()`** for **`scheduleInfo`** / **`intervalInfo`**, **`runState`** (`jobType` **`cron_Schedule`** or **`cron_Interval`**), and **`task.tasksByCauseAndCreatedAt`**; delete with **`deleteSchedule`** / **`deleteInterval`**.
+- **Schedule** time fields (**minute**, **hour**, **day**, **dayOfWeek**, **month**): use **`NaN`** for “every” at that granularity; see **`15-cron-and-intervals.md`** (section **API used by task-frontend**).
 
 ## Granting access on object creation
 

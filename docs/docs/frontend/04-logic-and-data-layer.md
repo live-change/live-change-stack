@@ -23,7 +23,7 @@ Key hooks:
 
 ### Loading data with `live` and `Promise.all`
 
-Always load data in parallel with `Promise.all`. This is also how SSR prefetch is triggered automatically via Suspense:
+For independent reads, load data in parallel with `Promise.all`. This is also how SSR prefetch is triggered automatically via Suspense:
 
 ```javascript
 import { computed } from 'vue'
@@ -39,6 +39,8 @@ const [ article, comments ] = await Promise.all([
   live(computed(() => path.blog.articleComments({ article: props.article })))
 ])
 ```
+
+Use sequential loading only when path B depends on data produced by path A. If a dependency can be described declaratively, prefer one query with `.with(...)` and `$switch(...)` instead of imperative branching in JavaScript callbacks.
 
 In the template:
 

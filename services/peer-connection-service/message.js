@@ -5,6 +5,7 @@ import accessControl from '@live-change/access-control-service/access.js'
 const { clientHasAccessRoles } = accessControl(definition)
 
 import { Peer } from './peer.js'
+import { decodePeerId } from './decodePeerId.js'
 
 const messageFields = {
   to: {
@@ -91,8 +92,9 @@ definition.view({
   access: async({ peer }, { client, service, visibilityTest }) => {
     if(visibilityTest) return true
     if(!peer) throw new Error("peer parameter is required")
-    console.log('MESSAGES ACCESS', peer.split(':'), "[2] == ", client.session)
-    return peer.split(':')[2] === client.session
+    const { peerSession } = decodePeerId(peer)
+    console.log('MESSAGES ACCESS', { peerSession, clientSession: client.session })
+    return peerSession === client.session
   },
   async daoPath({ peer, gt, lt, gte, lte, limit, reverse }, { client, service }, method) {
     const channelId = peer
@@ -162,12 +164,12 @@ definition.action({
   access: async ({ from, to }, context) => {
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
-    const [fromType, fromId, fromSession] = from.split(':')
-    const [toType, toId, toSession] = to.split(':')
-    //console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
-    if(toType !== fromType || toId !== fromId) return false // different channel
-    if(client.session !== fromSession) return false
-    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, config.writerRoles)
+    const fromDecoded = decodePeerId(from)
+    const toDecoded = decodePeerId(to)
+    //console.log("POST MESSAGE", fromDecoded, '=>', toDecoded, "BY", client)
+    if(toDecoded.channelType !== fromDecoded.channelType || toDecoded.channel !== fromDecoded.channel) return false // different channel
+    if(client.session !== fromDecoded.peerSession) return false
+    const hasRole = await clientHasAccessRoles(client, { objectType: toDecoded.channelType, object: toDecoded.channel }, config.writerRoles)
     return hasRole
   },
   queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed
@@ -203,12 +205,12 @@ definition.action({
   access: async ({ from, to }, context) => {
     const { client, service, visibilityTest } = context
     if(visibilityTest) return true
-    const [fromType, fromId, fromSession] = from.split(':')
-    const [toType, toId, toSession] = to.split(':')
-   // console.log("POST MESSAGE", fromType, fromId, fromSession, '=>', toType, toId, toSession, "BY", client)
-    if(toType !== fromType || toId !== fromId) return false // different channel
-    if(client.session !== fromSession) return false
-    const hasRole = await clientHasAccessRoles(client, { objectType: toType, object: toId }, config.writerRoles)
+    const fromDecoded = decodePeerId(from)
+    const toDecoded = decodePeerId(to)
+   // console.log("POST MESSAGE", fromDecoded, '=>', toDecoded, "BY", client)
+    if(toDecoded.channelType !== fromDecoded.channelType || toDecoded.channel !== fromDecoded.channel) return false // different channel
+    if(client.session !== fromDecoded.peerSession) return false
+    const hasRole = await clientHasAccessRoles(client, { objectType: toDecoded.channelType, object: toDecoded.channel }, config.writerRoles)
     return hasRole
   },
   queuedBy: (props) => props.from+':'+props.to, // without this, messages order can be changed

@@ -62,6 +62,25 @@ properties: {
 }
 ```
 
+## Step 2b – Relation arity rules (critical)
+
+Treat arity on two levels:
+
+- **Annotation arity**: can the annotation itself be a list of configs?
+- **Parent tuple arity**: can one config point to multiple parents/dimensions?
+
+| Relation | Annotation arity | Parent tuple arity |
+|---|---|---|
+| `propertyOf`, `itemOf`, `boundTo` | single config only | `what` can be one model or `[A, B, ...]` |
+| `relatedTo` | single config or config list | each config uses `what` with one model or `[A, B, ...]` |
+| `propertyOfAny`, `itemOfAny`, `boundToAny` | single config only | `to` can contain one or many names |
+| `relatedToAny` | single config or config list | each config uses `to` with one or many names |
+
+Guardrail:
+
+- valid: `propertyOf: { what: [A, B] }`
+- invalid: `propertyOf: [configA, configB]`
+
 ## Step 3 – Configure the relation
 
 ### `userItem`
@@ -110,7 +129,7 @@ so the relations/CRUD generator can treat it as a relation rather than a plain `
 
 Notes:
 
-- Usually you’ll have 1–2 parents, but the `propertyOf` list may contain **any number** of parent models (including 3+).
+- Usually you’ll have 1–2 parents, but `what` may contain **any number** of parent models (including 3+).
 - If the entity is a relation, avoid adding manual `...Id` fields in `properties` just to represent the link — CRUD generators won’t treat it as a relation.
 
 Example:
@@ -124,10 +143,9 @@ definition.model({
   properties: {
     // optional extra fields
   },
-  propertyOf: [
-    { what: CostInvoice },
-    { what: Contractor }
-  ]
+  propertyOf: {
+    what: [CostInvoice, Contractor]
+  }
 })
 ```
 

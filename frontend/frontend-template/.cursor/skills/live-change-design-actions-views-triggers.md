@@ -79,6 +79,57 @@ definition.action({
    - use model paths (`Model.path`, `Model.rangePath`, `Model.sortedIndexRangePath`, `Model.indexObjectPath`)
    - use `...App.rangeProperties` + `App.extractRange(props)` for range views
 
+### Step 2a – RangeViewer/rangeBuckets compatibility
+
+When a view is consumed by `RangeViewer` or `rangeBuckets`:
+
+- prefer `Model.sortedIndexRangePath(...)` for index-backed list views,
+- keep `App.extractRange(props)` as pagination cursor input,
+- do not reinterpret `gt/gte/lt/lte` as domain filters.
+
+Anti-patterns:
+
+- using `indexRangePath` for frontend bucket pagination flow,
+- injecting custom month/year bounds into cursor fields in frontend,
+- rewriting cursor values in backend with unrelated filter semantics.
+
+Preferred filtering strategy:
+
+1. design index prefix for frequent filters,
+2. use `App.utils.prefixRange` only as backend fallback,
+3. keep string min/max hacks as last resort.
+
+### Step 2b – Standalone indexes for union/equal sources
+
+When index rows are built from multiple equal tables (union-like flow), do not force the index into one model definition.
+
+Use `definition.index(...)` at service level (typically `indexes.js`) when:
+
+- index combines rows from two or more source tables,
+- source tables are peer entities (no natural single owner model),
+- index is a projection layer for cross-table reads.
+
+Example:
+
+```js
+definition.index({
+  name: 'Urls',
+  function: async (input, output) => {
+    await input.table('url_Redirect').onChange((obj, oldObj) =>
+      output.change(obj && mapRedirect(obj), oldObj && mapRedirect(oldObj))
+    )
+    await input.table('url_Canonical').onChange((obj, oldObj) =>
+      output.change(obj && mapCanonical(obj), oldObj && mapCanonical(oldObj))
+    )
+  }
+})
+```
+
+Decision rule:
+
+- model-local index -> `definition.model({ indexes: ... })`,
+- union/peer-source index -> standalone `definition.index(...)` in `indexes.js`.
+
 ### Example: `daoPath` (preferred, DAO-backed)
 
 ```js

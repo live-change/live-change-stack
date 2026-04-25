@@ -77,7 +77,7 @@ export default function(service, app) {
          || config.readAccess || config.readAccessControl 
          || config.writeAccess || config.writeAccessControl))
     defineRangeViews(config, context,
-      !!(config.listAccess || config.readAccess || config.listAccessControl))
+      !!(config.listAccess || config.readAccess || config.listAccessControl || config.readAccessControl))
 
     if(config.views) {
       for(const view of config.views) {

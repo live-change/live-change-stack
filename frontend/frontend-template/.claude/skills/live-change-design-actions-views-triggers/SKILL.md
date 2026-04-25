@@ -79,6 +79,116 @@ definition.action({
    - use model paths (`Model.path`, `Model.rangePath`, `Model.sortedIndexRangePath`, `Model.indexObjectPath`)
    - use `...App.rangeProperties` + `App.extractRange(props)` for range views
 
+### Step 2a – Prefix-aware range filtering
+
+When you query an index with `Model.sortedIndexRangePath(indexName, keyPrefix, range)`, remember:
+
+- `keyPrefix` is matched first (for example `[bankAccount]` or `[bankAccount, month]`).
+- `range.gt/gte/lt/lte` is applied to full serialized index keys, not to a single field.
+- If you need optional narrowing, pass a dedicated filter parameter (`month`, `state`, etc.) and keep range for cursor pagination.
+
+```js
+definition.view({
+  name: 'bankTransactionsByBankAccountAndDate',
+  properties: {
+    bankAccount: { type: String },
+    month: { type: String },
+    ...App.rangeProperties
+  },
+  returns: { type: Array, of: { type: Object } },
+  async daoPath({ bankAccount, month, ...props }) {
+    const range = App.extractRange(props)
+    if(month) {
+      const prefix = [bankAccount, month].map(v => JSON.stringify(v)).join(':')
+      return BankTransaction.rangePath(App.utils.prefixRange(range, prefix, prefix + ':'))
+    }
+    return BankTransaction.sortedIndexRangePath('byBankAccountAndDate', [bankAccount], range)
+  }
+})
+```
+
+If filtering by month is a frequent query, prefer a dedicated index like `byBankAccountAndMonthAndDate` and query it with:
+
+```js
+BankTransaction.sortedIndexRangePath('byBankAccountAndMonthAndDate', [bankAccount, month], range)
+```
+
+For that index, prefer this function-index style:
+
+```js
+function: async (input, output, { tableName }) => {
+  const table = await input.table(tableName)
+  const mapper = obj => ({
+    id: [obj.bankAccount, obj.date?.slice(0, 7), obj.date]
+      .map(v => JSON.stringify(v)).join(':') + '_' + obj.id,
+    to: obj.id
+  })
+  await table.map(mapper).to(output)
+}
+```
+
+`map()` automatically filters out `null`, so you can keep mapper logic concise.
+
+### Step 2b – RangeViewer/rangeBuckets compatibility
+
+When a view is consumed by `RangeViewer` or `rangeBuckets`:
+
+- prefer `Model.sortedIndexRangePath(...)` for index-backed list views,
+- keep `App.extractRange(props)` as pagination cursor input,
+- do not reinterpret `gt/gte/lt/lte` as domain filters.
+
+Anti-patterns:
+
+- using `indexRangePath` for frontend bucket pagination flow,
+- injecting custom month/year bounds into cursor fields in frontend,
+- rewriting cursor values in backend with unrelated filter semantics.
+
+Preferred filtering strategy:
+
+1. design index prefix for frequent filters,
+2. use `App.utils.prefixRange` only as backend fallback,
+3. keep string min/max hacks as last resort.
+
+### Step 2c – Standalone indexes for union/equal sources
+
+When index rows are built from multiple equal tables (union-like flow), do not force the index into one model definition.
+
+Use `definition.index(...)` at service level (typically `indexes.js`) when:
+
+- index combines rows from two or more source tables,
+- source tables are peer entities (no natural single owner model),
+- index is a projection layer for cross-table reads.
+
+> **IMPORTANT — serialization constraint:** Index functions are serialized via `toString()` and executed remotely. All helpers, mappers, and variables **must be defined inside the function body**. References to outer scope (module-level functions, imports) will be `undefined` at runtime.
+
+Example:
+
+```js
+definition.index({
+  name: 'Urls',
+  function: async (input, output) => {
+    const mapRedirect = obj => obj && ({
+      id: /* composed key */, to: obj.target
+    })
+    const mapCanonical = obj => obj && ({
+      id: /* composed key */, to: obj.target
+    })
+
+    await input.table('url_Redirect').onChange((obj, oldObj) =>
+      output.change(mapRedirect(obj), mapRedirect(oldObj))
+    )
+    await input.table('url_Canonical').onChange((obj, oldObj) =>
+      output.change(mapCanonical(obj), mapCanonical(oldObj))
+    )
+  }
+})
+```
+
+Decision rule:
+
+- model-local index -> `definition.model({ indexes: ... })`,
+- union/peer-source index -> standalone `definition.index(...)` in `indexes.js`.
+
 ### Example: `daoPath` (preferred, DAO-backed)
 
 ```js

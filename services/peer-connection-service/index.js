@@ -8,4 +8,5 @@ import './peer.js'
 import './peerState.js'
 import './message.js'
 
+export { decodePeerId } from './decodePeerId.js'
 export default definition

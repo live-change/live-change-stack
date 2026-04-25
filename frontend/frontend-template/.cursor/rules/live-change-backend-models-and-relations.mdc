@@ -1,6 +1,6 @@
 ---
 description: Rules for defining models, relations, indexes and access control in LiveChange
-globs: **/services/**/*.js
+globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 alwaysApply: false
 ---
 
@@ -35,6 +35,29 @@ properties: {
   }
 }
 ```
+
+## Arity relacji (bardzo ważne)
+
+Rozróżniaj dwa poziomy:
+
+- **arity adnotacji** — czy można podać listę konfiguracji
+- **arity rodziców w konfiguracji** — `what: [A, B]` lub `to: ['owner', 'topic']`
+
+| Relacja | Arity adnotacji | Arity rodziców |
+|---|---|---|
+| `propertyOf` | jedna konfiguracja | `what` może być pojedyncze lub tablica modeli |
+| `itemOf` | jedna konfiguracja | `what` może być pojedyncze lub tablica modeli |
+| `boundTo` | jedna konfiguracja | `what` może być pojedyncze lub tablica modeli |
+| `relatedTo` | jedna lub wiele konfiguracji | w każdej konfiguracji `what` może być pojedyncze lub tablica modeli |
+| `propertyOfAny` | jedna konfiguracja | `to` może mieć jedną lub wiele nazw |
+| `itemOfAny` | jedna konfiguracja | `to` może mieć jedną lub wiele nazw |
+| `boundToAny` | jedna konfiguracja | `to` może mieć jedną lub wiele nazw |
+| `relatedToAny` | jedna lub wiele konfiguracji | w każdej konfiguracji `to` może mieć jedną lub wiele nazw |
+
+Przykłady:
+
+- poprawnie: `propertyOf: { what: [A, B] }`
+- niepoprawnie: `propertyOf: [configA, configB]`
 
 ## `userItem` – zasób należący do użytkownika
 
@@ -123,7 +146,7 @@ Wtedy:
 
 - **nie** przechowuj „drugiej strony” jako zwykłego `contractorId` (albo ogólnie `someId`) w `properties`
 - **nie** dodawaj ręcznie pól `...Id` w modelu relacyjnym, jeśli to ma być relacja – to utrudnia generatorowi CRUD/relacji poprawne wnioskowanie o powiązaniach
-- zamiast tego zdefiniuj relacje jako `propertyOf` do **każdego** z modeli, które mają być rodzicami relacji
+- zamiast tego zdefiniuj jedną relację `propertyOf` z `what: [ModelA, ModelB, ...]`
 
 To jest istotne, bo generator CRUD/relacji rozumie wtedy, że encja jest powiązaniem pomiędzy dwiema encjami, a nie „zwykłym obiektem z polem id”.
 
@@ -138,10 +161,9 @@ definition.model({
   properties: {
     // dodatkowe pola relacji (opcjonalnie)
   },
-  propertyOf: [
-    { what: CostInvoice },
-    { what: Contractor }
-  ]
+  propertyOf: {
+    what: [CostInvoice, Contractor]
+  }
 })
 ```
 
@@ -186,7 +208,7 @@ Relacje automatycznie dodają **pola identyfikatorów** i **indeksy** do modelu.
 | `propertyOfAny: { ownerTypes: [...] }` | `ownerType`, `owner` | `byOwner` (hash) |
 | `boundTo: { what: Device }` | `device` | `byDevice` (hash) |
 
-Dla relacji z wieloma rodzicami (np. `propertyOf: [{ what: A }, { what: B }]`) tworzone są wszystkie kombinacje indeksów (`byA`, `byB`, `byAAndB`).
+Dla relacji z wieloma rodzicami (np. `propertyOf: { what: [A, B] }`) tworzone są wszystkie kombinacje indeksów (`byA`, `byB`, `byAAndB`).
 
 ## `propertyOfAny` — typy rodzica (`{name}Types`)
 
@@ -248,6 +270,13 @@ indexes: {
 ```
 
 Poza serwisem indeks bywa widoczny pod nazwą z prefiksem serwisu, np. `myService_Model_byDeviceAndStatus`.
+
+### Kiedy indeks ma być poza modelem
+
+Jeśli indeks jest unią/projekcją danych z kilku równorzędnych tabel (bez jednego naturalnego właściciela), nie wciskaj go do `model.indexes`.
+
+- Użyj serwisowego `definition.index(...)`, najlepiej w osobnym `indexes.js`.
+- To dotyczy szczególnie indeksów łączących różne typy encji w jeden strumień odczytu.
 
 ### Indeksy `function` dla pól wyliczanych
 

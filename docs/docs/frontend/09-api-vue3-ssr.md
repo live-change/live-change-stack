@@ -29,6 +29,10 @@ const profilePath = path.userIdentification.myIdentification()
 const articlePath = path.blog.article({ article: articleId })
 ```
 
+Call `usePath()` **synchronously during component `setup`** (or pass an explicit `context`, typically `appContext`, when you are outside a component). By default it resolves the LiveChange API via Vue’s `getCurrentInstance()`.
+
+Do **not** call `usePath()` (or the legacy alias `path()`) inside `computed` getters, `watch` callbacks, or async handlers unless you pass `context` — there is often no active instance then, which leads to errors such as reading `appContext` from `null`. Inside `computed`, use the object returned once from `usePath()` and only vary the path arguments (e.g. `computed(() => path.blog.article({ article: id }))`).
+
 ### useViews(), useActions()
 
 Shortcuts to the view and action namespaces:
