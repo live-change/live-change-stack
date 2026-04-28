@@ -41,8 +41,8 @@ definition.view({
     //console.log("CHECK PEERS ACCESS", params, client, visibilityTest)
     return clientHasAccessRoles(client, { objectType: channelType, object: channel }, config.readerRoles)
   },
-  async daoPath({ channelType, channel }, { client, service }, method) {
-    return Peer.indexRangePath('byChannel', [ channelType, channel.split(':')[0] ])
+  async daoPath({ channelType, channel }, { client, service }, method) {    
+    return Peer.indexRangePath('byChannel', [ channelType, channel ])    
   }
 })
 

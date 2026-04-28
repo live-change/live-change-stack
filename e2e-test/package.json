@@ -1,0 +1,36 @@
+{
+  "name": "@live-change/e2e-test",
+  "version": "0.9.203",
+  "description": "Reusable E2E test utilities for LiveChange apps",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./runner": "./src/runner.ts",
+    "./e2eSuite": "./src/e2eSuite.ts",
+    "./env": "./src/env.ts",
+    "./withBrowser": "./src/withBrowser.ts",
+    "./steps": "./src/steps.ts",
+    "./e2eDebug": "./src/e2eDebug.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-stack/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-stack",
+  "dependencies": {
+    "@live-change/framework": "0.9.203",
+    "generate-password": "^1.7.1",
+    "playwright": "^1.49.1",
+    "random-profile-generator": "^2.3.0"
+  }
+}

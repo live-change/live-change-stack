@@ -27,6 +27,7 @@
     "framework/elasticsearch-plugin",
     "framework/relations-plugin",
     "framework/codeceptjs-helper",
+    "e2e-test",
     "framework-vue3/vue-api",
     "framework-vue3/vue3-components",
     "framework-vue3/vue3-ssr",

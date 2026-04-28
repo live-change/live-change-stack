@@ -102,6 +102,57 @@ const createPeer = async ({
   }
   watch(computedLocalPeerState, (newState) => updatePeerState(newState), { immediate: true })
 
+  function updateConnections() {
+    const peers = isConnectionPossible.value ? otherPeersOnline.value : []
+    for(let connectionId = 0; connectionId < connections.value.length; connectionId++) {
+      const connection = connections.value[connectionId]
+      const connectionPeer = peers.find(peer => peer.id === connection.to)
+      if(!connectionPeer) {
+        connection.close()
+        connection.dispose()
+        connections.value.splice(connectionId, 1)
+        connectionId --
+      }
+    }
+    for(const peer of peers) {
+      let peerConnection = connections.value.find(connection => connection.to === peer.id)
+      if(peerConnection) continue;
+      const peerConnectionId = waitingConnections.value.findIndex(connection => connection.to === peer.id)
+      if(peerConnectionId !== -1) { // use waiting connection with cached messages
+        peerConnection = waitingConnections.value[peerConnectionId]
+        waitingConnections.value.splice(peerConnectionId, 1)
+      } else { // create connection
+        peerConnection = createPeerConnection(peerInternal, peer.id)
+      }
+      connections.value.push(peerConnection)
+      peerConnection.connect()
+    }
+  }
+
+  const summary = computed(() => ({
+    peerId, online: online.value, finished: finished.value,
+    computedLocalPeerState: computedLocalPeerState.value,
+    peers: peers.value?.length,
+    otherPeers: otherPeers.value?.map(p => p.peerState ?? p.id),
+    connections: connections.value?.map(connection => connection.summary),
+    waitingConnections: waitingConnections.value?.map(connection => connection.summary),
+    localTracks: localTracks.value?.map(({ track, stream, enabled }) => {
+      const { id, kind, label, muted } = track
+      return { id, kind, label, muted, enabled, stream: stream.id }
+    }),
+    turnConfiguration: turnConfiguration.value && {
+      ...turnConfiguration.value,
+      expire: new Date((+turnConfiguration.value.username.split(':')[0])*1000).toLocaleString()
+    },
+    isConnectionPossible: isConnectionPossible.value,
+    //rtcConfiguration: rtcConfiguration.value
+  }))
+
+  function setTrackEnabled(track, v) {
+    track.enabled = v
+    track.track.enabled = v
+  }
+
   const messagesReader = inboxReader(
     (rawPosition, bucketSize) => {
       const path = ['peerConnection', 'messages', {
@@ -132,72 +183,6 @@ const createPeer = async ({
     }
   )
 
-  function updateConnections() {
-    const peers = isConnectionPossible.value ? otherPeersOnline.value : []
-    for(let connectionId = 0; connectionId < connections.value.length; connectionId++) {
-      const connection = connections.value[connectionId]
-      const connectionPeer = peers.find(peer => peer.id === connection.to)
-      if(!connectionPeer) {
-        connection.close()
-        connection.dispose()
-        connections.value.splice(connectionId, 1)
-        connectionId --
-      }
-    }
-    for(const peer of peers) {
-      let peerConnection = connections.value.find(connection => connection.to === peer.id)
-      if(peerConnection) continue;
-      const peerConnectionId = waitingConnections.value.findIndex(connection => connection.to === peer.id)
-      if(peerConnectionId !== -1) { // use waiting connection with cached messages
-        peerConnection = waitingConnections.value[peerConnectionId]
-        waitingConnections.value.splice(peerConnectionId, 1)
-      } else { // create connection
-        peerConnection = createPeerConnection(peerInternal, peer.id)
-      }
-      connections.value.push(peerConnection)
-      peerConnection.connect()
-    }
-  }
-
-  watch(() => isConnectionPossible.value && otherPeersOnline.value, () => {
-    updateConnections()
-  }, { immediate: true })
-
-  onUnmountedCb(() => {
-    finished.value = true
-    messagesReader.dispose()
-    for(const connection of waitingConnections.value) {
-      connection.dispose()
-    }
-    for(const connection of connections.value) {
-      connection.dispose()
-    }
-  })
-
-  const summary = computed(() => ({
-    peerId, online: online.value, finished: finished.value,
-    computedLocalPeerState: computedLocalPeerState.value,
-    peers: peers.value?.length,
-    otherPeers: otherPeers.value?.map(p => p.peerState ?? p.id),
-    connections: connections.value?.map(connection => connection.summary),
-    waitingConnections: waitingConnections.value?.map(connection => connection.summary),
-    localTracks: localTracks.value?.map(({ track, stream, enabled }) => {
-      const { id, kind, label, muted } = track
-      return { id, kind, label, muted, enabled, stream: stream.id }
-    }),
-    turnConfiguration: turnConfiguration.value && {
-      ...turnConfiguration.value,
-      expire: new Date((+turnConfiguration.value.username.split(':')[0])*1000).toLocaleString()
-    },
-    isConnectionPossible: isConnectionPossible.value,
-    //rtcConfiguration: rtcConfiguration.value
-  }))
-
-  function setTrackEnabled(track, v) {
-    track.enabled = v
-    track.track.enabled = v
-  }
-
   const peerPublic = {
     peerId, online, isConnectionPossible,
     connections, localTracks,
@@ -215,6 +200,23 @@ const createPeer = async ({
     finished,
     peerId
   }
+
+
+  watch(() => isConnectionPossible.value && otherPeersOnline.value, () => {
+    updateConnections()
+  }, { immediate: true })
+
+  onUnmountedCb(() => {
+    finished.value = true
+    messagesReader.dispose()
+    for(const connection of waitingConnections.value) {
+      connection.dispose()
+    }
+    for(const connection of connections.value) {
+      connection.dispose()
+    }
+  })
+
 
   return {
     ...peerPublic
