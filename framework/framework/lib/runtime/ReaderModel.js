@@ -158,7 +158,7 @@ class ReaderModel {
             let outputState = outputStates.get(oldObj.id)
             if(outputState) {
               outputState.refs --
-              output.debug("INDEX DELETE", oldObj.id, "REFS", outputState.refs)
+              //output.debug("INDEX DELETE", oldObj.id, "REFS", outputState.refs)
               if(outputState.refs <= 0) {
                 outputState.reader.unobserve(outputState.observer)
                 outputStates.delete(oldObj.id)

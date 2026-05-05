@@ -40,7 +40,7 @@
 
     <NotificationsIcon />
 
-    <UserIcon />
+    <UserIcon :menuStyle="{ right: '5px' }" />
 
     <a v-ripple class="cursor-pointer block lg:hidden text-surface-700 dark:text-surface-100 p-ripple ml-2 hover:bg-surface-100 dark:hover:bg-surface-700 p-2"
        v-styleclass="{ selector: '.top-menu', enterFromClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }">

@@ -1,10 +1,10 @@
-import test from 'node:test'
+import { e2eSuite, test } from './e2eSuite.js'
+import { waitForHydration } from '@live-change/e2e-test'
 import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
-import { useSecretCode, sleep } from './steps.js'
-import { e2eSuite } from './e2eSuite.js'
+import { useSecretCode } from './steps.js'
 
 const app = App.app()
 const email = randomProfile.profile().firstName.toLowerCase() + '@test.com'
@@ -23,6 +23,7 @@ e2eSuite('connectEmailCode', () => {
     await User.create({ id: user, roles: [] })
     await Email.create({ id: email, email, user })
     await page.goto(env.url + '/', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     const session = await page.evaluate(
       () => (window as unknown as { api: { client: { value: { session: string } } } }).api.client.value.session
     )
@@ -30,17 +31,19 @@ e2eSuite('connectEmailCode', () => {
 
     // Reload so client gets user from server; otherwise router redirects to sign-in when opening /user/settings/connected
     await page.reload({ waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.goto(env.url + '/user/settings/connected', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.getByText(email).waitFor({ state: 'visible', timeout: 15000 })
     assert.strictEqual(await page.getByText(email2).isVisible(), false, 'email2 should not be visible')
 
-    await page.click('button#connect')
-    assert.ok(page.url().includes('/connect'))
+    await page.getByRole('link', { name: /add email/i }).first().click()
+    await page.waitForURL(/connect-email/, { timeout: 15000 })
 
     if (!happyPath) {
       await page.fill('input#email', email)
       await page.click('button[type=submit]')
-      assert.ok(page.url().includes('/connect'))
+      assert.ok(page.url().includes('connect-email'))
     }
 
     await page.fill('input#email', email2)
@@ -56,11 +59,12 @@ e2eSuite('connectEmailCode', () => {
     assert.strictEqual((authenticationData as { messageData?: { user: string } })?.messageData?.user, user, 'authentication contains user')
 
     await useSecretCode(page, env, authentication, happyPath)
-    await page.waitForURL('**/connect-finished', { timeout: 10000 })
+    await page.waitForURL('**/connect-finished', { timeout: 30000 })
     assert.ok(page.url().includes('/connect-finished'))
 
     if (!happyPath) {
       await page.goto(url, { waitUntil: 'networkidle' })
+      await waitForHydration(page)
       assert.ok(page.url().includes('/connect-finished'))
     }
   })

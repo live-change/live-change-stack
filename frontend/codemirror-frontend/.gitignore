@@ -5,6 +5,8 @@ tmp.db
 tmp
 *.log
 e2e/output
+e2e/execution-time.md
+e2e/last-e2e-time-debug.log
 front/dist
 build-stats
 front/components.d.ts

@@ -53,7 +53,7 @@ definition.event({
 definition.event({
   name: 'codeExpired',
   execute({ code }) {
-    return Code.update(code, { date: new Date(Date.now() - 1000) })
+    return Code.update(code, { expire: new Date(Date.now() - 1000) })
   }
 })
 
@@ -93,9 +93,12 @@ definition.trigger({
   },
   waitForEvents: true,
   async execute({ authentication }, context, emit) {
-    const currentCode = await Code.indexObjectGet('byAuthentication', authentication)
-    if(currentCode) {
-      emit({ type: 'codeExpired', code: currentCode.id })
+    const rows = await Code.indexRangeGet('byAuthentication', authentication) || []
+    const nowMs = Date.now()
+    for (const row of rows) {
+      if (new Date(row.expire).getTime() > nowMs) {
+        emit({ type: 'codeExpired', code: row.id })
+      }
     }
     const code = app.generateUid()
     const digits = config.digits || 6

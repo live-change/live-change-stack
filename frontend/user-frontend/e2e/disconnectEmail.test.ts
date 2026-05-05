@@ -1,15 +1,14 @@
-import test from 'node:test'
+import { e2eSuite, test } from './e2eSuite.js'
+import { waitForHydration } from '@live-change/e2e-test'
 import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
-import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const name = randomProfile.profile().firstName.toLowerCase()
 const email = name + '@test.com'
 const email2 = name + '2@test.com'
-const happyPath = false
 
 e2eSuite('disconnectEmail', () => {
   test('disconnect email', async () => {
@@ -24,23 +23,23 @@ e2eSuite('disconnectEmail', () => {
     await Email.create({ id: email, email, user })
     await Email.create({ id: email2, email: email2, user })
     await page.goto(env.url + '/', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     const session = await page.evaluate(
       () => (window as unknown as { api: { client: { value: { session: string } } } }).api.client.value.session
     )
     await AuthenticatedUser.create({ id: session, user, session })
 
     await page.reload({ waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.goto(env.url + '/user/settings/connected', { waitUntil: 'networkidle' })
-    await page.getByText(email).waitFor({ state: 'visible' })
-    await page.getByText(email2).waitFor({ state: 'visible' })
+    await waitForHydration(page)
+    await page.getByText(email, { exact: true }).waitFor({ state: 'visible' })
+    await page.getByText(email2, { exact: true }).waitFor({ state: 'visible' })
 
-    await page.click('span.pi-times')
-    await page.click('text=Yes')
-    assert.strictEqual(await page.getByText(email2).isVisible(), false, 'email2 should not be visible')
-
-    if (!happyPath) {
-      await page.locator('span.pi-times').waitFor({ state: 'hidden' })
-    }
+    await page.locator('li').filter({ hasText: email }).locator('button.p-button-rounded').click()
+    await page.locator('[role="alertdialog"] button.p-button-danger').last().click({ force: true })
+    assert.strictEqual(await page.getByText(email, { exact: true }).isVisible(), false, 'disconnected email should be gone')
+    assert.strictEqual(await page.getByText(email2, { exact: true }).isVisible(), true, 'other email should remain')
   })
   })
 })

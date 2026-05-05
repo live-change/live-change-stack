@@ -115,7 +115,9 @@
 
   const isUnknown = computed(() => authentication.value === null)
   const isExpired = computed(() =>
-      authentication.value ? (now.value.toISOString() > authentication.value.expire) : false )
+    authentication.value?.expire
+      ? now.value.getTime() > new Date(authentication.value.expire).getTime()
+      : false)
   const isUsed = computed(() => !working.value && !redirecting.value && authentication.value && authentication.value.state === 'used')
   const isReady = computed(() => !(isUnknown.value || isExpired.value || isUsed.value))  
 

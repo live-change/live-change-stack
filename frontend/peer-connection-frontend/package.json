@@ -22,19 +22,19 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/cli": "^0.9.204",
-    "@live-change/dao": "^0.9.204",
-    "@live-change/dao-vue3": "^0.9.204",
-    "@live-change/dao-websocket": "^0.9.204",
-    "@live-change/framework": "^0.9.204",
-    "@live-change/password-authentication-service": "^0.9.204",
-    "@live-change/secret-code-service": "^0.9.204",
-    "@live-change/secret-link-service": "^0.9.204",
-    "@live-change/session-service": "^0.9.204",
-    "@live-change/user-frontend": "^0.9.204",
-    "@live-change/user-service": "^0.9.204",
-    "@live-change/vue3-components": "^0.9.204",
-    "@live-change/vue3-ssr": "^0.9.204",
+    "@live-change/cli": "0.9.204",
+    "@live-change/dao": "0.9.204",
+    "@live-change/dao-vue3": "0.9.204",
+    "@live-change/dao-websocket": "0.9.204",
+    "@live-change/framework": "0.9.204",
+    "@live-change/password-authentication-service": "0.9.204",
+    "@live-change/secret-code-service": "0.9.204",
+    "@live-change/secret-link-service": "0.9.204",
+    "@live-change/session-service": "0.9.204",
+    "@live-change/user-frontend": "0.9.204",
+    "@live-change/user-service": "0.9.204",
+    "@live-change/vue3-components": "0.9.204",
+    "@live-change/vue3-ssr": "0.9.204",
     "@vueuse/core": "^12.3.0",
     "boxicons": "^2.1.4",
     "codeceptjs-assert": "^0.0.5",
@@ -54,10 +54,10 @@
     "vue3-scroll-border": "0.1.7"
   },
   "devDependencies": {
-    "@live-change/codeceptjs-helper": "^0.9.204",
+    "@live-change/codeceptjs-helper": "0.9.204",
     "codeceptjs": "^3.7.6",
-    "generate-password": "1.7.1",
-    "playwright": "1.49.1",
+    "generate-password": "^1.7.1",
+    "playwright": "^1.49.1",
     "random-profile-generator": "^2.3.0",
     "txtgen": "^3.0.7",
     "webdriverio": "^9.5.1"
@@ -65,5 +65,5 @@
   "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "BSD-3-Clause",
   "description": "",
-  "gitHead": "733d4ce62d5ebce3287edb61f44fd1299612ea6d"
+  "gitHead": "6ac17ccf3c184ca4d7ef920f63827dbfd8749f96"
 }

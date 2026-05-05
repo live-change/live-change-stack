@@ -1,25 +1,9 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { TestServer } from '@live-change/server'
+import { createTestEnvHelpers, waitForServerReady } from '@live-change/e2e-test'
 import appConfig from '../server/app.config.js'
 import * as services from '../server/services.list.js'
-
-const READY_TIMEOUT_MS = 60000
-const READY_POLL_MS = 2000
-
-async function waitForServerReady(url: string): Promise<void> {
-  const deadline = Date.now() + READY_TIMEOUT_MS
-  while (Date.now() < deadline) {
-    try {
-      const res = await fetch(url)
-      if (res.ok) return
-    } catch {
-      // not ready yet
-    }
-    await new Promise((r) => setTimeout(r, READY_POLL_MS))
-  }
-  throw new Error(`Server at ${url} did not become ready within ${READY_TIMEOUT_MS}ms`)
-}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const serverDir = path.join(__dirname, '..', 'server')
@@ -53,22 +37,10 @@ let testServer: TestServerInstance | null = null
 
 export async function disposeTestEnv(): Promise<void> {
   const s = testServer
+  if (!s) return
   testServer = null
   envPromise = null
-  if (s) await s.dispose()
-}
-
-function haveService(server: TestServerInstance, name: string) {
-  const service = server.apiServer.services.services.find((s: { name: string }) => s.name === name)
-  if (!service) throw new Error('service ' + name + ' not found')
-  return service
-}
-
-function haveModel(server: TestServerInstance, serviceName: string, modelName: string) {
-  const service = haveService(server, serviceName)
-  const model = service.models[modelName]
-  if (!model) throw new Error('model ' + modelName + ' not found')
-  return model
+  await s.dispose()
 }
 
 export async function getTestEnv(): Promise<TestEnv> {
@@ -101,33 +73,16 @@ export async function getTestEnv(): Promise<TestEnv> {
     })
 
     const url = server.url!
+    const helpers = createTestEnvHelpers(server)
     return {
       server,
       url,
-      haveService: (name: string) => haveService(server, name),
-      haveModel: (serviceName: string, modelName: string) => haveModel(server, serviceName, modelName),
-      haveView: (serviceName: string, viewName: string) => {
-        const service = haveService(server, serviceName)
-        const view = service.views[viewName]
-        if (!view) throw new Error('view ' + viewName + ' not found')
-        return view
-      },
-      haveAction: (serviceName: string, actionName: string) => {
-        const service = haveService(server, serviceName)
-        const action = service.actions[actionName]
-        if (!action) throw new Error('action ' + actionName + ' not found')
-        return action
-      },
-      haveTrigger: (serviceName: string, triggerName: string) => {
-        const service = haveService(server, serviceName)
-        const trigger = service.triggers[triggerName]
-        if (!trigger) throw new Error('trigger ' + triggerName + ' not found')
-        return trigger
-      },
-      grabObject: async (serviceName: string, modelName: string, id: string) => {
-        const model = haveModel(server, serviceName, modelName)
-        return await model.get(id)
-      }
+      haveService: helpers.haveService,
+      haveModel: helpers.haveModel,
+      haveView: helpers.haveView,
+      haveAction: helpers.haveAction,
+      haveTrigger: helpers.haveTrigger,
+      grabObject: helpers.grabObject
     }
   })()
   return envPromise

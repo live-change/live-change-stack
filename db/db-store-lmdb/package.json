@@ -26,11 +26,11 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.204",
-    "@live-change/flatten-interval-tree": "^0.9.204",
+    "@live-change/dao": "0.9.204",
+    "@live-change/flatten-interval-tree": "0.9.204",
     "napi-macros": "^2.0.0",
     "node-lmdb": "^0.10.1",
     "p-queue": "8.1.0"
   },
-  "gitHead": "733d4ce62d5ebce3287edb61f44fd1299612ea6d"
+  "gitHead": "6ac17ccf3c184ca4d7ef920f63827dbfd8749f96"
 }

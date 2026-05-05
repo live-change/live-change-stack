@@ -29,13 +29,12 @@
               </Message>
             </div>
             <div class="flex flex-col">
-              <Button :label="t('common.ok')" type="submit" class="p-button-lg grow-0"
-                      :disableda="data.secret?.length < 6" />
+              <Button :label="t('common.ok')" type="submit" class="p-button-lg grow-0" />
             </div>
           </div>
           <div v-if="data.secretError === 'codeExpired'" class="mt-4 text-center">
             <p class="mt-0 mb-2 p-0 leading-normal">{{ t('messageAuth.toSendAnotherCode') }}</p>
-            <Button :label="t('messageAuth.resendSecretCode')" class="p-button-lg" @click="resend" />
+            <Button :label="t('messageAuth.resendSecretCode')" class="p-button-lg" data-testid="message-auth-resend-code" @click="resend" />
           </div>
         </command-form>
       </Secured>

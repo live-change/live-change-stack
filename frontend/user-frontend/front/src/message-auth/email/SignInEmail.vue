@@ -51,11 +51,7 @@
 <script setup>
   import Button from "primevue/button"
 
-  const { action, contact, json } = defineProps({
-    action: {
-      type: String,
-      required: true
-    },
+  const { contact, json } = defineProps({
     contact: {
       type: String,
       required: true

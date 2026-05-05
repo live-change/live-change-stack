@@ -1,10 +1,10 @@
-import test from 'node:test'
+import { e2eSuite, test } from './e2eSuite.js'
+import { waitForHydration } from '@live-change/e2e-test'
 import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
 import { useSecretCode } from './steps.js'
-import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const randomUserData = randomProfile.profile()
@@ -25,6 +25,7 @@ e2eSuite('signInEmailCode', () => {
     await Email.create({ id: email, email, user })
 
     await page.goto(env.url + '/user/sign-in-email', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.fill('input#email', email)
     await page.click('button[type=submit]')
     await page.waitForURL('**/sent/*', { timeout: 10000 })
@@ -54,6 +55,7 @@ e2eSuite('signInEmailCode', () => {
 
     if (!happyPath) {
       await page.goto(url, { waitUntil: 'networkidle' })
+      await waitForHydration(page)
       assert.ok(page.url().includes('/user/sign-in-finished'))
     }
   })

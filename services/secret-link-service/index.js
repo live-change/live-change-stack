@@ -53,7 +53,8 @@ definition.event({
 definition.event({
   name: 'linkExpired',
   execute({ link }) {
-    return Link.update(link, { date: new Date(Date.now() - 1000) })
+    const past = new Date(Date.now() - 60 * 1000)
+    return Link.update(link, { expire: past })
   }
 })
 
@@ -92,9 +93,12 @@ definition.trigger({
   },
   waitForEvents: true,
   async execute({ authentication }, context, emit) {
-    const currentLink = await Link.indexObjectGet('byAuthentication', authentication)
-    if(currentLink) {
-      emit({ type: 'linkExpired', link: currentLink.id })
+    const rows = await Link.indexRangeGet('byAuthentication', authentication) || []
+    const nowMs = Date.now()
+    for (const row of rows) {
+      if (new Date(row.expire).getTime() > nowMs) {
+        emit({ type: 'linkExpired', link: row.id })
+      }
     }
     const link = app.generateUid()
     const secretCode = randomString(config.secretCodeLength || 16)

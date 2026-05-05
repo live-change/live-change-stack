@@ -250,7 +250,7 @@ await api.create('user', {
             </div>
             <h4 class="font-semibold text-surface-900 dark:text-surface-100 mb-2">Install Framework</h4>
             <p class="text-surface-600 dark:text-surface-300 text-sm">
-              npm install @live-change/framework
+              npm install &#x40;live-change/framework
             </p>
           </div>
           

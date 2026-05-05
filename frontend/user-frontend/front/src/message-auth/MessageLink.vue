@@ -20,7 +20,7 @@
       <p class="mt-0 mb-6 p-0 leading-normal">
         {{ t('messageAuth.linkExpiredDesc') }}
       </p>
-      <Button :label="t('messageAuth.resend')" class="p-button-lg" @click="resend"></Button>
+      <Button :label="t('messageAuth.resend')" class="p-button-lg" data-testid="message-auth-resend-link" @click="resend"></Button>
     </div>
 
     <div v-if="isReady || isRedirecting" 
@@ -83,7 +83,10 @@
   const authenticationState = computed(() => link?.value?.authenticationData?.state)
 
   const isUnknown = computed(() => link.value === null)
-  const isExpired = computed(() => link.value ? (now.value.toISOString() > link.value.expire) : false )
+  const isExpired = computed(() => {
+    if (!link.value?.expire) return false
+    return now.value.getTime() > new Date(link.value.expire).getTime()
+  })
   const isUsed = computed(() => authenticationState.value && authenticationState.value === 'used')
   const isReady = computed(() => !(isUnknown.value || isExpired.value || isUsed.value))  
 

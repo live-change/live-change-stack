@@ -15,6 +15,7 @@ From this package directory (use project Node version, e.g. via `fnm`):
 
 - Dev: `yarn dev` or `yarn ssrDev` (see `package.json` scripts).
 - Build: `yarn build` (client + SSR + server bundle steps as defined in scripts).
+- E2E (Playwright + `@live-change/e2e-test`): `yarn e2e`; timing report: `yarn e2e:time`; headed browser: `yarn e2e:headed` or `SHOW_BROWSER=1 yarn e2e`; single file: `yarn e2e:file e2e/codemirror.test.ts`.
 
 Copy `.env.example` to `.env` if the stack expects env vars for API/SSR (see repo conventions).
 

@@ -1,25 +1,13 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
+import App from '@live-change/framework'
 import { TestServer } from '@live-change/server'
+import { createTestEnvHelpers, waitForServerReady } from '@live-change/e2e-test'
 import appConfig from '../server/app.config.js'
 import * as services from '../server/services.list.js'
 
-const READY_TIMEOUT_MS = 60000
-const READY_POLL_MS = 2000
-
-async function waitForServerReady(url: string): Promise<void> {
-  const deadline = Date.now() + READY_TIMEOUT_MS
-  while (Date.now() < deadline) {
-    try {
-      const res = await fetch(url)
-      if (res.ok) return
-    } catch {
-      // not ready yet
-    }
-    await new Promise((r) => setTimeout(r, READY_POLL_MS))
-  }
-  throw new Error(`Server at ${url} did not become ready within ${READY_TIMEOUT_MS}ms`)
-}
+const appRuntime = App.app()
+const internalE2EClient = { internal: true, roles: ['admin'] as const }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const serverDir = path.join(__dirname, '..', 'server')
@@ -29,16 +17,34 @@ for (const serviceConfig of appConfig.services) {
   const name = (serviceConfig as { name: string }).name
   ;(serviceConfig as { module?: unknown }).module = (services as Record<string, unknown>)[name]
 }
-;(appConfig as { init?: (s: unknown) => Promise<void> }).init = (services as { init: (s: unknown) => Promise<void> }).init
+;(appConfig as { init?: (s: unknown) => Promise<void> }).init =
+  (services as { init: (s: unknown) => Promise<void> }).init
 
 export type TestEnv = {
   server: InstanceType<typeof TestServer>
   url: string
-  haveService: (name: string) => { name: string; models: Record<string, { get: (id: string) => Promise<unknown> }>; views: Record<string, unknown>; actions: Record<string, unknown>; triggers: Record<string, unknown> }
-  haveModel: (serviceName: string, modelName: string) => { get: (id: string) => Promise<unknown>; create: (data: unknown) => Promise<unknown>; update: (id: string, data: unknown) => Promise<unknown>; delete: (id: string) => Promise<unknown>; indexObjectGet: (index: string, key: unknown, opts?: unknown) => Promise<unknown>; indexRangeGet: (index: string, key: unknown) => Promise<unknown[]>; definition: { properties: Record<string, { preFilter: (v: unknown) => unknown }> } }
+  haveService: (name: string) => {
+    name: string
+    models: Record<string, { get: (id: string) => Promise<unknown> }>
+    views: Record<string, unknown>
+    actions: Record<string, unknown>
+    triggers: Record<string, unknown>
+  }
+  haveModel: (
+    serviceName: string,
+    modelName: string
+  ) => {
+    get: (id: string) => Promise<unknown>
+    create: (data: unknown) => Promise<unknown>
+    update: (id: string, data: unknown) => Promise<unknown>
+    delete: (id: string) => Promise<unknown>
+    indexObjectGet: (index: string, key: unknown, opts?: unknown) => Promise<unknown>
+    indexRangeGet: (index: string, key: unknown) => Promise<unknown[]>
+    definition: { properties: Record<string, { preFilter: (v: unknown) => unknown }> }
+  }
   haveView: (serviceName: string, viewName: string) => unknown
-  haveAction: (serviceName: string, actionName: string) => unknown
-  haveTrigger: (serviceName: string, triggerName: string) => unknown
+  haveAction: (serviceName: string, actionName: string) => (data: unknown) => Promise<unknown>
+  haveTrigger: (serviceName: string, triggerName: string) => (data: unknown) => Promise<unknown>
   grabObject: (serviceName: string, modelName: string, id: string) => Promise<unknown>
 }
 
@@ -48,23 +54,11 @@ let envPromise: Promise<TestEnv> | null = null
 let testServer: TestServerInstance | null = null
 
 export async function disposeTestEnv(): Promise<void> {
-  const server = testServer
+  const s = testServer
+  if (!s) return
   testServer = null
   envPromise = null
-  if (server) await server.dispose()
-}
-
-function haveService(server: InstanceType<typeof TestServer>, name: string) {
-  const service = server.apiServer.services.services.find((s: { name: string }) => s.name === name)
-  if (!service) throw new Error('service ' + name + ' not found')
-  return service
-}
-
-function haveModel(server: InstanceType<typeof TestServer>, serviceName: string, modelName: string) {
-  const service = haveService(server, serviceName)
-  const model = service.models[modelName]
-  if (!model) throw new Error('model ' + modelName + ' not found')
-  return model
+  await s.dispose()
 }
 
 export async function getTestEnv(): Promise<TestEnv> {
@@ -96,33 +90,37 @@ export async function getTestEnv(): Promise<TestEnv> {
     })
 
     const url = server.url!
+    const helpers = createTestEnvHelpers(server)
     return {
       server,
       url,
-      haveService: (name: string) => haveService(server, name),
-      haveModel: (serviceName: string, modelName: string) => haveModel(server, serviceName, modelName),
-      haveView: (serviceName: string, viewName: string) => {
-        const service = haveService(server, serviceName)
-        const view = service.views[viewName]
-        if (!view) throw new Error('view ' + viewName + ' not found')
-        return view
+      haveService: helpers.haveService,
+      haveModel: helpers.haveModel,
+      haveView: helpers.haveView,
+      haveAction(serviceName: string, actionName: string) {
+        const action = helpers.haveAction(serviceName, actionName) as {
+          callCommand: (parameters: unknown, clientData: unknown) => Promise<unknown>
+        }
+        return (parameters: unknown) => {
+          const p = parameters as Record<string, unknown> & { _e2eGrantUser?: string }
+          const { _e2eGrantUser, ...commandParams } = p
+          const client = _e2eGrantUser
+            ? { ...internalE2EClient, user: _e2eGrantUser as string }
+            : internalE2EClient
+          return action.callCommand(commandParams, client).then((res: unknown) => {
+            if (typeof res === 'string') return { id: res }
+            return res
+          })
+        }
       },
-      haveAction: (serviceName: string, actionName: string) => {
-        const service = haveService(server, serviceName)
-        const action = service.actions[actionName]
-        if (!action) throw new Error('action ' + actionName + ' not found')
-        return action
+      haveTrigger(serviceName: string, triggerName: string) {
+        return (data: unknown) =>
+          appRuntime.triggerService(
+            { service: serviceName, type: triggerName, client: internalE2EClient },
+            data as Record<string, unknown>
+          )
       },
-      haveTrigger: (serviceName: string, triggerName: string) => {
-        const service = haveService(server, serviceName)
-        const trigger = service.triggers[triggerName]
-        if (!trigger) throw new Error('trigger ' + triggerName + ' not found')
-        return trigger
-      },
-      grabObject: async (serviceName: string, modelName: string, id: string) => {
-        const model = haveModel(server, serviceName, modelName)
-        return await model.get(id)
-      }
+      grabObject: helpers.grabObject
     }
   })()
   return envPromise

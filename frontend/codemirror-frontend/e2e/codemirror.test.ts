@@ -1,9 +1,8 @@
-import test from 'node:test'
 import assert from 'node:assert'
 import App from '@live-change/framework'
 import { withBrowser } from './withBrowser.js'
 import { withTwoPages } from './withTwoPages.js'
-import { e2eSuite } from './e2eSuite.js'
+import { e2eSuite, test } from './e2eSuite.js'
 import type { Page } from 'playwright'
 
 const DEFAULT_TARGET = { targetType: 'Example', target: 'demo' } as const

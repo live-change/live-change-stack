@@ -1,11 +1,11 @@
-import test from 'node:test'
+import { e2eSuite, test } from './e2eSuite.js'
+import { waitForHydration } from '@live-change/e2e-test'
 import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import crypto from 'crypto'
 import passwordGenerator from 'generate-password'
 import { withBrowser } from './withBrowser.js'
-import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const randomUserData = randomProfile.profile()
@@ -30,6 +30,7 @@ e2eSuite('signInEmailPassword', () => {
     await PasswordAuthentication.create({ id: user, user, passwordHash })
 
     await page.goto(env.url + '/user/sign-in-email', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.fill('input#email', email)
     await page.fill('input[type="password"]', password)
     await page.click('button[type=submit]')

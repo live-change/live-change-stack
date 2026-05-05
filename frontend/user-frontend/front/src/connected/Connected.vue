@@ -38,7 +38,8 @@
 
       <div class="flex flex-row flex-wrap">        
         <router-link v-for="contactType in contactsTypes"
-                     :to="{ name: 'user:connect-'+contactType.contactType }" class="mr-2 no-underline block mb-1">
+                     :to="{ name: 'user:connect-'+contactType.contactType }" class="mr-2 no-underline block mb-1"
+                     :data-testid="contactType.contactType === 'email' ? 'connect-email' : null">
           <Button v-if="contactType.contactType === 'email'"
                   :label="t('connected.addEmail')" icon="pi pi-envelope" id="connect" />
           <Button v-else-if="contactType.contactType === 'phone'"

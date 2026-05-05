@@ -1,12 +1,8 @@
-import { after, describe } from 'node:test'
-import { disposeTestEnv } from './env.js'
-
-export function e2eSuite(name: string, define: () => void): void {
-  describe(name, () => {
-    after(async () => {
-      await disposeTestEnv()
-      process.exit(0)
-    })
-    define()
-  })
-}
+export {
+  e2eSuite,
+  getE2ERegistry,
+  resetE2ERegistry,
+  setCurrentE2EFile,
+  test,
+  type E2ETestDefinition
+} from '@live-change/e2e-test'

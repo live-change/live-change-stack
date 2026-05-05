@@ -1,5 +1,14 @@
 import assert from 'node:assert'
 import type { Page } from 'playwright'
+import { waitForHydration } from '@live-change/e2e-test'
+
+/** PrimeVue Password: overlay blocks pointer clicks; set value + input so command-form validators see it. */
+export async function setPrimePasswordFieldValue(page: Page, rootSelector: string, value: string) {
+  await page.locator(`${rootSelector} input`).evaluate((el: HTMLInputElement, v: string) => {
+    el.value = v
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  }, value)
+}
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import passwordGenerator from 'generate-password'
@@ -58,6 +67,7 @@ export async function useEmailLink(
   }
   const link = await Link.indexObjectGet('byAuthentication', authentication)
   await page.goto(env.url + prefix + link.secretCode, { waitUntil: 'networkidle' })
+  await waitForHydration(page)
   await new Promise((r) => setTimeout(r, 100))
   return { authentication, link }
 }
@@ -74,6 +84,11 @@ export async function amLoggedOut(page: Page, env: TestEnv): Promise<void> {
   await AuthenticatedUser.delete(session)
 }
 
+function newestByExpire<T extends { expire: Date }>(rows: T[]): T | undefined {
+  if (!rows?.length) return undefined
+  return [...rows].sort((a, b) => new Date(b.expire).getTime() - new Date(a.expire).getTime())[0]
+}
+
 export async function useSecretCode(
   page: Page,
   env: TestEnv,
@@ -81,11 +96,11 @@ export async function useSecretCode(
   happyPath: boolean
 ): Promise<void> {
   const Code = env.haveModel('secretCode', 'Code') as {
-    indexObjectGet: (index: string, key: unknown) => Promise<{ id: string; secretCode: string; expire: Date }>
     indexRangeGet: (index: string, key: unknown) => Promise<{ id: string; secretCode: string; expire: Date }[]>
     update: (id: string, data: { expire: Date }) => Promise<unknown>
   }
-  let codeData = await Code.indexObjectGet('byAuthentication', authentication)
+  const initialRows = await Code.indexRangeGet('byAuthentication', authentication)
+  let codeData = newestByExpire(initialRows || [])
   assert.ok(codeData, 'code created')
 
   if (!happyPath) {
@@ -108,26 +123,42 @@ export async function useSecretCode(
     await page.click('button[type=submit]')
     await page.getByRole('alert').waitFor({ state: 'visible' })
 
-    await page.click('text=Resend')
+    await page.getByTestId('message-auth-resend-code').click()
     assert.ok(page.url().includes('/sent/'))
+    // Resend runs async (workingZone); wait for toast so form.reset() and router.push complete before polling/submit.
+    await page.getByText(/New code sent to you|Nowy kod został|Code sent|Kod wysłany/i).first()
+      .waitFor({ state: 'visible', timeout: 20000 })
+    await sleep(300)
 
-    await new Promise((r) => setTimeout(r, 200))
-    const newCodeData = await Code.indexRangeGet('byAuthentication', authentication)
-    newCodeData.sort((a, b) => new Date(b.expire).getTime() - new Date(a.expire).getTime())
+    // resendMessageAuthentication keeps the same authentication id; new Code row appears asynchronously.
+    const oldCodeId = codeData!.id
+    let newCodeData: { id: string; secretCode: string; expire: Date }[] = []
+    const deadline = Date.now() + 12000
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 250))
+      newCodeData = await Code.indexRangeGet('byAuthentication', authentication)
+      const newest = newestByExpire(newCodeData)
+      if (newest && newest.id !== oldCodeId) {
+        newCodeData = [newest]
+        break
+      }
+    }
     const oldCodeData = codeData
-    codeData = newCodeData[0]
-    assert.ok(codeData, 'code exists')
+    codeData = newestByExpire(newCodeData) || newCodeData[0]
+    assert.ok(codeData, 'code exists after resend')
     assert.notStrictEqual(oldCodeData!.id, codeData!.id, 'code is different from previous code')
   }
 
-  await page.waitForFunction(() => {
-    const input = document.querySelector('input#code') as HTMLInputElement
-    if(!input) return false
-    return input.value === ''
-  })
-  await page.fill('input#code', codeData!.secretCode)
-  await page.fill('input#code', codeData!.secretCode)
-  await page.click('button[type=submit]')
+  const codeInput = page.locator('input#code')
+  await codeInput.waitFor({ state: 'visible', timeout: 15000 })
+  await sleep(200)
+  const finalSecret = codeData!.secretCode
+  await codeInput.evaluate((el: HTMLInputElement, v: string) => {
+    el.value = v
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  }, finalSecret)
+  await page.locator('input#code').click()
+  await page.getByRole('button', { name: /^ok$/i }).click({ force: true })
   await new Promise((r) => setTimeout(r, 100))
 }
 
@@ -139,25 +170,30 @@ export async function useSecretLink(
   prefix = '/user'
 ): Promise<{ secretCode: string }> {
   const Link = env.haveModel('secretLink', 'Link') as {
-    indexObjectGet: (index: string, key: unknown) => Promise<{ id: string; secretCode: string; expire: Date }>
     indexRangeGet: (index: string, key: unknown) => Promise<{ id: string; secretCode: string; expire: Date }[]>
     update: (id: string, data: { expire: Date }) => Promise<unknown>
   }
-  let linkData = await Link.indexObjectGet('byAuthentication', authentication)
+  const linkRows = await Link.indexRangeGet('byAuthentication', authentication)
+  let linkData = newestByExpire(linkRows || [])
   assert.ok(linkData, 'link created')
 
   if (!happyPath) {
     await page.goto(env.url + prefix + '/link/[badSecret]', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.getByText('Unknown link').waitFor({ state: 'visible' })
   }
 
   if (!happyPath) {
     await new Promise((r) => setTimeout(r, 200))
-    await Link.update(linkData!.id, { expire: new Date() })
+    await Link.update(linkData!.id, { expire: new Date(Date.now() - 1000) })
     await page.goto(env.url + prefix + '/link/' + linkData!.secretCode, { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.getByText('Link expired').waitFor({ state: 'visible' })
 
-    await page.click('text=Resend')
+    await page.getByTestId('message-auth-resend-link').click()
+
+    await page.waitForURL('**/sent/*', { timeout: 10000 })
+
     assert.ok(page.url().includes(prefix + '/sent/'))
 
     await new Promise((r) => setTimeout(r, 200))

@@ -11,11 +11,19 @@ type RegistryState = {
   currentFile: string | null
 }
 
-const registryState: RegistryState = {
+const E2E_REGISTRY_KEY = Symbol.for('live-change.e2e-test.registry')
+
+const globalState = globalThis as typeof globalThis & {
+  [E2E_REGISTRY_KEY]?: RegistryState
+}
+
+const registryState: RegistryState = globalState[E2E_REGISTRY_KEY] ?? {
   tests: [],
   currentSuite: null,
   currentFile: null
 }
+
+globalState[E2E_REGISTRY_KEY] = registryState
 
 export function resetE2ERegistry(): void {
   registryState.tests = []

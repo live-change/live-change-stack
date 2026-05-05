@@ -1,9 +1,9 @@
-import test from 'node:test'
+import { e2eSuite, test } from './e2eSuite.js'
+import { waitForHydration } from '@live-change/e2e-test'
 import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import { withBrowser } from './withBrowser.js'
-import { e2eSuite } from './e2eSuite.js'
 
 const app = App.app()
 const name = randomProfile.profile().firstName.toLowerCase()
@@ -20,18 +20,21 @@ e2eSuite('signOut', () => {
     await User.create({ id: user, roles: [] })
     await Email.create({ id: email, email, user })
     await page.goto(env.url + '/', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     const session = await page.evaluate(
       () => (window as unknown as { api: { client: { value: { session: string } } } }).api.client.value.session
     )
     await AuthenticatedUser.create({ id: session, user, session })
 
     await page.reload({ waitUntil: 'networkidle' })
+    await waitForHydration(page)
     const clientUser = await page.evaluate(
       () => (window as unknown as { api: { client: { value: { user: string } } } }).api.client.value.user
     )
     assert.strictEqual(user, clientUser, 'client logged in')
 
     await page.goto(env.url + '/user/sign-out', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.waitForURL('**/sign-out-finished', { timeout: 10000 })
     assert.ok(page.url().includes('/user/sign-out-finished'))
 

@@ -4,6 +4,7 @@
 
     <ConfirmPopup v-if="isMounted" />
     <DynamicDialog v-if="isMounted" />
+    <Toast />
 
     <div class="relative h-0 w-full" v-if="isMounted">
       <ProgressBar v-if="loading || working" mode="indeterminate" class="absolute w-full" style="height: .2em" />
@@ -25,6 +26,7 @@
 
   import ConfirmPopup from 'primevue/confirmpopup'
   import DynamicDialog from 'primevue/dynamicdialog'
+  import Toast from 'primevue/toast'
 
   import ProgressBar from "primevue/progressbar"
 

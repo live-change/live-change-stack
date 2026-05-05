@@ -221,7 +221,7 @@ definition.action({
         contactType,
         contact,
         secrets,
-        ...authentication.messageData
+        ...authenticationData.messageData
       }
     })
     return {

@@ -1,11 +1,11 @@
-import test from 'node:test'
+import { e2eSuite, test } from './e2eSuite.js'
+import { waitForHydration } from '@live-change/e2e-test'
 import assert from 'node:assert'
 import App from '@live-change/framework'
 import randomProfile from 'random-profile-generator'
 import passwordGenerator from 'generate-password'
 import { withBrowser } from './withBrowser.js'
-import { useSecretLink } from './steps.js'
-import { e2eSuite } from './e2eSuite.js'
+import { setPrimePasswordFieldValue, useSecretLink } from './steps.js'
 
 const app = App.app()
 const email = randomProfile.profile().firstName.toLowerCase() + '@test.com'
@@ -21,8 +21,10 @@ e2eSuite('resetPasswordWithEmailLink', () => {
     await User.create({ id: user, roles: [] })
     await Email.create({ id: email, email, user })
     await page.goto(env.url + '/', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
 
     await page.goto(env.url + '/user/reset-password', { waitUntil: 'networkidle' })
+    await waitForHydration(page)
     await page.fill('input#email', email)
     await page.click('button[type=submit]')
     await page.waitForURL('**/sent/*', { timeout: 10000 })
@@ -49,12 +51,12 @@ e2eSuite('resetPasswordWithEmailLink', () => {
     const resetPasswordAuthenticationData = await ResetPasswordAuthentication.indexObjectGet('byKey', resetPasswordAuthentication)
     assert.ok(resetPasswordAuthenticationData, 'reset password authentication created')
 
-    await page.getByText('Reset password').waitFor({ state: 'visible' })
+    await page.getByText('Reset password', { exact: false }).first().waitFor({ state: 'visible' })
 
     const password =
       passwordGenerator.generate({ length: 10, numbers: true }) + (Math.random() * 10).toFixed()
-    await page.locator('input[type="password"]').nth(0).fill(password)
-    await page.locator('input[type="password"]').nth(1).fill(password)
+    await setPrimePasswordFieldValue(page, '#newPassword', password)
+    await setPrimePasswordFieldValue(page, '#reenterPassword', password)
     await page.click('button[type=submit]')
     await page.waitForURL('**/reset-password-finished', { timeout: 10000 })
     assert.ok(page.url().includes('/reset-password-finished'))
