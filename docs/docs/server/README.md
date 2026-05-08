@@ -22,16 +22,19 @@ This manual documents the **server-side** part of the Live Change framework: how
 3. [Services list and init](/server/03-services-list-and-init.html) — Importing services, wiring modules, init script and seed data
 4. [Service definition](/server/04-service-definition.html) — createServiceDefinition, name, use (dependencies)
 5. [Models](/server/05-models.html) — Bare models, properties, indexes, entity; objectType/object convention
+   - [Property validation](/server/05a-validation.html) — Built-in validators, `validation` / `softValidation`, service `definition.validator`, client registration
 6. [Actions](/server/06-actions.html) — definition.action, execute, emit, triggerService, client
 7. [Views](/server/07-views.html) — definition.view, daoPath, get/observable, range and index paths
 8. [Triggers](/server/08-triggers.html) — definition.trigger, reacting to events, triggerService
 9. [Relations](/server/09-relations.html) — Overview of all relation types
+   - [Relations plugin — generated artifacts](/server/09-00-relations-generated-artifacts.html) — Auto views/actions/events/triggers; avoid name clashes; use `describe`
    - [propertyOf and itemOf](/server/09-01-propertyOf-itemOf.html)
    - [propertyOfAny and itemOfAny](/server/09-02-propertyOfAny-itemOfAny.html)
    - [userProperty and userItem](/server/09-03-userProperty-userItem.html)
    - [sessionOrUserProperty and sessionOrUserItem](/server/09-04-sessionOrUserProperty-sessionOrUserItem.html)
    - [contactOrUserProperty and contactOrUserItem](/server/09-05-contactOrUserProperty-contactOrUserItem.html)
    - [boundTo and relatedTo](/server/09-06-boundTo-relatedTo.html)
+   - [Owner selection & userItem](/server/09-07-owner-selection-useritem.html) — user vs session vs entity vs itemOf/propertyOf
 10. [Simple query](/server/10-simple-query.html) — simpleQuery(definition), sources, code, id (WIP)
 11. [Indexes and foreign models](/server/11-indexes-and-foreign-models.html) — indexes in models, foreignModel, rangePath in views
 12. [Security and access](/server/12-security-and-access.html) — accessControl, security.config, roles

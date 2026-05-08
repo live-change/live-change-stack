@@ -4,6 +4,10 @@
     "empty": "To pole jest wymagane.",
     "tooShort": "Za krótkie, minimum {length} znaków.",
     "tooLong": "Za długie, maksimum {length} znaków.",
+    "tooSmall": "Wartość jest mniejsza niż dozwolone minimum.",
+    "tooLarge": "Wartość jest większa niż dozwolone maksimum.",
+    "notANumber": "Podaj prawidłową liczbę.",
+    "notAnInteger": "Podaj liczbę całkowitą.",
     "wrongUrl": "Nieprawidłowy URL. Akceptowalne formaty: https://example.com lub www.example.com"
   },
   "info": {

@@ -50,8 +50,8 @@
         +value.value / +(denomination.value || config.value.denomination || 100),
         currency.value ?? config.value.currency ?? 'usd',
         config.value
-      )
-      //console.log("currency formatted", text)
+      )      
+      console.log("currency formatted", text)
       return text
     } catch(e) {
       console.error("CurrencyDisplay error", e)

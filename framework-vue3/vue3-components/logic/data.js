@@ -40,6 +40,19 @@ export function validateData(definition, data, validationType = 'validation',
   const validators = context.config.globalProperties.$validators
   const validationContext = { source: data, props, propName, definition, validators }
   if(!definition) return undefined
+  if(definition.if) {
+    if(definition.if.function) {
+      const condition = eval(`(${definition.if.function})`)
+      const visible = condition({
+        source: definition,
+        props,
+        propName
+      })
+      if(!visible) return undefined
+    } else {
+      throw new Error('Unknown if type ' + JSON.stringify(definition.if))
+    }
+  }
   const validations = definition[validationType]
   //console.log("VALIDATIONS!", validations)
   if(validations) {

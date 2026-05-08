@@ -65,7 +65,7 @@
 
     <NotificationsIcon v-if="client.user" />
 
-    <UserIcon v-if="client.user" />
+    <UserIcon v-if="client.user" :menuStyle="{ right: '5px' }"  />
 
     <a v-ripple class="cursor-pointer flex items-center justify-content-center no-underline lg:hidden text-surface-700 dark:text-surface-100 p-ripple
                                        ml-2 hover:bg-surface-100 dark:hover:bg-surface-700 p-2"

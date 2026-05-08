@@ -29,6 +29,8 @@ One record per session-or-user (and optionally per extra dimensions from **exten
 - **my&lt;Xxx&gt;&lt;ModelName&gt;s** — Range views when **extendedWith** is used (e.g. myGiverReceivedCards).
 - Actions **setMy&lt;ModelName&gt;** (Set), **updateMy&lt;ModelName&gt;** (Update), **setOrUpdateMy&lt;ModelName&gt;** (Set or update), **resetMy&lt;ModelName&gt;** (Reset).
 
+The same processor wires these into **`model.ownerCrud`** (so `describe` shows an **`ownerCrud`** block). Frontends should use **`editorData({ crudSource: 'ownerCrud', … })`** for edit forms; when **`my&lt;ModelName&gt;`** takes no view parameters, combine with **`allowReadWithoutIdentifiers: true`** if you pass **`identifiers: {}`** — see [frontend-auto-form — `editorData`](/frontend/09-api-frontend-auto-form.html#editordataoptions).
+
 On **signedIn**, session properties can be **transferred** to the user or **merged** (if **merge** and optionally **mergeWithoutDelete** are set).
 
 ### Configuration

@@ -38,6 +38,16 @@ These definitions are used by:
 
 ---
 
+## Validators and locale errors
+
+Built-in validator names (`nonEmpty`, `minLength`, `number`, `min`, `max`, …) come from the framework’s `validators.js` and work in the browser without extra setup. Service-specific validators (`email`, `password`, …) must be registered on the client on the same **`api.validators`** object (see [Logic and data layer – Validators](/frontend/04-logic-and-data-layer.html#validators-and-validatedata)).
+
+`@live-change/frontend-auto-form` locales include messages for common error codes (for example `errors.tooSmall`, `errors.tooLarge`, `errors.notANumber`). Add keys for any **custom** codes your validators return.
+
+The authoritative list of built-in validators and server-side registration: [Property validation](/server/05a-validation.html).
+
+---
+
 ## Global configuration
 
 To enable auto-form across the app, call the three providers once in `App.vue`:
@@ -88,6 +98,7 @@ i18n: {
 ```vue
 <AutoField
   :definition="definition.properties.title"
+  :root-value="editable"
   v-model="editable.title"
   :error="validationResult?.propertyErrors?.title"
   :label="t('article.title')"
@@ -98,6 +109,8 @@ Props:
 
 - `definition` – property definition from the model or action
 - `modelValue` / `v-model` – field value
+- `rootValue` – full record used when the property has a model-level `if` (the predicate receives this object as `props`); omitting it defaults to `{}` and usually hides `if`-gated fields. With `editorData`, use e.g. `:root-value="editor.data.value"` on each `AutoField`. Details: [API – AutoField](09-api-frontend-auto-form.md#autofield).
+- `errors` / `propName` – optional multi-field error map and property key (see API page)
 - `error` – validation result (optional)
 - `label` – label text (optional, overrides `#label` slot)
 
@@ -196,7 +209,7 @@ Props:
 
 - `definition` – model definition (from `api.services[service].models[Model]`)
 - `modelValue` / `v-model` – the object being edited
-- `rootValue` – root value passed down for nested fields
+- `rootValue` – root value passed down for nested fields and for property-level `if` visibility on child fields
 - `i18n` – translation key prefix for field labels
 
 Typical pattern – pair `AutoEditor` with `synchronized` for autosave:
@@ -269,7 +282,7 @@ They handle data loading, form generation and action calls internally, reducing 
 - exposes server-side property errors via `propertiesErrors`,
 - shows toasts for save/draft/error states.
 
-It requires the model on the server to declare `crud`, `identifiers`, and `editableProperties`. In return it eliminates almost all boilerplate for a standard create/edit form.
+It requires the model on the server to declare CRUD metadata (usually `crud`, or **`ownerCrud`** for user-scoped models), **`identifiers`**, and **`editableProperties`**. Optional **`crudSource`** and **`allowReadWithoutIdentifiers`** tune how the read path is built (see [frontend-auto-form API — `editorData`](/frontend/09-api-frontend-auto-form.html#editordataoptions)). In return it eliminates almost all boilerplate for a standard create/edit form.
 
 ### Basic usage
 
@@ -383,10 +396,12 @@ The `editor.isNew` ref exposes this state:
 <template>
   <form v-if="editor" @submit.prevent="editor.save()">
     <AutoField :definition="editor.model.properties.title"
+               :root-value="editor.value.value"
                v-model="editor.value.value.title"
                :error="editor.propertiesErrors?.value?.title"
                :label="t('article.title')" />
     <AutoField :definition="editor.model.properties.body"
+               :root-value="editor.value.value"
                v-model="editor.value.value.body"
                :error="editor.propertiesErrors?.value?.body">
       <template #default>

@@ -43,7 +43,10 @@ Basic component described in the forms chapter:
 - props:
   - `definition` – property definition
   - `modelValue` – field value
-  - `error` – validation result (optional)
+  - `rootValue` – root object passed into the property’s `if` predicate as `props` (see below); defaults to `{}` when omitted
+  - `errors` – optional map of property names to validation results (used with `propName` instead of a single `error`)
+  - `propName` – property key for `errors` lookup and for `if` callbacks
+  - `error` – validation result for this field only (optional)
   - `label` – label text (optional)
 - events:
   - `update:modelValue`
@@ -53,6 +56,10 @@ Slots:
 - `#label` – custom label
 - `#default` – custom field rendering
 - `#error` – custom error rendering
+
+**`definition.if` and `rootValue`:** Model properties may define an `if` function (isomorphic) that controls visibility. `AutoField` evaluates it with `{ source, props: rootValue, propName }`. If you omit `rootValue`, the default `{}` means predicates such as `props.portalRole === 'employee'` never match, so the field stays hidden even when `v-model` is correct. For hand-built layouts (e.g. with `editorData`), pass the full edited object on every field that depends on sibling data, e.g. `:root-value="editor.data.value"` — the same idea as `:root-value="editor.value.value"` on `auto-editor` in `ModelEditor.vue` (`live-change-stack/frontend/frontend-auto-form/front/src/components/crud/ModelEditor.vue`).
+
+**`definition.if` and validation:** Frontend validation (`validateData`, including `editorData` / `actionData` flows) uses the same `if` condition semantics. If a property's `if` resolves to `false`, validation for this property is skipped.
 
 ### AutoInput
 
@@ -65,7 +72,7 @@ Editor for a full object (model) from a definition:
 - props:
   - `definition` – model definition
   - `modelValue` – object to edit
-  - `rootValue` – root value (for nesting)
+  - `rootValue` – root object for nested fields and for evaluating property-level `if` on descendants (same role as on `AutoField`)
   - `i18n` – translation key prefix
   - `errors` – property errors object (from `editorData.propertiesErrors`)
 
@@ -136,7 +143,9 @@ const editor = computedAsync(() =>
 |---|---|---|
 | `service` | required | Service name (string) |
 | `model` | required | Model name (string) |
-| `identifiers` | required | Identifier object, e.g. `{ article: id }` |
+| `identifiers` | required | Identifier object, e.g. `{ article: id }` (may be `{}`; see `allowReadWithoutIdentifiers`) |
+| `crudSource` | `'crud'` | Which CRUD map on the model to use: usually `'crud'` (global read by id) or `'ownerCrud'` (current user / session “my…” read and `setMy…` / `updateMy…` / `setOrUpdateMy…`). Inspect the model with `describe` (`ownerCrud` block). |
+| `allowReadWithoutIdentifiers` | `false` | When `true`, still subscribe to the **read** view even if `identifiers` is `{}`. Use for `ownerCrud.read` views that take no parameters (e.g. `myIdentification`). Leave `false` for typical **create** forms that must not call a global read without ids (avoids auth / not-found noise). |
 | `draft` | `true` | Enable draft auto-save via `draft` service |
 | `autoSave` | `false` | Auto-save directly to model (when `draft:false`) |
 | `debounce` | `600` | Debounce delay in ms |
@@ -169,7 +178,24 @@ const editor = computedAsync(() =>
 
 ### Server-side model requirements
 
-`editorData` reads `crud`, `identifiers`, and `editableProperties` from the model definition. These must be configured on the server model or passed as options:
+`editorData` reads **`crud`** (by default), **`identifiers`**, and **`editableProperties`** from the model definition. You can point it at another map with **`crudSource`** (see options table).
+
+Many user-service relation shapes (**`userProperty`**, **`userItem`**, **`sessionOrUserProperty`**, **`sessionOrUserItem`**, …) also populate **`ownerCrud`** on the model: read is typically a **`my…`** view scoped to the current client, while create/update use **`setMy…`**, **`updateMy…`**, **`setOrUpdateMy…`**. Use:
+
+```javascript
+await editorData({
+  service: 'userIdentification',
+  model: 'Identification',
+  crudSource: 'ownerCrud',
+  identifiers: {},
+  allowReadWithoutIdentifiers: true,
+  draft: true,
+})
+```
+
+when `describe` shows `myIdentification` with **no** view parameters but you still need the saved row loaded. For models that only expose global **`crud.read`** with real ids, keep **`allowReadWithoutIdentifiers: false`** (default) and pass a non-empty **`identifiers`** object.
+
+Classic global CRUD example:
 
 ```javascript
 // server: myService/article.js

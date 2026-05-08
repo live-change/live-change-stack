@@ -26,6 +26,8 @@ export default function editorData(options) {
     debounce = 600,
     timeField = 'lastUpdate',
     crudSource = 'crud',
+    /** When true, call the read view even if `identifiers` is `{}` (e.g. ownerCrud `my…` views). Default false keeps create-only forms from subscribing to a read path. */
+    allowReadWithoutIdentifiers = false,
 
     savedToast = "Saved",
     savedDraftToast = "Draft saved",
@@ -89,7 +91,9 @@ export default function editorData(options) {
     actionType: serviceName, action: crudMethods.read, targetType: modelName, target: draftId
   }
 
-  const savedDataPath = Object.keys(identifiers).length > 0 ? path[serviceName][crudMethods.read](identifiers) : null
+  const savedDataPath = (Object.keys(identifiers).length > 0 || allowReadWithoutIdentifiers)
+    ? path[serviceName][crudMethods.read](identifiers)
+    : null
   const draftDataPath = (draft && path.draft.myDraft(draftIdentifiers)) || null
 
   const updateAction = api.actions[serviceName][crudMethods.update]

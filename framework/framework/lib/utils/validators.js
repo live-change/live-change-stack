@@ -39,6 +39,19 @@ const validators = {
   number: () => (value) => isNaN(value) ? 'notANumber' : undefined,
   integer: () => (value) => !Number.isInteger(value) ? 'notAnInteger' : undefined,
 
+  min: ({ value: min }) => (v) => {
+    if(v === null || v === undefined || v === '') return
+    const n = Number(v)
+    if(Number.isNaN(n)) return
+    if(n < min) return 'tooSmall'
+  },
+  max: ({ value: max }) => (v) => {
+    if(v === null || v === undefined || v === '') return
+    const n = Number(v)
+    if(Number.isNaN(n)) return
+    if(n > max) return 'tooLarge'
+  },
+
   elementsNonEmpty: (settings) => (value) => {
     if(!value) return
     for(let el of value) {

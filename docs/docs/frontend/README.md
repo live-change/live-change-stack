@@ -24,8 +24,8 @@ This manual documents the **frontend** part of the Live Change Framework:
 1. [Getting started](/frontend/01-getting-started.md) — first frontend app based on `frontend-template`
 2. [Project structure](/frontend/02-project-structure.md) — directories, routing, layout, conventions
 3. [SSR and routing](/frontend/03-ssr-and-routing.md) — SSR flow, entry points, router
-4. [Logic and data layer](/frontend/04-logic-and-data-layer.md) — `vue3-ssr`, `dao-vue3`, logic components
-5. [Forms and auto-form](/frontend/05-forms-and-auto-form.md) — forms, CRUDs, `frontend-auto-form`
+4. [Logic and data layer](/frontend/04-logic-and-data-layer.md) — `vue3-ssr`, `dao-vue3`, logic components; `api.validators` / `validateData`
+5. [Forms and auto-form](/frontend/05-forms-and-auto-form.md) — forms, CRUDs, `frontend-auto-form`; validators and locale errors
 6. [UI and components](/frontend/06-ui-and-components.md) — integration with PrimeVue, Tailwind, layouts
 7. [Analytics and marketing](/frontend/07-analytics-and-marketing.md) — analytics, consent, marketing pages
 8. [Best practices and patterns](/frontend/08-best-practices-and-patterns.md) — conventions and patterns

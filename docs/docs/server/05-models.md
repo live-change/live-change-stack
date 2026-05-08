@@ -98,7 +98,7 @@ The same pattern appears as **ownerType** / **owner**, **causeType** / **cause**
 ## Property options
 
 - **type** — String, Number, Boolean, Date, Object, Array, or custom (e.g. 'Image'). For polymorphic references use `type: 'type'` and `type: 'any'` (type name + id).
-- **validation** / **softValidation** — e.g. `['nonEmpty']`, `{ name: 'maxLength', length: 80 }`, `['integer']`.
+- **validation** / **softValidation** — e.g. `['nonEmpty']`, `{ name: 'maxLength', length: 80 }`, `['integer']`, `{ name: 'min', value: 0 }`. See [Property validation](/server/05a-validation.html) for the full list and service-defined validators.
 - **default** — Static value or function `() => value`.
 - **options** — Allowed values for enums.
 - **if** — Conditional visibility (e.g. `App.isomorphic(() => ...)` for dependent fields).

@@ -64,6 +64,7 @@
     "services/phone-service",
     "services/slug-service",
     "services/vote-service",
+    "services/tags-service",
     "services/locale-settings-service",
     "services/geoip-service",
     "services/task-service",

@@ -15,7 +15,7 @@
                   :id="uid"
                   :i18n="i18n" />
     </slot>
-    <div>
+    <div class="flex justify-between flex-row flex-wrap">
       <slot name="error"  v-bind="{ validationResult, uid }" >
         <Message v-if="validationResult && !minLengthErrorVisible" severity="error" variant="simple" size="small" 
                  class="mt-1">

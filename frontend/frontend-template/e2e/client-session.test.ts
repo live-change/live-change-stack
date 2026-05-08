@@ -1,7 +1,6 @@
-import test from 'node:test'
 import assert from 'node:assert'
+import { e2eSuite, test } from '@live-change/e2e-test'
 import { withBrowser } from './withBrowser.js'
-import { e2eSuite } from './e2eSuite.js'
 
 e2eSuite('client-session', () => {
   test('frontend initializes api client session', async () => {

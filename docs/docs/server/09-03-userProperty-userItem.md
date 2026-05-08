@@ -4,7 +4,11 @@ title: userProperty and userItem
 
 # userProperty and userItem
 
+For choosing **`userItem`** vs **`entity`** vs domain **`itemOf`/`propertyOf`**, see [Owner selection & userItem](/server/09-07-owner-selection-useritem.html).
+
 From **user service** (`use: [ userService ]`). A **processor** in user-service scans your models for **userProperty** or **userItem** and turns them into **propertyOf User** or **itemOf User**, then adds views and actions (myUserXxx, setMyUserXxx, createMyUserXxx, etc.). Use when the owner is always a **User** (logged-in).
+
+The processor also fills **`model.ownerCrud`** (read / create / update / …) alongside any existing **`model.crud`**. Use **`editorData({ crudSource: 'ownerCrud', … })`** in the frontend for “my record” screens; see [frontend-auto-form — `editorData`](/frontend/09-api-frontend-auto-form.html#editordataoptions).
 
 ## Auto-added fields
 

@@ -6,6 +6,12 @@ title: Relations
 
 Relations attach models to an “owner” or parent so that each record belongs to a user, session, another model, or a polymorphic target. They add identifiers (e.g. user, billing, sessionOrUserType/sessionOrUser), indexes, events, actions, and views for CRUD scoped to that owner. Access is controlled via read/write/create/update/delete access settings.
 
+**`crud` vs `ownerCrud` on the model:** besides the usual global **`crud`** map (read by stable ids, etc.), user-service processors often attach a second map, **`ownerCrud`**, whose **`read`** entry is a **`my…`** view for the current client and whose **`create` / `update` / `createOrUpdate`** entries are the **`setMy…` / `updateMy…` / `setOrUpdateMy…`** actions. Frontends use `editorData({ crudSource: 'ownerCrud', … })` (see [frontend-auto-form — `editorData`](/frontend/09-api-frontend-auto-form.html#editordataoptions)). Run **`describe`** on the service to see both blocks on each model.
+
+For a concise inventory of **auto-generated views, actions, triggers, and events** from `@live-change/relations-plugin` (and how naming collisions happen), see [Relations plugin — generated artifacts](/server/09-00-relations-generated-artifacts.html).
+
+To choose **`userItem`** vs **`entity`** vs **`itemOf`/`propertyOf`** for ownership and listings, see [Owner selection & userItem](/server/09-07-owner-selection-useritem.html).
+
 Two groups:
 
 1. **Relations plugin** (`@live-change/relations-plugin`) — Generic relations that work with any parent model:

@@ -100,7 +100,23 @@ Anti-pattern: an action that only returns a string or object for display without
 - `synchronized`, `synchronizedList` – editable data with autosave
 - `analytics`, `useAnalytics`, `installRouterAnalytics` – analytics events
 - `useLocale` – user language/locale management
-- `validateData` – client-side validation using server definitions
+- `validateData` – client-side validation using server definitions (see below)
+
+### Validators and `validateData`
+
+The API object exposes **`api.validators`** (also as **`$validators`** on the app). By default it is the same map as on the server: `live-change-stack/framework/framework/lib/utils/validators.js` (via `@live-change/vue-api`). `validateData` from `@live-change/vue3-components` uses those factories against property definitions (`validation` / `softValidation`).
+
+For validators registered only on the **server** with `definition.validator('email', …)` (and similar), assign the **client** factory under the **same key** after creating the API, for example in `App.vue`:
+
+```javascript
+import emailValidator from '@live-change/email-service/clientEmailValidator.js'
+import passwordValidator from '@live-change/password-authentication-service/clientPasswordValidator.js'
+
+api.validators.email = emailValidator
+api.validators.password = passwordValidator
+```
+
+Use the same error codes as the server so `AutoField` / i18n stay aligned. Full reference: [Property validation](/server/05a-validation.html) (server manual) and [Forms and auto-form](/frontend/05-forms-and-auto-form.html#validators-and-locale-errors).
 
 ### WorkingZone and LoadingZone
 

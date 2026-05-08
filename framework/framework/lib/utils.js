@@ -249,6 +249,31 @@ function prefixRange({ gt, lt, gte, lte, limit, reverse }, prefix, from = "") {
   }
 }
 
+function prefixRangePartial({ gt, lt, gte, lte, limit, reverse }, prefix, from = "") {
+  function getPrefix(id) {
+    if(id.length > from.length) {
+      if(id.slice(0, from.length) !== from) {
+        console.error("ID:", id, "does not start with", from)                
+      }
+      id = id.slice(from.length)    
+    }
+    if(id === '') return `${prefix}`
+    if(id === '\xFF\xFF\xFF\xFF') return `${prefix}\xFF\xFF\xFF\xFF`
+    return `${prefix}${id}`
+  }
+
+  return {
+    gt: (typeof gt == 'string') ? getPrefix(gt)+"\xFF\xFF\xFF\xFF" : undefined,
+    lt: (typeof lt == 'string') ? getPrefix(lt) : undefined,
+    gte: (typeof gte == 'string') ? getPrefix(gte) : (typeof gt == 'string' ? undefined : `${prefix}`),
+    lte: (typeof lte == 'string')
+        ? getPrefix(lte)+"\xFF\xFF\xFF\xFF"
+        : (typeof lt == 'string' ? undefined : `${prefix}\xFF\xFF\xFF\xFF`),
+    limit,
+    reverse
+  }
+}
+
 const rangeProperties = {
   gt: {
     type: String,
@@ -349,7 +374,7 @@ function computeUpdates(model, properties, context) {
 export {
   typeName, toJSON, setDifference, mapDifference, crudChanges,
   getProperty, setProperty, getField, setField, isObject, mergeDeep, getDefaults,
-  prefixRange, rangeProperties, fieldListToFieldsObject,
+  prefixRange, prefixRangePartial, rangeProperties, fieldListToFieldsObject,
   encodeIdentifier, extractRange, isomorphic, computeDefaults, computeUpdates
 }
 
