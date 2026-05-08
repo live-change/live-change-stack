@@ -1,6 +1,6 @@
 {
   "name": "@live-change/feedback-service",
-  "version": "0.9.205",
+  "version": "0.9.206",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/access-control-service": "0.9.205",
-    "@live-change/framework": "0.9.205",
-    "@live-change/relations-plugin": "0.9.205",
-    "@live-change/user-service": "0.9.205"
+    "@live-change/access-control-service": "^0.9.206",
+    "@live-change/framework": "^0.9.206",
+    "@live-change/relations-plugin": "^0.9.206",
+    "@live-change/user-service": "^0.9.206"
   },
   "gitHead": "6ac17ccf3c184ca4d7ef920f63827dbfd8749f96",
   "type": "module"
