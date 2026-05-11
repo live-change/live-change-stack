@@ -50,6 +50,9 @@ export default function editorData(options) {
     api = useApi(options.appContext || getCurrentInstance().appContext),
     workingZone = inject('workingZone'),
 
+    extendDraftPath = x => x,
+    extendSavedPath = x => x,
+
     initialData = {},
   } = options
 
@@ -92,9 +95,9 @@ export default function editorData(options) {
   }
 
   const savedDataPath = (Object.keys(identifiers).length > 0 || allowReadWithoutIdentifiers)
-    ? path[serviceName][crudMethods.read](identifiers)
+    ? extendSavedPath(path[serviceName][crudMethods.read](identifiers), path)
     : null
-  const draftDataPath = (draft && path.draft.myDraft(draftIdentifiers)) || null
+  const draftDataPath = (draft && extendDraftPath(path.draft.myDraft(draftIdentifiers), path)) || null
 
   const updateAction = api.actions[serviceName][crudMethods.update]
   const createOrUpdateAction = api.actions[serviceName][crudMethods.createOrUpdate]
