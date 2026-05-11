@@ -20,9 +20,13 @@ For each new model, decide how it relates to the rest of the domain:
 - **`userItem`** – the object belongs to the signed-in user (e.g. user’s device).
 - **`itemOf`** – a list of children belonging to a parent model (e.g. device connections).
 - **`propertyOf`** – a single state object with the same id as the parent (e.g. cursor state).
+- **`entity`** – global / role-scoped; do **not** pair with manual **`owner`** when **`userItem`** fits “my rows” for `client.user`.
+- **`sessionOrUserItem`** / **`sessionOrUserProperty`** – owner is Session **or** User (no **`sessionItem`** annotation).
 - **no relation** – for global data or other special cases.
 
 Choose one main relation; other associations can be plain fields + indexes.
+
+Decision guide: **`docs/docs/server/09-07-owner-selection-useritem.md`**.
 
 ## Step 2 – Define `properties` clearly
 
@@ -62,6 +66,30 @@ properties: {
 }
 ```
 
+## Property validation (validators)
+
+- Built-in validator names live in `@live-change/framework/lib/utils/validators.js`. Do not invent names that are not there unless you also register them.
+- Common patterns: `validation: ['nonEmpty']`, strings with `{ name: 'maxLength', length: 80 }`, numbers with `['number', 'integer', { name: 'min', value: 0 }, { name: 'max', value: 999 }]`.
+- **Service-defined validators:** `definition.validator('email', factory)` (see `email-service/index.js` + `emailValidator.js`). Validators are merged across services at startup — avoid name clashes.
+- **Frontend:** assign client factories to `api.validators` under the same keys (e.g. `clientEmailValidator.js` in `App.vue`). Match server error codes for i18n.
+- Full reference: server manual page **Property validation** (`docs/docs/server/05a-validation.md`).
+
+## Generated CRUD / views (relations-plugin)
+
+- The plugin registers **views, actions, events, and triggers** automatically from `entity`, `itemOf`, `propertyOf`, `*Any`, `relatedTo`, `boundTo`, and `saveAuthor` (see `live-change-stack/framework/relations-plugin/src/index.ts`).
+- **Do not** define a manual `definition.view` / `action` / `event` / `trigger` with the **same name** as a generated one (e.g. `entity` on model `Auction` already creates view **`auction`**).
+- Use **`describe`** before adding custom surface API: `fnm exec -- node server/start.js describe --service myService --output yaml`.
+- Technical inventory: **`docs/docs/server/09-00-relations-generated-artifacts.md`** (built docs path `/server/09-00-relations-generated-artifacts.html`).
+
+## Owner selection — `userItem`, `entity`, domain relations
+
+- **Per logged-in user** (“my X”, owner = `client.user`): use **`userItem`** (or **`userProperty`** for one row per user) with **`use: [ userService, … ]`**. Do **not** hand-declare **`user`** or **`owner`** — user-service injects **`user`** + **`byUser`**. Configure access with **`userReadAccess`**, **`userCreateAccess`**, **`userUpdateAccess`**, **`userDeleteAccess`**, **`userWriteAccess`** (see `live-change-stack/services/user-service/userItem.js`).
+- **Session or User** (guest drafts → sign-in transfer): **`sessionOrUserItem`** / **`sessionOrUserProperty`**. There is no **`sessionItem`** annotation.
+- **Global / role-scoped** catalog entities without a natural “this row belongs to client.user”: often **`entity`**.
+- **Child of a domain parent model** (invoice lines, comments, …): **`itemOf`** / **`propertyOf`** / `*Any`.
+- Typical **`userItem`** API names: **`myUser` + plural(Model)** (range), **`createMyUser` + Model**, **`updateMyUser` + Model**. Relations-plugin may also expose **`create` + Model** from underlying **`itemOf`** — prefer **`createMyUser*`** for consistent **`user`** stamping.
+- Full guide: **`docs/docs/server/09-07-owner-selection-useritem.md`**.
+
 ## Step 2b – Relation arity rules (critical)
 
 Treat arity on two levels:
@@ -86,13 +114,13 @@ Guardrail:
 ### `userItem`
 
 1. Add a `userItem` block inside the model definition.
-2. Set roles for read/write and list which fields can be written.
+2. Set **`userReadAccess`**, **`userCreateAccess`**, **`userUpdateAccess`**, **`userDeleteAccess`**, or **`userWriteAccess`** (see `live-change-stack/services/user-service/userItem.js`). Do **not** declare **`user`** in `properties`.
 
 ```js
 userItem: {
-  readAccessControl: { roles: ['owner', 'admin'] },
-  writeAccessControl: { roles: ['owner', 'admin'] },
-  writeableProperties: ['name']
+  userReadAccess: (params, context) => !!context.client?.user,
+  userWriteAccess: (params, context) => !!context.client?.user,
+  writableProperties: ['name']
 }
 ```
 

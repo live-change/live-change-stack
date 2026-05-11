@@ -35,6 +35,12 @@ Use this skill to design **actions, views, and triggers** in LiveChange services
    - session keys,
    - any data needed for the next step.
 
+### Validation and `if`
+
+- Define conditional fields with property-level `if` directly on the schema field.
+- Runtime validation skips fields where `if` evaluates to `false` (frontend `validateData` and backend auto-validation).
+- Keep the validator list (`validation`, `softValidation`) on the field itself, and avoid duplicating the same condition in ad-hoc `execute` guards unless business logic requires additional checks.
+
 Example:
 
 ```js

@@ -16,6 +16,12 @@ Use these rules when implementing actions, views, and triggers in LiveChange ser
   - use indexes instead of full scans,
   - return a meaningful result (ids, data, etc.).
 
+### Validation and `if`
+
+- Treat property-level `if` as the condition for both visibility and validation.
+- Backend auto-validation skips validators for fields where `if` resolves to `false`.
+- For conditional required fields, keep validators on the field and model the condition with `if`, instead of duplicating the same guard in multiple action handlers.
+
 Example:
 
 ```js

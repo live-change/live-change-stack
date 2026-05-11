@@ -36,6 +36,30 @@ properties: {
 }
 ```
 
+## Walidacja (`validation` / `softValidation`)
+
+- Używaj **tylko nazw walidatorów**, które istnieją w frameworku albo zostały zarejestrowane w serwisie — pełna lista i przykłady: dokumentacja **Property validation** (`live-change-stack/docs/docs/server/05a-validation.md`, po zbudowaniu docs: `/server/05a-validation.html`).
+- Wbudowane m.in.: `nonEmpty`, `minLength`, `maxLength`, `number`, `integer`, **`min`** / **`max`** z obiektem `{ name: 'min', value: 0 }` (granica liczbowa; często łańcuch `['number', { name: 'min', value: 0 }]`).
+- Własny walidator w serwisie: `definition.validator('email', fabryka)` (np. wzorzec z `email-service` / `password-authentication-service`). Nazwy są kopiowane między serwisami przy starcie — unikaj kolizji (pierwsza rejestracja wygrywa).
+- Na froncie dopnij ten sam klucz na `api.validators` (np. import `clientEmailValidator.js` i `api.validators.email = emailValidator` w `App.vue`), żeby `validateData` / auto-form znały reguły po stronie klienta.
+
+## Relations plugin — co jest generowane (kolizje nazw)
+
+- `@live-change/relations-plugin` sam rejestruje **widoki, akcje, eventy i triggery** według wzorców z `live-change-stack/framework/relations-plugin/src/` (kolejność procesorów: `entity` → `propertyOf`/`itemOf` → … → `saveAuthor`).
+- **Nie** dodawaj ręcznie `definition.view` / `action` / `event` / `trigger` o nazwie już zajętej przez generator (np. model `Auction` z `entity` ma już widok **`auction`** — duplikat kończy się błędem `view auction already exists`).
+- Przed własną rejestracją: `fnm exec -- node server/start.js describe --service … --output yaml`.
+- Inwentarz techniczny: `live-change-stack/docs/docs/server/09-00-relations-generated-artifacts.md` (po buildzie docs: `/server/09-00-relations-generated-artifacts.html`).
+
+## Wybór właściciela — `userItem` vs `entity` vs relacje domenowe
+
+- Lista „moich” rzeczy dla **zalogowanego User** (tworzenie/edycja pod **`client.user`**) → **`userItem`** lub **`userProperty`** + **`use: [ userService, … ]`**. **Nie** dodawaj ręcznego pola **`user`** ani **`owner`** — dodaje je procesor (`live-change-stack/services/user-service/userItem.js`). Dostęp ustawiaj przez **`userReadAccess`**, **`userCreateAccess`**, **`userUpdateAccess`**, **`userDeleteAccess`**, **`userWriteAccess`** — nie wymyślaj nazwy „ownerAccessControl”.
+- Owner **Session lub User** (draft przed loginem → transfer) → **`sessionOrUserItem`** / **`sessionOrUserProperty`** (09-04). Nie ma adnotacji **`sessionItem`**.
+- Encja **globalna** / dostęp głównie po **rolach**, bez naturalnego „ten rekord = ten user” → często **`entity`** (05-models).
+- Dziecko **konkretnego modelu domenowego** (nie „User jako kontener konta”) → **`itemOf`** / **`propertyOf`** / `*Any` (09-01 / 09-02).
+- Wygenerowane nazwy dla **`userItem`** (np. `myUserAuctions`, `createMyUserAuction`): patrz **`09-07-owner-selection-useritem.md`** w docs serwera.
+
+Procesory **user-service** (m.in. `userProperty`, `userItem`, `sessionOrUserProperty`, `sessionOrUserItem`) ustawiają na modelu mapę **`ownerCrud`** obok ewentualnego globalnego **`crud`** — w `describe` widać oba bloki. Na froncie formularze „moje” buduje się przez **`editorData({ crudSource: 'ownerCrud', … })`**; gdy widok **`my…`** nie bierze parametrów ścieżki, często **`identifiers: {}`** + **`allowReadWithoutIdentifiers: true`**. Szczegóły: `live-change-stack/docs/docs/frontend/09-api-frontend-auto-form.md`.
+
 ## Arity relacji (bardzo ważne)
 
 Rozróżniaj dwa poziomy:
@@ -61,7 +85,7 @@ Przykłady:
 
 ## `userItem` – zasób należący do użytkownika
 
-Używaj, gdy model należy do zalogowanego użytkownika.
+Używaj, gdy model należy do zalogowanego użytkownika (preferuj **userItem** zamiast **`entity`** + ręcznego **`owner`** dla typowych list „moich” obiektów — szczegóły: `docs/docs/server/09-07-owner-selection-useritem.md`).
 
 ```js
 definition.model({

@@ -1,4 +1,4 @@
-FROM --platform=amd64 debian:buster
+FROM --platform=amd64 debian:bookworm
 
 # SYSTEM
 RUN echo no cache 3
@@ -20,6 +20,8 @@ RUN apt-get install -y nodejs
 
 #NPM, PM2
 RUN npm install cross-env yarn typescript -g
+
+RUN echo no cache 1
 
 # APP
 RUN mkdir -p /app
@@ -49,4 +51,4 @@ COPY docker/start-service.sh /start-service.sh
 COPY docker/app.initd.sh /etc/init.d/app
 
 #CMD /start-service.sh
-CMD node --inspect=0.0.0.0:9229 --max-old-space-size=512 dist/server/start.js ssrServer --withApi --withServices --updateServices --enableSessions --createDb
+CMD node --inspect=0.0.0.0:9229 --expose_gc dist/server/start.js ssrServer --withApi --withServices --updateServices --enableSessions --createDb

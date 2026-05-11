@@ -34,6 +34,7 @@
 <script setup>
 
   import Message from "primevue/message"
+  import Button from "primevue/button"
 
   import { ref, computed, onMounted, defineProps, defineEmits, toRefs, getCurrentInstance, unref } from 'vue'
   import { useI18n } from 'vue-i18n'

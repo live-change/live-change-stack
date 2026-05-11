@@ -28,11 +28,11 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/dao": "^0.9.206",
-    "@live-change/dao-websocket": "^0.9.206",
+    "@live-change/dao": "0.9.206",
+    "@live-change/dao-websocket": "0.9.206",
     "line-reader": "^0.4.0",
     "websocket": "^1.0.34",
     "yargs": "^17.7.2"
   },
-  "gitHead": "6ac17ccf3c184ca4d7ef920f63827dbfd8749f96"
+  "gitHead": "550ec614c03ed33fbb8a094d23a63dd2d20d5de3"
 }

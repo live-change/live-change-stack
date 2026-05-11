@@ -15,6 +15,12 @@ alwaysApply: false
   - używać indeksów zamiast pełnych skanów,
   - zwracać sensowny wynik (ID obiektu, fragment stanu itp.).
 
+### Walidacja i `if`
+
+- Traktuj `if` na property jako warunek widoczności i walidacji.
+- Backendowe auto-validation pomija walidatory pól, dla których `if` zwraca `false`.
+- Dla warunkowego required trzymaj walidatory na polu i modeluj warunek przez `if`, zamiast ręcznie dublować guardy w wielu akcjach.
+
 ### Wzorzec prostej akcji
 
 ```js

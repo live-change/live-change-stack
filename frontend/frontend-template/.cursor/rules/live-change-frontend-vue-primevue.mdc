@@ -66,6 +66,10 @@ Schemat decyzji:
 2. Edytuje rekord modelu (create/update)? → **Tak**: użyj `editorData`. **Nie**: użyj `actionData`.
 3. `<command-form>` tylko do najprostszych jednorazowych przypadków.
 
+**`editorData` — `crud` vs `ownerCrud`:** domyślnie używane jest `model.crud`. Modele z relacji user-service mają często też **`model.ownerCrud`** (`describe`): wtedy `editorData({ crudSource: 'ownerCrud', … })`. Gdy widok read typu **`my…`** nie ma parametrów w ścieżce, a przekazujesz `identifiers: {}`, ustaw **`allowReadWithoutIdentifiers: true`** (inaczej `editorData` nie podłączy `live` zapisanej wartości). Szczegóły: `live-change-stack/docs/docs/frontend/09-api-frontend-auto-form.md`.
+
+**`AutoField` i `definition.if`:** pola z warunkiem `if` w definicji modelu oceniają widoczność względem obiektu przekazanego jako **`rootValue`**. Bez **`:root-value="editor.data.value"`** (lub równoważnego całego rekordu) domyślne `{}` ukrywa te pola mimo poprawnego `v-model`.
+
 ## Autosave helpery – `synchronized` i `synchronizedList`
 
 Używaj helperów dla danych z `live(...)`:

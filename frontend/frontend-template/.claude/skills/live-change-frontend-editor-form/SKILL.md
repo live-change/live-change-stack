@@ -51,9 +51,30 @@ identifiers: {} // creates a new record
 
 This is the simplest and most readable approach. Use it when identifiers are available at setup time (static values, route params).
 
+### `crudSource`, `ownerCrud`, and `allowReadWithoutIdentifiers`
+
+Models from **user-service** relations (`userProperty`, `userItem`, `sessionOrUserProperty`, `sessionOrUserItem`, …) expose a second CRUD map on the model: **`ownerCrud`** (see `describe`: `read` is usually **`my…`**, actions are **`setMy…` / `updateMy…` / `setOrUpdateMy…`**). Use:
+
+```javascript
+const editor = await editorData({
+  service: 'userIdentification',
+  model: 'Identification',
+  crudSource: 'ownerCrud',
+  identifiers: {},
+  allowReadWithoutIdentifiers: true,
+  draft: true,
+})
+```
+
+**`allowReadWithoutIdentifiers`** (default `false`): when `true`, `editorData` still subscribes to the **read** view even if `identifiers` is `{}`. Use only when the read view is defined for the current client with no path params (typical `ownerCrud.read`). Keep `false` for normal **`crud.read`** that needs real ids — otherwise you risk unnecessary not-authorized / missing errors.
+
+For **`crud`** (default `crudSource: 'crud'`) with a global read view, pass real **`identifiers`** as before.
+
 ## Step 2 – Build the template with AutoField
 
-Use `editor.model.properties.*` as definitions and `editor.data.value` for v-model bindings:
+Use `editor.model.properties.*` as definitions and `editor.data.value` for v-model bindings.
+
+**Model `if` on properties:** When a property uses `definition.if` (visibility depends on other fields, e.g. `props.portalRole === 'employee'`), pass **`:root-value="editor.data.value"`** on every `AutoField` that relies on that definition. The default `rootValue` is `{}`, so the predicate never sees sibling fields and `if`-gated fields stay hidden. Same rule as `AutoEditor`’s `rootValue` / `ModelEditor`’s `auto-editor` wiring.
 
 **Important:** Always wrap in a `<form>` element. `EditorButtons` uses `type="submit"` / `type="reset"` internally — without a parent `<form>`, the buttons do nothing.
 
@@ -62,12 +83,14 @@ Use `editor.model.properties.*` as definitions and `editor.data.value` for v-mod
   <form @submit.prevent="editor.save()" @reset.prevent="editor.reset()">
     <div class="space-y-4">
       <AutoField
+        :root-value="editor.data.value"
         :definition="editor.model.properties.title"
         v-model="editor.data.value.title"
         :error="editor.propertiesErrors?.title"
         label="Title"
       />
       <AutoField
+        :root-value="editor.data.value"
         :definition="editor.model.properties.body"
         v-model="editor.data.value.body"
         :error="editor.propertiesErrors?.body"
@@ -76,6 +99,7 @@ Use `editor.model.properties.*` as definitions and `editor.data.value` for v-mod
 
       <!-- Custom input inside AutoField — gets label + error automatically -->
       <AutoField
+        :root-value="editor.data.value"
         :definition="editor.model.properties.category"
         v-model="editor.data.value.category"
         :error="editor.propertiesErrors?.category"
