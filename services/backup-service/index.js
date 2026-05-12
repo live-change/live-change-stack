@@ -8,7 +8,7 @@ import express from 'express'
 import basicAuth from 'express-basic-auth'
 const expressApp = express()
 import fs from 'fs'
-import { createBackup, currentBackupPath, removeOldBackups } from './backup.js'
+import { createBackup, createBackupLogger, currentBackupPath, removeOldBackups } from './backup.js'
 import { restoreBackup } from './restore.js'
 import {
   getLastEventId, removeOldEvents, removeOldOpLogs,
@@ -29,6 +29,8 @@ const backupServerPassword = config.password || process.env.BACKUP_SERVER_PASSWO
 const backupsDir = config.dir || './backups'
 
 fs.mkdirSync(backupsDir, { recursive: true })
+
+const backupLog = createBackupLogger(backupsDir)
 
 let queue
 (async () => {
@@ -62,8 +64,8 @@ function doBackup() {
       let lastTriggerTimestamp = await getLastTriggerTimestamp()
       let lastCommandTimestamp = await getLastCommandTimestamp()
 
-      await removeOldBackups(backupsDir, 10 * TWENTY_FOUR_HOURS, 10)
-      await createBackup(path)
+      await removeOldBackups(backupsDir, 10 * TWENTY_FOUR_HOURS, 10, backupLog)
+      await createBackup(path, backupLog)
 
       console.log("====== CLEAR STATS:")
       console.log("Last event id:", lastEventId)
@@ -193,7 +195,7 @@ definition.afterStart(() => {
       console.log('Service init backup:')
       await queue.add(() => doBackup())
       console.log('Service init backup completed')
-    }, TEN_MINUTES)
+    }, 1*60*1000) //TEN_MINUTES)
 
     setInterval(async () => {
       console.log('Daily backup:')
