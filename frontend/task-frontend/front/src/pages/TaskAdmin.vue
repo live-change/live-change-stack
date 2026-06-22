@@ -84,13 +84,13 @@
 
   const tasksNamesPath = path.task.taskNames({})
 
-  console.log("TASKS NAMES PATH", tasksNamesPath)
+  //console.log("TASKS NAMES PATH", tasksNamesPath)
 
   const [tasksNamesData] = await Promise.all([
     live(tasksNamesPath)
   ])
   const tasksNames = computed(() => tasksNamesData.value.map(task => task.id))
 
-  console.log("TASKS NAMES", tasksNames)
+  //console.log("TASKS NAMES", tasksNames)
 
 </script>

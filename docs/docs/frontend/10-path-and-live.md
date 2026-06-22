@@ -34,7 +34,9 @@ const identificationPath = computed(() =>
 const identification = await live(identificationPath)
 ```
 
-`computed` wraps **reactive path parameters** (the result of `path.service.view(...)`). It does **not** wrap the `usePath()` call — that must run once in `setup`, not inside the getter.
+`computed` wraps **reactive path parameters** (the result of `path.service.view(...)`). It does **not** wrap the `usePath()` call — that must run once in `setup`, not inside the getter or in async callbacks later.
+
+> **Setup-only:** Never call `usePath()` / legacy `path()` outside synchronous setup — including in async handlers, observer callbacks, `setTimeout`, and Promise chains. Reuse the `path` object captured in setup.
 
 Here `identificationPath` resolves to a path array like:
 
@@ -245,7 +247,7 @@ const articlePath = computed(() => path.blog.article({ article: unref(articleId)
 const [article] = await Promise.all([live(articlePath)])
 ```
 
-**Important:** `usePath()` must run in `setup` (see [`09-api-vue3-ssr`](./09-api-vue3-ssr.md#usepathcontext)). The `computed` factory should only build paths using the existing `path` object — never call `usePath()` or `path()` inside the getter.
+**Important:** `usePath()` must run in `setup` (see [`09-api-vue3-ssr`](./09-api-vue3-ssr.md#usepathcontext)). The `computed` factory, event handlers, async helpers, and observer callbacks should only build paths using the existing `path` object — never call `usePath()` or `path()` again.
 
 When `articleId` changes (e.g. via navigation), the path recomputes and `live` automatically resubscribes to the new data.
 

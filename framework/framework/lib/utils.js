@@ -230,7 +230,7 @@ function prefixRange({ gt, lt, gte, lte, limit, reverse }, prefix, from = "") {
       if(id.slice(0, from.length) !== from) {
         console.error("ID:", id, "does not start with", from)                
       }
-      id = id.slice(from.length)    
+      id = id.slice(from.length)
     }
     if(id === '') return `${prefix}:`
     if(id === '\xFF\xFF\xFF\xFF') return `${prefix}:\xFF\xFF\xFF\xFF`

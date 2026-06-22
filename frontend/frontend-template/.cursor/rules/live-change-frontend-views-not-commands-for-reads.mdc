@@ -10,9 +10,10 @@ Ten sam **model mentalny** co na backendzie (odczyt vs zapis), ale **inne API**:
 
 ## Odczyt danych
 
-- Buduj ścieżkę: `usePath()` (tylko synchronicznie w `setup`) → `path.<service>.<viewName>({ ...params })`; w `computed` używaj już utworzonego obiektu `path`, nie wywołuj ponownie `usePath()` / `path()`.
+- Buduj ścieżkę: `usePath()` (tylko synchronicznie w `setup`) → `path.<service>.<viewName>({ ...params })`.
+- **Setup-only:** nie wywołuj `usePath()` / legacy `path()` poza synchronicznym setup — także nie w `computed`, async handlerach, callbackach/lambdach, watcherach, observerach (`api.observable`), `setTimeout` ani Promise callbackach. Używaj wcześniej złapanego `const path = usePath()`.
 - Subskrypcja: `live(computed(() => path...))` albo `await Promise.all([live(...), ...])`.
-- Jednorazowo: `useFetch(path.service.view({ ... }))` (np. w handlerze, po uploadzie).
+- Jednorazowo: `useFetch(path.service.view({ ... }))` (np. w handlerze, po uploadzie — ale `path` musi pochodzić z setup).
 - Dla niezależnych odczytów uruchamiaj `live(...)` równolegle (`Promise.all`), a sekwencyjnie tylko gdy drugi path zależy od wyniku pierwszego.
 - W `Path.with(...)` buduj deklaratywnie ścieżki; do branchingu po typie/polu używaj `$switch`, nie runtime `if` na callbacku `.with`.
 

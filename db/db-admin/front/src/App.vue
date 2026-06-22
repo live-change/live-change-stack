@@ -73,6 +73,9 @@
     console.log("WATCH CLIENT", oldClient, '=>', newClient)
   })
 
+  import { ensureCodeMirrorHighlightStyles } from '@live-change/vue3-components/codemirror/setupHighlight.js'
+  ensureCodeMirrorHighlightStyles()
+
 </script>
 
 <style>

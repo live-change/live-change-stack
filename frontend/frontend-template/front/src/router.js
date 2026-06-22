@@ -28,7 +28,7 @@ export function routes(config = {}) {
 
     ...taskAdminRoutes({ ...config, prefix: '/_task' }),
     ...cronAdminRoutes({ ...config, prefix: '/_cron' }),
-    ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta, raw: true }}) }),
+    ...dbAdminRoutes({ prefix: '/_db', route: r => ({ ...r, meta: { ...r.meta,/*  raw: true  */}}) }),
     ...catchAllPagesRoute({ ...config }),
   ]
 }

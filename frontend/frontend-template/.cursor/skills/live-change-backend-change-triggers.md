@@ -116,7 +116,9 @@ This means: when a user creates a Schedule via the UI or API, the timer is autom
 
 When the domain needs **wall-clock schedules** or **fixed repeating intervals** that run a **trigger**, default to **`@live-change/cron-service`** (models **Schedule** / **Interval**, internal **timer** + **changeCron_*** lifecycle), not ad-hoc timers only.
 
-**Backend:** define the **target `definition.trigger`** in your service; put **Schedule** / **Interval** rows in **cron** with **`trigger: { name, service, properties, returnTask }`**. Rely on **`changeCron_Schedule`** / **`changeCron_Interval`** for timer repair (already implemented in cron-service).
+**Backend (batch / ingest):** prefer **`task()`** + cron pointing at **`runTask_{service}_{taskName}`** with **`returnTask: true`** — see skill **live-change-backend-tasks-cron** and **`14-tasks.md`**.
+
+**Backend (trivial hooks):** bare **`definition.trigger`** + cron **`trigger: { name, service, properties, returnTask: false }`**. Rely on **`changeCron_Schedule`** / **`changeCron_Interval`** for timer repair (already implemented in cron-service).
 
 **Admin / task-frontend-style UI:** use the same integration as the reference pages:
 

@@ -114,7 +114,9 @@ export const config = {
 
 1. Upewnij się, że root aplikacji (np. `ViewRoot`) opakowuje strony w `<Suspense>`.
 2. Strony powinny:
-   - używać `await Promise.all([live(path()....)])` w `script setup`,
+   - wywołać `const path = usePath()` synchronicznie w `script setup`,
+   - używać `await Promise.all([live(path.service.view(...)), ...])`,
    - korzystać z `.value` w template,
-   - nie wykonywać pobierania danych w `onMounted`.
+   - nie wykonywać pobierania danych w `onMounted`,
+   - **nie** wywoływać `usePath()` / `path()` w async handlerach, observerach ani callbackach Promise — tam używaj obiektu `path` z setup.
 

@@ -77,6 +77,7 @@ properties: {
 ## Generated CRUD / views (relations-plugin)
 
 - The plugin registers **views, actions, events, and triggers** automatically from `entity`, `itemOf`, `propertyOf`, `*Any`, `relatedTo`, `boundTo`, and `saveAuthor` (see `live-change-stack/framework/relations-plugin/src/index.ts`).
+- **`propertyOf` + `writeAccessControl`:** generates **`set` + modelName**, **`update` + modelName**, **`setOrUpdate` + modelName** (e.g. `setBrowserViewportCalibration`), plus a default **object** read view named like the model with the first letter lowercased (e.g. **`browserViewportCalibration`**). Do not re-declare those names manually.
 - **Do not** define a manual `definition.view` / `action` / `event` / `trigger` with the **same name** as a generated one (e.g. `entity` on model `Auction` already creates view **`auction`**).
 - Use **`describe`** before adding custom surface API: `fnm exec -- node server/start.js describe --service myService --output yaml`.
 - Technical inventory: **`docs/docs/server/09-00-relations-generated-artifacts.md`** (built docs path `/server/09-00-relations-generated-artifacts.html`).
@@ -252,7 +253,19 @@ indexes: {
 
 This format matches how property indexes are serialized internally and works well with range-prefix filtering in views.
 
-> **IMPORTANT — serialization constraint:** Function indexes are serialized via `toString()` and executed remotely. The mapper and all helpers **must be defined inside the function body** — not in module scope. References to outer variables or imports will be `undefined` at runtime.
+> **IMPORTANT — serialization constraint:** Function indexes are serialized via `toString()` and executed remotely. Module-scope imports and closures are `undefined` at runtime. Use either:
+> - **inline helpers** inside the index function body (simple logic), or
+> - **eval helper bundle**: a self-contained factory function passed as a string in `parameters` and restored with `eval(helperBundle)()` (same pattern as `dbAccessFunctions` in `access-control-service/access.js`).
+
+```js
+export function myDomainDbHelpers() {
+  function deriveMonth(obj) { return obj.date?.slice(0, 7) }
+  return { deriveMonth }
+}
+
+// parameters: { domainHelpers: `(${myDomainDbHelpers})`, tableName: '...' }
+// inside index: const { deriveMonth } = eval(domainHelpers)()
+```
 
 ## Step 6 – Set access control on relations
 

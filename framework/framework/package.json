@@ -4,7 +4,7 @@
   "description": "Live Change Framework - ultimate solution for real time mobile/web apps",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test tape tests/*"
+    "test": "node --test tests/*.test.mjs"
   },
   "repository": {
     "type": "git",
@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
-    "@live-change/dao": "^0.9.209",
-    "@live-change/uid": "^0.9.209",
+    "@live-change/dao": "0.9.209",
+    "@live-change/uid": "0.9.209",
     "typedoc": "0.28.3",
     "typedoc-plugin-markdown": "^4.6.3",
     "typedoc-plugin-rename-defaults": "^0.7.3"

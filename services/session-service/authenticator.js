@@ -7,15 +7,18 @@ const config = definition.config
 
 definition.authenticator({
   async prepareCredentials(credentials) {
-    const sessionKey = credentials.sessionKey
-    if(!sessionKey) throw new Error("sessionKey required!")
-    const sessions = await app.dao.get(
-        ['database', 'indexRange', app.databaseName, Session.tableName + '_byKey', {
-          gt: `"${sessionKey}"_`,
-          lt: `"${sessionKey}"_\xFF`
-        }])
-    //console.log("FOUND SESSIONS", sessions)
-    let session = sessions[0]?.to
+    let session = null
+    if(!config.createSessionOnUpdate) {
+      const sessionKey = credentials.sessionKey
+      if(!sessionKey) throw new Error("sessionKey required!")
+      const sessions = await app.dao.get(
+          ['database', 'indexRange', app.databaseName, Session.tableName + '_byKey', {
+            gt: `"${sessionKey}"_`,
+            lt: `"${sessionKey}"_\xFF`
+          }])
+      //console.log("FOUND SESSIONS", sessions)
+      session = sessions[0]?.to
+    }
     if(!session) {
       if(config.createSessionOnUpdate) {
         session = createHmac('sha256', config.sessionHmacSecret || 'secret')

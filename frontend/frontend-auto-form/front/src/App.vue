@@ -48,4 +48,7 @@
   api.validators.phone = phoneValidator
   api.validators.password = passwordValidator
 
+  import { ensureCodeMirrorHighlightStyles } from '@live-change/vue3-components/codemirror/setupHighlight.js'
+  ensureCodeMirrorHighlightStyles()
+
 </script>

@@ -474,7 +474,9 @@ export function defineResetAction(config, context) {
   }
   const sourceAccessControl = config.resetAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(
-    sourceAccessControl, [modelPropertyName], [objectType]
+    sourceAccessControl,
+    otherPropertyNames.concat(modelPropertyName),
+    others.concat(objectType)
   )
   const action = new ActionDefinition({
     name: actionName,

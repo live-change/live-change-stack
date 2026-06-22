@@ -278,6 +278,31 @@ indexes: {
     }
   }
 }
+
+// ✅ CORRECT — shared domain logic via eval helper bundle parameter
+// (same pattern as access-control-service/access.js → dbAccessFunctions)
+export function myDomainDbHelpers() {
+  function deriveMonth(obj) { return obj.date?.slice(0, 7) }
+  return { deriveMonth }
+}
+
+indexes: {
+  byMonth: {
+    function: async (input, output, { tableName, domainHelpers }) => {
+      const { deriveMonth } = eval(domainHelpers)()
+      const table = await input.table(tableName)
+      await table.map(obj => {
+        const month = deriveMonth(obj)
+        if (!month) return null
+        return { id: month + '_' + obj.id, to: obj.id }
+      }).to(output)
+    },
+    parameters: {
+      tableName: definition.name + '_MyModel',
+      domainHelpers: `(${myDomainDbHelpers})`
+    }
+  }
+}
 ```
 
 ## Access control on relations

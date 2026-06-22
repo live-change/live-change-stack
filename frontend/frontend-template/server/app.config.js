@@ -145,8 +145,7 @@ app.config = {
       agreements: ['privacyPolicy', 'termsOfService', 'marketing']
     },
     {
-      name: 'backup',
-      port: 8007
+      name: 'backup'
     },
   ]
 }

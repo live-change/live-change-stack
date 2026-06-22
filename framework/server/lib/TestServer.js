@@ -27,9 +27,13 @@ class TestServer {
       res.end('Hello World!')
     })
 
-    const manifest = (this.config.dev || argv.spa)
-        ? null
-        : JSON.parse(fs.readFileSync((path.resolve(ssrRoot, 'dist/client/.vite/ssr-manifest.json'))))
+    const withSsr = this.config.withSsr !== false
+    this.manifest = null
+    if(withSsr && !this.config.dev && !this.config.spa) {
+      this.manifest = JSON.parse(fs.readFileSync(
+        path.resolve(this.config.ssrRoot, 'dist/client/.vite/ssr-manifest.json')
+      ))
+    }
 
     app.instanceId = encodeNumber(hashCode(
       `app${process.pid}${os.hostname()} ${process.cwd()}/${process.argv.join(' ')}`))
@@ -47,15 +51,18 @@ class TestServer {
       ...this.config
     }, this.dbServer)
 
-    this.ssrServer = new SsrServer(this.expressApp, this.manifest, {
-      dev: this.config.dev,
-      root: this.config.ssrRoot,
-      daoFactory: async (credentials, ip) => {
-        return await this.createDao(credentials, ip)
-      },
-      ...this.config
-    })
-    await this.ssrServer.start()
+    this.ssrServer = null
+    if(withSsr) {
+      this.ssrServer = new SsrServer(this.expressApp, this.manifest, {
+        dev: this.config.dev,
+        root: this.config.ssrRoot,
+        daoFactory: async (credentials, ip) => {
+          return await this.createDao(credentials, ip)
+        },
+        ...this.config
+      })
+      await this.ssrServer.start()
+    }
 
     this.expressServer = http.createServer(this.expressApp)
     this.services = this.apiServer.services.getServicesObject()
@@ -86,8 +93,10 @@ class TestServer {
       await app.close()
       console.log("CLOSE DB!")
       await this.dbServer.close()
-      console.log("CLOSE SSR!")
-      await this.ssrServer.close()
+      if(this.ssrServer) {
+        console.log("CLOSE SSR!")
+        await this.ssrServer.close()
+      }
       console.log("CLOSED!")
       //this.wsServer.close()
       //this.sockJsServer.close()

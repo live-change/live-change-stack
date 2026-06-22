@@ -12,6 +12,7 @@ import Dao from "./runtime/Dao.js"
 import SessionDao from "./runtime/SessionDao.js"
 import LiveDao from "./runtime/LiveDao.js"
 import ApiServer from "./runtime/ApiServer.js"
+import { snapshotClientCredentials } from './runtime/clientCredentials.js'
 
 import indexListProcessor from "./processors/indexList.js"
 import daoPathView from "./processors/daoPathView.js"
@@ -22,6 +23,7 @@ import indexCode from "./processors/indexCode.js"
 import queryExtensions from "./processors/queryExtensions.js"
 
 import databaseUpdater from "./updaters/database.js"
+import migrationsUpdater from "./updaters/migrations.js"
 
 import accessControlFilter from "./clientSideFilters/accessFilter.js"
 import clientSideFilter from "./clientSideFilters/clientSideFilter.js"
@@ -65,7 +67,8 @@ class App {
       indexCode      
     ]
     this.defaultUpdaters = [
-      databaseUpdater
+      databaseUpdater,
+      migrationsUpdater
     ]
     this.defaultClientSideFilters = [
       accessControlFilter,
@@ -189,8 +192,9 @@ class App {
     /// TODO: chceck for overwriting renames, solve by addeding temporary names
 
     await this.applyChanges(changes, service, updaters || this.defaultUpdaters, force)
+    const serviceJson = typeof service.toJSON === 'function' ? service.toJSON() : service
     await this.dao.request(['database', 'put'], this.databaseName, 'services',
-        { id: service.name , ...service })
+        { id: service.name, ...serviceJson })
 
     await this.profileLog.end(profileOp)
   }
@@ -705,6 +709,53 @@ class App {
     const view = service.views[viewName]
     if(!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
     return await view.get(params, { internal: true, roles: ['admin'] })
+  }
+
+  /**
+   * Build client credentials for raw HTTP (or other non-WebSocket) callers:
+   * runs all prepareCredentials + one snapshot per credentialsObservable (same merge as LiveDao).
+   */
+  async resolveClientCredentials(inputCredentials, options = {}) {
+    if (!this.config?.services) {
+      throw new Error('resolveClientCredentials: app.config.services missing (app not bootstrapped?)')
+    }
+    return await snapshotClientCredentials(this.config, inputCredentials, {
+      app: this,
+      ip: options.ip,
+      observableWaitMs: options.observableWaitMs
+    })
+  }
+
+  /**
+   * Read a service view as the given client (enforces view.access and accessControl).
+   * Prefer this over serviceViewGet for user-context authorization.
+   */
+  async serviceViewGetAsClient(serviceName, viewName, params, client) {
+    const service = this.startedServices[serviceName]
+    if (!service) {
+      throw new Error(
+        `Service ${serviceName} not found, available services: ${Object.keys(this.startedServices).join(', ')}`
+      )
+    }
+    const view = service.views[viewName]
+    if (!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
+    return await view.get(params, client)
+  }
+
+  /**
+   * Observable variant of serviceViewGetAsClient.
+   */
+  async serviceViewObservableAsClient(serviceName, viewName, params, client) {
+    const service = this.startedServices[serviceName]
+    if (!service) {
+      throw new Error(
+        `Service ${serviceName} not found, available services: ${Object.keys(this.startedServices).join(', ')}`
+      )
+    }
+    const view = service.views[viewName]
+    if (!view) throw new Error(`View ${viewName} not found in service ${serviceName}`)
+    const result = await view.observable(params, client)
+    return result.then ? new ReactiveDao.ObservablePromiseProxy(result) : result
   }
 
   viewObservable(viewName, params) {

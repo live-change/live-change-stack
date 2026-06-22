@@ -165,7 +165,7 @@ Use `definition.index(...)` at service level (typically `indexes.js`) when:
 - source tables are peer entities (no natural single owner model),
 - index is a projection layer for cross-table reads.
 
-> **IMPORTANT — serialization constraint:** Index functions are serialized via `toString()` and executed remotely. All helpers, mappers, and variables **must be defined inside the function body**. References to outer scope (module-level functions, imports) will be `undefined` at runtime.
+> **IMPORTANT — serialization constraint:** Index functions are serialized via `toString()` and executed remotely. Module-scope imports are `undefined` at runtime. For shared domain logic across indexes, use the **eval helper bundle** pattern: self-contained factory → string in `parameters` → `eval(bundle)()` inside the index (see `access-control-service/access.js` → `dbAccessFunctions`).
 
 Example:
 

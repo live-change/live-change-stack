@@ -29,44 +29,11 @@
       </div>
     </div>
   </div>
-  <div v-if="false" class="bg-surface-0 dark:bg-surface-900 shadow-sm w-full">
-    <div class="flex flex-row flex-wrap w-full" >
-      <div class="col-span-2 text-right">Compiled:</div>
-      <div class="col-span-10" v-if="!readCompiled.error" v-html="highlightedObject(readCompiled.example)" />
-      <Message v-if="readCompiled.error" severity="error" variant="simple" size="small" class="col-span-10">
-        {{ readCompiled.error }}
-      </Message>
-    </div>
-    <div class="flex flex-row flex-wrap w-full">
-      <div class="col-span-2 text-right"></div>
-      <div class="col-span-10" v-if="!writeCompiled.error" v-html="highlightedObject(writeCompiled.example)" />
-      <Message v-if="writeCompiled.error" severity="error" variant="simple" size="small" class="col-span-10">
-        {{ writeCompiled.error }}
-      </Message>
-    </div>
-    <div class="flex flex-row flex-wrap w-full">
-      <div class="col-span-2 text-right"></div>
-      <div class="col-span-10" v-if="!removeCompiled.error" v-html="highlightedObject(removeCompiled.example)" />
-      <Message v-if="removeCompiled.error" severity="error" variant="simple" size="small" class="col-span-10">
-        {{ removeCompiled.error }}
-      </Message>
-    </div>
-  </div>
 </template>
 
 <script setup>
 
   import CodeEditor from "./CodeEditor.vue"
-
-  import { stringify } from "javascript-stringify"
-  import * as Prism from 'prismjs/components/prism-core'
-
-  import Message from "primevue/message"
-
-  function highlightedObject(obj) {
-    const code = stringify(obj)
-    return Prism.highlight(code, Prism.languages.js, "js")
-  }
 
   import { dbRequestSugar, dbViewSugar } from "./dbSugar.js";
 

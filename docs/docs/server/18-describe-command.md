@@ -143,10 +143,26 @@ Two other CLI commands work with service definitions:
 
 These are used during development when you modify models or indexes and need to update the database schema.
 
+**Local development** (embedded DB in `tmp.db`, same as `localDev`):
+
 ```bash
 # See what changed
-node server/start.js changes --service speedDating --withDb
+fnm exec -- npm run localChanges -- --service speedDating
 
 # Apply changes
-node server/start.js update --service speedDating --withDb
+fnm exec -- npm run localUpdate -- --service speedDating
+```
+
+**Remote db-server** (production or shared DB on port 9417 / `DB_URL`):
+
+```bash
+node server/start.js changes --service speedDating
+node server/start.js update --service speedDating
+```
+
+Equivalent local CLI flags (without npm scripts):
+
+```bash
+node server/start.js changes --service speedDating --withDb --createDb
+node server/start.js update --service speedDating --withDb --createDb
 ```

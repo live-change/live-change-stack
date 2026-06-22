@@ -27,6 +27,7 @@ W `package.json` szablonu znajdziesz m.in.:
 Typowe skrypty (uproszczony przegląd):
 
 - `memDev` / `localDev` / `dev` – tryby deweloperskie z różną konfiguracją DB
+- `localChanges` / `localUpdate` – podgląd i aplikacja zmian schematu na lokalnej bazie (`tmp.db`)
 - `ssrDev` – dev SSR
 - `serveAll` / `serveAllMem` – produkcyjny SSR z API i usługami
 - `apiServer`, `devApiServer`, `memApiServer` – warianty samego API

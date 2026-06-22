@@ -51,14 +51,15 @@ Example:
 </template>
 
 <script setup>
-import { path, live, api as useApi } from '@live-change/vue3-ssr'
+import { usePath, live, api as useApi } from '@live-change/vue3-ssr'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 
+const path = usePath()
 const api = useApi()
 
 const [devices] = await Promise.all([
-  live(path().deviceManager.myUserDevices({}))
+  live(path.deviceManager.myUserDevices({}))
 ])
 
 function openDialog() {
@@ -95,15 +96,16 @@ Example skeleton:
 </template>
 
 <script setup>
-import { path, live } from '@live-change/vue3-ssr'
+import { usePath, live } from '@live-change/vue3-ssr'
 import { useRoute } from 'vue-router'
 import Card from 'primevue/card'
 
+const path = usePath()
 const route = useRoute()
 const id = route.params.id
 
 const [item] = await Promise.all([
-  live(path().myService.myUserItem({ item: id }))
+  live(path.myService.myUserItem({ item: id }))
 ])
 </script>
 
@@ -114,7 +116,7 @@ const [item] = await Promise.all([
 
 ## Step 3 – Computed paths with reactive parameters
 
-When the path depends on reactive values (route params, props), wrap it in `computed()`:
+Call `usePath()` once in setup. When the path depends on reactive values (route params, props), wrap it in `computed()` using the captured `path` object — never call `usePath()` / `path()` inside the getter or in async handlers later.
 
 ```js
 import { computed, unref } from 'vue'

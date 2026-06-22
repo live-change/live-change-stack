@@ -25,6 +25,7 @@ This chapter gathers best practices and patterns that apply to all Live Change f
 ## Data reads vs commands
 
 - Load and display data (including previews and computed fields) with **views** — `live` / `useFetch` on paths from `usePath()`, not with `api.command`.
+- Call `usePath()` once synchronously in `setup`; in `computed`, handlers, observers, and async helpers reuse the captured `path` object — never call `usePath()` / legacy `path()` again outside setup.
 - Use **commands** (`api.command` / `useActions`) only when the user intent is to **change** persisted state.
 - Details: [Logic and data layer – Reads vs writes](04-logic-and-data-layer.md#reads-vs-writes-cqrs-like).
 

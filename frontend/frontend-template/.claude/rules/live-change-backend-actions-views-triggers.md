@@ -98,6 +98,29 @@ definition.index({
   },
   parameters: { tableName: definition.name + '_MyModel' }
 })
+
+// ✅ CORRECT — shared helpers via eval parameter (see access-control-service/access.js)
+function myDomainDbHelpers() {
+  function deriveKey(obj) { return obj.date?.slice(0, 7) }
+  return { deriveKey }
+}
+
+definition.index({
+  name: 'myIndexWithSharedLogic',
+  function: async (input, output, { tableName, domainHelpers }) => {
+    const { deriveKey } = eval(domainHelpers)()
+    const table = await input.table(tableName)
+    await table.map(obj => {
+      const key = deriveKey(obj)
+      if (!key) return null
+      return { id: key + '_' + obj.id, to: obj.id }
+    }).to(output)
+  },
+  parameters: {
+    tableName: definition.name + '_MyModel',
+    domainHelpers: `(${myDomainDbHelpers})`
+  }
+})
 ```
 
 Example of a range view:
@@ -209,6 +232,7 @@ Check `data`/`oldData`: both present = update, only `data` = create, only `oldDa
 
 ## Cron-service — schedules, intervals, and admin UI
 
+- For **batch / ingest / scheduled work** with observability, use **`task()`** from **`@live-change/task-service`**, then cron **`trigger: { name: 'runTask_{service}_{taskName}', returnTask: true }`** — see skill **live-change-backend-tasks-cron** and docs **`14-tasks.md`** / **`15-cron-and-intervals.md`**.
 - For **cron-like** or **repeating-interval** execution of a **trigger**, use **`@live-change/cron-service`** (**Schedule** / **Interval**) plus **task-service** triggers — do not sketch “only a timer” without considering cron models and **`changeCron_Schedule`** / **`changeCron_Interval`** timer lifecycle.
 - Reference admin flow (see **task-frontend**): **`setSchedule`** / **`setInterval`** via **`ActionForm`**, lists via **`path.cron.schedules`** / **`path.cron.intervals`**, enrich rows with **`.with()`** for **`scheduleInfo`** / **`intervalInfo`**, **`runState`** (`jobType` **`cron_Schedule`** or **`cron_Interval`**), and **`task.tasksByCauseAndCreatedAt`**; delete with **`deleteSchedule`** / **`deleteInterval`**.
 - **Schedule** time fields (**minute**, **hour**, **day**, **dayOfWeek**, **month**): use **`NaN`** for “every” at that granularity; see **`15-cron-and-intervals.md`** (section **API used by task-frontend**).

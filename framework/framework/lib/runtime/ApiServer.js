@@ -3,6 +3,7 @@ import Dao from "./Dao.js"
 import cookie from 'cookie'
 
 import { getIp } from "./utils.js"
+import { collectAllAuthenticators, runPrepareCredentials } from './clientCredentials.js'
 
 class ApiServer {
   constructor(config, DaoConstructor = Dao) {
@@ -28,22 +29,8 @@ class ApiServer {
 
   async daoFactory(credentialsp, ip) {
     let credentials = { ...credentialsp, ip, roles: [], ignoreRemoteViews: false }
-    const allAuthenticators = []
-    if(this.config.authenticators) {
-      const auth = Array.isArray(this.config.authenticators)
-          ? this.config.authenticators : [this.config.authenticators]
-      allAuthenticators.push(...auth.filter(a => !!a))
-    }
-    for(const service of this.config.services) {
-      if(service.authenticators) {
-        allAuthenticators.push(...service.authenticators.filter(a => !!a))
-      }
-    }
-    for(const authenticator of allAuthenticators) {
-      if(authenticator.prepareCredentials) {
-        await authenticator.prepareCredentials(credentials, this.config)
-      }
-    }
+    const allAuthenticators = collectAllAuthenticators(this.config, this.config.app)
+    await runPrepareCredentials(allAuthenticators, credentials, this.config)
     const dao = new this.DaoConstructor({ ...this.config, authenticators: allAuthenticators }, { ...credentials })
     await dao.start()
     return dao

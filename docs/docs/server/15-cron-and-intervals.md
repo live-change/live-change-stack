@@ -47,21 +47,61 @@ When a schedule or interval fires, the service creates a **RunState** (propertyO
 
 **config.js** (or definition.config) can set **adminRoles**, **readerRoles**, **ownerTypes**, **topicTypes** to control who can create/edit schedules and intervals and who can read them.
 
-## Defining a trigger that cron can call
+## Defining work for cron (prefer `task()`)
 
-In your service, define a **trigger** that the cron job will invoke:
+For batch/background jobs that should appear in **task** admin UI with progress, retries, and parent/child trees, use **`task()`** from **`@live-change/task-service`** (see **[Tasks](./14-tasks.md)**), not a bare **`definition.trigger`**.
 
 ```javascript
-definition.trigger({
-  name: 'myScheduledJob',
-  properties: { ... },
-  async execute(props, { triggerService, ... }, emit) {
-    // run your logic
+import { task } from '@live-change/task-service'
+
+const myBatchTask = task({
+  name: 'myBatch',
+  properties: { /* ... */ },
+  async execute(props, { task, triggerService }, emit) {
+    // optional: await task.run(childTask, { ... }, progressWeight)
+    return { ok: true }
   }
-})
+}, definition)
 ```
 
-Then create a Schedule or Interval (via cron service actions/views) with **trigger: { name: 'myScheduledJob', service: 'yourService', properties: { ... }, returnTask: false }**. The cron worker will call this trigger at the configured times or intervals.
+The plugin registers **`runTask_{serviceName}_{taskName}`** (e.g. **`runTask_myService_myBatch`**).
+
+### Wiring an Interval (`afterStart` or action)
+
+```javascript
+await app.triggerService(
+  { service: 'cron', type: 'cron_setOrUpdateInterval' },
+  {
+    ownerType: 'system',
+    owner: 'myService',
+    topicType: 'system',
+    topic: 'myBatch',
+    description: 'My batch job',
+    interval: 15 * 60 * 1000,
+    firstRunDelay: 30 * 1000,
+    wait: true,  // do not schedule next tick until previous run finished (see below)
+    trigger: {
+      name: 'runTask_myService_myBatch',
+      service: definition.name,
+      properties: {},
+      returnTask: true  // RunState tracks the Task until done/failed
+    }
+  }
+)
+```
+
+### `wait` vs `returnTask`
+
+| Field | Type | Meaning |
+|--------|------|--------|
+| **`wait`** | ms (Interval) | Minimum time before the **next** run is scheduled after the previous run **ends**. Prevents overlap when jobs run longer than **interval**. |
+| **`returnTask`** | boolean (on **trigger**) | If **true**, cron **RunState** stays **waiting** until the **Task** returned by **`runTask_*`** reaches **done** or **failed**. Required for task observability on the cron row. |
+
+You often want **`returnTask: true`** and **`wait: true`** (or a large **`wait`**, e.g. hours) for ingest-style jobs.
+
+### Plain trigger (legacy / trivial)
+
+Short synchronous hooks can still use **`definition.trigger`** and point cron at that trigger name with **`returnTask: false`**. No **Task** row is created unless the trigger itself starts a task.
 
 ## API used by task-frontend (admin UI)
 

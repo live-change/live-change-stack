@@ -9,6 +9,7 @@ import EventDefinition from "./EventDefinition.js"
 import defaultValidators from '../utils/validators.js'
 import { crudChanges, definitionToJSON } from "../utils.js"
 import QueryDefinition, { QueryDefinitionSpecification } from "./QueryDefinition.js"
+import MigrationDefinition, { MigrationDefinitionSpecification } from "./MigrationDefinition.js"
 
 const PROXY_SKIP_SYMBOLS = new Set([
   Symbol.toPrimitive,
@@ -122,6 +123,7 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
     this.validators = { ...defaultValidators }
     this.clientSideFilters = []
     this.queries = {}
+    this.migrations = {}
     // @ts-ignore
     for(let key in definition) this[key] = definition[key]
   }
@@ -222,6 +224,13 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
     return createQueryProxy(this, query)
   }
 
+  migration<T extends MigrationDefinitionSpecification>(definition: T) {
+    if(this.migrations[definition.name]) throw new Error('migration ' + definition.name + ' already exists')
+    const migration = new MigrationDefinition<T>(definition)
+    this.migrations[migration.name] = migration
+    return migration
+  }
+
   toJSON() {
     let models = {}
     for(let key in this.models) models[key] = this.models[key].toJSON()
@@ -239,6 +248,8 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
     for(let key in this.views) views[key] = this.views[key].toJSON()
     let triggers = {}
     for(let key in this.triggers) triggers[key] = this.triggers[key].map(t=>t.toJSON())
+    let migrations = {}
+    for(let key in this.migrations) migrations[key] = this.migrations[key].toJSON()
     let json = {
       ...this,
       _runtime: undefined,
@@ -249,7 +260,8 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
       actions,
       views,
       events,
-      triggers
+      triggers,
+      migrations
     }
     const fixed = definitionToJSON(json, true)
     return fixed
@@ -269,6 +281,15 @@ class ServiceDefinition<T extends ServiceDefinitionSpecification> {
       "Index", "index", { }))
     changes.push(...crudChanges(oldModule.queries || {}, this.queries || {},
       "Query", "query", { }))
+    const oldMigrations = oldModule.migrations || {}
+    for (const migrationName of Object.keys(this.migrations || {})) {
+      if (oldMigrations[migrationName]) continue
+      changes.push({
+        operation: 'runMigration',
+        name: migrationName,
+        migration: this.migrations[migrationName]
+      })
+    }
     return changes
   }
 }

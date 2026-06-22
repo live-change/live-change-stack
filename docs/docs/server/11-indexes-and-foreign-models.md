@@ -85,7 +85,17 @@ The most common pattern is:
 - build `id` as a serialized composite key plus `_' + sourceId`
 - prefer `table.map(mapper).to(output)` for cleaner index pipelines
 
-> **IMPORTANT:** Index functions are **serialized via `toString()`** and executed on a remote server. All mappers, helpers, and variables **must be defined inside the function body**. References to module-scope functions, imports, or outer closures will silently be `undefined` at runtime. This applies to both model-level function indexes and standalone `definition.index(...)`.
+> **IMPORTANT:** Index functions are **serialized via `toString()`** and executed on a remote server. References to module-scope functions, imports, or outer closures will silently be `undefined` at runtime. This applies to both model-level function indexes and standalone `definition.index(...)`.
+
+Choose one of these patterns:
+
+| Pattern | When to use |
+|---------|-------------|
+| Inline helpers in the function body | Simple derived keys (a few lines) |
+| **Eval helper bundle** (parameter string) | Shared domain logic reused across multiple indexes |
+| Property index | Key parts are stored model fields |
+
+### Inline helpers (simple case)
 
 ```javascript
 indexes: {
@@ -109,6 +119,55 @@ indexes: {
 }
 ```
 
+### Shared helpers via eval parameter (reusable domain logic)
+
+When several indexes need the same non-trivial logic, define a **self-contained factory function** in the service module (all helpers nested inside it), pass its source as a **string parameter**, and `eval` it inside the serialized index function.
+
+This is the same pattern as `dbAccessFunctions` in `access-control-service/access.js` for database queries.
+
+```javascript
+// sharedDomainHelpers.js — factory must be self-contained (no imports inside the factory body)
+export function myDomainDbHelpers() {
+  function deriveMonth(obj) {
+    return obj.date?.slice(0, 7)
+  }
+  return { deriveMonth }
+}
+
+export const myDomainIndexParameters = {
+  domainHelpers: `(${myDomainDbHelpers})`
+}
+
+// index definition
+indexes: {
+  byCompanyAndMonth: {
+    function: async (input, output, { tableName, domainHelpers }) => {
+      const { deriveMonth } = eval(domainHelpers)()
+      const table = await input.table(tableName)
+      await table.map(obj => {
+        const month = deriveMonth(obj)
+        if (!month) return null
+        return {
+          id: [obj.company, month, obj.id].map(v => JSON.stringify(v)).join(':') + '_' + obj.id,
+          to: obj.id
+        }
+      }).to(output)
+    },
+    parameters: {
+      tableName: definition.name + '_MyModel',
+      ...myDomainIndexParameters
+    }
+  }
+}
+```
+
+Rules:
+
+- The factory (`myDomainDbHelpers`) must contain **all** helper logic in its function body — not imported symbols.
+- Pass only `` `(${myDomainDbHelpers})` `` from trusted service definition code in `parameters` — never user input.
+- Inside the index: `const { fn } = eval(domainHelpers)()`.
+- Normal module imports/exports remain valid for actions, views, migrations, and frontend — only the index runtime needs the string parameter.
+
 For frequent queries by month, this approach is usually better than trying to force month filtering into `range.gt/gte/lt/lte` on an index that is prefixed differently.
 
 ## Standalone indexes (without a model)
@@ -122,7 +181,7 @@ Use standalone indexes when:
 - no single model is the natural owner of the index,
 - you need a union/projection layer for cross-table queries.
 
-> **IMPORTANT:** Standalone index functions follow the same serialization constraint as model-level function indexes — all helpers and mappers **must be defined inside the function body**, not in module scope.
+> **IMPORTANT:** Standalone index functions follow the same serialization constraint as model-level function indexes. Use inline helpers or the **eval helper bundle** parameter pattern above — not module-scope imports.
 
 Example pattern:
 

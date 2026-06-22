@@ -113,7 +113,9 @@ export const config = {
 
 1. Ensure the root of the app (e.g. `ViewRoot`) wraps content in `<Suspense>`.
 2. In page components:
-   - use `await Promise.all([live(path()....)])` inside `script setup`,
+   - call `const path = usePath()` synchronously in `script setup`,
+   - use `await Promise.all([live(path.service.view(...)), ...])`,
    - read from `.value` in templates,
-   - **do not** fetch main data in `onMounted`.
+   - **do not** fetch main data in `onMounted`,
+   - **never** call `usePath()` / `path()` in async handlers, observers, or Promise callbacks — reuse the `path` object from setup.
 

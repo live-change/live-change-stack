@@ -25,3 +25,6 @@ export { injectComponent, provideComponent, InjectComponent } from "./logic/depe
 export {
   useLocale, Locale
 } from './logic/locale'
+
+export { CodeEditor } from './form'
+export { ensureCodeMirrorHighlightStyles } from './codemirror/setupHighlight.js'

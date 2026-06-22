@@ -64,6 +64,8 @@ const path = usePath()
 const data = await useFetch(path.paperInvoice.invoiceFileInfo({ invoiceFile: fileId }))
 ```
 
+> **Setup-only:** `usePath()` must be called synchronously in `setup`. In event handlers and async helpers, reuse the captured `path` object — do not call `usePath()` / `path()` again (no active Vue instance → `appContext` error).
+
 > **Warning:** `path.service.view({ params })` returns a **Path object**, not a raw array. Do NOT pass it to `api.get()` — it expects raw arrays like `['service', 'view', { params }]`. Use `useFetch` instead.
 
 | Method | Input | Returns | Use when |

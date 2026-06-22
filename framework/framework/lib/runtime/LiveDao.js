@@ -41,7 +41,7 @@ class LiveDao extends LcDao.DaoProxy {
         roles: [...credentials.roles, ...(credentialsObserver.credentials.roles || [])],
         [originalCredentialsSymbol]: originalCredentials
       }
-    }    
+    } 
     for(const key of keys) {
       delete credentials[key]
     }

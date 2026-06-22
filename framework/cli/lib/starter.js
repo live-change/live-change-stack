@@ -134,6 +134,16 @@ export function apiServerOptions(yargs) {
     describe: 'start everything without calling afterStart callbacks',
     type: 'boolean'
   })
+  yargs.option('wsMaxFrameSize', {
+    describe: 'maximum size of websocket frame',
+    type: 'number',
+    default: 1024 * 1024
+  })
+  yargs.option('wsMaxMessageSize', {
+    describe: 'maximum size of websocket message',
+    type: 'number',
+    default: 10 * 1024 * 1024
+  })
 }
 
 export function ssrServerOptions(yargs) {
@@ -483,13 +493,9 @@ export async function update(argv) {
       app.processServiceDefinition(serviceDefinition)
       serviceDefinition.processed = true
     }
-    const oldServiceJson = await app.getOldServiceDefinition(serviceDefinition.name)
-    const changes = serviceDefinition.computeChanges(oldServiceJson)
     if(!argv.dbBackend === 'mem') console.log("#### UPDATE SERVICE", serviceDefinition.name)
-    await app.applyChanges(changes, serviceDefinition, undefined, Boolean(argv.force))
+    await app.updateService(serviceDefinition, { force: Boolean(argv.force) })
     if(!argv.dbBackend === 'mem') console.log("#### UPDATED SERVICE", serviceDefinition.name)
-    await app.dao.request(['database', 'put'], app.databaseName, 'services',
-      { id: serviceDefinition.name , ...serviceDefinition })
   }
   if(argv.service === '*') {
     for(const serviceDefinition of services.serviceDefinitions) {
@@ -680,7 +686,10 @@ export async function apiServer(argv) {
 
   const httpServer = http.createServer(expressApp)
 
-  setupApiWs(httpServer, apiServer)
+  setupApiWs(httpServer, apiServer, {
+    maxReceivedFrameSize: argv.wsMaxFrameSize,
+    maxReceivedMessageSize: argv.wsMaxMessageSize
+  })
   setupApiSockJs(httpServer, apiServer)
 
   httpServer.listen(apiPort, apiHost)
@@ -748,7 +757,10 @@ export async function server(argv, dev) {
 
   const httpServer = http.createServer(expressApp)
   if(argv.withApi) {
-    setupApiWs(httpServer, apiServer)
+    setupApiWs(httpServer, apiServer, {
+      maxReceivedFrameSize: argv.wsMaxFrameSize,
+      maxReceivedMessageSize: argv.wsMaxMessageSize
+    })
     setupApiSockJs(httpServer, apiServer)
   }
 

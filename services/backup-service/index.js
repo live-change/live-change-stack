@@ -195,7 +195,7 @@ definition.afterStart(() => {
       console.log('Service init backup:')
       await queue.add(() => doBackup())
       console.log('Service init backup completed')
-    }, 1*60*1000) //TEN_MINUTES)
+    }, TEN_MINUTES)
 
     setInterval(async () => {
       console.log('Daily backup:')

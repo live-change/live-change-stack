@@ -1,32 +1,15 @@
 <template>
-  <prism-editor v-if="isMounted"
-                class="config-editor" :highlight="highlight"
-                :style="{ height: (codeLines * 1.35) + 'em' }"
-                v-model="code"
-                :readonly="readOnly" :line-numbers="codeLines > 1" />
-  <Message v-if="editResult.error" severity="error" variant="simple" size="small">
-    {{ editResult.error }}
-  </Message>
+  <BaseCodeEditor
+    ref="editorRef"
+    editor-class="config-editor"
+    v-bind="props"
+    @result="(...args) => emit('result', ...args)"
+  />
 </template>
 
 <script setup>
-
-  import { stringify } from "javascript-stringify"
-
-  import 'vue-prism-editor/dist/prismeditor.min.css'
-  import 'prismjs/themes/prism-coy.css'
-  import * as Prism from 'prismjs/components/prism-core'
-  import 'prismjs/components/prism-clike'
-  import 'prismjs/components/prism-javascript'
-
-  import Message from "primevue/message"
-
-  import { PrismEditor } from 'vue-prism-editor'
-
-  import { ref, computed, watch, onMounted } from 'vue'
-
-  const isMounted = ref(false)
-  onMounted(() => isMounted.value = true)
+  import { ref } from 'vue'
+  import { CodeEditor as BaseCodeEditor } from '@live-change/vue3-components'
 
   const props = defineProps({
     initialCode: {
@@ -46,56 +29,23 @@
     }
   })
 
-  const { readOnly, env, dbSugar } = props
-
   const emit = defineEmits(['result'])
+  const editorRef = ref()
 
-
-  const code = ref(props.initialCode !== undefined ? props.initialCode : stringify(props.initialData, null, "  "))
-
-  watch(() => props.initialCode, () => {
-    if(props.initialCode == code.value) return
-    code.value = props.initialCode !== undefined ? props.initialCode : stringify(props.initialData, null, "  ")
+  defineExpose({
+    reset: () => editorRef.value?.reset()
   })
-
-  function highlight(code) {
-    return Prism.highlight(code, Prism.languages.js, "js")
-  }
-
-  const codeLines = computed(() => code.value.split('\n').length)
-
-  const modified = computed(() => code.value != props.initialCode)
-
-  const editResult = computed(() => {
-    if(!modified.value && props.initialData) return { data: props.initialData, code: code.value }
-    try {
-      const $ = env || {}
-      const db = dbSugar || {}
-      //console.log("COMPILE CODE", code.value)
-      const result = eval(`(${code.value})`)
-      if(result === false) return { data: false, code: code.value }
-      if(result) return { data: result, code: code.value }
-      return { error: 'empty' }
-    } catch(e) {
-      if(e instanceof SyntaxError) {
-        if(e.lineNumber) return {
-          error: `${e.message} at ${e.lineNumber}:${e.columnNumber - (e.lineNumber ? 0 : -1)}`
-        }
-      }
-      return { error: e.message }
-    }
-  })
-
-  function reset() {
-    code.value = props.initialCode !== undefined ? props.initialCode : stringify(props.initialData, null, "  ")
-  }
-
-  watch(() => editResult.value, () => emit('result', editResult.value))
-
-  defineExpose({ reset })
-
 </script>
 
 <style scoped>
-
+  :deep(.config-editor) {
+    font-family: monospace;
+    outline: none;
+  }
+  :deep(.config-editor .cm-editor) {
+    padding: 0.5em;
+  }
+  :deep(.config-editor .cm-focused) {
+    outline: none;
+  }
 </style>

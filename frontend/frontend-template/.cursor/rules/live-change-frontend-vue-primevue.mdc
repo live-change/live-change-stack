@@ -17,25 +17,34 @@ alwaysApply: false
 ## Pobieranie danych – `live` + `Promise.all`
 
 - **Nie** używaj `ref(null)` + `onMounted` do ładowania danych.
-- Dane ładuj w `setup`/`script setup` przez `await Promise.all(...)` na `live(path()....)`.
+- Dane ładuj w `setup`/`script setup` przez `await Promise.all(...)` na `live(...)`.
 - Rodzic powinien owijać stronę w `<Suspense>` (w projektach live-change robi to zazwyczaj `ViewRoot` globalnie).
 - Sekwencyjnego `await live(...)` używaj tylko wtedy, gdy drugi path zależy od wyniku pierwszego.
 - Gdy zależność da się opisać przez `.with(...)`, preferuj jedno zapytanie Path DSL zamiast imperatywnego łączenia wyników.
 
+## `usePath()` — tylko synchronicznie w setup
+
+- Wywołaj `usePath()` **raz** na początku `script setup` i zapisz wynik: `const path = usePath()`.
+- Legacy alias `path()` to ta sama funkcja — traktuj oba jako setup-only.
+- **Nie** wywołuj `usePath()` / `path()` poza synchronicznym setup: nie tylko w `computed`, ale też w async handlerach, callbackach/lambdach, watcherach, observerach (`api.observable`), `setTimeout` i łańcuchach Promise (brak aktywnej instancji Vue → błąd `appContext`).
+- Wszędzie poza setup używaj wcześniej złapanego obiektu `path`: `path.service.view({ ...params })`.
+- Poza komponentem przekaż jawny kontekst: `usePath(appContext)`.
+
 Przykład:
 
 ```js
-import { path, live, api as useApi } from '@live-change/vue3-ssr'
+import { usePath, live, api as useApi } from '@live-change/vue3-ssr'
 
+const path = usePath()
 const api = useApi()
 
 const [devices] = await Promise.all([
-  live(path().deviceManager.myUserDevices({}))
+  live(path.deviceManager.myUserDevices({}))
 ])
 
 const [device, connections] = await Promise.all([
-  live(path().deviceManager.myUserDevice({ device: deviceId })),
-  live(path().deviceManager.deviceOwnedDeviceConnections({ device: deviceId }))
+  live(path.deviceManager.myUserDevice({ device: deviceId })),
+  live(path.deviceManager.deviceOwnedDeviceConnections({ device: deviceId }))
 ])
 ```
 
@@ -233,7 +242,7 @@ const articlePath = computed(() => path.blog.article({ article: unref(articleId)
 const [article] = await Promise.all([live(articlePath)])
 ```
 
-`usePath()` wywołuj synchronicznie w `setup` i zapisz wynik w zmiennej `path`. W getterze `computed` buduj tylko `path.<service>.<view>(...)` — nie wywołuj ponownie `usePath()` ani aliasu `path()` w środku `computed` (brak aktywnej instancji → błąd przy `appContext`).
+W getterze `computed`, handlerze zdarzenia, async helperze i callbacku obserwatora buduj tylko `path.<service>.<view>(...)` — nie wywołuj ponownie `usePath()` ani aliasu `path()` (brak aktywnej instancji → błąd przy `appContext`).
 
 Dla warunkowego ładowania (np. tylko gdy zalogowany), zwróć wartość falsy:
 

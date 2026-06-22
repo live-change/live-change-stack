@@ -22,23 +22,32 @@ Whenever you introduce or change translated strings, follow **`live-change-front
 ## Data loading – `live` + `Promise.all` (Suspense)
 
 - **Do not** use `ref(null)` + `onMounted` to fetch data.
-- Always fetch data using `await Promise.all([...])` and `live(path()...)` in `script setup`.
+- Always fetch data using `await Promise.all([...])` and `live(...)` in `script setup`.
 - The root app should wrap pages with `<Suspense>` (usually handled by `ViewRoot` in live-change frontends).
+
+## `usePath()` — setup-only
+
+- Call `usePath()` **once** at the top of `script setup` and store the result: `const path = usePath()`.
+- The legacy alias `path()` is the same function — treat both as setup-only.
+- **Never** call `usePath()` / `path()` outside synchronous setup — not only in `computed` getters, but also in async event handlers, lambdas/callbacks, watchers, observer callbacks (`api.observable`), `setTimeout`, and Promise chains (no active Vue instance → `appContext` error).
+- Everywhere outside setup, reuse the captured `path` object: `path.service.view({ ...params })`.
+- Outside a component, pass explicit context: `usePath(appContext)`.
 
 Example:
 
 ```js
-import { path, live, api as useApi } from '@live-change/vue3-ssr'
+import { usePath, live, api as useApi } from '@live-change/vue3-ssr'
 
+const path = usePath()
 const api = useApi()
 
 const [devices] = await Promise.all([
-  live(path().deviceManager.myUserDevices({}))
+  live(path.deviceManager.myUserDevices({}))
 ])
 
 const [device, connections] = await Promise.all([
-  live(path().deviceManager.myUserDevice({ device: deviceId })),
-  live(path().deviceManager.deviceOwnedDeviceConnections({ device: deviceId }))
+  live(path.deviceManager.myUserDevice({ device: deviceId })),
+  live(path.deviceManager.deviceOwnedDeviceConnections({ device: deviceId }))
 ])
 ```
 
@@ -277,6 +286,8 @@ const path = usePath()
 const articlePath = computed(() => path.blog.article({ article: unref(articleId) }))
 const [article] = await Promise.all([live(articlePath)])
 ```
+
+In `computed` getters, event handlers, async helpers, and observer callbacks, build paths only with the captured `path` object — never call `usePath()` or the legacy `path()` again (no active instance → `appContext` error).
 
 For conditional loading (e.g. only when logged in), return a falsy value:
 

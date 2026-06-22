@@ -118,6 +118,11 @@ const api = useApi()
 const client = useClient()
 const path = usePath()
 const route = useRoute()
+```
+
+> Call `usePath()` only synchronously in `setup`. In async handlers, observers, and Promise callbacks, build paths with the captured `path` object — not by calling `usePath()` / `path()` again.
+
+```javascript
 const { locale: i18nLocale } = useI18n()
 
 useHead(computed(() => ({

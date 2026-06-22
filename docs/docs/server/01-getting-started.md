@@ -70,8 +70,8 @@ The starter registers commands such as:
 | `ssrServer` | Production SSR server; use `--withApi --withServices --updateServices` to run API and services in same process. |
 | `serve` | Production serve (SSR) without extra services. |
 | `describe` | Inspect service structure: models, actions, views, triggers, indexes, events. Use `--service <name>` and `--output yaml\|json`. |
-| `changes` | Show pending schema changes for a service (`--service <name>`). |
-| `update` | Apply schema changes to the database (`--service <name>`, `--force` to force). |
+| `changes` | Show pending schema changes for a service (`--service <name>`). Without `--withDb`, connects to external db-server (default `http://localhost:9417/api/ws`). |
+| `update` | Apply schema changes to the database (`--service <name>`, `--force` to force). Without `--withDb`, connects to external db-server. |
 
 ## Environment variables
 
@@ -89,8 +89,12 @@ Common defaults (from `@live-change/server` / starter):
 ```json
 // Typical scripts (e.g. family-tree/package.json)
 "localDevInit": "tsx server/start.js localDev --enableSessions --initScript ./init.js --dbAccess",
+"localChanges": "tsx server/start.js changes --withDb --createDb",
+"localUpdate": "tsx server/start.js update --withDb --createDb",
 "dev": "tsx --inspect server/start.js dev --enableSessions",
 "ssrDev": "tsx server/start.js ssrDev --enableSessions",
 "serveAll": "cross-env NODE_ENV=production node dist/server/start.js ssrServer --withApi --withServices --updateServices --enableSessions",
 "apiServer": "node dist/server/start.js apiServer --enableSessions"
 ```
+
+For local schema work, prefer `npm run localChanges` / `localUpdate` (embedded LMDB in `tmp.db`, same as `localDev`). Use bare `changes` / `update` only when a remote db-server is running (`DB_URL` or port 9417).

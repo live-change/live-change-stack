@@ -38,7 +38,7 @@ const [article, comments] = await Promise.all([
 ])
 ```
 
-- Call `usePath()` **once** at the top of `setup` (synchronously). Inside `computed`, use only the returned `path` object to build paths — **never** call `usePath()` or the legacy `path()` inside the getter (there is often no active component instance, which breaks `getCurrentInstance()` / `appContext`).
+- Call `usePath()` **once** at the top of `setup` (synchronously). Everywhere else — `computed` getters, async event handlers, observer callbacks, `setTimeout`, Promise chains — use only the returned `path` object to build paths. **Never** call `usePath()` or the legacy `path()` outside synchronous setup (there is often no active component instance, which breaks `getCurrentInstance()` / `appContext`).
 
 Wrong:
 

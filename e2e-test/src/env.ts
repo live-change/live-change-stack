@@ -17,6 +17,49 @@ export async function waitForServerReady(url: string): Promise<void> {
   throw new Error(`Server at ${url} did not become ready within ${READY_TIMEOUT_MS}ms`)
 }
 
+export async function waitForApiServerReady(url: string): Promise<void> {
+  const testUrl = url.replace(/\/$/, '') + '/test'
+  const deadline = Date.now() + READY_TIMEOUT_MS
+  while(Date.now() < deadline) {
+    try {
+      const res = await fetch(testUrl)
+      if(res.ok) return
+    } catch {
+      // Not ready yet.
+    }
+    await new Promise(resolve => setTimeout(resolve, READY_POLL_MS))
+  }
+  throw new Error(`API server at ${testUrl} did not become ready within ${READY_TIMEOUT_MS}ms`)
+}
+
+export function shouldRunExternalTests(): boolean {
+  return !process.env.CI || process.env.RUN_EXTERNAL === '1'
+}
+
+type TriggerClient = {
+  internal?: boolean
+  roles?: readonly string[]
+  user?: string
+}
+
+type TriggerServiceApp = {
+  triggerService: (
+    target: { service: string, type: string, client?: TriggerClient },
+    data: Record<string, unknown>
+  ) => Promise<unknown>
+}
+
+export function createTriggerCaller(
+  app: TriggerServiceApp,
+  client: TriggerClient = { internal: true, roles: ['admin'] }
+) {
+  return (serviceName: string, triggerName: string) => (data: unknown) =>
+    app.triggerService(
+      { service: serviceName, type: triggerName, client },
+      data as Record<string, unknown>
+    )
+}
+
 export async function firstFreePort(): Promise<number> {
   return await new Promise<number>((resolve, reject) => {
     const server = net.createServer()
