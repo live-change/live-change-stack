@@ -69,7 +69,8 @@ function hashCode(str) {
   return Math.abs(hash)
 }
 
-function uidGenerator(fingerprint = randomString(4), numberLength = 0, borders = '{}', idSuffix = '') {
+// Default [] — upload paths allow [a-zA-Z0-9\[\]@\.-]; {} are sanitized to _ by upload-service.
+function uidGenerator(fingerprint = randomString(4), numberLength = 0, borders = '[]', idSuffix = '') {
   let lastMillisecond = Date.now(), lastId = 0
   function next() {
     const date = new Date()

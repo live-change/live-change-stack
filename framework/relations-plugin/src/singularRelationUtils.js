@@ -15,6 +15,7 @@ import {
 import { fireChangeTriggers } from "./changeTriggers.js"
 import { extractTypeAndIdParts } from './utilsAny.js'
 import { allCombinations } from './combinations.js'
+import { mcpFields } from './mcpUtils.js'
 import pluralize from 'pluralize'
 
 export function createIdentifiersProperties(keys, types, idField) {
@@ -56,6 +57,7 @@ export function defineObjectView(config, context, external = true) {
     global: config.globalView,
     access: external && (config.singleAccess || config.readAccess || config.writeAccess),
     accessControl,
+    ...mcpFields(config, 'read'),
     daoPath(properties, { client, context }) {
       const idProp = modelPropertyName ? properties[modelPropertyName] : null
       if(idProp) {
@@ -96,6 +98,7 @@ export function defineRangeViews(config, context, external = true) {
       internal: !external,
       access: external && (config.listAccess || config.readAccess),
       accessControl,
+      ...mcpFields(config, 'list'),
       daoPath(params, { client, context }) {
         const owner = []
         for (const key of combination) owner.push(params[otherPropertyNames[key]])
@@ -135,6 +138,7 @@ export function defineRangeViews(config, context, external = true) {
       internal: !external,
       access: external && (config.listAccess || config.readAccess),
       accessControl,
+      ...mcpFields(config, 'list'),
       daoPath(params, { client, context }) {
         const owner = []
         for (const key of parametersNames) owner.push(params[key])
@@ -185,6 +189,7 @@ export function defineSetAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'set'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -263,6 +268,7 @@ export function defineUpdateAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'update'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -341,6 +347,7 @@ export function defineSetOrUpdateAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'update'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -421,6 +428,7 @@ export function defineDeleteAction(config, context) {
     accessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'delete'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -485,6 +493,7 @@ export function defineResetAction(config, context) {
     accessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'delete'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)

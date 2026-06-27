@@ -197,3 +197,28 @@ await triggerService({
 - **trigger({ type }, payload)** — Fires a trigger (e.g. startPayment) that may be handled by another service.
 - **emit(event)** — Appends an event to the event log; event handlers update model state. See [Events](./06b-events.md).
 - **app.generateUid()** — Generates a unique id for new entities.
+
+## MCP exposure (`mcp`)
+
+Actions may declare optional **`mcp`** metadata so an MCP server (e.g. `agentMcpServer`) can auto-generate tools from service definitions:
+
+```javascript
+definition.action({
+  name: 'syncPersonData',
+  properties: { /* ... */ },
+  mcp: {
+    expose: true,
+    toolName: 'syncPersonData',  // optional; default: serviceName_actionName
+    description: 'Create or replace person profile data'
+  },
+  async execute(...) { /* ... */ }
+})
+```
+
+With **`@live-change/relations-plugin`**, use relation-level flags instead of repeating `mcp` on every generated action:
+
+- **`readMcp`**, **`writeMcp`**, **`createMcp`**, **`updateMcp`**, **`deleteMcp`**, **`listMcp`**
+- Shorthand: **`readMcp: true`** / **`writeMcp: true`** → `{ expose: true }`
+- Fallback: `createMcp` → `writeMcp` → `mcp`
+
+See [Views — MCP exposure](./07-views.html#mcp-exposure-mcp) and [agent MCP server docs](https://github.com/live-change/live-change-stack/blob/main/automation/browser-bot/bot-server/docs/person-mcp-server.md).

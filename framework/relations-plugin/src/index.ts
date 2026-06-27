@@ -51,3 +51,6 @@ export type {
   SaveAuthorConfig,
 } 
 
+export { mcpFields, resolveMcpConfig, normalizeMcp } from './mcpUtils.js'
+export type { McpConfigSource, McpOperationKind } from './mcpUtils.js'
+

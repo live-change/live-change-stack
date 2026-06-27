@@ -15,6 +15,7 @@ import { ServiceDefinitionSpecification } from "@live-change/framework"
 import { ActionDefinitionSpecificationAC, ViewDefinitionSpecificationAC, TriggerDefinitionSpecificationAC,
          ModelDefinitionSpecificationExtended, AccessControlSettings } from "./types.js"
 import { EventDefinitionSpecification } from "@live-change/framework"
+import { mcpFields } from "./mcpUtils.js"
 
 export interface EntityConfig {
   readAccessControl?: AccessControlSettings
@@ -31,6 +32,14 @@ export interface EntityConfig {
   deleteAccess?: AccessSpecification
 
   writeableProperties?: string[]
+
+  mcp?: import('@live-change/framework').McpSpecification | boolean
+  readMcp?: import('@live-change/framework').McpSpecification | boolean
+  writeMcp?: import('@live-change/framework').McpSpecification | boolean
+  createMcp?: import('@live-change/framework').McpSpecification | boolean
+  updateMcp?: import('@live-change/framework').McpSpecification | boolean
+  deleteMcp?: import('@live-change/framework').McpSpecification | boolean
+  listMcp?: import('@live-change/framework').McpSpecification | boolean
 }
 
 export interface ModelDefinitionSpecificationWithEntity extends ModelDefinitionSpecificationExtended {
@@ -80,6 +89,7 @@ export function defineView(config, context, external) {
     internal: !external,
     access: external && config.readAccess,
     accessControl: external && entityAccessControl(context, config.readAccessControl || config.writeAccessControl),
+    ...mcpFields(config, 'read'),
     daoPath(properties, { client, context }) {
       const id = properties[modelPropertyName]
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
@@ -195,6 +205,7 @@ export function defineCreateAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'create'),
     execute: () => { throw new Error("not generated yet") }
   })
   const validators = App.validation.getValidators(action, service)
@@ -269,6 +280,7 @@ export function defineUpdateAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'update'),
     execute: () => { throw new Error("not generated yet") }
   })
   const validators = App.validation.getValidators(action, service)
@@ -341,6 +353,7 @@ export function defineDeleteAction(config, context) {
     accessControl: entityAccessControl(context, config.deleteAccessControl || config.writeAccessControl),
     skipValidation: true,
     waitForEvents: true,
+    ...mcpFields(config, 'delete'),
     execute: getDeleteFunction(config, context)
   })
 }

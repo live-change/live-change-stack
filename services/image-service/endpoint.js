@@ -204,6 +204,9 @@ definition.endpoint({
     expressApp.get('/:image/.:format',
         (req, res) => handleImageGet(req, res, { ...req.params, type: "original" })
     )
+    expressApp.get('/:image/original.:format',
+      (req, res) => handleImageGet(req, res, { ...req.params, type: "original" })
+    )
     expressApp.get('/:image',
         (req, res) => handleImageGet(req, res, { ...req.params, type: "original" })
     )

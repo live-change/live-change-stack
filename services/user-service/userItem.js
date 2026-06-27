@@ -3,6 +3,7 @@ import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
 } from '@live-change/framework'
+import { mcpFields } from '@live-change/relations-plugin'
 import { User } from "./model.js"
 import  pluralize from 'pluralize'
 
@@ -44,6 +45,7 @@ definition.processor(function(service, app) {
             return config.userReadAccess ? config.userReadAccess(params, context) : true
           },
           properties: App.rangeProperties,
+          ...mcpFields(config, 'list'),
           daoPath(range, { client, context }) {
             const path = modelRuntime().indexRangePath('byUser', [client.user], range )
             return path
@@ -60,6 +62,7 @@ definition.processor(function(service, app) {
               return config.userReadAccess ? config.userReadAccess(params, context) : true
             },
             properties: App.rangeProperties,
+            ...mcpFields(config, 'list'),
             daoPath(range, { client, context }) {
               return modelRuntime().sortedIndexRangePath('byUser' + sortFieldUc, [client.user], range )
             }
@@ -80,6 +83,7 @@ definition.processor(function(service, app) {
             return config.userReadAccess ? config.userReadAccess(params, context) : true
           },
           properties: App.rangeProperties,
+          ...mcpFields(config, 'read'),
           daoPath(params, { client, context }) {
             const path = modelRuntime().path(params[modelPropertyName])
             return path
@@ -94,6 +98,7 @@ definition.processor(function(service, app) {
           name: actionName,
           skipValidation: true,
           access: config.userCreateAccess || config.userWriteAccess,
+          ...mcpFields(config, 'create'),
           properties: {
             ...originalModelProperties,
             [modelPropertyName]: {
@@ -138,6 +143,7 @@ definition.processor(function(service, app) {
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
           access: config.userUpdateAccess || config.userWriteAccess,
+          ...mcpFields(config, 'update'),
           properties: {
             ...originalModelProperties,
             [modelPropertyName]: {
@@ -182,6 +188,7 @@ definition.processor(function(service, app) {
         service.actions[actionName] = new ActionDefinition({
           name: actionName,
           access: config.userDeleteAccess || config.userWriteAccess,
+          ...mcpFields(config, 'delete'),
           properties: {
             [modelPropertyName]: {
               type: model,

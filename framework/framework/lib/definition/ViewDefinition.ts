@@ -1,6 +1,6 @@
 import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
 
-import type { ViewContext } from "./types.js"
+import type { ViewContext, McpSpecification } from "./types.js"
 
 import type { AccessSpecification } from "../processors/accessMethod.js"
 
@@ -12,7 +12,8 @@ export interface ViewDefinitionSpecificationBase {
   global?: boolean,
   access?: AccessSpecification,
   skipValidation?: boolean,
-  validation? : (parameters: Record<string, any>, context: ViewContext) => Promise<any>  
+  validation? : (parameters: Record<string, any>, context: ViewContext) => Promise<any>
+  mcp?: McpSpecification
 }
 
 export interface ViewDefinitionSpecificationObservable extends ViewDefinitionSpecificationBase {

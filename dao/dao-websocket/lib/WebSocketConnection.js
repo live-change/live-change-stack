@@ -43,7 +43,6 @@ class WebSocketConnection extends ReactiveConnection {
       disconnect()
     }).bind(this)
     connection.onmessage = (function (e) {
-      debug("INCOMING MESSAGE", e.data)
       const message = JSON.parse(e.data)
       this.handleMessage(message)
     }).bind(this)

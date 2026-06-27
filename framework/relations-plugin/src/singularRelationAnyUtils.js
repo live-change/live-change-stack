@@ -13,6 +13,7 @@ import {
 } from './utils.js'
 import { allCombinations } from "./combinations.js"
 import { fireChangeTriggers } from "./changeTriggers.js"
+import { mcpFields } from './mcpUtils.js'
 
 import pluralize from 'pluralize'
 
@@ -59,6 +60,7 @@ function defineObjectView(config, context, external = true) {
     access: external && (config.singleAccess || config.readAccess),
     global: config.globalView,
     accessControl,
+    ...mcpFields(config, 'read'),
     daoPath(properties, { client, context }) {
       const idProp = modelPropertyName ? properties[modelPropertyName] : null
       if(idProp) {
@@ -97,6 +99,7 @@ function defineRangeViews(config, context, external = true) {
       internal: !external,
       access: external && (config.listAccess || config.readAccess),
       accessControl,
+      ...mcpFields(config, 'list'),
       daoPath(params, { client, context }) {
         const owner = []
         for (const key of combination) {
@@ -147,6 +150,7 @@ function defineSetAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'set'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -224,6 +228,7 @@ function defineUpdateAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'update'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -303,6 +308,7 @@ function defineSetOrUpdateAction(config, context) {
     skipValidation: true,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'update'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -378,6 +384,7 @@ function defineResetAction(config, context) {
     accessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'delete'),
     execute: getResetFunction(config, context)
   })
 }
@@ -424,6 +431,7 @@ function defineDeleteAction(config, context) {
     accessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'delete'),
     execute: getResetFunction(config, context)
   })
 }

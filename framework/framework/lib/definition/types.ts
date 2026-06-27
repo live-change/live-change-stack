@@ -1,3 +1,8 @@
+export interface McpSpecification {
+  expose?: boolean
+  toolName?: string
+  description?: string
+}
 
 export interface ClientContext {
   session: string

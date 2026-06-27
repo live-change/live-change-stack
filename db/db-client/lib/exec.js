@@ -34,7 +34,7 @@ async function exec(options) {
 
     const client = await clientPromise
     let currentPromises = []
-    const maxPromises = 256
+    const maxPromises = 1
 
     function nextLine() {
       return new Promise(function(resolve, reject) {
@@ -47,6 +47,10 @@ async function exec(options) {
     while (reader.hasNextLine()) {
       const line = await nextLine()
       const command = JSON.parse(line)
+/*       console.log("COMMAND", command.type)
+      if(command.type == 'request') {
+        console.log("  ", command.method.join("."), command.parameters.slice(0,2).map(p=>JSON.stringify(p)).join(", "))
+      } */
       switch(command.type) {
         case 'request' :
           while(currentPromises.length > maxPromises) {

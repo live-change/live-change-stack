@@ -270,4 +270,22 @@ Do **not** add a `definition.action` whose only purpose is to return read-only o
 ## Helpers
 
 - **App.rangeProperties** — Standard range params (e.g. gt, gte, lt, lte, limit, reverse).
-- **App.extractRange(props)** — Builds range object from props for rangePath / sortedIndexRangePath.
+- **App.extractRange(props)** — Builds range object from rangePath / sortedIndexRangePath.
+
+## MCP exposure (`mcp`) {#mcp-exposure-mcp}
+
+Views may declare optional **`mcp`** metadata for auto-generated MCP read tools:
+
+```javascript
+definition.view({
+  name: 'profileById',
+  properties: { profile: { type: Profile, validation: ['nonEmpty'] } },
+  returns: { type: Profile },
+  mcp: { expose: true, description: 'Read LinkedIn profile by id' },
+  async daoPath({ profile }) {
+    return Profile.path(profile)
+  }
+})
+```
+
+Relation configs accept **`readMcp`**, **`listMcp`**, and the write-side flags documented in [Actions — MCP exposure](./06-actions.html#mcp-exposure-mcp). Generated CRUD views inherit `readMcp` / `listMcp` automatically.

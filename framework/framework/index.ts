@@ -38,7 +38,7 @@ export type { ModelDefinitionSpecification, ModelIndexDefinitionSpecification, M
 export type { PropertyDefinitionSpecification, ValidationSpecification, ValidationSpecificationObject } from './lib/definition/PropertyDefinition.js'
 export type { ViewDefinitionSpecification, ViewDefinitionSpecificationBase, ViewDefinitionSpecificationObservable, ViewDefinitionSpecificationDaoPath, ViewDefinitionSpecificationFetch } from './lib/definition/ViewDefinition.js'
 export type { TriggerDefinitionSpecification } from './lib/definition/TriggerDefinition.js'
-export type { ClientContext, ContextBase, ViewContext, ActionContext } from './lib/definition/types.js'
+export type { ClientContext, ContextBase, ViewContext, ActionContext, McpSpecification } from './lib/definition/types.js'
 export type { ServiceDefinitionSpecification } from './lib/definition/ServiceDefinition.js'
 export type { AccessSpecification, AccessFunction } from './lib/processors/accessMethod.js'
 export type { EventDefinitionSpecification as EventDefinitionSpecificationAC } from './lib/definition/EventDefinition.js'

@@ -15,6 +15,7 @@ import {
   propertiesWithoutDefaults
 } from './utils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
+import { mcpFields } from './mcpUtils.js'
 
 import pluralize from 'pluralize'
 
@@ -53,6 +54,7 @@ function defineRangeView(config, context, external = true) {
     global: config.globalView,
     access: external && (config.readAccess || config.writeAccess),
     accessControl,
+    ...mcpFields(config, 'list'),
     daoPath(properties, { client, context }) {
       const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
       const range = extractRange(properties)
@@ -88,6 +90,7 @@ function defineSingleView(config, context, external = true) {
     global: config.globalView,
     access: external && (config.readAccess || config.writeAccess),
     accessControl,
+    ...mcpFields(config, 'read'),
     async daoPath(properties, { client, context }) {
       return modelRuntime().path(properties[modelPropertyName])
     }
@@ -138,6 +141,7 @@ function defineCreateAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'create'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -237,6 +241,7 @@ function defineUpdateAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'update'),
     execute: () => { throw new Error('not generated yet') }
   })
   const validators = App.validation.getValidators(action, service, action)
@@ -319,6 +324,7 @@ function defineDeleteAction(config, context) {
     skipValidation: true,
     //queuedBy: otherPropertyNames,
     waitForEvents: true,
+    ...mcpFields(config, 'delete'),
     execute: () => { throw new Error('not generated yet') }
   })
   action.execute = getDeleteFunction(config, context)

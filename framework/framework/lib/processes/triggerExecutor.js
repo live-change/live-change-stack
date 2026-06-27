@@ -8,7 +8,6 @@ import { SpanKind } from '@opentelemetry/api'
 const tracer = trace.getTracer('live-change:triggerExecutor')
 
 import { expandObjectAttributes } from '../utils.js'
-import { useFetch } from '@live-change/vue3-ssr'
 
 async function spanAttributes(trig, service) {
   return {

@@ -15,6 +15,7 @@ export {
 } from './dataUtils.js'
 
 import pluralize from 'pluralize'
+import { mcpFields, type McpConfigSource } from './mcpUtils.js'
 import { ModelDefinitionSpecificationWithEntity } from "./entityUtils.js"
 import { AccessControlSettings, ModelDefinitionSpecificationWithAccessControl, PreparedAccessControlSettings } from "./types.js"
 
@@ -127,6 +128,14 @@ export interface RelationConfig {
   sortBy?: string[],
   customDeleteTrigger?: boolean, /// TODO: check if this is needed
   customParentCopyTrigger?: boolean /// TODO: check if this is needed
+  mcp?: import('@live-change/framework').McpSpecification | boolean
+  readMcp?: import('@live-change/framework').McpSpecification | boolean
+  writeMcp?: import('@live-change/framework').McpSpecification | boolean
+  createMcp?: import('@live-change/framework').McpSpecification | boolean
+  updateMcp?: import('@live-change/framework').McpSpecification | boolean
+  deleteMcp?: import('@live-change/framework').McpSpecification | boolean
+  setMcp?: import('@live-change/framework').McpSpecification | boolean
+  listMcp?: import('@live-change/framework').McpSpecification | boolean
 }
 
 export interface ModelDefinitionSpecificationWithRelation extends ModelDefinitionSpecificationWithAccessControl {  
@@ -339,7 +348,7 @@ export function defineGlobalRangeView(config: {
   suffix?: string
   globalView?: boolean
   readAllAccess?: AccessSpecification
-}, context: {
+} & McpConfigSource, context: {
   service: ServiceDefinition<ServiceDefinitionSpecification>
   modelRuntime: any
   modelPropertyName: string
@@ -368,6 +377,7 @@ export function defineGlobalRangeView(config: {
     internal: !external,
     global: config.globalView,
     access: external ? (config.readAllAccess ?? undefined) : undefined,
+    ...mcpFields(config, 'list'),
     daoPath(properties, { client, service }) {
       const range = App.extractRange(properties)
       const path = modelRuntime().rangePath(range)

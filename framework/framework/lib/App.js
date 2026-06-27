@@ -87,7 +87,7 @@ class App {
     this.databaseName = config?.db?.name || 'test'
 
     this.instanceId = randomString(4)
-    this.uidGenerator = uidGenerator(this.instanceId, this.config.uidBorders)
+    this.uidGenerator = uidGenerator(this.instanceId, 1, this.config.uidBorders ?? '[]')
 
     this.activeTimeouts = new Set()
 

@@ -1,6 +1,6 @@
 import { AccessSpecification } from "../processors/accessMethod.js"
 import PropertyDefinition, { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
-import type { ActionContext, ActionParameters } from "./types.js"
+import type { ActionContext, ActionParameters, McpSpecification } from "./types.js"
 
 export interface ActionDefinitionSpecification {  
   name: string
@@ -13,6 +13,7 @@ export interface ActionDefinitionSpecification {
   waitForEvents?: boolean,
   timeout?: number,
   requestTimeout?: number
+  mcp?: McpSpecification
 }
 
 class ActionDefinition<T extends ActionDefinitionSpecification> {
