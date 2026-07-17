@@ -1,6 +1,6 @@
 {
   "name": "@live-change/codeceptjs-helper",
-  "version": "0.9.210",
+  "version": "0.9.211",
   "description": "CodeceptJS Helper",
   "main": "index.js",
   "scripts": {
@@ -26,5 +26,5 @@
   "devDependencies": {
     "wtfnode": "^0.9.1"
   },
-  "gitHead": "550ec614c03ed33fbb8a094d23a63dd2d20d5de3"
+  "gitHead": "08b252a626d86ef1582fc864f9a7ced130a24148"
 }
