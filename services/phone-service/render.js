@@ -27,6 +27,7 @@ definition.view({
 })
 
 definition.authenticator({
+  name: 'phone',
   async prepareCredentials(credentials) {
     //console.log("SMS AUTHENTICATOR", credentials, authenticationKey.getValue())
     if(credentials.sessionKey === authenticationKey.getValue()) {

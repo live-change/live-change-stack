@@ -3,6 +3,13 @@ import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
 } from '@live-change/framework'
+import {
+  polymorphicPropertyId,
+  firePropertySetChange,
+  firePropertyUpdateChange,
+  firePropertyResetChange,
+  firePropertyTransferChange
+} from './ownerChangeTriggers.js'
 import { User } from "./model.js"
 import { allCombinations } from "./combinations.js"
 import { createIdentifiersProperties } from './utils.js'
@@ -27,6 +34,7 @@ definition.processor(function(service, app) {
 
       const config = model.contactOrUserProperty
       const writeableProperties = modelProperties || config.writableProperties
+      const objectType = service.name + '_' + modelName
 
       if(model.propertyOf) throw new Error("model " + modelName + " already have owner")
       if(model.propertyOfAny) throw new Error("model " + modelName + " already have owner")
@@ -63,7 +71,7 @@ definition.processor(function(service, app) {
             validation: ['nonEmpty']
           }
         },
-        async execute({ contactType, contact, user }, { service }, emit) {
+        async execute({ contactType, contact, user }, { service, trigger }, emit) {
           const contactPath = [contactType, contact]
           const contactPropertyId = contactPath.map(p => JSON.stringify(p)).join(':')
           const range = {
@@ -75,11 +83,27 @@ definition.processor(function(service, app) {
           for(const contactProperty of contactProperties) {
             console.log("CONTACT PROPERTY FOUND!", contactProperty, "MERGE =", config.merge)
             const userPath = ['user_User', user]
+            for(const key of extendedWith) {
+              userPath.push(contactProperty[key+'Type'], contactProperty[key])
+            }
             const userPropertyId = userPath.map(p => JSON.stringify(p)).join(':')
             const userProperty = await modelRuntime().get(userPropertyId)
             if(config.merge) {
               const mergeResult = await config.merge(contactProperty, userProperty)
+              const userIdentifiers = {
+                contactOrUserType: 'user_User',
+                contactOrUser: user
+              }
+              for(const key of extendedWith) {
+                userIdentifiers[key+'Type'] = contactProperty[key+'Type']
+                userIdentifiers[key] = contactProperty[key]
+              }
               if(mergeResult && userProperty) {
+                await firePropertyUpdateChange({
+                  service, modelName, app, objectType, writeableProperties,
+                  id: userPropertyId, identifiers: userIdentifiers,
+                  entity: userProperty, data: mergeResult, trigger
+                })
                 emit({
                   type: modelName + 'Updated',
                   identifiers: {
@@ -89,6 +113,11 @@ definition.processor(function(service, app) {
                   data: mergeResult
                 })
               } else {
+                await firePropertySetChange({
+                  service, modelName, app, objectType,
+                  id: userPropertyId, identifiers: userIdentifiers,
+                  data: mergeResult, trigger
+                })
                 emit({
                   type: modelName + 'Set',
                   identifiers: {
@@ -98,6 +127,20 @@ definition.processor(function(service, app) {
                   data: mergeResult
                 })
               }
+              const contactIdentifiers = {
+                contactOrUserType: contactType,
+                contactOrUser: contact
+              }
+              for(const key of extendedWith) {
+                contactIdentifiers[key+'Type'] = contactProperty[key+'Type']
+                contactIdentifiers[key] = contactProperty[key]
+              }
+              const contactId = polymorphicPropertyId(contactIdentifiers, 'contactOrUser', extendedWith)
+              await firePropertyResetChange({
+                service, modelName, app, objectType, writeableProperties,
+                id: contactId, identifiers: contactIdentifiers,
+                entity: contactProperty, trigger
+              })
               emit({
                 type: modelName + 'Reset',
                 identifiers: {
@@ -112,17 +155,25 @@ definition.processor(function(service, app) {
                   extendedIdentifiers[key+'Type'] = contactProperty[key+'Type']
                   extendedIdentifiers[key] = contactProperty[key]
                 }
-                await service.trigger({ type: modelName + 'Moved' }, {
-                  from: {
-                    contactOrUserType: contactType,
-                    contactOrUser: contact
-                  },
-                  to: {
-                    contactOrUserType: 'user_User',
-                    contactOrUser: user
-                  },
+                const from = {
+                  contactOrUserType: contactType,
+                  contactOrUser: contact,
                   ...extendedIdentifiers
+                }
+                const to = {
+                  contactOrUserType: 'user_User',
+                  contactOrUser: user,
+                  ...extendedIdentifiers
+                }
+                await firePropertyTransferChange({
+                  service, modelName, app, objectType, writeableProperties,
+                  fromIdentifiers: from, toIdentifiers: to,
+                  sourceEntity: contactProperty,
+                  ownerPrefix: 'contactOrUser',
+                  extendedWith,
+                  trigger
                 })
+                await service.trigger({ type: modelName + 'Moved' }, { from, to, ...extendedIdentifiers })
                 emit({
                   type: transferEventName,
                   from: {
@@ -230,7 +281,7 @@ definition.processor(function(service, app) {
           skipValidation: true,
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
-          async execute(properties, {client, service}, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
             for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
@@ -254,6 +305,9 @@ definition.processor(function(service, app) {
             }
             await App.validation.validate({ ...identifiers, ...data }, validators,
               { source: action, action, service, app, client })
+            await firePropertySetChange({
+              service, modelName, app, objectType, id, identifiers, data, trigger
+            })
             emit({
               type: eventName,
               identifiers,
@@ -281,7 +335,7 @@ definition.processor(function(service, app) {
           skipValidation: true,
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
             for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
@@ -306,6 +360,10 @@ definition.processor(function(service, app) {
             const merged = App.utils.mergeDeep({}, entity, data)
             await App.validation.validate({ ...identifiers, ...merged }, validators,
               { source: action, action, service, app, client })
+            await firePropertyUpdateChange({
+              service, modelName, app, objectType, writeableProperties,
+              id, identifiers, entity, data, trigger
+            })
             emit({
               type: eventName,
               identifiers,
@@ -331,7 +389,7 @@ definition.processor(function(service, app) {
               && (config.ownerResetAccess || config.ownerWriteAccess)(params, context),
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
-          async execute(properties, {client, service}, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const owner = client.user ? ['user_User', client.user] : ['session_Session', client.session]
             for(const extension of extendedWith) owner.push(properties[extension+'Type'], properties[extension])
             const id = owner.map(p => JSON.stringify(p)).join(':')
@@ -345,6 +403,10 @@ definition.processor(function(service, app) {
               identifiers[key+'Type'] = properties[key+'Type']
               identifiers[key]=properties[key]
             }
+            await firePropertyResetChange({
+              service, modelName, app, objectType, writeableProperties,
+              id, identifiers, entity, trigger
+            })
             emit({
               type: eventName,
               identifiers

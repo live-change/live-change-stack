@@ -4,6 +4,7 @@ import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
 } from '@live-change/framework'
 import { mcpFields } from '@live-change/relations-plugin'
+import { fireChangeTriggers, extractObjectData } from '@live-change/relations-plugin'
 import { User } from "./model.js"
 import  pluralize from 'pluralize'
 
@@ -23,6 +24,7 @@ definition.processor(function(service, app) {
 
       const config = model.userItem
       const writeableProperties = modelProperties || config.writableProperties
+      const objectType = service.name + '_' + modelName
 
       //console.log("USER ITEM", model)
       if(model.itemOf) throw new Error("model " + modelName + " already have owner")
@@ -108,7 +110,7 @@ definition.processor(function(service, app) {
           },
           queuedBy: (command) => command.client.user,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const id = properties[modelPropertyName] || app.generateUid()
             const entity = await modelRuntime().get(id)
             if(entity) throw app.logicError("exists")
@@ -122,6 +124,11 @@ definition.processor(function(service, app) {
               App.computeDefaults(model, properties, { client, service }), newObject)
             await App.validation.validate(data, validators,
               { source: action, action, service, app, client })
+            const identifiers = { user: client.user }
+            await fireChangeTriggers({
+              service, modelName, app, objectType, object: id,
+              identifiers, oldData: null, data, trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: id,
@@ -154,7 +161,7 @@ definition.processor(function(service, app) {
           skipValidation: true,
           queuedBy: (command) => command.client.user,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw app.logicError("not_found")
             if(entity.user !== client.user) throw app.logicError("not_authorized")
@@ -168,6 +175,14 @@ definition.processor(function(service, app) {
             const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
             const merged = App.utils.mergeDeep({}, entity, data)
             await App.validation.validate({ ...merged, [modelPropertyName]: entity.id }, validators, { source: action, action, service, app, client })
+            const identifiers = { user: client.user }
+            await fireChangeTriggers({
+              service, modelName, app, objectType, object: entity.id,
+              identifiers,
+              oldData: extractObjectData(writeableProperties, entity, {}),
+              data,
+              trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,
@@ -197,10 +212,18 @@ definition.processor(function(service, app) {
           },
           queuedBy: (command) => command.client.user,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw app.logicError("not_found")
             if(entity.user !== client.user) throw app.logicError("not_authorized")
+            const identifiers = { user: client.user }
+            await fireChangeTriggers({
+              service, modelName, app, objectType, object: entity.id,
+              identifiers,
+              oldData: extractObjectData(writeableProperties, entity, {}),
+              data: null,
+              trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,

@@ -71,3 +71,7 @@ model.userItem = {
 - **userItem** — List of things owned by the user (todos, orders, etc.).
 
 For “owner can be either session or user” (e.g. before login), use [sessionOrUserProperty / sessionOrUserItem](/server/09-04-sessionOrUserProperty-sessionOrUserItem.html) instead.
+
+## Change triggers
+
+Wrapper actions (`createMyUser…`, `setMyUser…`, etc.) call **`fireChangeTriggers`** from `@live-change/relations-plugin` before emitting events, so listeners on `change{Service}_{Model}` and `changeObject` run once per write — same as standard `propertyOf` / `itemOf` CRUD. See [Change triggers (reference)](/server/09-00-relations-generated-artifacts.html#change-triggers-reference).

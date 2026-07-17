@@ -1,6 +1,7 @@
 import definition from './definition.js'
 import App from '@live-change/framework'
 const { PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition } = App
+import { fireChangeTriggers, extractObjectData } from '@live-change/relations-plugin'
 import { Session } from "./model.js"
 
 definition.processor(function(service, app) {
@@ -21,6 +22,7 @@ definition.processor(function(service, app) {
 
       const config = model.sessionProperty
       const writeableProperties = modelProperties || config.writableProperties
+      const objectType = service.name + '_' + modelName
 
       if(model.propertyOf) throw new Error("model " + modelName + " already have owner")
       model.propertyOf = {
@@ -69,7 +71,7 @@ definition.processor(function(service, app) {
           skipValidation: true,
           queuedBy: (command) => command.client.session,
           waitForEvents: true,
-          async execute(properties, {client, service}, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             let newObject = {}
             for(const propertyName of writeableProperties) {
               if(properties.hasOwnProperty(propertyName)) {
@@ -79,6 +81,12 @@ definition.processor(function(service, app) {
             const data = App.utils.mergeDeep({},
               App.computeDefaults(model, properties, { client, service } ), newObject)
             await App.validation.validate(data, validators, validationContext)
+            const id = client.session
+            const identifiers = { session: client.session }
+            await fireChangeTriggers({
+              service, modelName, app, objectType, object: id,
+              identifiers, oldData: null, data, trigger
+            })
             emit({
               type: eventName,
               identifiers: {
@@ -105,7 +113,7 @@ definition.processor(function(service, app) {
           skipValidation: true,
           queuedBy: (command) => command.client.session,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const entity = await modelRuntime().get(client.session)
             if(!entity) throw app.logicError("not_found")
             let updateObject = {}
@@ -119,6 +127,15 @@ definition.processor(function(service, app) {
             const merged = App.utils.mergeDeep({}, entity, data)
             await App.validation.validate({ session: client.session, ...merged }, validators,
               validationContext)
+            const id = client.session
+            const identifiers = { session: client.session }
+            await fireChangeTriggers({
+              service, modelName, app, objectType, object: id,
+              identifiers,
+              oldData: extractObjectData(writeableProperties, entity, {}),
+              data,
+              trigger
+            })
             emit({
               type: eventName,
               identifiers: {
@@ -141,9 +158,18 @@ definition.processor(function(service, app) {
           access: config.sessionResetAccess || config.sessionWriteAccess,
           queuedBy: (command) => command.client.session,
           waitForEvents: true,
-          async execute(properties, {client, service}, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const entity = await modelRuntime().indexObjectGet('bySession', client.session)
             if (!entity) throw app.logicError("not_found")
+            const id = client.session
+            const identifiers = { session: client.session }
+            await fireChangeTriggers({
+              service, modelName, app, objectType, object: id,
+              identifiers,
+              oldData: extractObjectData(writeableProperties, entity, {}),
+              data: null,
+              trigger
+            })
             emit({
               type: eventName,
               identifiers: {

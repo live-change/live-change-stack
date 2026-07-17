@@ -524,7 +524,7 @@ class Store {
       object = json ? this.serialization.parse(json) : null
       this.tree = this.tree.remove(id)
     } catch(e) {
-      console.error("FAILED REMOVE OF", id, e)
+     // console.error("FAILED REMOVE OF", id, e)
     } finally {
     }
     const objectObservable = this.objectObservables.get(id)

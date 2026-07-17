@@ -738,7 +738,13 @@ class ReactiveServerConnection extends EventEmitter {
 
   handleDaoFactoryError(error) {
     debug("DAO Factory error", error)
-    console.error('DAO FACTORY ERROR', error)
+    console.error('DAO FACTORY ERROR', {
+      connectionId: this.id,
+      message: error?.message || error,
+      code: error?.code,
+      context: error?.context,
+      error
+    })
     this.send({
       type: "authenticationError",
       error: utils.errorToJSON(error)

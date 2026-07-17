@@ -120,7 +120,9 @@ definition.trigger({
 
 ## Change triggers (automatic, from relations plugin)
 
-When a model uses relations (`propertyOf`, `itemOf`, `userItem`, `propertyOfAny`, etc.), the relations plugin **automatically fires change triggers** every time a record is created, updated, or deleted. You don't need to emit anything — the framework does it.
+When a model uses relations (`propertyOf`, `itemOf`, `userItem`, `propertyOfAny`, etc.), the relations plugin **automatically fires change triggers** every time a record is created, updated, or deleted. User/session/contact **wrapper** actions (`createMyUser…`, `setMySession…`, …) do the same via the public **`fireChangeTriggers`** helper — see [Relations generated artifacts — Change triggers (reference)](/server/09-00-relations-generated-artifacts.html#change-triggers-reference).
+
+You don't need to emit change triggers yourself for standard relations CRUD; define a listener trigger with the matching name.
 
 ### Trigger names fired automatically
 

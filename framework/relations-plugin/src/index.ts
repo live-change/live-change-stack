@@ -54,3 +54,15 @@ export type {
 export { mcpFields, resolveMcpConfig, normalizeMcp } from './mcpUtils.js'
 export type { McpConfigSource, McpOperationKind } from './mcpUtils.js'
 
+export {
+  fireChangeTriggers,
+  extractObjectData,
+  extractIdentifiers
+} from './fireChangeTriggers.js'
+export type {
+  ModelChangeType,
+  ModelChangeTriggerPayload,
+  ChangeTriggerFn,
+  FireChangeTriggersParams
+} from './fireChangeTriggers.js'
+

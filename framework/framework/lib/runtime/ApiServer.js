@@ -2,8 +2,8 @@ import LcDao from "@live-change/dao"
 import Dao from "./Dao.js"
 import cookie from 'cookie'
 
-import { getIp } from "./utils.js"
-import { collectAllAuthenticators, runPrepareCredentials } from './clientCredentials.js'
+import { getIp, isAuthDebug, sessionKeyPrefix } from "./utils.js"
+import { collectAllAuthenticators, runPrepareCredentials, authenticatorLabel } from './clientCredentials.js'
 
 class ApiServer {
   constructor(config, DaoConstructor = Dao) {
@@ -11,7 +11,7 @@ class ApiServer {
     this.DaoConstructor = DaoConstructor
 
     this.reactiveServer = new LcDao.ReactiveServer(
-      (credentials, connection) => {
+      (credentials, connection, reactiveConnection) => {
         const ip = getIp(connection)      
         if(!credentials && this.config.fastAuth) {
           if(typeof this.config.fastAuth == 'function') {          
@@ -23,16 +23,57 @@ class ApiServer {
             credentials = { sessionKey }
           }
         }
-        return this.daoFactory(credentials, ip)
+        return this.daoFactory(credentials, ip, reactiveConnection)
       }, config)
   }
 
-  async daoFactory(credentialsp, ip) {
+  async daoFactory(credentialsp, ip, reactiveConnection) {
+    const connectionId = reactiveConnection?.id
+    const startedAt = Date.now()
     let credentials = { ...credentialsp, ip, roles: [], ignoreRemoteViews: false }
     const allAuthenticators = collectAllAuthenticators(this.config, this.config.app)
+    const prepareCount = allAuthenticators.filter(a => a.prepareCredentials).length
+    const observableCount = allAuthenticators.filter(a => a.credentialsObservable).length
+
+    console.log('[auth] ApiServer daoFactory start', {
+      connectionId,
+      ip,
+      sessionKeyPrefix: sessionKeyPrefix(credentials.sessionKey),
+      prepareCount,
+      observableCount,
+      authenticators: allAuthenticators.map(a => authenticatorLabel(a))
+    })
+
+    const prepareStartedAt = Date.now()
     await runPrepareCredentials(allAuthenticators, credentials, this.config)
-    const dao = new this.DaoConstructor({ ...this.config, authenticators: allAuthenticators }, { ...credentials })
+    const prepareMs = Date.now() - prepareStartedAt
+
+    if(prepareMs > 200 || isAuthDebug()) {
+      console.log('[auth] ApiServer prepareCredentials done', {
+        connectionId,
+        session: credentials.session,
+        ip,
+        prepareMs
+      })
+    }
+
+    const dao = new this.DaoConstructor({
+      ...this.config,
+      authenticators: allAuthenticators,
+      connectionId,
+      credentialsObservableTimeout: this.config.credentialsObservableTimeout
+    }, { ...credentials })
     await dao.start()
+
+    if(isAuthDebug()) {
+      console.log('[auth] ApiServer daoFactory ready', {
+        connectionId,
+        session: credentials.session,
+        ip,
+        elapsedMs: Date.now() - startedAt
+      })
+    }
+
     return dao
   }
 

@@ -105,3 +105,12 @@ const ReceivedCard = definition.model({
 ```
 
 Here the “owner” is session-or-user plus **giver** (giverType, giver), so you can list “my received cards” or “my received cards by giver”.
+
+## Change triggers
+
+Wrapper CRUD and **signedIn** migration call **`fireChangeTriggers`** before events:
+
+- **Items** moved session → user: one **update** change trigger (same id, new owner identifiers).
+- **Properties** moved session → user: **delete** (old session-scoped id) + **create** (new user-scoped id). Merge paths may also emit **update** or **set** on the user side and **reset** on the session side.
+
+See [Change triggers (reference)](/server/09-00-relations-generated-artifacts.html#change-triggers-reference).

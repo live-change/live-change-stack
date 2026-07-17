@@ -53,7 +53,9 @@ export default function(service, app) {
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
     defineAnyIndex(context.model, context.joinedOthersClassName, context.otherPropertyNames)
-    defineAnyTypeIndexes(config, context, context.otherPropertyNames.length === 1)
+    const useId = context.otherPropertyNames.length === 1
+      && (!config.hashId || config.hashId === 'hybrid')
+    defineAnyTypeIndexes(config, context, useId)
 
     defineObjectView(config, context,
       !!(config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl)

@@ -639,8 +639,8 @@ class Store {
       object = json ? JSON.parse(json) : null
       txn.del(this.lmdb, id)
     } catch(e) {
-      console.error("FAILED REMOVE OF", id)
-      console.trace("FAILED REMOVE")
+      //console.error("FAILED REMOVE OF", id)
+      //console.trace("FAILED REMOVE")
     } finally {
       txn.commit()
     }

@@ -6,7 +6,13 @@ import definition from './definition.js'
 import { User, AuthenticatedUser } from './model.js'
 
 definition.authenticator({
+  name: 'user',
   async credentialsObservable(credentials) {
+    console.log('[auth] credentialsObservable start', {
+      name: 'user',
+      session: credentials.session,
+      ip: credentials.ip
+    })
     return app.dao.observable(
       ['database', 'queryObject', app.databaseName, `(${
         async (input, output, { session, authenticatedTableName, userTableName }) => {

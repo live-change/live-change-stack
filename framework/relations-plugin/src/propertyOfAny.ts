@@ -72,8 +72,10 @@ export default function(service, app) {
     ]
 
     addAccessControlAnyParents(context)
-    defineAnyIndexes(context.model, context.otherPropertyNames, false)
-    defineAnyTypeIndexes(config, context, context.otherPropertyNames.length === 1)
+    const useId = context.otherPropertyNames.length === 1
+      && (!config.hashId || config.hashId === 'hybrid')
+    defineAnyIndexes(context.model, context.otherPropertyNames, !useId)
+    defineAnyTypeIndexes(config, context, useId)
 
     defineObjectView(config, context,
       !!(config.singleAccess || config.readAccess || config.singleAccessControl || config.readAccessControl)

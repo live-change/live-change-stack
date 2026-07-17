@@ -34,8 +34,77 @@ Later steps can still add names; avoid clashes across the whole service.
 Shared:
 
 - **Global listing** — `defineGlobalRangeView` in `utils.ts` when `readAllAccess` (or equivalent) is set.
-- **Change triggers** — `changeTriggers.js` from plural/singular flows.
+- **Change triggers** — lifecycle signals from `changeTriggers.js` (see [Change triggers (reference)](#change-triggers-reference) below). Distinct from **CRUD action triggers** (`{service}_create{Model}`, etc.) which execute writes.
 - **Auto fields and indexes** — see [09-01](/server/09-01-propertyOf-itemOf.html) and [09-relations](/server/09-relations.html); this page focuses on **generated names** for views/actions/events/triggers.
+
+## Change triggers (reference)
+
+Change triggers notify listeners when model data changes. They are **not** the same as CRUD action triggers (`cron_createSchedule`) — those run the write pipeline; change triggers (`changeCron_Schedule`, `changeObject`) run **after** validation and **before** the persistence event.
+
+### When they fire
+
+| Source | Fires change triggers? |
+|--------|------------------------|
+| Relations-plugin CRUD actions/triggers (`create{Model}`, `set{Model}`, …) | Yes — internally via `fireChangeTriggers` |
+| `entity` CRUD | Yes |
+| User/session wrapper `ownerCrud` actions (`createMyUser…`, `setMySession…`, …) | Yes — since relations-plugin export (see below) |
+| `signedIn` / `contactConnected` owner migration | Yes — item transfer = **update**; property transfer = **delete + create** |
+| Raw `Model.create` / event handlers | No |
+
+### Trigger names (per model `Model` in service `myService`)
+
+| Trigger | When |
+|---------|------|
+| `createMyService_Model` | create |
+| `updateMyService_Model` | update |
+| `deleteMyService_Model` | delete |
+| `changeMyService_Model` | any change |
+| `createObject` / `updateObject` / `deleteObject` / `changeObject` | any model using relations or wrappers above |
+
+Pattern: `{changeType}{ServiceNameCapitalized}_{ModelName}`.
+
+### Payload
+
+```javascript
+{
+  objectType,   // e.g. 'myService_MyModel'
+  object,       // record id (property models: composite id from owner identifiers)
+  identifiers,  // parent owner fields, e.g. { user: '...' } or { sessionOrUserType, sessionOrUser }
+  data,         // new writable data (null on delete)
+  oldData,      // previous writable data (null on create)
+  changeType    // 'create' | 'update' | 'delete'
+}
+```
+
+`changeType` is derived from `data` / `oldData`: only `data` → create; both → update; only `oldData` → delete.
+
+### Public API: `fireChangeTriggers`
+
+Import from `@live-change/relations-plugin` when a custom action or service processor performs writes via `emit()` instead of relations CRUD triggers (avoids an extra trigger round-trip):
+
+```javascript
+import { fireChangeTriggers, extractObjectData } from '@live-change/relations-plugin'
+
+// Inside action/trigger execute — trigger comes from context
+await fireChangeTriggers({
+  service,
+  modelName: 'MyModel',
+  app,
+  objectType: service.name + '_MyModel',
+  object: id,
+  identifiers: { user: client.user },
+  oldData: null,           // or extractObjectData(writeableProperties, entity, {})
+  data,                    // null on delete
+  trigger                  // required — from execute context
+})
+await emit({ type: 'MyModelCreated', ... })
+```
+
+Also exported: `extractObjectData`, `extractIdentifiers` (from `dataUtils.js`).
+
+**Not** part of the public API: `registerParentDeleteTriggers`, `registerParentCopyTriggers` (internal cascade registration).
+
+Implementation: `framework/relations-plugin/src/fireChangeTriggers.ts` → `changeTriggers.js`.
 
 ## Name collisions
 
@@ -45,4 +114,8 @@ Confirm the effective API with **`describe`**, e.g. `fnm exec -- node server/sta
 
 ## User service wrappers
 
-`userProperty`, `userItem`, `sessionOrUser*`, `contactOrUser*` are handled by **processors in user-service** that rewrite models to `propertyOf` / `itemOf` / `propertyOfAny` / `itemOfAny` and add views/actions. Generated names follow the same underlying patterns after the rewrite — use `describe` on the concrete service.
+`userProperty`, `userItem`, `sessionOrUser*`, `contactOrUser*` are handled by **processors in user-service** (and `sessionItem` / `sessionProperty` in session-service) that rewrite models to `propertyOf` / `itemOf` / `propertyOfAny` / `itemOfAny` and add **ownerCrud** views/actions.
+
+Those wrapper actions call the same **`fireChangeTriggers`** public API before `emit()`, so lifecycle triggers (`changeMyService_Model`, `changeObject`, …) behave like standard relations CRUD. See [Change triggers (reference)](#change-triggers-reference).
+
+Generated names follow the same underlying patterns after the rewrite — use `describe` on the concrete service.

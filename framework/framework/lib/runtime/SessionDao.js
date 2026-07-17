@@ -62,7 +62,10 @@ class SessionDao extends LcDao.DaoProxy {
     }
 
     this.sessionObservable.observe(this.sessionObserver)
-    let sess = await waitForSignal(this.sessionObservable)
+    let sess = await waitForSignal(this.sessionObservable, 1000, () => true, {
+      label: 'sessionDao.sessionObservable',
+      session: this.session
+    })
 
     if(!sess) {
       console.log("create session!")
@@ -76,7 +79,10 @@ class SessionDao extends LcDao.DaoProxy {
         client: this.credentials
       })
       console.log("session create returned!")
-      sess = await waitForSignal(this.sessionObservable, 2000, s => !!s)
+      sess = await waitForSignal(this.sessionObservable, 2000, s => !!s, {
+        label: 'sessionDao.sessionObservable.afterCreate',
+        session: this.session
+      })
       console.log("session signaled", sess)
     }
 

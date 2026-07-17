@@ -6,6 +6,10 @@ import {
 import { allCombinations } from "./combinations.js"
 import { registerParentDeleteTriggers } from "./changeTriggers.js"
 import { ModelDefinitionSpecificationWithAccessControl } from "./types.js"
+export {
+  buildAnyCompositeId,
+  generateAnyId
+} from './idGeneration.js'
 
 
 export function extractTypeAndIdParts(otherPropertyNames, properties) {
@@ -24,20 +28,6 @@ export function extractIdentifiersWithTypes(otherPropertyNames, properties) {
     identifiers[propertyName + 'Type'] = properties[propertyName + 'Type']
   }
   return identifiers
-}
-
-export function generateAnyId(otherPropertyNames, properties) {
-/*
-  console.log("GEN ID", otherPropertyNames, properties, '=>',
-    otherPropertyNames
-      .map(p => [p+'Type', p])
-      .flat()
-      .map(p => JSON.stringify(properties[p])).join(':'))
-*/
-  return otherPropertyNames
-      .map(p => [p+'Type', p])
-      .flat()
-      .map(p => JSON.stringify(properties[p])).join(':')
 }
 
 export function defineAnyProperties(model, names, config) {
@@ -89,6 +79,7 @@ export interface AnyRelationConfig {
   sortBy?: string[],
   customDeleteTrigger?: boolean, /// TODO: check if this is needed
   customParentCopyTrigger?: boolean /// TODO: check if this is needed
+  hashId?: boolean | 'hybrid'
 }
 
 export interface ModelDefinitionSpecificationWithAnyRelation extends ModelDefinitionSpecificationWithAccessControl {  

@@ -19,7 +19,7 @@ function defineSetEvent(config, context, generateId) {
       }
     },
     execute(properties) {
-      const id = generateId(otherPropertyNames, properties.identifiers)
+      const id = generateId(otherPropertyNames, properties.identifiers, config)
       return modelRuntime().create({ ...properties.data, ...properties.identifiers, id })
     }
   })
@@ -41,7 +41,7 @@ function defineUpdatedEvent(config, context, generateId) {
       }
     },
     execute(properties) {
-      const id = generateId(otherPropertyNames, properties.identifiers)
+      const id = generateId(otherPropertyNames, properties.identifiers, config)
       return modelRuntime().update(id, { ...properties.data, ...properties.identifiers })
     }
   })
@@ -63,8 +63,8 @@ function defineTransferredEvent(config, context, generateId) {
       }
     },
     async execute(properties) {
-      const fromId = generateId(otherPropertyNames, properties.from)
-      const toId = generateId(otherPropertyNames, properties.to)
+      const fromId = generateId(otherPropertyNames, properties.from, config)
+      const toId = generateId(otherPropertyNames, properties.to, config)
       const data = await modelRuntime().get(fromId)
       await modelRuntime().create({
         ...data,
@@ -91,7 +91,7 @@ function defineResetEvent(config, context, generateId) {
       }
     },
     execute({ identifiers }) {
-      const id = identifiers[modelPropertyName] ?? generateId(otherPropertyNames, identifiers)
+      const id = identifiers[modelPropertyName] ?? generateId(otherPropertyNames, identifiers, config)
       return modelRuntime().delete(id)
     }
   })

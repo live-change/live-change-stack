@@ -1,7 +1,12 @@
 import definition from './definition.js'
+import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition
 } from '@live-change/framework'
+import { fireChangeTriggers } from '@live-change/relations-plugin'
+import {
+  fireItemOwnerTransferChange, fireItemUpdateChange, fireItemDeleteChange
+} from './ownerChangeTriggers.js'
 import { User } from "./model.js"
 
 import pluralize from 'pluralize'
@@ -23,10 +28,14 @@ definition.processor(function(service, app) {
 
       const config = model.contactOrUserItem
       const writeableProperties = modelProperties || config.writableProperties
+      const objectType = service.name + '_' + modelName
 
       //console.log("USER ITEM", model)
 
       if(model.itemOfAny) throw new Error("model " + modelName + " already have owner")
+      const extendedWith = config.extendedWith
+          ? (Array.isArray(config.extendedWith) ? config.extendedWith : [config.extendedWith])
+          : []
       model.itemOfAny = {
         to: ['contactOrUser', ...extendedWith],
         ...(definition.config.contactTypes ? {
@@ -60,9 +69,13 @@ definition.processor(function(service, app) {
             validation: ['nonEmpty']
           }
         },
-        async execute({ contactType, contact, user }, { service }, emit) {
+        async execute({ contactType, contact, user }, { service, trigger }, emit) {
           const contactPath = [contactType, contact]
           const contactItems = await modelRuntime().indexRangeGet('byOwner', contactPath, {} )
+          const toOwner = {
+            ownerType: 'user_User',
+            owner: user
+          }
           if(config.merge) {
             const userPath = ['user_User', user]
             const userItems = await modelRuntime().indexRangeGet('byOwner', userPath, {} )
@@ -70,6 +83,10 @@ definition.processor(function(service, app) {
             if(mergeResult) {
               const { transferred, updated, deleted } = mergeResult
               for(const entity of transferred) {
+                await fireItemOwnerTransferChange({
+                  service, modelName, app, objectType, writeableProperties,
+                  entity, to: toOwner, trigger
+                })
                 emit({
                   type: modelName + 'Transferred',
                   [modelPropertyName]: entity.id,
@@ -81,6 +98,14 @@ definition.processor(function(service, app) {
                 })
               }
               for(const entity of updated) {
+                const identifiers = {
+                  ownerType: 'user_User',
+                  owner: user
+                }
+                await fireItemUpdateChange({
+                  service, modelName, app, objectType, writeableProperties,
+                  entity, data: entity, identifiers, trigger
+                })
                 emit({
                   type: modelName + 'Updated',
                   [modelPropertyName]: entity.id,
@@ -93,6 +118,13 @@ definition.processor(function(service, app) {
                 })
               }
               for(const entity of deleted) {
+                const stored = await modelRuntime().get(entity.id)
+                if(stored) {
+                  await fireItemDeleteChange({
+                    service, modelName, app, objectType, writeableProperties,
+                    entity: stored, trigger
+                  })
+                }
                 emit({
                   type: modelName + 'Deleted',
                   [modelPropertyName]: entity.id,
@@ -101,6 +133,10 @@ definition.processor(function(service, app) {
             }
           } else {
             for(const entity of contactItems) {
+              await fireItemOwnerTransferChange({
+                service, modelName, app, objectType, writeableProperties,
+                entity, to: toOwner, trigger
+              })
               emit({
                 type: modelName + 'Transferred',
                 [modelPropertyName]: entity.id,
@@ -167,7 +203,7 @@ definition.processor(function(service, app) {
           },
           queuedBy: (command) => 'u:'+command.client.user,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const id = properties[modelPropertyName] || app.generateUid()
             const entity = await modelRuntime().get(id)
             if(entity) throw app.logicError("exists")
@@ -185,6 +221,10 @@ definition.processor(function(service, app) {
               App.computeDefaults(model, properties, { client, service }), newObject)
             await App.validation.validate({ ...identifiers, ...data }, validators,
               { source: action, action, service, app, client })
+            await fireChangeTriggers({
+              service, modelName, app, objectType, object: id,
+              identifiers, oldData: null, data, trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: id,
@@ -215,7 +255,7 @@ definition.processor(function(service, app) {
           skipValidation: true,
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw app.logicError("not_found")
             if(entity.ownerType === 'user_User') {
@@ -227,18 +267,19 @@ definition.processor(function(service, app) {
                 updateObject[propertyName] = properties[propertyName]
               }
             }
-            const identifiers = client.user ? {
+            const identifiers = {
               ownerType: 'user_User',
               owner: client.user,
-            } : {
-              ownerType: 'session_Session',
-              owner: client.session,
             }
             const computedUpdates = App.computeUpdates(model, { ...entity, ...properties }, { client, service })
             const data = App.utils.mergeDeep({}, updateObject, computedUpdates)
             const merged = App.utils.mergeDeep({}, entity, data)
             await App.validation.validate({ ...identifiers, ...merged, [modelPropertyName]: entity.id }, validators,
               { source: action, action, service, app, client })
+            await fireItemUpdateChange({
+              service, modelName, app, objectType, writeableProperties,
+              entity, data, identifiers, trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,
@@ -266,19 +307,20 @@ definition.processor(function(service, app) {
           },
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw app.logicError("not_found")
             if(entity.ownerType === 'user_User') {
               if(entity.owner !== client.user) throw app.logicError("not_authorized")
             } else throw app.logicError("not_authorized")
-            const identifiers = client.user ? {
+            const identifiers = {
               ownerType: 'user_User',
               owner: client.user,
-            } : {
-              ownerType: 'session_Session',
-              owner: client.session,
             }
+            await fireItemDeleteChange({
+              service, modelName, app, objectType, writeableProperties,
+              entity, identifiers, trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,

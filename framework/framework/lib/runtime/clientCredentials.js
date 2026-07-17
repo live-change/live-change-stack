@@ -1,7 +1,31 @@
 import LcDao from '@live-change/dao'
 import { originalCredentialsSymbol } from '@live-change/dao'
 
-import { waitForSignal } from './utils.js'
+import { waitForSignal, isAuthDebug } from './utils.js'
+
+const SLOW_PREPARE_MS = 200
+
+function stampAuthenticator(authenticator, serviceName) {
+  if(!authenticator) return authenticator
+  if(serviceName && !authenticator.serviceName) {
+    authenticator.serviceName = serviceName
+  }
+  if(!authenticator.name) {
+    authenticator.name = authenticator.serviceName
+      || (authenticator.credentialsObservable ? 'credentialsObservable' : null)
+      || (authenticator.prepareCredentials ? 'prepareCredentials' : null)
+      || 'anonymous'
+  }
+  return authenticator
+}
+
+export function authenticatorLabel(authenticator) {
+  const name = authenticator?.name || authenticator?.serviceName || 'anonymous'
+  const kind = authenticator?.credentialsObservable
+    ? 'credentialsObservable'
+    : (authenticator?.prepareCredentials ? 'prepareCredentials' : 'unknown')
+  return `${name}.${kind}`
+}
 
 /**
  * Collect authenticator objects the same way ApiServer.daoFactory does,
@@ -14,7 +38,7 @@ export function collectAllAuthenticators(config, app = null) {
     const auth = Array.isArray(config.authenticators)
       ? config.authenticators
       : [config.authenticators]
-    allAuthenticators.push(...auth.filter(a => !!a))
+    allAuthenticators.push(...auth.filter(a => !!a).map(a => stampAuthenticator(a, null)))
   }
   for (const service of config.services || []) {
     let list = service?.authenticators
@@ -22,7 +46,7 @@ export function collectAllAuthenticators(config, app = null) {
       list = app.startedServices[service.name].authenticators
     }
     if (list) {
-      allAuthenticators.push(...list.filter(a => !!a))
+      allAuthenticators.push(...list.filter(a => !!a).map(a => stampAuthenticator(a, service.name)))
     }
   }
   return allAuthenticators
@@ -30,8 +54,30 @@ export function collectAllAuthenticators(config, app = null) {
 
 export async function runPrepareCredentials(allAuthenticators, credentials, config) {
   for (const authenticator of allAuthenticators) {
-    if (authenticator.prepareCredentials) {
+    if (!authenticator.prepareCredentials) continue
+    const label = authenticatorLabel(authenticator)
+    const startedAt = Date.now()
+    try {
       await authenticator.prepareCredentials(credentials, config)
+      const ms = Date.now() - startedAt
+      if (ms > SLOW_PREPARE_MS || isAuthDebug()) {
+        console.log('[auth] prepareCredentials done', {
+          label,
+          ms,
+          session: credentials.session,
+          ip: credentials.ip
+        })
+      }
+    } catch (error) {
+      const ms = Date.now() - startedAt
+      console.error('[auth] prepareCredentials error', {
+        label,
+        ms,
+        session: credentials.session,
+        ip: credentials.ip,
+        error
+      })
+      throw error
     }
   }
 }
@@ -81,7 +127,8 @@ export async function snapshotClientCredentials(config, inputCredentials, {
   const observableAuthenticators = allAuthenticators.filter(a => a.credentialsObservable)
   const observationStates = []
   for (const authenticator of observableAuthenticators) {
-    const state = { credentials: {} }
+    const label = authenticatorLabel(authenticator)
+    const state = { credentials: {}, label }
     const result = authenticator.credentialsObservable(credentials)
     const observable = result.then ? new LcDao.ObservablePromiseProxy(result) : result
     const observer = {
@@ -96,7 +143,11 @@ export async function snapshotClientCredentials(config, inputCredentials, {
     }
     observable.observe(observer)
     try {
-      await waitForSignal(observable, observableWaitMs)
+      await waitForSignal(observable, observableWaitMs, () => true, {
+        label,
+        session: credentials.session,
+        ip: credentials.ip
+      })
     } finally {
       observable.unobserve(observer)
     }

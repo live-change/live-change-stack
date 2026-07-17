@@ -137,6 +137,9 @@ app.config = {
     {
       name: 'task',
     },
+    { 
+      name: 'cron',
+    },
     {
       name: 'draft',
     },

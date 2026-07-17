@@ -49,3 +49,7 @@ model.contactOrUserItem = {
 ## When to use
 
 Use when the same entity can be owned by a **contact** (e.g. email or phone before account exists) or by a **User** after the contact is connected. Requires **contactTypes** in app.config for the user service (e.g. `['email', 'phone']`).
+
+## Change triggers
+
+Same policy as [sessionOrUser*](/server/09-04-sessionOrUserProperty-sessionOrUserItem.html#change-triggers): wrapper CRUD and **contactConnected** migration use **`fireChangeTriggers`** — items transfer as **update**, properties as **delete + create**. See [Change triggers (reference)](/server/09-00-relations-generated-artifacts.html#change-triggers-reference).

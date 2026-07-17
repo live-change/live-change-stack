@@ -8,6 +8,7 @@ const authenticationKey = new ObservableValue(
 )
 
 definition.authenticator({
+  name: 'print',
   async prepareCredentials(credentials) {
     //console.log("PRINT AUTHENTICATOR", credentials, authenticationKey.getValue())
     if(credentials.sessionKey === authenticationKey.getValue()) {

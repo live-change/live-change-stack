@@ -3,7 +3,7 @@ import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, TriggerDefinition
 } from '@live-change/framework'
 import {
-  extractTypeAndIdParts, extractIdentifiersWithTypes, generateAnyId,
+  extractIdentifiersWithTypes, generateAnyId,
   prepareAccessControl, cloneAndPrepareAccessControl
 } from './utilsAny.js'
 import {
@@ -67,8 +67,7 @@ function defineObjectView(config, context, external = true) {
         const path = config.fields ? modelRuntime().limitedPath(idProp, config.fields) : modelRuntime().path(idProp)
         return path
       }
-      const typeAndIdParts = extractTypeAndIdParts(otherPropertyNames, properties)
-      const id = typeAndIdParts.length > 1 ? typeAndIdParts.map(p => JSON.stringify(p)).join(':') : typeAndIdParts[0]
+      const id = generateAnyId(otherPropertyNames, properties, config)
       const path = config.fields ? modelRuntime().limitedPath(id, config.fields) : modelRuntime().path(id)
       return path
     }
@@ -119,7 +118,7 @@ function getSetFunction( validators, validationContext, config, context) {
   const eventName = modelName + 'Set'
   return async function execute(properties, { client, service, trigger }, emit) {
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
-    const id = generateAnyId(otherPropertyNames, properties)
+    const id = generateAnyId(otherPropertyNames, properties, config)
     const data = extractObjectData(writeableProperties, properties,
       App.computeDefaults(model, properties, { client, service } ))
     await App.validation.validate({ ...identifiers, ...data }, validators,
@@ -190,7 +189,7 @@ function getUpdateFunction( validators, validationContext, config, context) {
   const eventName = modelName + 'Updated'
   return async function execute(properties, { client, service, trigger }, emit) {
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
-    const id = generateAnyId(otherPropertyNames, properties)
+    const id = generateAnyId(otherPropertyNames, properties, config)
     const entity = await modelRuntime().get(id)
     if (!entity) throw new Error('not_found')
     const data = App.utils.mergeDeep({},
@@ -270,7 +269,7 @@ function getSetOrUpdateFunction( validators, validationContext, config, context)
   const eventName = modelName + 'Updated'
   return async function execute(properties, { client, service, trigger }, emit) {
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
-    const id = generateAnyId(otherPropertyNames, properties)
+    const id = generateAnyId(otherPropertyNames, properties, config)
     const entity = await modelRuntime().get(id)
     const data = App.utils.mergeDeep({},
       App.computeDefaults(model, properties, { client, service } ),
@@ -350,7 +349,7 @@ function getResetFunction(config, context) {
   const eventName = modelName + 'Reset'
   return async function execute(properties, { client, service, trigger }, emit) {
     const identifiers = extractIdentifiersWithTypes(otherPropertyNames, properties)
-    const id = properties[modelPropertyName] ?? generateAnyId(otherPropertyNames, properties)
+    const id = properties[modelPropertyName] ?? generateAnyId(otherPropertyNames, properties, config)
     const entity = await modelRuntime().get(id)
     if (!entity) throw new Error('not_found')
     await fireChangeTriggers(context, objectType, identifiers, id,

@@ -98,3 +98,34 @@ export async function removeOldCommands(before, options) {
     more = deleteStats.count >= bucket
   }
 }
+
+const clearEventReportsQuery = `${async (input, output, { indexName, idPrefix, bucket, before }) => {
+  const indexReader = await input.index(indexName)
+  const tableWriter = await output.table('eventReports')
+  const pointers = await indexReader.rangeGet({ limit: bucket, lt: before })
+  for(const pointer of pointers) {
+    await tableWriter.delete(idPrefix + pointer.to)
+  }
+  await output.put({ count: pointers.length })
+}}`
+
+async function removeOldEventReportsForIndex(indexName, idPrefix, before, options) {
+  const bucket = options?.bucket || 128
+  let more = true
+  while(more) {
+    const queryResult = await app.dao.request(['database', 'query'], app.databaseName, clearEventReportsQuery,
+      { indexName, idPrefix, bucket, before })
+    const deleteStats = queryResult[0]
+    if(options?.delay) await new Promise(resolve => setTimeout(resolve, options.delay))
+    more = deleteStats.count >= bucket
+  }
+}
+
+export async function removeOldEventReports(commandBefore, triggerBefore, options = {}) {
+  if(!app.splitCommands && commandBefore) {
+    await removeOldEventReportsForIndex('commands_byTimestamp', 'command_', commandBefore, options)
+  }
+  if(!app.splitTriggers && triggerBefore) {
+    await removeOldEventReportsForIndex('triggers_byTimestamp', 'trigger_', triggerBefore, options)
+  }
+}

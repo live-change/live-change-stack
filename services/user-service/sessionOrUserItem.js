@@ -3,6 +3,10 @@ import App from '@live-change/framework'
 import {
   PropertyDefinition, ViewDefinition, IndexDefinition, ActionDefinition, EventDefinition, TriggerDefinition
 } from '@live-change/framework'
+import { fireChangeTriggers, extractObjectData } from '@live-change/relations-plugin'
+import {
+  fireItemOwnerTransferChange, fireItemUpdateChange, fireItemDeleteChange
+} from './ownerChangeTriggers.js'
 import { User, Session } from "./model.js"
 
 import pluralize from 'pluralize'
@@ -23,6 +27,7 @@ definition.processor(function(service, app) {
 
       const config = model.sessionOrUserItem
       const writeableProperties = modelProperties || config.writableProperties
+      const objectType = service.name + '_' + modelName
 
       //console.log("USER ITEM", model)
 
@@ -51,9 +56,13 @@ definition.processor(function(service, app) {
             validation: ['nonEmpty']
           },
         },
-        async execute({ user, session }, { service }, emit) {
+        async execute({ user, session }, { service, trigger }, emit) {
           const sessionPath = ['session_Session', session]
           const sessionItems = await modelRuntime().indexRangeGet('bySessionOrUser', sessionPath, {} )
+          const toOwner = {
+            sessionOrUserType: 'user_User',
+            sessionOrUser: user
+          }
           if(config.merge) {
             const userPath = ['user_User', user]
             const userItems = await modelRuntime().indexRangeGet('bySessionOrUser', userPath, {} )
@@ -61,6 +70,10 @@ definition.processor(function(service, app) {
             if(mergeResult) {
               const { transferred, updated, deleted } = mergeResult
               for(const entity of transferred) {
+                await fireItemOwnerTransferChange({
+                  service, modelName, app, objectType, writeableProperties,
+                  entity, to: toOwner, trigger
+                })
                 emit({
                   type: modelName + 'Transferred',
                   [modelPropertyName]: entity.id,
@@ -71,6 +84,14 @@ definition.processor(function(service, app) {
                 })
               }
               for(const entity of updated) {
+                const identifiers = {
+                  sessionOrUserType: 'user_User',
+                  sessionOrUser: user
+                }
+                await fireItemUpdateChange({
+                  service, modelName, app, objectType, writeableProperties,
+                  entity, data: entity, identifiers, trigger
+                })
                 emit({
                   type: modelName + 'Updated',
                   [modelPropertyName]: entity.id,
@@ -83,6 +104,13 @@ definition.processor(function(service, app) {
                 })
               }
               for(const entity of deleted) {
+                const stored = await modelRuntime().get(entity.id)
+                if(stored) {
+                  await fireItemDeleteChange({
+                    service, modelName, app, objectType, writeableProperties,
+                    entity: stored, trigger
+                  })
+                }
                 emit({
                   type: modelName + 'Deleted',
                   [modelPropertyName]: entity.id,
@@ -91,6 +119,10 @@ definition.processor(function(service, app) {
             }
           } else {
             for(const entity of sessionItems) {
+              await fireItemOwnerTransferChange({
+                service, modelName, app, objectType, writeableProperties,
+                entity, to: toOwner, trigger
+              })
               emit({
                 type: modelName + 'Transferred',
                 [modelPropertyName]: entity.id,
@@ -225,7 +257,7 @@ definition.processor(function(service, app) {
           },
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const id = properties[modelPropertyName] || app.generateUid()
             const entity = await modelRuntime().get(id)
             if(entity) throw app.logicError("exists")
@@ -246,6 +278,10 @@ definition.processor(function(service, app) {
               App.computeDefaults(model, properties, { client, service }), newObject)
             await App.validation.validate({ ...identifiers, ...data }, validators,
               { source: action, action, service, app, client })
+            await fireChangeTriggers({
+              service, modelName, app, objectType, object: id,
+              identifiers, oldData: null, data, trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: id,
@@ -275,7 +311,7 @@ definition.processor(function(service, app) {
           skipValidation: true,
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw app.logicError("not_found")
             if(entity.sessionOrUserType === 'user_User') {
@@ -303,6 +339,10 @@ definition.processor(function(service, app) {
               entity, data)
             await App.validation.validate({ ...identifiers, ...merged, [modelPropertyName]: entity.id }, validators,
               { source: action, action, service, app, client })
+            await fireItemUpdateChange({
+              service, modelName, app, objectType, writeableProperties,
+              entity, data, identifiers, trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,
@@ -329,7 +369,7 @@ definition.processor(function(service, app) {
           },
           queuedBy: (command) => command.client.user ? 'u:'+command.client.user : 's:'+command.client.session,
           waitForEvents: true,
-          async execute(properties, { client, service }, emit) {
+          async execute(properties, { client, service, trigger }, emit) {
             const entity = await modelRuntime().get(properties[modelPropertyName])
             if(!entity) throw app.logicError("not_found")
             if(entity.sessionOrUserType === 'user_User') {
@@ -345,6 +385,10 @@ definition.processor(function(service, app) {
               sessionOrUserType: 'session_Session',
               sessionOrUser: client.session,
             }
+            await fireItemDeleteChange({
+              service, modelName, app, objectType, writeableProperties,
+              entity, identifiers, trigger
+            })
             emit({
               type: eventName,
               [modelPropertyName]: entity.id,

@@ -34,6 +34,7 @@ definition.view({
 })
 
 definition.authenticator({
+  name: 'email',
   async prepareCredentials(credentials) {
     //console.log("EMAIL AUTHENTICATOR", credentials, authenticationKey.getValue())
     if(credentials.sessionKey === authenticationKey.getValue()) {

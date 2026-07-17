@@ -564,6 +564,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
       })
       while(tasksToRestart.length > 0) {
         logger.log("FOUND", tasksToRestart.length, "TASKS", definition.name, "TO RESTART")
+        console.log("FOUND", tasksToRestart.length, "TASKS", definition.name, "TO RESTART")
         for(const task of tasksToRestart) {
           logger.log("RESTARTING TASK", task)
           const taskObject = { ...task, id: task.to ?? task.id }
@@ -601,7 +602,7 @@ export default function task(definition:TaskDefinition, serviceDefinition) {
           limit: 25
         })
       }
-    }, 500)
+    }, 10000)
   })
 
   const Task = serviceDefinition.foreignModel('task', 'Task')

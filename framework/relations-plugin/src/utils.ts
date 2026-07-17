@@ -54,11 +54,10 @@ export function extractIdParts(otherPropertyNames: string[], properties: Record<
 }
 
 
-export function generateId(otherPropertyNames: string[], properties: Record<string, any>) {
-  return otherPropertyNames.length > 1
-      ? otherPropertyNames.map(p => JSON.stringify(properties[p])).join(':')
-      : properties[otherPropertyNames[0]]
-}
+export {
+  buildCompositeId,
+  generateId
+} from './idGeneration.js'
 
 export function defineProperties(model: ModelDefinitionSpecificationWithAccessControl,
                                  types: string[], names: string[])
@@ -128,6 +127,7 @@ export interface RelationConfig {
   sortBy?: string[],
   customDeleteTrigger?: boolean, /// TODO: check if this is needed
   customParentCopyTrigger?: boolean /// TODO: check if this is needed
+  hashId?: boolean | 'hybrid'
   mcp?: import('@live-change/framework').McpSpecification | boolean
   readMcp?: import('@live-change/framework').McpSpecification | boolean
   writeMcp?: import('@live-change/framework').McpSpecification | boolean
