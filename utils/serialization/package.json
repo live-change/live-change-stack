@@ -1,11 +1,11 @@
 {
   "name": "@live-change/serialization",
-  "version": "0.9.211",
+  "version": "0.9.212",
   "scripts": {},
   "type": "module",
   "main": "index.js",
   "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "ISC",
   "description": "",
-  "gitHead": "08b252a626d86ef1582fc864f9a7ced130a24148"
+  "gitHead": "ec89a3220b2b666e7268b1ef96fe63ec30039782"
 }

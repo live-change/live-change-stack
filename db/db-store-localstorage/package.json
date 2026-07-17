@@ -1,6 +1,6 @@
 {
   "name": "@live-change/db-store-localstorage",
-  "version": "0.9.211",
+  "version": "0.9.212",
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
@@ -26,9 +26,9 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.211",
-    "@live-change/flatten-interval-tree": "^0.9.211",
+    "@live-change/dao": "^0.9.212",
+    "@live-change/flatten-interval-tree": "^0.9.212",
     "broadcast-channel": "^4.2.0"
   },
-  "gitHead": "08b252a626d86ef1582fc864f9a7ced130a24148"
+  "gitHead": "ec89a3220b2b666e7268b1ef96fe63ec30039782"
 }
