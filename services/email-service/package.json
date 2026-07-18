@@ -1,6 +1,6 @@
 {
   "name": "@live-change/email-service",
-  "version": "0.9.213",
+  "version": "0.9.214",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.9.213",
+    "@live-change/framework": "^0.9.214",
     "got": "^14.4.7",
     "html-to-text": "^9.0.5",
     "inline-css": "4.0.2",
