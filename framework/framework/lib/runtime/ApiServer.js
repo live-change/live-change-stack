@@ -63,7 +63,16 @@ class ApiServer {
       connectionId,
       credentialsObservableTimeout: this.config.credentialsObservableTimeout
     }, { ...credentials })
-    await dao.start()
+    try {
+      await dao.start()
+    } catch(error) {
+      try {
+        dao.dispose()
+      } catch(disposeError) {
+        console.error('[auth] daoFactory dispose after start failure', disposeError)
+      }
+      throw error
+    }
 
     if(isAuthDebug()) {
       console.log('[auth] ApiServer daoFactory ready', {

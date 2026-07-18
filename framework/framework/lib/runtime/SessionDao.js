@@ -89,9 +89,11 @@ class SessionDao extends LcDao.DaoProxy {
     if(!this.dao) throw new Error("internal race condition session error?!")
   }
   dispose() {
-    if(this.disposed) throw new Error("DAO dispose called twice!")
+    if(this.disposed) return
     this.disposed = true
-    this.sessionObservable.unobserve(this.sessionObserver)
+    if(this.sessionObservable && this.sessionObserver) {
+      this.sessionObservable.unobserve(this.sessionObserver)
+    }
     super.dispose()
   }
 }

@@ -50,7 +50,7 @@ class LiveDao extends LcDao.DaoProxy {
   }
 
   async start() {
-    const timeoutMs = this.config.credentialsObservableTimeout ?? 1000
+    const timeoutMs = this.config.credentialsObservableTimeout ?? 3000
     const connectionId = this.config.connectionId
     const { session, ip } = this.initialCredentials
     const labels = this.authenticators.map(a => authenticatorLabel(a))
@@ -160,11 +160,13 @@ class LiveDao extends LcDao.DaoProxy {
     if(oldDao) oldDao.dispose()
   }
   dispose() {
-    if(this.disposed) throw new Error("DAO dispose called twice!")
+    if(this.disposed) return
     this.disposed = true
     this.started = false
-    for(const observation of this.credentialsObservations) {
-      observation.observable.unobserve(observation.observer)
+    if(this.credentialsObservations) {
+      for(const observation of this.credentialsObservations) {
+        observation.observable.unobserve(observation.observer)
+      }
     }
     super.dispose()
   }

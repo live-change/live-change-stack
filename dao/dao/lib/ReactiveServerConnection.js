@@ -423,7 +423,9 @@ class ReactiveServerConnection extends EventEmitter {
       if(this.dao) {
         this.dao.dispose()
       } else if(this.daoPromise) {
-        this.daoPromise.then(dao => this.dao.dispose())
+        this.daoPromise
+          .then(dao => { if(dao) dao.dispose() })
+          .catch(() => {}) // reject already handled in handleDaoFactoryError; Dao cleaned in ApiServer
       }
       this.server.handleConnectionClose(this)
     })

@@ -90,7 +90,7 @@ class DaoProxy extends EventEmitter {
     for(let observable of this.observables.values()) {
       observable.dispose()
     }
-    this.dao.dispose()
+    if(this.dao) this.dao.dispose()
   }
 }
 
