@@ -13,8 +13,9 @@ definition.authenticator({
     return app.dao.observable(
       ['database', 'queryObject', app.databaseName, `(${
         async (input, output, { session, authenticatedTableName, userTableName, slowQueryMs }) => {
-          const queryId = (Math.random()*10000).toFixed(0)
+          //const queryId = (Math.random()*10000).toFixed(0)
           const ts = () => new Date().toISOString()
+          const startedAt = Date.now()
           //output.debug(ts(), queryId, 'STARTING USER AUTH QUERY', { session })
           const authenticatedTable = input.table(authenticatedTableName)
           const userTable = input.table(userTableName)
