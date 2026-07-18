@@ -16,7 +16,9 @@ class LoopbackConnection extends Connection {
   connectionInfo() {
     return {
       type: 'loopback',
-      server: this.server.connectionInfo(),
+      server: typeof this.server?.connectionInfo === 'function'
+        ? this.server.connectionInfo()
+        : 'no connection info',
       settings: this.settings,
       credentials: this.credentials,
     }

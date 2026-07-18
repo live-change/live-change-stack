@@ -77,6 +77,13 @@ class ApiServer {
     return dao
   }
 
+  connectionInfo() {
+    return {
+      type: 'apiServer',
+      reactiveServer: this.reactiveServer.connectionInfo()
+    }
+  }
+
   handleConnection(connection) {
     this.reactiveServer.handleConnection(connection)
   }

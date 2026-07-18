@@ -31,7 +31,7 @@
 
   const appContext = getCurrentInstance().appContext
 
-  const schema = computed(() => getSchemaFromData(data.value, appContext))
+  const schema = computed(() => data.value ? getSchemaFromData(data.value, appContext) : 'error - no data')
   const clearData = computed(() => cleanData(data.value))
 
 </script>

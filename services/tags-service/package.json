@@ -6,9 +6,9 @@
   "type": "module",
   "license": "MIT",
   "dependencies": {
-    "@live-change/access-control-service": "^0.9.212",
-    "@live-change/framework": "^0.9.212",
-    "@live-change/relations-plugin": "^0.9.212"
+    "@live-change/access-control-service": "0.9.212",
+    "@live-change/framework": "0.9.212",
+    "@live-change/relations-plugin": "0.9.212"
   },
   "gitHead": "ec89a3220b2b666e7268b1ef96fe63ec30039782"
 }

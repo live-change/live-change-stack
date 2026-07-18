@@ -29,6 +29,13 @@ export function schemaFromDefinition(definition, data, type, appContext = getCur
   if(!definition) throw new Error("Definition is required")
   if(!type) type = definition.type
   if(type === 'Object') {
+    if(!definition.properties) {
+      return {
+        type: 'object',
+        properties: {},
+        description: definition.description,
+      }
+    }
     const properties = Object.fromEntries(
       Object.entries(definition.properties).map(
         ([key, value]) => [key, schemaFromDefinition(value, data?.[key], undefined, appContext)])

@@ -23,10 +23,10 @@ definition.authenticator({
           let userObserver = null
           let oldCredentials = null
           await authenticatedTable.object(session).onChange(async (authData, oldAuthData) => {
-            //output.debug("NEW USER AUTH", authData, "FROM", oldAuthData)
+            output.debug("NEW USER AUTH", authData, "FROM", oldAuthData)
             const newUser = authData ? authData.user : null
             if(newUser === user) return
-            //output.debug("USER CHANGE", user, '=>', newUser)
+            output.debug("USER CHANGE", user, '=>', newUser)
             if(user) {
               if(userObject) {
                 await userObject.unobserve(userObserver)
@@ -44,7 +44,7 @@ definition.authenticator({
                   user,
                   roles: userData.roles
                 } : null
-                //output.debug("NEW CREDENTIALS", newCredentials)
+                output.debug("NEW CREDENTIALS", newCredentials)
                 output.change(newCredentials, oldCredentials)
                 oldCredentials = newCredentials
               }).then(observer => {
@@ -55,6 +55,8 @@ definition.authenticator({
                 }
               })
             } else {
+              output.debug("USER NULL", user)
+              output.debug("OLD CREDENTIALS", oldCredentials)
               user = null
               output.change(null, oldCredentials)
               oldCredentials = null

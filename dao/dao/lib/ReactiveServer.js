@@ -9,6 +9,15 @@ class ReactiveServer {
     this.connections = new Map()
     this.lastConnectionId = 0
   }
+  connectionInfo() {
+    return {
+      type: 'reactiveServer',
+      connectionsCount: this.connections.size,
+      lastConnectionId: this.lastConnectionId,
+      settings: this.settings
+    }
+  }
+
   handleConnection(connection) {
     let id = ++this.lastConnectionId
     let reactiveConnection = new ReactiveServerConnection(this, id, connection, this.daoFactory, this.settings)
