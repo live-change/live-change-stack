@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.213",
+    "@live-change/framework": "0.9.213",
     "nodemailer": "^6.7.2"
   },
   "gitHead": "ec89a3220b2b666e7268b1ef96fe63ec30039782"

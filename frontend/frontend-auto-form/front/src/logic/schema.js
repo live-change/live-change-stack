@@ -124,13 +124,14 @@ export function schemaFromDefinition(definition, data, type, appContext = getCur
 
 function extendSchema(schema, data, viewName, serviceName, appContext) {
   if(!data) return
+  console.log("EXTEND SCHEMA", schema, data)  
   if(Array.isArray(data)) {
     if(!schema.items) {
       schema.items = generateSchema(data, schema, 'items', appContext)
     }
   } else {
     for(const property in data) {
-      const value = data[property]
+      const value = data[property]    
       if(!schema.properties[property]) { /// additional property
         if(property === 'id' || property === 'to') {
           schema.properties.id = {

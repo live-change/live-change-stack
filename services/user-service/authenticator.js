@@ -11,11 +11,15 @@ definition.authenticator({
     console.log('[auth] credentialsObservable start', {
       name: 'user',
       session: credentials.session,
-      ip: credentials.ip
+      ip: credentials.ip,
+      at: new Date().toISOString()
     })
     return app.dao.observable(
       ['database', 'queryObject', app.databaseName, `(${
         async (input, output, { session, authenticatedTableName, userTableName }) => {
+          const queryId = (Math.random()*10000).toFixed(0)
+          const ts = () => new Date().toISOString()
+          output.debug(ts(), queryId, 'STARTING USER AUTH QUERY', { session })
           const authenticatedTable = input.table(authenticatedTableName)
           const userTable = input.table(userTableName)
           let user = null
@@ -23,10 +27,10 @@ definition.authenticator({
           let userObserver = null
           let oldCredentials = null
           await authenticatedTable.object(session).onChange(async (authData, oldAuthData) => {
-            output.debug("NEW USER AUTH", authData, "FROM", oldAuthData)
             const newUser = authData ? authData.user : null
+            output.debug(ts(), queryId, "AUTH DATA CHANGE TO", authData, "FROM", oldAuthData, "NEW USER", newUser, "OLD USER", user)
             if(newUser === user) return
-            output.debug("USER CHANGE", user, '=>', newUser)
+            output.debug(ts(), queryId, "USER CHANGE", user, '=>', newUser)
             if(user) {
               if(userObject) {
                 await userObject.unobserve(userObserver)
@@ -38,13 +42,14 @@ definition.authenticator({
               user = newUser
               userObject = userTable.object(user)
               const currentUserObject = userObject
+              output.debug(ts(), queryId, "USER ON CHANGE START", { user })
               await userObject.onChange(async (userData, oldUserData) => {
                 const newCredentials = userData ? {
                   id: user,
                   user,
                   roles: userData.roles
                 } : null
-                output.debug("NEW CREDENTIALS", newCredentials)
+                //output.debug("NEW CREDENTIALS", newCredentials)
                 output.change(newCredentials, oldCredentials)
                 oldCredentials = newCredentials
               }).then(observer => {
@@ -54,14 +59,16 @@ definition.authenticator({
                   currentUserObject.unobserve(observer)
                 }
               })
+              output.debug(ts(), queryId, "USER ON CHANGE END", { user })
             } else {
-              output.debug("USER NULL", user)
-              output.debug("OLD CREDENTIALS", oldCredentials)
+              //output.debug("USER NULL", user)
+              //output.debug("OLD CREDENTIALS", oldCredentials)
               user = null
               output.change(null, oldCredentials)
               oldCredentials = null
             }
           })
+          output.debug(ts(), queryId, "AUTH DATA ON CHANGE END", { session })
         }
       })`, {
         session: credentials.session,
