@@ -32,7 +32,7 @@ class ApiServer {
     const startedAt = Date.now()
     let credentials = { ...credentialsp, ip, roles: [], ignoreRemoteViews: false }
     const allAuthenticators = collectAllAuthenticators(this.config, this.config.app)
-    const prepareCount = allAuthenticators.filter(a => a.prepareCredentials).length
+/*     const prepareCount = allAuthenticators.filter(a => a.prepareCredentials).length
     const observableCount = allAuthenticators.filter(a => a.credentialsObservable).length
 
     console.log('[auth] ApiServer daoFactory start', {
@@ -42,7 +42,7 @@ class ApiServer {
       prepareCount,
       observableCount,
       authenticators: allAuthenticators.map(a => authenticatorLabel(a))
-    })
+    }) */
 
     const prepareStartedAt = Date.now()
     await runPrepareCredentials(allAuthenticators, credentials, this.config)
@@ -75,12 +75,12 @@ class ApiServer {
     }
 
     if(isAuthDebug()) {
-      console.log('[auth] ApiServer daoFactory ready', {
+      /* console.log('[auth] ApiServer daoFactory ready', {
         connectionId,
         session: credentials.session,
         ip,
         elapsedMs: Date.now() - startedAt
-      })
+      }) */
     }
 
     return dao

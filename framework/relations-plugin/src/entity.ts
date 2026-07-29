@@ -44,7 +44,7 @@ export default function(service, app) {
       model.indexes = {}
     }
 
-    const writeableProperties = modelProperties || config.writeableProperties
+    const writeableProperties = config.writeableProperties ?? modelProperties
     //console.log("PPP", others)
     const objectType = service.name + '_' + modelName
 

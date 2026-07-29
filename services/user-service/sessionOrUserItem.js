@@ -26,7 +26,7 @@ definition.processor(function(service, app) {
       }
 
       const config = model.sessionOrUserItem
-      const writeableProperties = modelProperties || config.writableProperties
+      const writeableProperties = config.writableProperties ?? modelProperties
       const objectType = service.name + '_' + modelName
 
       //console.log("USER ITEM", model)

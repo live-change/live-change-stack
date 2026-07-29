@@ -23,7 +23,7 @@ definition.processor(function(service, app) {
       }
 
       const config = model.userProperty
-      const writeableProperties = modelProperties || config.writableProperties
+      const writeableProperties = config.writableProperties ?? modelProperties
       const objectType = service.name + '_' + modelName
 
       if(model.propertyOf) throw new Error("model " + modelName + " already have owner")

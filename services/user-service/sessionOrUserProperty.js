@@ -34,7 +34,7 @@ definition.processor(function(service, app) {
       }
 
       const config = model.sessionOrUserProperty
-      const writeableProperties = modelProperties || config.writeableProperties
+      const writeableProperties = config.writeableProperties ?? modelProperties
       const objectType = service.name + '_' + modelName
 
       if(model.propertyOf) throw new Error("model " + modelName + " already have owner")
@@ -74,7 +74,7 @@ definition.processor(function(service, app) {
           }
           const sessionProperties = await modelRuntime().rangeGet(range)
           for(const sessionProperty of sessionProperties) {
-            console.log("SESSION PROPERTY FOUND!", sessionProperty, "MERGE =", config.merge)
+            //console.log("SESSION PROPERTY FOUND!", sessionProperty, "MERGE =", config.merge)
 
             const extendedIdentifiers = {}
             for(const key of extendedWith) {

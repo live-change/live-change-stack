@@ -166,7 +166,7 @@ export function processModelsAnyAnnotation<PreparedConfig extends AnyRelationCon
           ))
         })
 
-        const writeableProperties = modelProperties || config.writeableProperties
+        const writeableProperties = config.writeableProperties ?? modelProperties
         const others = otherPropertyNames.map(other => other.slice(0, 1).toUpperCase() + other.slice(1))
         const joinedOthersPropertyName = otherPropertyNames[0] +
             (others.length > 1 ? ('And' + others.slice(1).join('And')) : '')

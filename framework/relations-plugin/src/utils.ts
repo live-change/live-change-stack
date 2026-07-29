@@ -213,7 +213,7 @@ export function processModelsAnnotation<PreparedConfig extends RelationConfig>
         const what = (Array.isArray(config.what) ? config.what : [config.what])
         const others = what.map(other => other.getTypeName ? other.getTypeName() : (other.name ? other.name : other))
 
-        const writeableProperties = modelProperties || config.writeableProperties
+        const writeableProperties = config.writeableProperties ?? modelProperties
         const otherNames = what.map(other => other.name ? other.name : other)
         const otherPropertyNames = config.propertyNames
           ?? otherNames.map(name => name[0].toLowerCase() + name.slice(1))

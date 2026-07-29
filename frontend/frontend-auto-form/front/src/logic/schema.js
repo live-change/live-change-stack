@@ -62,6 +62,9 @@ export function schemaFromDefinition(definition, data, type, appContext = getCur
       description: definition.description,
     }      
   } else if(type === 'Array') {
+    if(!definition.items && !definition.of) {
+      throw new Error("Items or of is required for array")
+    }
     const schema = {
       type: 'array',        
       items: schemaFromDefinition(definition.items ?? definition.of, data?.[0], undefined, appContext),
@@ -100,7 +103,10 @@ export function schemaFromDefinition(definition, data, type, appContext = getCur
     const api = useApi(appContext)
     const [serviceName, modelName] = definition.type.split('_')
     const serviceDefinition = api.getServiceDefinition(serviceName)
-    const modelDefinition = serviceDefinition?.models?.[modelName]      
+    const modelDefinition = serviceDefinition?.models?.[modelName]
+    if(!modelDefinition) {
+      throw new Error(`Model ${modelName} not found in service ${serviceName}`)
+    }
     if(!data || typeof data === 'string') {
       return {
         type: 'string',
@@ -123,15 +129,16 @@ export function schemaFromDefinition(definition, data, type, appContext = getCur
 }
 
 function extendSchema(schema, data, viewName, serviceName, appContext) {
-  if(!data) return
-  console.log("EXTEND SCHEMA", schema, data)  
+  if(!data || typeof data !== 'object') return
+  if(schema?.type === 'string' || schema?.type === 'number' || schema?.type === 'boolean') return
+  if(!schema.properties && !Array.isArray(data)) return
   if(Array.isArray(data)) {
     if(!schema.items) {
       schema.items = generateSchema(data, schema, 'items', appContext)
     }
   } else {
     for(const property in data) {
-      const value = data[property]    
+      const value = data[property]
       if(!schema.properties[property]) { /// additional property
         if(property === 'id' || property === 'to') {
           schema.properties.id = {
