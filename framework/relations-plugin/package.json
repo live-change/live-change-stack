@@ -23,6 +23,7 @@
   "type": "module",
   "dependencies": {
     "@live-change/framework": "^0.9.217",
+    "p-queue": "^8.1.1",
     "pluralize": "^8.0.0"
   },
   "devDependencies": {

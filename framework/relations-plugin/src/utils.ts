@@ -4,6 +4,7 @@ import { allCombinations } from "./combinations.js"
 import {
   registerParentDeleteTriggers, registerParentCopyTriggers
 } from "./changeTriggers.js"
+import { enqueueDeleteCascade, sleep } from "./deleteCascadeQueue.js"
 import {
   PropertyDefinition, ViewDefinition,  EventDefinition,
   ServiceDefinitionSpecification,
@@ -116,6 +117,19 @@ export function defineIndexes(model: ModelDefinitionSpecificationWithAccessContr
   }
 }
 
+export interface DeleteCascadeConfig {
+  /** When true, parent-delete trigger returns immediately and cascade runs in the background. Default false. */
+  async?: boolean
+  /** Bucket size for iterating children when firing change triggers. Default 32. */
+  bucketSize?: number
+  /** Bucket size for DeleteByOwner physical deletes. Default 128. */
+  deleteBucketSize?: number
+  /** Delay in ms after each bucket. Default 0. */
+  delayMs?: number
+  /** When false, skip per-child fireChangeTriggers and only emit DeleteByOwner. Default true. */
+  fireChildChangeTriggers?: boolean
+}
+
 export interface RelationConfig {
   what: string | string[]
   propertyNames?: string[]
@@ -128,6 +142,7 @@ export interface RelationConfig {
   customDeleteTrigger?: boolean, /// TODO: check if this is needed
   customParentCopyTrigger?: boolean /// TODO: check if this is needed
   hashId?: boolean | 'hybrid'
+  deleteCascade?: DeleteCascadeConfig
   mcp?: import('@live-change/framework').McpSpecification | boolean
   readMcp?: import('@live-change/framework').McpSpecification | boolean
   writeMcp?: import('@live-change/framework').McpSpecification | boolean
@@ -285,6 +300,8 @@ export function defineDeleteByOwnerEvents(config: RelationConfig, context: Relat
     service, modelRuntime, joinedOthersPropertyName, modelName, modelPropertyName, otherPropertyNames,
     sameIdAsParent
   } = context
+  const bucketSize = config.deleteCascade?.deleteBucketSize ?? 128
+  const delayMs = config.deleteCascade?.delayMs ?? 0
   for(const propertyName of otherPropertyNames) {
     const eventName = modelName + 'DeleteByOwner'
     service.events[eventName] = new EventDefinition({
@@ -298,21 +315,25 @@ export function defineDeleteByOwnerEvents(config: RelationConfig, context: Relat
       async execute({owner}) {
         const runtime = modelRuntime()
         if(sameIdAsParent) {
-          return await runtime.delete(owner)
-        } 
+          return await enqueueDeleteCascade(() => runtime.delete(owner))
+        }
         const tableName = runtime.tableName
         const prefix = JSON.stringify(owner)
         const indexName = tableName + '_by' + propertyName[0].toUpperCase() + propertyName.slice(1)
-        const bucketSize = 128
-        let bucket
+        let bucket = null
+        let gt = ''
         do {
-          bucket = await app.dao.get(['database', 'indexRange', app.databaseName, indexName, {
-            gte: prefix + ':',
+          const range: Record<string, unknown> = {
             lte: prefix + '_\xFF\xFF\xFF\xFF',
             limit: bucketSize
-          }])
-          const deletePromises = bucket.map(({to}) => runtime.delete(to))
-          await Promise.all(deletePromises)
+          }
+          if(gt) range.gt = gt
+          else range.gte = prefix + ':'
+          bucket = await app.dao.get(['database', 'indexRange', app.databaseName, indexName, range])
+          if(bucket.length === 0) break
+          gt = bucket[bucket.length - 1].id
+          await Promise.all(bucket.map(({to}) => enqueueDeleteCascade(() => runtime.delete(to))))
+          if(delayMs) await sleep(delayMs)
         } while (bucket.length === bucketSize)
       }
     })

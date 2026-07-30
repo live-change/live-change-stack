@@ -237,7 +237,7 @@ definition.trigger({
 
 1. **Sync state on change** — use `changeSvc_Model` to keep derived data up to date (e.g. cron-service cancels/recreates timers when a Schedule changes).
 2. **Initialize on create** — use `createSvc_Model` to set up related resources (e.g. create a balance when billing is created).
-3. **Cascade delete** — the relations plugin handles this automatically for parent-child relations, but you can listen to `deleteSvc_Model` for custom cleanup.
+3. **Cascade delete** — the relations plugin handles this automatically for parent-child relations. On the **child** relation you can set `deleteCascade: { async: true }` so the parent delete command does not wait for descendants (background cascade via a global PQueue). See [Cascade delete](/server/09-01-propertyOf-itemOf.html#cascade-delete-deletecascade). You can still listen to `deleteSvc_Model` for custom cleanup.
 4. **User deletion** — `deleteUser_User` and `deleteObject` are fired explicitly by user-service when a user deletes their account.
 
 ## Event-sourcing: how triggers change data

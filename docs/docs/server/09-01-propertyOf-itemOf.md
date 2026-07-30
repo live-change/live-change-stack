@@ -109,9 +109,62 @@ model.itemOf = {
   updateAccessControl?: AccessControlSettings,
   deleteAccessControl?: AccessControlSettings,
   copyAccessControl?: AccessControlSettings,
-  readAllAccessControl?: AccessControlSettings
+  readAllAccessControl?: AccessControlSettings,
+  /// Cascade delete when parent is removed — see [Cascade delete](#cascade-delete-deletecascade)
+  deleteCascade?: {
+    async?: boolean,
+    bucketSize?: number,
+    deleteBucketSize?: number,
+    delayMs?: number,
+    fireChildChangeTriggers?: boolean
+  }
 }
 ```
+
+## Cascade delete (`deleteCascade`)
+
+When a parent is deleted, the relations plugin cascades to children via parent-delete triggers and `*DeleteByOwner` events. Configure this on the **child** relation (`itemOf` / `propertyOf` / `*Any`), not on the parent model.
+
+```javascript
+const Scan = definition.model({
+  name: 'Scan',
+  itemOf: {
+    what: Scanner,
+    deleteCascade: {
+      async: true,                     // fire-and-forget — parent delete command returns quickly
+      bucketSize: 32,                  // children iteration (default 32)
+      deleteBucketSize: 128,           // physical deletes in DeleteByOwner (default 128)
+      delayMs: 0                       // optional pause after each bucket
+      // fireChildChangeTriggers: false  // only for leaves — otherwise grandchildren are not cascaded
+    }
+  }
+})
+```
+
+| Field | Default | Meaning |
+|---|---|---|
+| `async` | `false` | If `true`, the parent-delete trigger returns immediately and cascade runs in the background (independent of the parent command `waitForEvents`) |
+| `bucketSize` | `32` | Page size when iterating children for change triggers |
+| `deleteBucketSize` | `128` | Page size when deleting rows in `*DeleteByOwner` |
+| `delayMs` | `0` | Delay after each bucket |
+| `fireChildChangeTriggers` | `true` | If `false`, only emit `*DeleteByOwner` (no per-child `fireChangeTriggers`). Use `false` only for **leaf** models — `runtime.delete` does not cascade further |
+
+Physical `runtime.delete` calls always go through a **global process-wide PQueue** (default concurrency `4`) so large cascades do not spam the database.
+
+```javascript
+import {
+  getDeleteCascadeQueue,
+  configureDeleteCascadeQueue,
+  enqueueDeleteCascade
+} from '@live-change/relations-plugin'
+
+configureDeleteCascadeQueue({ concurrency: 2 })
+
+// Optional: add your own cleanup jobs to the same queue
+await enqueueDeleteCascade(async () => { /* ... */ })
+```
+
+See also [Relations generated artifacts](/server/09-00-relations-generated-artifacts.html) for the public queue API.
 
 ## Example: itemOf (TopUp per Billing)
 

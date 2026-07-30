@@ -49,7 +49,9 @@ export type {
   PropertyOfConfig, ItemOfConfig, PropertyOfAnyConfig, ItemOfAnyConfig,
   RelatedToConfig, RelatedToAnyConfig, BoundToConfig, BoundToAnyConfig, 
   SaveAuthorConfig,
-} 
+}
+
+export type { DeleteCascadeConfig, RelationConfig } from './utils.js' 
 
 export { mcpFields, resolveMcpConfig, normalizeMcp } from './mcpUtils.js'
 export type { McpConfigSource, McpOperationKind } from './mcpUtils.js'
@@ -65,4 +67,10 @@ export type {
   ChangeTriggerFn,
   FireChangeTriggersParams
 } from './fireChangeTriggers.js'
+
+export {
+  getDeleteCascadeQueue,
+  configureDeleteCascadeQueue,
+  enqueueDeleteCascade
+} from './deleteCascadeQueue.js'
 

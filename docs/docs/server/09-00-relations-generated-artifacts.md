@@ -102,9 +102,26 @@ await emit({ type: 'MyModelCreated', ... })
 
 Also exported: `extractObjectData`, `extractIdentifiers` (from `dataUtils.js`).
 
+### Public API: delete cascade queue
+
+Global PQueue used for cascade physical deletes (`runtime.delete` in `*DeleteByOwner`) and available for app extensions:
+
+```javascript
+import {
+  getDeleteCascadeQueue,
+  configureDeleteCascadeQueue,
+  enqueueDeleteCascade
+} from '@live-change/relations-plugin'
+
+configureDeleteCascadeQueue({ concurrency: 4 }) // default is 4
+await enqueueDeleteCascade(() => someCleanup())
+```
+
+Child relations can set `deleteCascade` on `itemOf` / `propertyOf` / `*Any` — see [propertyOf and itemOf — Cascade delete](/server/09-01-propertyOf-itemOf.html#cascade-delete-deletecascade).
+
 **Not** part of the public API: `registerParentDeleteTriggers`, `registerParentCopyTriggers` (internal cascade registration).
 
-Implementation: `framework/relations-plugin/src/fireChangeTriggers.ts` → `changeTriggers.js`.
+Implementation: `framework/relations-plugin/src/fireChangeTriggers.ts` → `changeTriggers.js`; queue: `deleteCascadeQueue.ts`.
 
 ## Name collisions
 

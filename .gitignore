@@ -11,3 +11,4 @@ yarn.lock
 *.iml
 .history
 .vscode
+package-lock.json
