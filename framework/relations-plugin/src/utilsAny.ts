@@ -278,7 +278,7 @@ export function defineDeleteByOwnerEvents(config, context) {
         let bucket
         let gt = ''
         do {
-          const range = {
+          const range: Record<string, unknown> = {
             lte: prefix + '_\xFF\xFF\xFF\xFF',
             limit: bucketSize
           }

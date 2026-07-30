@@ -4,10 +4,18 @@ const DEFAULT_CONCURRENCY = 4
 
 let queue = new PQueue({ concurrency: DEFAULT_CONCURRENCY })
 
+/**
+ * Portable return type — do not infer PQueue (TS2742 via p-queue PriorityQueue).
+ * @returns {any}
+ */
 export function getDeleteCascadeQueue() {
   return queue
 }
 
+/**
+ * @param {{ concurrency?: number }} [options]
+ * @returns {any}
+ */
 export function configureDeleteCascadeQueue(options = {}) {
   const concurrency = options.concurrency ?? DEFAULT_CONCURRENCY
   if(queue.concurrency !== concurrency) {
@@ -20,11 +28,17 @@ export function configureDeleteCascadeQueue(options = {}) {
  * Enqueue work on the global delete-cascade queue.
  * Use for runtime.delete and any custom cascade-related jobs.
  * Does not swallow errors — callers that fire-and-forget should .catch().
+ * @param {() => any} fn
+ * @returns {Promise<any>}
  */
 export function enqueueDeleteCascade(fn) {
   return queue.add(fn)
 }
 
+/**
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
 export function sleep(ms) {
   if(!ms || ms <= 0) return Promise.resolve()
   return new Promise(resolve => setTimeout(resolve, ms))
