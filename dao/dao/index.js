@@ -99,4 +99,8 @@ import { errorToJSON } from "./lib/utils.js"
 rd.errorToJSON = errorToJSON
 export { errorToJSON }
 
+import createLoopbackDao from "./lib/createLoopbackDao.js"
+rd.createLoopbackDao = createLoopbackDao
+export { createLoopbackDao }
+
 export default rd

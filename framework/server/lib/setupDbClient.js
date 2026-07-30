@@ -1,7 +1,6 @@
 import ReactiveDao from "@live-change/dao"
 import * as ReactiveDaoWebsocket from "@live-change/dao-websocket"
 import setupDbServer from "./setupDbServer.js"
-import createLoopbackDao from "./createLoopbackDao.js"
 import App from "@live-change/framework"
 
 function setupDbClient(argv, env = process.env) {

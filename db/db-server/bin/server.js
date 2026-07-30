@@ -11,9 +11,9 @@ import yargs from 'yargs'
 import { fileURLToPath } from 'url'
 
 import {
-  SsrServer,
-  createLoopbackDao
+  SsrServer
 } from "@live-change/server"
+import { createLoopbackDao } from "@live-change/dao"
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Promise Rejection',
