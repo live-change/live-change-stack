@@ -248,6 +248,15 @@ If an index is a union/projection over multiple peer tables (no single natural o
 - Use service-level `definition.index(...)` (prefer a dedicated `indexes.js` file).
 - Keep `model.indexes` for indexes semantically owned by one model.
 
+### ChangeStream joins (cross / groupExisting)
+
+When an index row depends on **two** tables or on a relation index plus a related model field (e.g. assignment who + task status):
+
+- **Do** use `cross(...).map(...).to(output)` or `groupExisting(...).map(...).to(output)`.
+- **Do not** join with nested `range.onChange` / dual hand-rolled `onChange` fan-out — `range.onChange` registers a lasting observer, leaks, and leaves stale rows.
+
+For steps and templates see skill `live-change-backend-indexes-changestream` and docs `11-indexes-and-foreign-models.md` (ChangeStream pipe API).
+
 ### Function index serialization constraint
 
 Function indexes (both `definition.index({ function })` and model `indexes: { name: { function } }`) are **serialized via `toString()`** and run on a remote server. All helpers, mappers, and variables used inside the function **must be defined inside the function body**. References to outer scope (module-level functions, imports, closures) will be `undefined` at runtime.

@@ -20,9 +20,13 @@ For each new model, decide how it relates to the rest of the domain:
 - **`userItem`** – the object belongs to the signed-in user (e.g. user’s device).
 - **`itemOf`** – a list of children belonging to a parent model (e.g. device connections).
 - **`propertyOf`** – a single state object with the same id as the parent (e.g. cursor state).
+- **`entity`** – global / role-scoped; do **not** pair with manual **`owner`** when **`userItem`** fits “my rows” for `client.user`.
+- **`sessionOrUserItem`** / **`sessionOrUserProperty`** – owner is Session **or** User (no **`sessionItem`** annotation).
 - **no relation** – for global data or other special cases.
 
 Choose one main relation; other associations can be plain fields + indexes.
+
+Decision guide: **`docs/docs/server/09-07-owner-selection-useritem.md`**.
 
 ## Step 2 – Define `properties` clearly
 
@@ -62,6 +66,56 @@ properties: {
 }
 ```
 
+## Property validation (validators)
+
+- Built-in validator names live in `@live-change/framework/lib/utils/validators.js`. Do not invent names that are not there unless you also register them.
+- Common patterns: `validation: ['nonEmpty']`, strings with `{ name: 'maxLength', length: 80 }`, numbers with `['number', 'integer', { name: 'min', value: 0 }, { name: 'max', value: 999 }]`.
+- **Service-defined validators:** `definition.validator('email', factory)` (see `email-service/index.js` + `emailValidator.js`). Validators are merged across services at startup — avoid name clashes.
+- **Frontend:** assign client factories to `api.validators` under the same keys (e.g. `clientEmailValidator.js` in `App.vue`). Match server error codes for i18n.
+- Full reference: server manual page **Property validation** (`docs/docs/server/05a-validation.md`).
+
+## Generated CRUD / views (relations-plugin)
+
+- The plugin registers **views, actions, events, and triggers** automatically from `entity`, `itemOf`, `propertyOf`, `*Any`, `relatedTo`, `boundTo`, and `saveAuthor` (see `live-change-stack/framework/relations-plugin/src/index.ts`).
+- **`propertyOf` + `writeAccessControl`:** generates **`set` + modelName**, **`update` + modelName**, **`setOrUpdate` + modelName** (e.g. `setBrowserViewportCalibration`), plus a default **object** read view named like the model with the first letter lowercased (e.g. **`browserViewportCalibration`**). Do not re-declare those names manually.
+- **Do not** define a manual `definition.view` / `action` / `event` / `trigger` with the **same name** as a generated one (e.g. `entity` on model `Auction` already creates view **`auction`**).
+- Use **`describe`** before adding custom surface API: `fnm exec -- node server/start.js describe --service myService --output yaml`.
+- Technical inventory: **`docs/docs/server/09-00-relations-generated-artifacts.md`** (built docs path `/server/09-00-relations-generated-artifacts.html`).
+
+### Polymorphic `*Any` — pass owner type in triggers/actions
+
+Models with **`propertyOfAny`**, **`itemOfAny`**, or **`boundToAny`** get **`ownerType`** + **`owner`** (or the configured dimension names, e.g. `botType` + `bot`). Auto-generated actions and triggers — **`setOrUpdate` + Model**, **`create` + Model**, etc. — **require the owner-type field in the payload**.
+
+If you omit it or pass a placeholder, validation fails with **`empty`** on the type field, or the upsert cannot find the row (`not_found`).
+
+```js
+// ✅ Trigger from bot-runner task — include botType (not only bot id)
+await triggerService(
+  { service: 'bots', type: 'setOrUpdateBotAdapterDefinition' },
+  {
+    botType: 'google',
+    bot: botId,
+  }
+)
+
+// ❌ Missing botType — relations-plugin validation rejects ownerType as empty
+await triggerService(
+  { service: 'bots', type: 'setOrUpdateBotAdapterDefinition' },
+  { bot: botId }
+)
+```
+
+When wiring **change triggers** that call generated `*Any` actions, mirror the same fields you would send from a client form or `describe` output. Check **`fnm exec -- node server/start.js describe --service … --output yaml`** for exact property names per model.
+
+## Owner selection — `userItem`, `entity`, domain relations
+
+- **Per logged-in user** (“my X”, owner = `client.user`): use **`userItem`** (or **`userProperty`** for one row per user) with **`use: [ userService, … ]`**. Do **not** hand-declare **`user`** or **`owner`** — user-service injects **`user`** + **`byUser`**. Configure access with **`userReadAccess`**, **`userCreateAccess`**, **`userUpdateAccess`**, **`userDeleteAccess`**, **`userWriteAccess`** (see `live-change-stack/services/user-service/userItem.js`).
+- **Session or User** (guest drafts → sign-in transfer): **`sessionOrUserItem`** / **`sessionOrUserProperty`**. There is no **`sessionItem`** annotation.
+- **Global / role-scoped** catalog entities without a natural “this row belongs to client.user”: often **`entity`**.
+- **Child of a domain parent model** (invoice lines, comments, …): **`itemOf`** / **`propertyOf`** / `*Any`.
+- Typical **`userItem`** API names: **`myUser` + plural(Model)** (range), **`createMyUser` + Model**, **`updateMyUser` + Model**. Relations-plugin may also expose **`create` + Model** from underlying **`itemOf`** — prefer **`createMyUser*`** for consistent **`user`** stamping.
+- Full guide: **`docs/docs/server/09-07-owner-selection-useritem.md`**.
+
 ## Step 2b – Relation arity rules (critical)
 
 Treat arity on two levels:
@@ -86,13 +140,13 @@ Guardrail:
 ### `userItem`
 
 1. Add a `userItem` block inside the model definition.
-2. Set roles for read/write and list which fields can be written.
+2. Set **`userReadAccess`**, **`userCreateAccess`**, **`userUpdateAccess`**, **`userDeleteAccess`**, or **`userWriteAccess`** (see `live-change-stack/services/user-service/userItem.js`). Do **not** declare **`user`** in `properties`.
 
 ```js
 userItem: {
-  readAccessControl: { roles: ['owner', 'admin'] },
-  writeAccessControl: { roles: ['owner', 'admin'] },
-  writeableProperties: ['name']
+  userReadAccess: (params, context) => !!context.client?.user,
+  userWriteAccess: (params, context) => !!context.client?.user,
+  writableProperties: ['name']
 }
 ```
 
@@ -185,6 +239,62 @@ indexes: {
 ```
 
 3. Use these indexes in views/actions, via `indexObjectGet` / `indexRangeGet`.
+
+### Step 5b – Use `function` indexes for derived keys
+
+Use a `function` index when key parts are not stored directly as properties (for example `yearMonth` derived from `date`).
+
+Key rules:
+
+- Keep index entries stable and deterministic.
+- Build composite keys as serialized parts joined with `:` and append `_' + id`.
+- Emit `{ id, to }` objects so `to` points to the source model id.
+- Prefer `table.map(mapper).to(output)` over manual `onChange(...output.change...)`.
+- `map()` drops `null` results automatically, so mapper can stay clean.
+
+Example:
+
+```js
+indexes: {
+  byBankAccountAndMonthAndDate: {
+    function: async (input, output, { tableName }) => {
+      const table = await input.table(tableName)
+      const mapper = obj => ({
+        id: [
+          obj.bankAccount,
+          obj.date?.slice(0, 7),   // YYYY-MM month bucket
+          obj.date
+        ].map(v => JSON.stringify(v)).join(':') + '_' + obj.id,
+        to: obj.id
+      })
+      await table.map(mapper).to(output)
+    },
+    parameters: {
+      tableName: definition.name + '_BankTransaction'
+    }
+  }
+}
+```
+
+This format matches how property indexes are serialized internally and works well with range-prefix filtering in views.
+
+> **IMPORTANT — serialization constraint:** Function indexes are serialized via `toString()` and executed remotely. Module-scope imports and closures are `undefined` at runtime. Use either:
+> - **inline helpers** inside the index function body (simple logic), or
+> - **eval helper bundle**: a self-contained factory function passed as a string in `parameters` and restored with `eval(helperBundle)()` (same pattern as `dbAccessFunctions` in `access-control-service/access.js`).
+
+```js
+export function myDomainDbHelpers() {
+  function deriveMonth(obj) { return obj.date?.slice(0, 7) }
+  return { deriveMonth }
+}
+
+// parameters: { domainHelpers: `(${myDomainDbHelpers})`, tableName: '...' }
+// inside index: const { deriveMonth } = eval(domainHelpers)()
+```
+
+### Step 5c – Advanced joins (`cross` / `groupExisting`)
+
+If the index denormalizes fields from a **related** model (or joins two streams), do **not** hand-roll dual `onChange` / nested `range.onChange`. Use ChangeStream pipes — see skill **`live-change-backend-indexes-changestream`** and docs `11-indexes-and-foreign-models.md` (ChangeStream pipe API).
 
 ## Step 6 – Set access control on relations
 

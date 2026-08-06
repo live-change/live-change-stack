@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.221",
+    "@live-change/framework": "0.9.221",
     "p-queue": "^8.1.1",
     "pluralize": "^8.0.0"
   },

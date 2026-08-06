@@ -82,6 +82,31 @@ properties: {
 - Use **`describe`** before adding custom surface API: `fnm exec -- node server/start.js describe --service myService --output yaml`.
 - Technical inventory: **`docs/docs/server/09-00-relations-generated-artifacts.md`** (built docs path `/server/09-00-relations-generated-artifacts.html`).
 
+### Polymorphic `*Any` — pass owner type in triggers/actions
+
+Models with **`propertyOfAny`**, **`itemOfAny`**, or **`boundToAny`** get **`ownerType`** + **`owner`** (or the configured dimension names, e.g. `botType` + `bot`). Auto-generated actions and triggers — **`setOrUpdate` + Model**, **`create` + Model**, etc. — **require the owner-type field in the payload**.
+
+If you omit it or pass a placeholder, validation fails with **`empty`** on the type field, or the upsert cannot find the row (`not_found`).
+
+```js
+// ✅ Trigger from bot-runner task — include botType (not only bot id)
+await triggerService(
+  { service: 'bots', type: 'setOrUpdateBotAdapterDefinition' },
+  {
+    botType: 'google',
+    bot: botId,
+  }
+)
+
+// ❌ Missing botType — relations-plugin validation rejects ownerType as empty
+await triggerService(
+  { service: 'bots', type: 'setOrUpdateBotAdapterDefinition' },
+  { bot: botId }
+)
+```
+
+When wiring **change triggers** that call generated `*Any` actions, mirror the same fields you would send from a client form or `describe` output. Check **`fnm exec -- node server/start.js describe --service … --output yaml`** for exact property names per model.
+
 ## Owner selection — `userItem`, `entity`, domain relations
 
 - **Per logged-in user** (“my X”, owner = `client.user`): use **`userItem`** (or **`userProperty`** for one row per user) with **`use: [ userService, … ]`**. Do **not** hand-declare **`user`** or **`owner`** — user-service injects **`user`** + **`byUser`**. Configure access with **`userReadAccess`**, **`userCreateAccess`**, **`userUpdateAccess`**, **`userDeleteAccess`**, **`userWriteAccess`** (see `live-change-stack/services/user-service/userItem.js`).
@@ -266,6 +291,10 @@ export function myDomainDbHelpers() {
 // parameters: { domainHelpers: `(${myDomainDbHelpers})`, tableName: '...' }
 // inside index: const { deriveMonth } = eval(domainHelpers)()
 ```
+
+### Step 5c – Advanced joins (`cross` / `groupExisting`)
+
+If the index denormalizes fields from a **related** model (or joins two streams), do **not** hand-roll dual `onChange` / nested `range.onChange`. Use ChangeStream pipes — see skill **`live-change-backend-indexes-changestream`** and docs `11-indexes-and-foreign-models.md` (ChangeStream pipe API).
 
 ## Step 6 – Set access control on relations
 

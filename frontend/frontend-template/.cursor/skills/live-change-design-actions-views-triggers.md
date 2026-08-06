@@ -85,7 +85,57 @@ definition.action({
    - use model paths (`Model.path`, `Model.rangePath`, `Model.sortedIndexRangePath`, `Model.indexObjectPath`)
    - use `...App.rangeProperties` + `App.extractRange(props)` for range views
 
-### Step 2a – RangeViewer/rangeBuckets compatibility
+### Step 2a – Prefix-aware range filtering
+
+When you query an index with `Model.sortedIndexRangePath(indexName, keyPrefix, range)`, remember:
+
+- `keyPrefix` is matched first (for example `[bankAccount]` or `[bankAccount, month]`).
+- `range.gt/gte/lt/lte` is applied to full serialized index keys, not to a single field.
+- If you need optional narrowing, pass a dedicated filter parameter (`month`, `state`, etc.) and keep range for cursor pagination.
+
+```js
+definition.view({
+  name: 'bankTransactionsByBankAccountAndDate',
+  properties: {
+    bankAccount: { type: String },
+    month: { type: String },
+    ...App.rangeProperties
+  },
+  returns: { type: Array, of: { type: Object } },
+  async daoPath({ bankAccount, month, ...props }) {
+    const range = App.extractRange(props)
+    if(month) {
+      const prefix = [bankAccount, month].map(v => JSON.stringify(v)).join(':')
+      return BankTransaction.rangePath(App.utils.prefixRange(range, prefix, prefix + ':'))
+    }
+    return BankTransaction.sortedIndexRangePath('byBankAccountAndDate', [bankAccount], range)
+  }
+})
+```
+
+If filtering by month is a frequent query, prefer a dedicated index like `byBankAccountAndMonthAndDate` and query it with:
+
+```js
+BankTransaction.sortedIndexRangePath('byBankAccountAndMonthAndDate', [bankAccount, month], range)
+```
+
+For that index, prefer this function-index style:
+
+```js
+function: async (input, output, { tableName }) => {
+  const table = await input.table(tableName)
+  const mapper = obj => ({
+    id: [obj.bankAccount, obj.date?.slice(0, 7), obj.date]
+      .map(v => JSON.stringify(v)).join(':') + '_' + obj.id,
+    to: obj.id
+  })
+  await table.map(mapper).to(output)
+}
+```
+
+`map()` automatically filters out `null`, so you can keep mapper logic concise.
+
+### Step 2b – RangeViewer/rangeBuckets compatibility
 
 When a view is consumed by `RangeViewer` or `rangeBuckets`:
 
@@ -105,7 +155,7 @@ Preferred filtering strategy:
 2. use `App.utils.prefixRange` only as backend fallback,
 3. keep string min/max hacks as last resort.
 
-### Step 2b – Standalone indexes for union/equal sources
+### Step 2c – Standalone indexes for union/equal sources
 
 When index rows are built from multiple equal tables (union-like flow), do not force the index into one model definition.
 
@@ -115,17 +165,26 @@ Use `definition.index(...)` at service level (typically `indexes.js`) when:
 - source tables are peer entities (no natural single owner model),
 - index is a projection layer for cross-table reads.
 
+> **IMPORTANT — serialization constraint:** Index functions are serialized via `toString()` and executed remotely. Module-scope imports are `undefined` at runtime. For shared domain logic across indexes, use the **eval helper bundle** pattern: self-contained factory → string in `parameters` → `eval(bundle)()` inside the index (see `access-control-service/access.js` → `dbAccessFunctions`).
+
 Example:
 
 ```js
 definition.index({
   name: 'Urls',
   function: async (input, output) => {
+    const mapRedirect = obj => obj && ({
+      id: /* composed key */, to: obj.target
+    })
+    const mapCanonical = obj => obj && ({
+      id: /* composed key */, to: obj.target
+    })
+
     await input.table('url_Redirect').onChange((obj, oldObj) =>
-      output.change(obj && mapRedirect(obj), oldObj && mapRedirect(oldObj))
+      output.change(mapRedirect(obj), mapRedirect(oldObj))
     )
     await input.table('url_Canonical').onChange((obj, oldObj) =>
-      output.change(obj && mapCanonical(obj), oldObj && mapCanonical(oldObj))
+      output.change(mapCanonical(obj), mapCanonical(oldObj))
     )
   }
 })
@@ -135,6 +194,8 @@ Decision rule:
 
 - model-local index -> `definition.model({ indexes: ... })`,
 - union/peer-source index -> standalone `definition.index(...)` in `indexes.js`.
+
+For **joins** (denormalize related model fields, table×index), use ChangeStream `cross` / `groupExisting` — skill **`live-change-backend-indexes-changestream`**, not nested `range.onChange`.
 
 ### Example: `daoPath` (preferred, DAO-backed)
 
@@ -283,8 +344,8 @@ definition.trigger({
     oldData: { type: Object }
   },
   async execute({ object, data, oldData }, { client, triggerService }) {
-    if (!data || oldData) return   // only on create (data present, no oldData)
-    if (!client?.user) return
+    if(!data || oldData) return   // only on create (data present, no oldData)
+    if(!client?.user) return
 
     await triggerService({ service: 'accessControl', type: 'accessControl_setAccess' }, {
       objectType: 'myService_MyModel',   // format: serviceName_ModelName
@@ -316,6 +377,172 @@ Key points:
 - For anonymous users: `sessionOrUser: client.session`
 - Use `Promise.all([...])` when setting both public and per-user access
 
+## Step 6 – Pending + resolve pattern for async results
+
+Use this pattern when an action initiates a command that will be completed by an external process (device, worker, etc.) and you want the action to wait with a timeout.
+
+### Steps
+
+1. Implement a helper module with an in-memory `Map`:
+   - `waitForCommand(id, timeoutMs)` – returns a Promise,
+   - `resolveCommand(id, result)` – resolves and clears timeout.
+2. In the main action:
+   - create a record with `status: 'pending'`,
+   - call `waitForCommand(id, timeoutMs)` and `return` the result.
+3. In the reporting action:
+   - update the record (`status: 'completed'`, `result`),
+   - call `resolveCommand(id, result)`.
+
+Helper sketch:
+
+```js
+const pendingCommands = new Map()
+
+export function waitForCommand(commandId, timeoutMs = 115000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      pendingCommands.delete(commandId)
+      reject(new Error('timeout'))
+    }, timeoutMs)
+    pendingCommands.set(commandId, { resolve, reject, timer })
+  })
+}
+
+export function resolveCommand(commandId, result) {
+  const pending = pendingCommands.get(commandId)
+  if(pending) {
+    clearTimeout(pending.timer)
+    pendingCommands.delete(commandId)
+    pending.resolve(result)
+  }
+}
+```
+
+## Step 7 – Enable access-control indexes for accessible objects
+
+When you need **global listings of objects accessible to a user** (not limited to direct `userItem` relations), enable the indexed access-control pipeline and use the specialized views it exposes.
+
+### 7.1 Enable `indexed: true` in app config
+
+In the app server config, set `indexed: true` on the access-control service:
+
+```js
+// app.server/app.config.js
+{
+  name: 'accessControl',
+  createSessionOnUpdate: true,
+  contactTypes,
+  indexed: true
+}
+```
+
+This activates the index pipeline and views defined in `services/access-control-service/indexes.js`.
+
+### 7.2 Index pipeline overview
+
+When `indexed: true` is enabled, the following indexes are created:
+
+1. `childByParent` – objects by parent (`parentType`, `parent`, `childType`, `child`, `property`)
+2. `parentByChild` – parents by child (reverse of `childByParent`)
+3. `pathsByAncestorDescendantRelation` – all ancestor/descendant paths in the object tree
+4. `expandedRoles` – propagates roles assigned on ancestors down to all descendants
+5. `roleByOwnerAndObject` – deduplicated roles per `(sessionOrUser, object, role)`
+6. `objectByOwnerAndRole` – objects by `(sessionOrUser, role, objectType, object)`
+7. `ownerByObjectAndRole` – owners by `(objectType, object, role, sessionOrUser)`
+
+These are maintained automatically based on:
+
+- `Access` records (per-user roles),
+- `PublicAccess` records (public roles),
+- parent relations registered via the relations plugin.
+
+### 7.3 Self-service views (current user)
+
+The following views do **not** need explicit `sessionOrUser` parameters – they infer the current user or session from `client`:
+
+- `myAccessibleObjects({ objectType?, ...range })`
+- `myAccessibleObjectsCount({ objectType?, ...range })`
+- `myAccessibleObjectsByRole({ role, objectType?, ...range })`
+- `myAccessibleObjectsByRoleCount({ role, objectType?, ...range })`
+
+Use them for:
+
+- “all companies I can access” (`objectType: 'company_Company'`),
+- “all projects where I am owner” (`role: 'owner'`, `objectType: 'project_Project'`),
+- dashboards listing entities across services.
+
+On the frontend, the typical pattern is:
+
+```js
+const accessibleObjectsPath = computed(() =>
+  client.value.user
+    ? path.accessControl.myAccessibleObjects({
+        objectType: 'myService_MyModel'
+      }).with(accessible =>
+        path.myService.myModel({ myModel: accessible.object }).bind('entity')
+      )
+    : null
+)
+```
+
+### 7.4 Admin views (explicit user / session)
+
+For administrative tools you can use:
+
+- `accessibleObjects({ sessionOrUserType, sessionOrUser, objectType?, ...range })`
+- `accessibleObjectsCount(...)`
+- `accessibleObjectsByRole({ sessionOrUserType, sessionOrUser, role, objectType?, ...range })`
+- `accessibleObjectsByRoleCount(...)`
+- `objectAccesses({ objectType, object, role?, ...range })`
+- `objectAccessesCount(...)`
+
+These views:
+
+- require the caller to have `admin` role (checked in access-control service),
+- allow you to inspect which objects a user can access, and who can access a given object.
+
+Example DAO path for a list view:
+
+```js
+definition.view({
+  name: 'userProjectAccesses',
+  properties: {
+    user: { type: String }
+  },
+  daoPath({ user }, { client, service }) {
+    if(!client.roles.includes('admin')) throw new Error('forbidden')
+    const range = App.extractRange({})
+    return accessibleObjectsByRoleIndex.rangePath(
+      ['user_User', user, 'member', 'project_Project'],
+      range
+    )
+  }
+})
+```
+
+### 7.5 Non-indexed views that are always available
+
+Even without `indexed: true`, `services/access-control-service/view.js` defines views that work on the raw `Access` and invitation tables:
+
+- `myAccessesByObjectType({ objectType, ...range })`
+- `myAccessesByObjectTypeAndRole({ objectType, role, ...range })`
+- `myAccessInvitationsByObjectType({ objectType, ...range })`
+- `myAccessInvitationsByObjectTypeAndRole({ objectType, role, ...range })`
+
+Use them when:
+
+- you do not want to enable the full indexed pipeline yet,
+- you mostly need **per-type** lists, not cross-type queries,
+- you are building invitation lists or paginated access-based lists (`RangeViewer`).
+
+These views are the backend counterparts of the frontend patterns described in `live-change-frontend-accessible-objects`.
+
+Remember:
+
+- `objectType` format is always `serviceName_ModelName`,
+- for anonymous users use `sessionOrUserType: 'session_Session'` and `sessionOrUser: client.session`,
+- enable `indexed: true` when you need efficient “all my objects” listings and admin inspection tools across large datasets.
+```
 ## Step 6 – Pending + resolve pattern for async results
 
 Use this pattern when an action initiates a command that will be completed by an external process (device, worker, etc.) and you want the action to wait with a timeout.

@@ -4,18 +4,16 @@ globs: **/services/**/*.js, **/server/**/*.js, server/**/*.js
 alwaysApply: false
 ---
 
-# LiveChange backend – modele i relacje
 
-## Ogólne zasady
+# LiveChange backend – models and relations (Claude Code)
 
-- Modele zapisuj w plikach domenowych (`<domain>.js`) importowanych w `index.js` serwisu.
-- Dbaj o czytelność definicji – **właściwości wieloliniowo**, z jasnymi polami `type`, `default`, `validation` itd.
-- Tam, gdzie to możliwe, używaj relacji (`userItem`, `itemOf`, `propertyOf`, `foreignModel`) zamiast ręcznego klepania CRUD i widoków.
+Use these rules when defining or editing models and relations in LiveChange services.
 
-## Styl definicji `properties`
+## General style for models
 
-- Każde pole opisane wieloliniowo, jedna rzecz na linię.
-- Unikaj upychania typu i walidacji w jednej linii, jeśli zmniejsza to czytelność.
+- Put models in domain files imported from the service `index.js`.
+- Prefer **readable, multi-line** property definitions.
+- Avoid squeezing `type`, `default`, `validation` into a single unreadable line.
 
 ```js
 properties: {
@@ -36,56 +34,28 @@ properties: {
 }
 ```
 
-## Walidacja (`validation` / `softValidation`)
+## Relation arity (critical)
 
-- Używaj **tylko nazw walidatorów**, które istnieją w frameworku albo zostały zarejestrowane w serwisie — pełna lista i przykłady: dokumentacja **Property validation** (`live-change-stack/docs/docs/server/05a-validation.md`, po zbudowaniu docs: `/server/05a-validation.html`).
-- Wbudowane m.in.: `nonEmpty`, `minLength`, `maxLength`, `number`, `integer`, **`min`** / **`max`** z obiektem `{ name: 'min', value: 0 }` (granica liczbowa; często łańcuch `['number', { name: 'min', value: 0 }]`).
-- Własny walidator w serwisie: `definition.validator('email', fabryka)` (np. wzorzec z `email-service` / `password-authentication-service`). Nazwy są kopiowane między serwisami przy starcie — unikaj kolizji (pierwsza rejestracja wygrywa).
-- Na froncie dopnij ten sam klucz na `api.validators` (np. import `clientEmailValidator.js` i `api.validators.email = emailValidator` w `App.vue`), żeby `validateData` / auto-form znały reguły po stronie klienta.
+Always separate:
 
-## Relations plugin — co jest generowane (kolizje nazw)
+- **annotation arity** — can the annotation be a list of configs
+- **parent tuple arity** — can one config include multiple parents/dimensions
 
-- `@live-change/relations-plugin` sam rejestruje **widoki, akcje, eventy i triggery** według wzorców z `live-change-stack/framework/relations-plugin/src/` (kolejność procesorów: `entity` → `propertyOf`/`itemOf` → … → `saveAuthor`).
-- **Nie** dodawaj ręcznie `definition.view` / `action` / `event` / `trigger` o nazwie już zajętej przez generator (np. model `Auction` z `entity` ma już widok **`auction`** — duplikat kończy się błędem `view auction already exists`).
-- Przed własną rejestracją: `fnm exec -- node server/start.js describe --service … --output yaml`.
-- Inwentarz techniczny: `live-change-stack/docs/docs/server/09-00-relations-generated-artifacts.md` (po buildzie docs: `/server/09-00-relations-generated-artifacts.html`).
-
-## Wybór właściciela — `userItem` vs `entity` vs relacje domenowe
-
-- Lista „moich” rzeczy dla **zalogowanego User** (tworzenie/edycja pod **`client.user`**) → **`userItem`** lub **`userProperty`** + **`use: [ userService, … ]`**. **Nie** dodawaj ręcznego pola **`user`** ani **`owner`** — dodaje je procesor (`live-change-stack/services/user-service/userItem.js`). Dostęp ustawiaj przez **`userReadAccess`**, **`userCreateAccess`**, **`userUpdateAccess`**, **`userDeleteAccess`**, **`userWriteAccess`** — nie wymyślaj nazwy „ownerAccessControl”.
-- Owner **Session lub User** (draft przed loginem → transfer) → **`sessionOrUserItem`** / **`sessionOrUserProperty`** (09-04). Nie ma adnotacji **`sessionItem`**.
-- Encja **globalna** / dostęp głównie po **rolach**, bez naturalnego „ten rekord = ten user” → często **`entity`** (05-models).
-- Dziecko **konkretnego modelu domenowego** (nie „User jako kontener konta”) → **`itemOf`** / **`propertyOf`** / `*Any` (09-01 / 09-02).
-- Wygenerowane nazwy dla **`userItem`** (np. `myUserAuctions`, `createMyUserAuction`): patrz **`09-07-owner-selection-useritem.md`** w docs serwera.
-
-Procesory **user-service** (m.in. `userProperty`, `userItem`, `sessionOrUserProperty`, `sessionOrUserItem`) ustawiają na modelu mapę **`ownerCrud`** obok ewentualnego globalnego **`crud`** — w `describe` widać oba bloki. Na froncie formularze „moje” buduje się przez **`editorData({ crudSource: 'ownerCrud', … })`**; gdy widok **`my…`** nie bierze parametrów ścieżki, często **`identifiers: {}`** + **`allowReadWithoutIdentifiers: true`**. Szczegóły: `live-change-stack/docs/docs/frontend/09-api-frontend-auto-form.md`.
-
-## Arity relacji (bardzo ważne)
-
-Rozróżniaj dwa poziomy:
-
-- **arity adnotacji** — czy można podać listę konfiguracji
-- **arity rodziców w konfiguracji** — `what: [A, B]` lub `to: ['owner', 'topic']`
-
-| Relacja | Arity adnotacji | Arity rodziców |
+| Relation | Annotation arity | Parent tuple arity |
 |---|---|---|
-| `propertyOf` | jedna konfiguracja | `what` może być pojedyncze lub tablica modeli |
-| `itemOf` | jedna konfiguracja | `what` może być pojedyncze lub tablica modeli |
-| `boundTo` | jedna konfiguracja | `what` może być pojedyncze lub tablica modeli |
-| `relatedTo` | jedna lub wiele konfiguracji | w każdej konfiguracji `what` może być pojedyncze lub tablica modeli |
-| `propertyOfAny` | jedna konfiguracja | `to` może mieć jedną lub wiele nazw |
-| `itemOfAny` | jedna konfiguracja | `to` może mieć jedną lub wiele nazw |
-| `boundToAny` | jedna konfiguracja | `to` może mieć jedną lub wiele nazw |
-| `relatedToAny` | jedna lub wiele konfiguracji | w każdej konfiguracji `to` może mieć jedną lub wiele nazw |
+| `propertyOf`, `itemOf`, `boundTo` | single config only | `what` can be one model or `[A, B, ...]` |
+| `relatedTo` | single config or config list | each config uses `what` with one model or `[A, B, ...]` |
+| `propertyOfAny`, `itemOfAny`, `boundToAny` | single config only | `to` can contain one or many names |
+| `relatedToAny` | single config or config list | each config uses `to` with one or many names |
 
-Przykłady:
+Guardrail:
 
-- poprawnie: `propertyOf: { what: [A, B] }`
-- niepoprawnie: `propertyOf: [configA, configB]`
+- valid: `propertyOf: { what: [A, B] }`
+- invalid: `propertyOf: [configA, configB]`
 
-## `userItem` – zasób należący do użytkownika
+## `userItem` – belongs to the signed-in user
 
-Używaj, gdy model należy do zalogowanego użytkownika (preferuj **userItem** zamiast **`entity`** + ręcznego **`owner`** dla typowych list „moich” obiektów — szczegóły: `docs/docs/server/09-07-owner-selection-useritem.md`).
+Use when the model is owned by the currently signed-in user.
 
 ```js
 definition.model({
@@ -103,14 +73,14 @@ definition.model({
 })
 ```
 
-Skutek:
+This automatically generates:
 
-- automatyczne widoki typu „moje X”,
-- automatyczne akcje create/update/delete dla właściciela.
+- “my X” views (list + single),
+- basic CRUD actions for the owner.
 
-## `itemOf` – dziecko należy do rodzica
+## `itemOf` – child belongs to a parent
 
-Używaj, gdy model jest listą elementów powiązanych z innym modelem.
+Use for lists of items related to another model.
 
 ```js
 definition.model({
@@ -132,14 +102,14 @@ definition.model({
 })
 ```
 
-Zasady:
+Guidelines:
 
-- rodzic `what` to model zadeklarowany wcześniej w tym lub innym serwisie,
-- relacja generuje standardowe widoki/akcje dla listy i elementów.
+- `what` must point to a model defined earlier (in this or another service).
+- The relation generates standard views/actions for listing and managing children.
 
-## `propertyOf` – właściwość z ID równym rodzicowi
+## `propertyOf` – one-to-one property, id = parent id
 
-Używaj, gdy model przechowuje „stan” jednego obiektu (ID dziecka = ID rodzica).
+Use when the model represents a single “state object” for a parent, with the same id.
 
 ```js
 definition.model({
@@ -156,25 +126,23 @@ definition.model({
 })
 ```
 
-Skutek:
+Effects:
 
-- prosty dostęp: `DeviceCursorState.get(deviceId)`,
-- bez potrzeby dodatkowych indeksów po polu `device`.
+- You can fetch it directly as `DeviceCursorState.get(deviceId)`.
+- No need for an extra `device` field or index for lookups by parent id.
 
-## `propertyOf` dla wielu modeli (relacja 1:1 do każdego z nich)
+## `propertyOf` with multiple parents (1:1 link to each)
 
-W niektórych domenach model jest „łącznikiem 1:1” pomiędzy rekordami (np. faktura ↔ kontrahent w roli dostawcy/klienta).
-Najczęściej są to 2 modele, ale `propertyOf` może wskazywać na **dowolnie wiele** modeli (np. relacja łącząca 3+ encje), jeśli taka jest semantyka domeny.
+Sometimes a model is a dedicated 1:1 link between entities (for example: invoice ↔ contractor in a specific role).
+Most commonly this is 1–2 parents, but `what` can point to **any number** of parent models (including 3+), if that matches the domain semantics.
 
-Wtedy:
+In that case:
 
-- **nie** przechowuj „drugiej strony” jako zwykłego `contractorId` (albo ogólnie `someId`) w `properties`
-- **nie** dodawaj ręcznie pól `...Id` w modelu relacyjnym, jeśli to ma być relacja – to utrudnia generatorowi CRUD/relacji poprawne wnioskowanie o powiązaniach
-- zamiast tego zdefiniuj jedną relację `propertyOf` z `what: [ModelA, ModelB, ...]`
+- avoid storing the “other side id” as a plain `contractorId` / `someId` property
+- avoid adding ad-hoc `...Id` fields in a relation model just to “join” entities — CRUD/relations generators won’t treat it as a relation
+- instead, define the relation as `propertyOf` to **each** parent so the relations/CRUD generator understands the model is connecting entities.
 
-To jest istotne, bo generator CRUD/relacji rozumie wtedy, że encja jest powiązaniem pomiędzy dwiema encjami, a nie „zwykłym obiektem z polem id”.
-
-Przykład (schematycznie):
+Example (schematic):
 
 ```js
 const CostInvoice = definition.foreignModel('invoice', 'CostInvoice')
@@ -183,7 +151,7 @@ const Contractor = definition.foreignModel('company', 'Contractor')
 definition.model({
   name: 'Supplier',
   properties: {
-    // dodatkowe pola relacji (opcjonalnie)
+    // optional extra fields
   },
   propertyOf: {
     what: [CostInvoice, Contractor]
@@ -191,9 +159,9 @@ definition.model({
 })
 ```
 
-## `foreignModel` – relacja do modelu z innego serwisu
+## `foreignModel` – parent from another service
 
-Używaj, gdy `itemOf`/`propertyOf` ma wskazywać na model spoza aktualnego serwisu.
+Use when `itemOf` / `propertyOf` refers to a model from a different service.
 
 ```js
 const Device = definition.foreignModel('deviceManager', 'Device')
@@ -210,77 +178,57 @@ definition.model({
 })
 ```
 
-Zasady:
+Notes:
 
-- pierwszy argument to nazwa serwisu,
-- drugi to nazwa modelu w tamtym serwisie.
+- First argument is the service name.
+- Second is the model name in that service.
 
-## Automatycznie dodawane pola z relacji
+## Auto-added fields from relations
 
-Relacje automatycznie dodają **pola identyfikatorów** i **indeksy** do modelu. **Nie definiuj ich ponownie** w `properties`.
+Relations automatically add **identifier fields** and **indexes** to the model. Do **not** re-declare these in `properties`.
 
-**Konwencja nazw:** nazwa pola = nazwa modelu rodzica z małą pierwszą literą (`Device` → `device`, `CostInvoice` → `costInvoice`).
+**Naming convention:** field name = parent model name with first letter lowercased (`Device` → `device`, `CostInvoice` → `costInvoice`).
 
-| Relacja | Dodane pole/pola | Dodane indeksy |
+| Relation | Field(s) auto-added | Index(es) auto-added |
 |---|---|---|
 | `itemOf: { what: Device }` | `device` | `byDevice` |
 | `propertyOf: { what: Device }` | `device` | `byDevice` |
 | `userItem` | `user` | `byUser` |
 | `userProperty` | `user` | `byUser` |
 | `sessionOrUserProperty` | `sessionOrUserType`, `sessionOrUser` | `bySessionOrUser` (hash) |
-| `sessionOrUserProperty: { extendedWith: ['object'] }` | + `objectType`, `object` | indeksy złożone |
-| `propertyOfAny: { ownerTypes: [...] }` | `ownerType`, `owner` | `byOwner` (hash) |
+| `sessionOrUserProperty: { extendedWith: ['object'] }` | + `objectType`, `object` | composite indexes |
+| `propertyOfAny: { to: ['owner'] }` | `ownerType`, `owner` | `byOwner` (hash) |
 | `boundTo: { what: Device }` | `device` | `byDevice` (hash) |
 
-Dla relacji z wieloma rodzicami (np. `propertyOf: { what: [A, B] }`) tworzone są wszystkie kombinacje indeksów (`byA`, `byB`, `byAAndB`).
-
-## `propertyOfAny` — typy rodzica (`{name}Types`)
-
-`propertyOfAny` jest relacją polimorficzną. Lista dozwolonych typów jest podawana w polach `{name}Types`, gdzie `{name}` pochodzi z `to`.
-
-- Gdy `to` nie jest podane, domyślnie jest `['owner']`, więc użyj `ownerTypes`.
-- Gdy `to: ['invoice']`, użyj `invoiceTypes`.
+For multi-parent relations (e.g. `propertyOf: { what: [A, B] }`), all index combinations are created (`byA`, `byB`, `byAAndB`).
 
 ```js
-// domyślnie to: ['owner']
-propertyOfAny: {
-  ownerTypes: ['invoice_CostInvoice', 'invoice_IncomeInvoice']
-}
-
-// jawnie
-propertyOfAny: {
-  to: ['invoice'],
-  invoiceTypes: ['invoice_CostInvoice', 'invoice_IncomeInvoice']
-}
-```
-
-```js
-// ✅ Poprawnie — definiuj tylko SWOJE pola
+// ✅ Correct — only define YOUR fields
 definition.model({
   name: 'Connection',
   properties: {
-    status: { type: String }  // 'device' NIE jest tutaj — dodaje go itemOf
+    status: { type: String }  // 'device' is NOT here — auto-added by itemOf
   },
-  itemOf: { what: Device }   // automatycznie dodaje pole 'device' + indeks 'byDevice'
+  itemOf: { what: Device }   // adds 'device' field + 'byDevice' index
 })
 
-// ❌ Źle — redundantne pole
+// ❌ Wrong — redundant field
 definition.model({
   name: 'Connection',
   properties: {
-    device: { type: String },  // ❌ już dodane przez itemOf
+    device: { type: String },  // ❌ already added by itemOf
     status: { type: String }
   },
   itemOf: { what: Device }
 })
 ```
 
-Użyj `node server/start.js describe --service myService --model MyModel --output yaml` żeby zobaczyć wszystkie pola łącznie z automatycznie dodanymi.
+Use `fnm exec -- node server/start.js describe --service myService --model MyModel --output yaml` (from the app root, with fnm — see `live-change-node-toolchain-fnm`) to see all fields including auto-added ones.
 
-## Indeksy
+## Indexes
 
-- Definiuj indeksy jawnie w modelu, gdy będziesz często wyszukiwać po danym polu lub kombinacji pól.
-- Nazwy indeksów powinny być opisowe, bez skrótów trudnych do odczytania.
+- Declare indexes explicitly when you frequently query by a field or field combination.
+- Use descriptive names like `bySessionKey`, `byDeviceAndStatus`, etc.
 
 ```js
 indexes: {
@@ -293,50 +241,113 @@ indexes: {
 }
 ```
 
-Poza serwisem indeks bywa widoczny pod nazwą z prefiksem serwisu, np. `myService_Model_byDeviceAndStatus`.
+In other services, the same index may be visible with a prefixed name such as `myService_Model_byDeviceAndStatus`.
 
-### Kiedy indeks ma być poza modelem
+### When index should be outside a model
 
-Jeśli indeks jest unią/projekcją danych z kilku równorzędnych tabel (bez jednego naturalnego właściciela), nie wciskaj go do `model.indexes`.
+If an index is a union/projection over multiple peer tables (no single natural owner model), do not force it into `model.indexes`.
 
-- Użyj serwisowego `definition.index(...)`, najlepiej w osobnym `indexes.js`.
-- To dotyczy szczególnie indeksów łączących różne typy encji w jeden strumień odczytu.
+- Use service-level `definition.index(...)` (prefer a dedicated `indexes.js` file).
+- Keep `model.indexes` for indexes semantically owned by one model.
 
-### Indeksy `function` dla pól wyliczanych
+### ChangeStream joins (cross / groupExisting)
 
-Gdy część klucza indeksu nie istnieje jako zwykłe pole modelu (np. `month` wyliczany z `date`), użyj indeksu `function` zamiast `property`.
+When an index row depends on **two** tables or on a relation index plus a related model field (e.g. assignment who + task status):
 
-Zasady:
+- **Do** use `cross(...).map(...).to(output)` or `groupExisting(...).map(...).to(output)`.
+- **Do not** join with nested `range.onChange` / dual hand-rolled `onChange` fan-out — `range.onChange` registers a lasting observer, leaks, and leaves stale rows.
 
-- buduj stabilny klucz jako `JSON.stringify(part1):JSON.stringify(part2):... + '_' + id`
-- zwracaj obiekty `{ id, to }`, gdzie `to` wskazuje źródłowy rekord
-- preferuj `table.map(mapper).to(output)` zamiast ręcznego `.onChange(...output.change...)`
-- `map()` automatycznie odfiltrowuje `null`, więc mapper może zwracać tylko docelowy obiekt
+For steps and templates see skill `live-change-backend-indexes-changestream` and docs `11-indexes-and-foreign-models.md` (ChangeStream pipe API).
+
+### Function index serialization constraint
+
+Function indexes (both `definition.index({ function })` and model `indexes: { name: { function } }`) are **serialized via `toString()`** and run on a remote server. All helpers, mappers, and variables used inside the function **must be defined inside the function body**. References to outer scope (module-level functions, imports, closures) will be `undefined` at runtime.
 
 ```js
+// ❌ BROKEN — mapper defined outside, invisible after serialization
+const mapper = obj => ({
+  id: obj.name + '_' + obj.id, to: obj.id
+})
 indexes: {
-  byBankAccountAndMonthAndDate: {
+  byDerived: {
     function: async (input, output, { tableName }) => {
       const table = await input.table(tableName)
+      await table.map(mapper).to(output)  // mapper is undefined!
+    }
+  }
+}
+
+// ✅ CORRECT — mapper defined inside the function
+indexes: {
+  byDerived: {
+    function: async (input, output, { tableName }) => {
       const mapper = obj => ({
-        id: [
-          obj.bankAccount,
-          obj.date?.slice(0, 7),
-          obj.date
-        ].map(v => JSON.stringify(v)).join(':') + '_' + obj.id,
-        to: obj.id
+        id: obj.name + '_' + obj.id, to: obj.id
       })
+      const table = await input.table(tableName)
       await table.map(mapper).to(output)
+    }
+  }
+}
+
+// ✅ CORRECT — shared domain logic via eval helper bundle parameter
+// (same pattern as access-control-service/access.js → dbAccessFunctions)
+export function myDomainDbHelpers() {
+  function deriveMonth(obj) { return obj.date?.slice(0, 7) }
+  return { deriveMonth }
+}
+
+indexes: {
+  byMonth: {
+    function: async (input, output, { tableName, domainHelpers }) => {
+      const { deriveMonth } = eval(domainHelpers)()
+      const table = await input.table(tableName)
+      await table.map(obj => {
+        const month = deriveMonth(obj)
+        if (!month) return null
+        return { id: month + '_' + obj.id, to: obj.id }
+      }).to(output)
     },
     parameters: {
-      tableName: definition.name + '_BankTransaction'
+      tableName: definition.name + '_MyModel',
+      domainHelpers: `(${myDomainDbHelpers})`
     }
   }
 }
 ```
 
-## Access control na relacjach
+## Access control on relations
 
-- Zawsze ustawiaj `readAccessControl` i `writeAccessControl` na relacjach (`userItem`, `itemOf`, `propertyOf`), zamiast polegać na domyślnym zachowaniu.
-- Traktuj to jako część modelu, nie dodatek na końcu.
+- Always set `readAccessControl` and `writeAccessControl` on relations (`userItem`, `itemOf`, `propertyOf`).
+- Treat access control as part of the model definition, not an afterthought.
+
+## `entity` models – granting access on creation
+
+Models with `entity` and `writeAccessControl` / `readAccessControl` check roles on every CRUD operation, but do **not** auto-grant roles to the creator. You must add a change trigger to grant the creator `'owner'` (or other roles) after creation:
+
+```js
+definition.trigger({
+  name: 'changeMyService_MyModel',
+  properties: {
+    object: { type: MyModel, validation: ['nonEmpty'] },
+    data: { type: Object },
+    oldData: { type: Object }
+  },
+  async execute({ object, data, oldData }, { client, triggerService }) {
+    if (!data || oldData) return   // only on create
+    if (!client?.user) return
+
+    await triggerService({ service: 'accessControl', type: 'accessControl_setAccess' }, {
+      objectType: 'myService_MyModel',
+      object,
+      roles: ['owner'],
+      sessionOrUserType: 'user_User',
+      sessionOrUser: client.user,
+      lastUpdate: new Date()
+    })
+  }
+})
+```
+
+Without this trigger, the creator cannot read or modify their own object. The `objectType` format is `serviceName_ModelName`.
 

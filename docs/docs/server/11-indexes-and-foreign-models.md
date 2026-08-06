@@ -170,6 +170,129 @@ Rules:
 
 For frequent queries by month, this approach is usually better than trying to force month filtering into `range.gt/gte/lt/lte` on an index that is prefixed differently.
 
+## ChangeStream pipe API
+
+Index functions receive live readers (`input.table(...)`, `input.index(...)`) that implement **ChangeStream**. You pipe changes with methods such as `map`, `filter`, `cross`, and finish with `.to(output)`. Prefer these pipes over hand-rolled dual `onChange` joins.
+
+Source of truth: `@live-change/db` → `ChangeStream.js`. Helper `prefixRange(prefix)` lives in `utils.js` and is available in index/query script context.
+
+### Methods
+
+| Method | Role |
+|--------|------|
+| `map(func)` | Transform each `obj` / `oldObj`; skip when both map to falsy |
+| `filter(func)` | Keep only objects where `func` is truthy |
+| `indexBy(func)` | Emit `{ id, to }` from a key-parts list returned by `func` |
+| `to(output)` | Forward changes to the index output (`output.change`) |
+| `cross(other, selfToRange, otherToRange, bucketSize?)` | Reactive join of this stream with `other` |
+| `groupExisting(objectToRange)` | Keep one row per range prefix while at least one member exists |
+| `readInBuckets(cb, bucketSize?)` | Paginated one-shot `rangeGet` (used inside `cross`; rarely call yourself) |
+
+### `cross` — reactive join
+
+`cross` observes **both** sides. On a change on `this`, `selfToRange(obj|oldObj)` returns either:
+
+- a **string** id → `other.objectGet(id)`, or
+- a **range** `{ gte, lte, ... }` → `other.range(...).readInBuckets`
+
+Symmetrically, on a change on `other`, `otherToRange` is applied against `this`. Emitted values are tuples `[self, other]` / `[oldSelf, oldOther]`.
+
+Use `cross` whenever an index row depends on **two** tables or on a relation index plus a parent table (for example assignment + task status). Do **not** fan out with nested `range.onChange` inside another `onChange` — that **registers a lasting observer**, leaks, and leaves stale index rows when the related object changes.
+
+#### Example: table × index (scope-service)
+
+```javascript
+// Source: live-change-stack/services/scope-service/indexes.js (simplified)
+
+const scopesTable = await input.table(scopesTableName)
+const pathsIndex = await input.index(pathsByAncestorDescendantRelationIndexName)
+
+const crossed = scopesTable.cross(pathsIndex,
+  scope => ({
+    gte: `"${scope.id}":`,
+    lte: `"${scope.id}"_\xFF\xFF\xFF\xFF`
+  }),
+  path => path.ancestorType, // string → objectGet on scopes
+  128
+)
+
+await crossed.map(async ([scope, path]) => {
+  if (!(scope && path)) return null
+  // ... build denormalized { id, ... }
+  return { id, /* ... */ }
+}).to(output)
+```
+
+#### Example: relation index × parent table + `prefixRange`
+
+When reverse lookup is via a property index (`byPhrase`, `byTask`, …), put that **index on the left** and the parent **table on the right**:
+
+```javascript
+// Pattern from golem product-analysis phraseResearch (simplified)
+
+const byPhrase = await input.index(byPhraseIndexName)
+const phrases = await input.table(phraseTableName)
+
+await byPhrase.cross(
+  phrases,
+  entry => entry.id.split(':')[0],           // string → phrase objectGet
+  phrase => prefixRange(JSON.stringify(phrase.id))  // range on byPhrase
+).map(async ([entry, phrase]) => {
+  if (!entry || !phrase) return null
+  return { id: /* ... */, to: entry.to }
+}).to(output)
+```
+
+`prefixRange(prefix)` returns `{ gte: prefix + ':', lte: prefix + '\uffff' }` — prefer it when the reverse key is a single serialized id prefix.
+
+### `groupExisting` — distinct while any member exists
+
+Maps each change to a range (string becomes `{ gte, lte: range + '\xFF…' }`), counts with `limit: 1`, and emits present or removed accordingly. Use to collapse multi-row indexes to one row per prefix (unique names, unique scope pairs).
+
+```javascript
+// Source: live-change-stack/services/scope-service/indexes.js (simplified)
+
+await (await input.index(pathByObjectAndScopeIndexName))
+  .groupExisting(async ({ id }) => id.slice(0, id.lastIndexOf('_') + 1))
+  .map(({ id, objectType, object, scopeType, scope }) => ({
+    id: id.slice(0, id.lastIndexOf('_')),
+    objectType, object, scopeType, scope
+  }))
+  .to(output)
+```
+
+```javascript
+// Source: live-change-stack/services/task-service/model.js (taskNames)
+
+const index = await input.index(indexName)
+index
+  .groupExisting(async (entry) => entry.id.slice(0, entry.id.indexOf('_') + 1))
+  .map(entry => ({ id: entry.id.slice(1, entry.id.indexOf('_') - 1) }))
+  .to(output)
+```
+
+### When to use `onChange` vs pipes
+
+| Use | Prefer |
+|-----|--------|
+| Single table → derived keys | `table.map(...).to(output)` |
+| Join two tables/indexes | `cross(...).map(...).to(output)` |
+| Distinct / “still has members” | `groupExisting(...).map(...).to(output)` |
+| Union of equal sources (two tables into one index) | Dual `onChange` writing to `output` is OK |
+| Side-effect sync that is not a join | Explicit `onChange` can be OK |
+
+### Anti-pattern (do not do this)
+
+```javascript
+// ❌ Wrong — range.onChange registers a lasting observer on every task change
+await input.table(taskTable).onChange(async (task, oldTask) => {
+  const range = assignIdx.range({ gte: prefix + ':', lte: prefix + '_\xFF\xFF\xFF\xFF' })
+  await range.onChange(async entry => { /* update index rows */ })
+})
+```
+
+Replace with `byTaskIndex.cross(taskTable, …).map(…).to(output)`.
+
 ## Standalone indexes (without a model)
 
 Not every index should live inside `definition.model({ indexes: ... })`.

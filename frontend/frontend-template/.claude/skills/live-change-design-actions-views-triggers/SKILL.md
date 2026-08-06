@@ -195,6 +195,8 @@ Decision rule:
 - model-local index -> `definition.model({ indexes: ... })`,
 - union/peer-source index -> standalone `definition.index(...)` in `indexes.js`.
 
+For **joins** (denormalize related model fields, table×index), use ChangeStream `cross` / `groupExisting` — skill **`live-change-backend-indexes-changestream`**, not nested `range.onChange`.
+
 ### Example: `daoPath` (preferred, DAO-backed)
 
 ```js
