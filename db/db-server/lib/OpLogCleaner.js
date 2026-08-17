@@ -117,7 +117,7 @@ class OpLogCleaner {
     if(this.timer) return
     this.timer = setInterval(() => {
       this.tick('auto').catch(err => {
-        console.error('OpLogCleaner tick failed', err)
+        debug('OpLogCleaner tick failed', err)
         this.setStatus({ lastError: err.message || String(err), message: 'auto tick failed' })
       })
     }, this.intervalMs)
@@ -316,8 +316,10 @@ class OpLogCleaner {
       lastError: null,
       message: `${mode} cleaning`
     })
-    console.info(`[OpLogCleaner] ${mode} start databases=${dbNames.length}`
-      + ` batchSize=${this.batchSize} delayMs=${this.delayMs}`)
+    if(mode === 'startup') {
+      console.info(`[OpLogCleaner] ${mode} start databases=${dbNames.length}`
+        + ` batchSize=${this.batchSize} delayMs=${this.delayMs}`)
+    }
     try {
       let done = 0
       for(const dbName of dbNames) {
@@ -340,11 +342,13 @@ class OpLogCleaner {
         finishedAt: Date.now(),
         message: `${mode} idle`
       })
-      console.info(
-        `[OpLogCleaner] ${mode} done`
-        + ` deleted=${formatCount(this.status.deleted)}`
-        + ` in ${formatDuration(elapsed)}`
-      )
+      if(mode === 'startup') {
+        console.info(
+          `[OpLogCleaner] ${mode} done`
+          + ` deleted=${formatCount(this.status.deleted)}`
+          + ` in ${formatDuration(elapsed)}`
+        )
+      }
     } catch(err) {
       this.setStatus({
         running: false,
@@ -400,7 +404,7 @@ class OpLogCleaner {
       lastError: null,
       message: dbName ? `manual cleaning ${dbName}` : 'manual cleaning all'
     })
-    console.info('[OpLogCleaner] manual start', { dbName, names: names.length, batchSize, maxBatches, delayMs })
+    debug('manual start', { dbName, names: names.length, batchSize, maxBatches, delayMs })
 
     const work = (async () => {
       try {
@@ -420,8 +424,8 @@ class OpLogCleaner {
           finishedAt: Date.now(),
           message: 'manual done'
         })
-        console.info(
-          `[OpLogCleaner] manual done`
+        debug(
+          'manual done'
           + ` deleted=${formatCount(this.status.deleted)}`
           + ` in ${formatDuration(elapsed)}`
         )
@@ -433,7 +437,7 @@ class OpLogCleaner {
           lastError: err.message || String(err),
           message: 'manual failed'
         })
-        console.error('[OpLogCleaner] manual failed', err)
+        debug('manual failed', err)
         throw err
       } finally {
         this.running = false
@@ -484,12 +488,14 @@ class OpLogCleaner {
       estimatedDeletable,
       message: `cleaning ${dbName}`
     })
-    console.info(
-      `[OpLogCleaner] ${mode} db=${dbName}`
-      + ` opLogEntries=~${formatCount(estimatedTotal)}`
-      + ` deletable=~${formatCount(estimatedDeletableDb)}`
-      + ` retentionMs=${retention}`
-    )
+    if(mode === 'startup') {
+      console.info(
+        `[OpLogCleaner] ${mode} db=${dbName}`
+        + ` opLogEntries=~${formatCount(estimatedTotal)}`
+        + ` deletable=~${formatCount(estimatedDeletableDb)}`
+        + ` retentionMs=${retention}`
+      )
+    }
 
     if(mode === 'startup') {
       return this.cleanDatabaseStartup(db, dbName, {
@@ -506,7 +512,6 @@ class OpLogCleaner {
 
     let batches = 0
     let deleted = deletedBeforeDb
-    let lastLogAt = 0
     const recentSamples = [] // { t, deleted }
     recentSamples.push({ t: Date.now(), deleted })
     const clearOptions = { keysOnly: true, writeMarker: true }
@@ -552,21 +557,12 @@ class OpLogCleaner {
         message: `cleaning ${dbName} batch ${batches}`
       })
 
-      if(batchDeleted > 0 && (now - lastLogAt >= PROGRESS_LOG_EVERY_MS || batches === 1)) {
-        lastLogAt = now
-        this.logProgress(mode, this.status)
-      }
-
       if(!stillFullBatches) break
       if(delayMs > 0) await new Promise(resolve => setTimeout(resolve, delayMs))
     }
 
     const dbDeleted = deleted - deletedBeforeDb
-    console.info(
-      `[OpLogCleaner] ${mode} db=${dbName} finished`
-      + ` deleted=${formatCount(dbDeleted)}`
-      + ` batches=${batches}`
-    )
+    debug(`${mode} db=${dbName} finished deleted=${dbDeleted} batches=${batches}`)
     return { skipped: false, batches, deleted: dbDeleted }
   }
 

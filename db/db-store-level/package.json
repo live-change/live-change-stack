@@ -34,5 +34,5 @@
     "@live-change/dao": "^0.9.222",
     "@live-change/flatten-interval-tree": "^0.9.222"
   },
-  "gitHead": "ec89a3220b2b666e7268b1ef96fe63ec30039782"
+  "gitHead": "b513babdf0078deff02ebe43084aa59c592baa14"
 }
