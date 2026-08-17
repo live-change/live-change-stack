@@ -23,6 +23,6 @@
   "dependencies": {
     "@live-change/framework": "^0.9.223"
   },
-  "gitHead": "b513babdf0078deff02ebe43084aa59c592baa14",
+  "gitHead": "bbe8401443d2e2a238362a9e73cd2697ddf2e6e9",
   "type": "module"
 }

@@ -44,6 +44,7 @@
     "serve-static": "^1.16.2",
     "tailwindcss-primeui": "^0.4.0",
     "v-shared-element": "3.1.1",
+    "vite": "^6.1.0",
     "vue": "^3.5.12",
     "vue-router": "^4.5.0",
     "vue3-scroll-border": "0.1.7"
@@ -57,7 +58,6 @@
     "playwright": "=1.50.1",
     "random-profile-generator": "^2.3.0",
     "txtgen": "^3.0.7",
-    "vite": "^6.1.0",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-vue-images": "^0.6.1",
     "webdriverio": "^9.5.1"
@@ -65,5 +65,5 @@
   "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "ISC",
   "description": "",
-  "gitHead": "b513babdf0078deff02ebe43084aa59c592baa14"
+  "gitHead": "bbe8401443d2e2a238362a9e73cd2697ddf2e6e9"
 }
