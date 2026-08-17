@@ -17,8 +17,8 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "0.9.221",
-    "@live-change/user-service": "0.9.221",
+    "@live-change/framework": "^0.9.222",
+    "@live-change/user-service": "^0.9.222",
     "web-push": "^3.6.7"
   },
   "type": "module"
