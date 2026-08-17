@@ -21,6 +21,7 @@ WORKDIR /app
 COPY package.json package.json
 #RUN --mount=type=secret,id=npmrc,target=/root/.npmrc yarn install --verbose --network-timeout 36000000
 RUN --mount=type=cache,id=npmrc,target=/app/node_modules; yarn install --frozen-lockfile --verbose --network-timeout 36000000
+RUN yarn add @live-change/server@$VERSION --network-timeout 36000000
 RUN cd node_modules/@live-change/db-admin/; npm run build
 COPY /bin bin
 COPY /lib lib
