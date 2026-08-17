@@ -1,6 +1,6 @@
 {
   "name": "@live-change/web-service",
-  "version": "0.9.224",
+  "version": "0.9.225",
   "description": "Web Push subscriptions (contact type web) for LiveChange notifications",
   "main": "index.js",
   "scripts": {
@@ -17,8 +17,8 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/framework": "^0.9.224",
-    "@live-change/user-service": "^0.9.224",
+    "@live-change/framework": "^0.9.225",
+    "@live-change/user-service": "^0.9.225",
     "web-push": "^3.6.7"
   },
   "type": "module",
