@@ -1,14 +1,14 @@
 {
   "name": "@live-change/tags-service",
-  "version": "0.9.225",
+  "version": "0.9.226",
   "description": "Reusable tag vocabulary with prefix search",
   "main": "index.js",
   "type": "module",
   "license": "MIT",
   "dependencies": {
-    "@live-change/access-control-service": "^0.9.225",
-    "@live-change/framework": "^0.9.225",
-    "@live-change/relations-plugin": "^0.9.225"
+    "@live-change/access-control-service": "^0.9.226",
+    "@live-change/framework": "^0.9.226",
+    "@live-change/relations-plugin": "^0.9.226"
   },
   "gitHead": "e44dc8b9eefd8b67c40a29b3117781662093c922"
 }
