@@ -1,6 +1,6 @@
 {
   "name": "@live-change/codeceptjs-helper",
-  "version": "0.9.223",
+  "version": "0.9.224",
   "description": "CodeceptJS Helper",
   "main": "index.js",
   "scripts": {
