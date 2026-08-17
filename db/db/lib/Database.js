@@ -8,6 +8,9 @@ import nextTick from 'next-tick'
 
 import ReactiveDao from "@live-change/dao"
 
+import { combineStoreStats, readStoreStat } from './storeStats.js'
+import { clearOpLogStore } from './clearOpLog.js'
+
 import Debug from 'debug'
 const debug = Debug('db')
 
@@ -212,22 +215,28 @@ class Database {
     this.indexes.delete(name)
   }
 
-  async clearOpLogs(lastTimestamp, limit) {
-    let promises = []
-    for(let name in this.config.tables) promises.push((async (name) => {
-      const result = await this.table(name).clearOpLog(lastTimestamp, limit)
-      return { ...result, type: 'table', name }
-    })(name))
-    for(let name in this.config.indexes) promises.push((async (name) => {
-        try {
-          const index = await this.index(name)
-          const result = await index.clearOpLog(lastTimestamp, limit)
-          return { ...result, type: 'index', name }
-        } catch(error) {
-          return { type: 'index', name, count: 0, last: "\xFF\xFF\xFF\xFF" }
-        }
-      })(name))
-    const results = await Promise.all(promises)
+  async clearIndexOpLogByConfig(name, config, lastTimestamp, limit, options = {}) {
+    const index = this.indexes.get(name)
+    if(index) return index.clearOpLog(lastTimestamp, limit, options)
+    const opLog = this.store(config.uid + '.opLog', { ...config, ...config.opLog })
+    return clearOpLogStore(opLog, lastTimestamp, limit, null, options)
+  }
+
+  async clearOpLogs(lastTimestamp, limit, options = {}) {
+    const results = []
+    for(const name in this.config.tables) {
+      const result = await this.table(name).clearOpLog(lastTimestamp, limit, options)
+      results.push({ ...result, type: 'table', name })
+    }
+    for(const name in this.config.indexes) {
+      try {
+        const config = this.config.indexes[name]
+        const result = await this.clearIndexOpLogByConfig(name, config, lastTimestamp, limit, options)
+        results.push({ ...result, type: 'index', name })
+      } catch(error) {
+        results.push({ type: 'index', name, count: 0, last: "\xFF\xFF\xFF\xFF" })
+      }
+    }
     const summary = results.reduce(
         (a, b) => ({ count: a.count + b.count, last: a.last < b.last ? a.last : b.last }),
         { count: 0, last: "\xFF\xFF\xFF\xFF" })
@@ -329,6 +338,77 @@ class Database {
   handleConfigUpdated() {
     this.saveConfig(this.config)
     this.configObservable.set(JSON.parse(JSON.stringify(this.config)))
+  }
+
+  storageStatsForConfig(type, name, config) {
+    const uid = config.uid
+    let combined
+    if(type === 'log') {
+      combined = combineStoreStats(
+        readStoreStat(this.store(uid + '.log', { ...config, ...config.data })),
+        null
+      )
+    } else {
+      combined = combineStoreStats(
+        readStoreStat(this.store(uid + '.data', { ...config, ...config.data })),
+        readStoreStat(this.store(uid + '.opLog', { ...config, ...config.opLog }))
+      )
+    }
+    return {
+      type,
+      name,
+      uid,
+      ...combined
+    }
+  }
+
+  storageStats() {
+    const stores = []
+    for(const name in this.config.tables) {
+      stores.push(this.storageStatsForConfig('table', name, this.config.tables[name]))
+    }
+    for(const name in this.config.indexes) {
+      stores.push(this.storageStatsForConfig('index', name, this.config.indexes[name]))
+    }
+    for(const name in this.config.logs) {
+      stores.push(this.storageStatsForConfig('log', name, this.config.logs[name]))
+    }
+
+    let dataUsedBytes = 0
+    let opLogUsedBytes = 0
+    let storeUsedBytes = 0
+    let entryCount = 0
+    let hasBytes = false
+    let hasEntries = false
+
+    for(const row of stores) {
+      if(row.data && row.data.available) {
+        dataUsedBytes += row.data.usedBytes || 0
+        hasBytes = true
+        if(row.data.entryCount != null) {
+          entryCount += row.data.entryCount
+          hasEntries = true
+        }
+      }
+      if(row.opLog && row.opLog.available) {
+        opLogUsedBytes += row.opLog.usedBytes || 0
+        hasBytes = true
+      }
+      if(row.usedBytes != null) {
+        storeUsedBytes += row.usedBytes
+        hasBytes = true
+      }
+    }
+
+    return {
+      stores,
+      totals: {
+        dataUsedBytes: hasBytes ? dataUsedBytes : null,
+        opLogUsedBytes: hasBytes ? opLogUsedBytes : null,
+        storeUsedBytes: hasBytes ? storeUsedBytes : null,
+        entryCount: hasEntries ? entryCount : null
+      }
+    }
   }
 }
 

@@ -35,6 +35,7 @@
     "services/session-service",
     "services/user-service",
     "services/email-service",
+    "services/web-service",
     "services/message-authentication-service",
     "services/password-authentication-service",
     "services/secret-link-service",

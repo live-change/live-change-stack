@@ -5,6 +5,8 @@ const dbRequests = [
     'clearDatabaseOpLogs',
     'clearTableOpLog',
     'clearIndexOpLog',
+    'updateDatabaseStorage',
+    'runOpLogCleaner',
     'createTable',
     'deleteTable',
     'renameTable',
@@ -53,6 +55,11 @@ const dbViews = [
     'logObject',
     'logRange',
     'logCount',
+    'opLogCleanerStatus',
+    'databaseStorageStats',
+    'tableStorageStats',
+    'indexStorageStats',
+    'logStorageStats',
     'query',
     'queryObject'
 ]

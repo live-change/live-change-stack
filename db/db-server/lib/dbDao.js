@@ -1,5 +1,48 @@
 import ReactiveDao from "@live-change/dao"
 
+function getDatabaseStorageStats(server, dbName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  const stats = db.storageStats()
+  const dbStore = server.databaseStores.get(dbName)
+  const env = dbStore && typeof dbStore.envStat === 'function'
+    ? dbStore.envStat()
+    : { available: false }
+  const wasteBytes = (env.available && env.fileBytes != null && stats.totals.storeUsedBytes != null)
+    ? Math.max(0, env.fileBytes - stats.totals.storeUsedBytes)
+    : null
+  return {
+    env,
+    stores: stats.stores,
+    totals: stats.totals,
+    wasteBytes
+  }
+}
+
+function getTableStorageStats(server, dbName, tableName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  const table = db.table(tableName)
+  if(!table) throw new Error('tableNotFound')
+  return table.storeStats()
+}
+
+function getIndexStorageStats(server, dbName, indexName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  const config = db.config.indexes[indexName]
+  if(!config) throw new Error('indexNotFound')
+  return db.storageStatsForConfig('index', indexName, config)
+}
+
+function getLogStorageStats(server, dbName, logName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  const log = db.log(logName)
+  if(!log) throw new Error('logNotFound')
+  return log.storeStats()
+}
+
 function localRequests(server, scriptContext) {
   return {
     createDatabase: async (dbName, options = {}) => {
@@ -59,6 +102,13 @@ function localRequests(server, scriptContext) {
       const index = db.table(indexName)
       if(!index) throw new Error("indexNotFound")
       return index.clearOpLog(lastTimestamp || Date.now() - 60 * 1000, limit)
+    },
+    updateDatabaseStorage: async (dbName, storagePatch = {}) => {
+      return server.updateDatabaseStorage(dbName, storagePatch)
+    },
+    runOpLogCleaner: async (dbName = null, options = {}) => {
+      const result = await server.runOpLogCleaner(dbName, options)
+      return { started: result.started, status: result.status }
     },
     createTable: async (dbName, tableName, options = {}) => {
       if(dbName === 'system') throw new Error("system database is not writable")
@@ -299,6 +349,12 @@ function remoteRequests(server) {
       if(!index) throw new Error("indexNotFound")
       if(typeof lastTimestamp == 'string') lastTimestamp = new Date(lastTimestamp)
       return server.masterDao.request(['database', 'clearIndexOpLog'], dbName, indexName, lastTimestamp, limit)
+    },
+    updateDatabaseStorage: async (dbName, storagePatch = {}) => {
+      return server.masterDao.request(['database', 'updateDatabaseStorage'], dbName, storagePatch)
+    },
+    runOpLogCleaner: async (dbName = null, options = {}) => {
+      return server.masterDao.request(['database', 'runOpLogCleaner'], dbName, options)
     },
     createTable: async (dbName, tableName, options = {}) => {
       const db = server.databases.get(dbName)
@@ -853,6 +909,53 @@ function localReads(server, scriptContext) {
         if(!log) throw new Error("logNotFound")
         return log.countGet(range)
       }
+    },
+    opLogCleanerStatus: {
+      observable: () => {
+        const cleaner = server.ensureOpLogCleaner()
+        return cleaner.statusObservable
+      },
+      get: async () => server.getOpLogCleanerStatus()
+    },
+    databaseStorageStats: {
+      observable: (dbName) => {
+        try {
+          return new ReactiveDao.ObservableValue(getDatabaseStorageStats(server, dbName))
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: async (dbName) => getDatabaseStorageStats(server, dbName)
+    },
+    tableStorageStats: {
+      observable: (dbName, tableName) => {
+        try {
+          return new ReactiveDao.ObservableValue(getTableStorageStats(server, dbName, tableName))
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: async (dbName, tableName) => getTableStorageStats(server, dbName, tableName)
+    },
+    indexStorageStats: {
+      observable: (dbName, indexName) => {
+        try {
+          return new ReactiveDao.ObservableValue(getIndexStorageStats(server, dbName, indexName))
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: async (dbName, indexName) => getIndexStorageStats(server, dbName, indexName)
+    },
+    logStorageStats: {
+      observable: (dbName, logName) => {
+        try {
+          return new ReactiveDao.ObservableValue(getLogStorageStats(server, dbName, logName))
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: async (dbName, logName) => getLogStorageStats(server, dbName, logName)
     },
     query: {
       observable: (dbName, code, params = {}, sourceName = 'query/query.js') => {

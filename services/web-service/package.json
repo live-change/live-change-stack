@@ -1,0 +1,25 @@
+{
+  "name": "@live-change/web-service",
+  "version": "0.9.222",
+  "description": "Web Push subscriptions (contact type web) for LiveChange notifications",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test webId.test.mjs notificationPayload.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "license": "MIT",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "dependencies": {
+    "@live-change/framework": "0.9.221",
+    "@live-change/user-service": "0.9.221",
+    "web-push": "^3.6.7"
+  },
+  "type": "module"
+}

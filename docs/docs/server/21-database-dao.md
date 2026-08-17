@@ -90,6 +90,60 @@ const checkerId = pointers[0]?.to
 | `logRange` | `dbName`, `logName`, `range` |
 | `logCount` | `dbName`, `logName`, `range?` |
 
+### Storage stats (LMDB)
+
+Cheap O(1) snapshots via `mdb_stat` / `env.info` — not reactive; use `dao.get`, not live subscriptions.
+
+| Operation | Arguments | Returns |
+|-----------|-----------|---------|
+| `databaseStorageStats` | `dbName` | `{ env, stores, totals, wasteBytes }` |
+| `tableStorageStats` | `dbName`, `tableName` | `{ data, opLog, entryCount, usedBytes }` |
+| `indexStorageStats` | `dbName`, `indexName` | same shape as table (from store UIDs; does not start index code) |
+| `logStorageStats` | `dbName`, `logName` | `{ data, opLog: null, entryCount, usedBytes }` |
+
+`env` includes `fileBytes`, `apparentFileBytes`, `allocatedFileBytes`, `mapSize` when the backend is LMDB. `wasteBytes` ≈ freelist / unreclaimed high-water (`fileBytes - totals.storeUsedBytes`).
+
+### OpLog retention
+
+Each database may set `storage.opLogRetentionMs` in its config (merged via `updateDatabaseStorage`):
+
+| Value | Effect |
+|-------|--------|
+| unset | server default (**2 hours**) |
+| `false` / `0` | automatic cleanup disabled for that DB |
+| positive number | keep opLog entries newer than this many ms |
+
+db-server runs an automatic cleaner on startup and every 5 minutes (CLI: `--opLogRetentionMs`, `--opLogClearIntervalMs`, `--opLogClearBatchSize`, `--opLogClearDisabled`). Default batch size is 500 with no inter-batch delay. Replicas (`--master`) do not run the cleaner. Console logs progress (`%`, deleted/~estimated deletable, rate, ETA).
+
+Startup cleaning drains each table/index opLog with key-only deletes (opLog `id` is `padTimestamp(ms):seq`, no JSON parse), then writes **one** `clearOpLog` marker per store. Periodic/manual cleaner also uses key-only deletes but still writes a marker when a batch removes entries.
+
+Manual cleanup and live status:
+
+| Operation | Arguments | Returns |
+|-----------|-----------|---------|
+| `runOpLogCleaner` | `dbName?`, `options?` (`force`, `batchSize`, `maxBatches`, `delayMs`) | `{ started, status }` (work continues in background) |
+| `opLogCleanerStatus` | — | `{ running, mode, dbName, batch, deleted, … }` (observable) |
+
+```js
+await dao.request(['database', 'runOpLogCleaner'], database, { force: true })
+const status = await dao.get(['database', 'opLogCleanerStatus'])
+```
+
+Clearing frees LMDB pages onto the freelist (logical opLog size / entry counts drop); the on-disk `data.mdb` high-water mark may stay until a compact copy. `backup-service` `clearOpLogs` remains a complementary pass.
+
+| Operation | Arguments | Returns |
+|-----------|-----------|---------|
+| `updateDatabaseStorage` | `dbName`, `storagePatch` | merged `storage` object |
+
+```js
+await dao.request(['database', 'updateDatabaseStorage'], database, {
+  opLogRetentionMs: 2 * 60 * 60 * 1000
+})
+await dao.request(['database', 'updateDatabaseStorage'], database, {
+  opLogRetentionMs: false
+})
+```
+
 ### Metadata
 
 `databasesList`, `databases`, `databaseConfig`, `tablesList`, `indexesList`, `logsList`, `tables`, `indexes`, `logs`, `tableConfig`, `indexConfig`, `indexCode`, `logConfig`, …
@@ -127,7 +181,7 @@ There is **no** `create` operation — use `put` for new rows.
 
 ### Schema (usually framework / updaters)
 
-`createDatabase`, `deleteDatabase`, `createTable`, `deleteTable`, `renameTable`, `createIndex`, `deleteIndex`, `renameIndex`, `createLog`, `deleteLog`, `renameLog`, `clearDatabaseOpLogs`, `clearTableOpLog`, `clearIndexOpLog`.
+`createDatabase`, `deleteDatabase`, `createTable`, `deleteTable`, `renameTable`, `createIndex`, `deleteIndex`, `renameIndex`, `createLog`, `deleteLog`, `renameLog`, `clearDatabaseOpLogs`, `clearTableOpLog`, `clearIndexOpLog`, `updateDatabaseStorage`, `runOpLogCleaner`.
 
 ### Logs
 

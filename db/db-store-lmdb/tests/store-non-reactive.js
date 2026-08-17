@@ -32,7 +32,7 @@ test("store non-reactive properties", t => {
   })
 
   t.test("non reactive operations", async t => {
-    t.plan(19)
+    t.plan(20)
 
     t.test("put value", async t => {
       t.plan(1)
@@ -148,6 +148,16 @@ test("store non-reactive properties", t => {
       t.plan(1)
       let values = await store.rangeGet({ gte: 'a', lte: 'c' })
       t.deepEqual(values, [ { v: 1, id: 'a' }, { v: 3, id: 'c' } ], 'range read' )
+    })
+
+    t.test("rangeDelete keysOnly", async t => {
+      t.plan(3)
+      await store.put({ id: 'd', v: 4 })
+      await store.put({ id: 'e', v: 5 })
+      const result = await store.rangeDelete({ gte: 'd', lt: 'f' }, { keysOnly: true })
+      t.equal(result.count, 2, 'deleted 2 keys without reading values')
+      t.equal(await store.objectGet('d'), null, 'd gone')
+      t.equal(await store.objectGet('e'), null, 'e gone')
     })
   })
 

@@ -435,12 +435,9 @@ class Store {
     return observable
   }
 
-  async rangeDelete(range) {
+  async rangeDelete(range, options = {}) {
     if(!range) throw new Error("range not defined")
-    const rangeObservables = this.rangeObservablesTree.search([
-      range.gt || range.gte || '',
-      range.lt || range.lte || '\xFF\xFF\xFF\xFF'
-    ])
+    const keysOnly = options.keysOnly === true
     return new Promise((resolve, reject) => {
       let keys = []
       let count, last
@@ -499,15 +496,18 @@ class Store {
         //console.log("  DELETE DATA [")
         for(let i = 0; i < keys.length; i++) {
           const key = keys[i]
-          const json = txn.getString(this.lmdb, key)
           try {
-            const obj = this.serialization.parse(json)
+            let obj = null
+            if(!keysOnly) {
+              const json = txn.getString(this.lmdb, key)
+              obj = this.serialization.parse(json)
+            }
             txn.del(this.lmdb, key)
             const objectObservable = this.objectObservables.get(key)
             if(objectObservable) objectObservable.set(null)
             const rangeObservables = this.rangeObservablesTree.search([key, key])
             for (const rangeObservable of rangeObservables) {
-              rangeObservable.deleteObject(obj)
+              rangeObservable.deleteObject(obj || { id: key })
             }
           } catch(e) {
             return reject(e)
@@ -651,6 +651,26 @@ class Store {
       rangeObservable.deleteObject(object || { id })
     }
     return object
+  }
+
+  stat() {
+    const txn = this.env.beginTxn({ readOnly: true })
+    try {
+      const s = this.lmdb.stat(txn)
+      const pages = s.treeBranchPageCount + s.treeLeafPageCount + s.overflowPages
+      return {
+        available: true,
+        entryCount: s.entryCount,
+        pageSize: s.pageSize,
+        treeDepth: s.treeDepth,
+        branchPages: s.treeBranchPageCount,
+        leafPages: s.treeLeafPageCount,
+        overflowPages: s.overflowPages,
+        usedBytes: pages * s.pageSize
+      }
+    } finally {
+      txn.abort()
+    }
   }
 
 }

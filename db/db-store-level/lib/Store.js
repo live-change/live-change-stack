@@ -259,18 +259,25 @@ class Store {
     return observable
   }
 
-  async rangeDelete(range) {
+  async rangeDelete(range, options = {}) {
+    const keysOnly = options.keysOnly === true
+    const self = this
     return new Promise((resolve, reject) => {
       let count = 0, last
-      this.level.createReadStream({ ...range, keys: false, values: true })
-          .on('data', function(value) {
-            const id = value.id
+      const streamOpts = keysOnly
+        ? { ...range, keys: true, values: false }
+        : { ...range, keys: false, values: true }
+      this.level.createReadStream(streamOpts)
+          .on('data', function(data) {
+            const id = keysOnly ? data : data.id
             last = id
-            this.level.del(id)
+            self.level.del(id)
             count ++
-            const rangeObservables = this.rangeObservablesTree.search([id, id])
+            const objectObservable = self.objectObservables.get(id)
+            if(objectObservable) objectObservable.set(null)
+            const rangeObservables = self.rangeObservablesTree.search([id, id])
             for (const rangeObservable of rangeObservables) {
-              rangeObservable.deleteObject(value)
+              rangeObservable.deleteObject(keysOnly ? { id } : data)
             }
           })
           .on('error', function(err) {
@@ -335,6 +342,14 @@ class Store {
     this.locks.set(id, deleteLock)
     const result = await deleteLock
     return result
+  }
+
+  stat() {
+    return {
+      available: false,
+      entryCount: null,
+      usedBytes: null
+    }
   }
 }
 

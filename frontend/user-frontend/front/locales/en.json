@@ -169,6 +169,15 @@
   "notifications": {
     "notificationsSettings": "Notifications settings",
     "web": "Web",
+    "webPushTitle": "Browser push",
+    "webPushHint": "Get web push notifications even when this tab is closed.",
+    "webPushEnable": "Enable",
+    "webPushDisable": "Disable",
+    "webPushEnabled": "Browser push enabled",
+    "webPushDisabled": "Browser push disabled",
+    "webPushUnsupported": "This browser does not support web push.",
+    "webPushPermissionDenied": "Notification permission denied.",
+    "webPushNotConfigured": "VAPID keys are not configured on the server.",
     "settingsSaved": "Notification settings saved",
     "notifications": "Notifications",
     "markAllAsRead": "Mark all as read",
@@ -187,6 +196,17 @@
     "types": {
       "accessControl_Invitation": {
         "name": "Access Control Invitation"
+      },
+      "ops_MaintenanceNeeded": {
+        "name": "Infrastructure maintenance",
+        "openTask": "Open maintenance task"
+      },
+      "todo_TaskAssigned": {
+        "name": "Task assigned",
+        "openTask": "Open task"
+      },
+      "example_TestNotification": {
+        "name": "Test notification"
       }
     }
   },

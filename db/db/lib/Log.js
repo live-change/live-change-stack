@@ -1,5 +1,6 @@
 import AtomicWriter from './AtomicWriter.js'
 import ReactiveDao from "@live-change/dao"
+import { combineStoreStats, readStoreStat } from './storeStats.js'
 
 class Log {
   constructor(database, name, config) {
@@ -73,6 +74,10 @@ class Log {
   async deleteLog() {
     const config = this.configObservable.value
     await this.database.deleteStore(config.uid + '.log')
+  }
+
+  storeStats() {
+    return combineStoreStats(readStoreStat(this.data), null)
   }
 
 }

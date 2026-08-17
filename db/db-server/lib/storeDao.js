@@ -1,3 +1,5 @@
+import ReactiveDao from "@live-change/dao"
+
 function localRequests(server) {
   return {
     put: (dbName, storeName, object) => {
@@ -33,6 +35,32 @@ function localReads(server) {
         const store = db.stores.get(storeName)
         if(!store) throw new Error('storeNotFound')
         return store.objectGet(id)
+      }
+    },
+    stat: {
+      observable(dbName, storeName) {
+        try {
+          const db = server.databaseStores.get(dbName)
+          if(!db) return new ReactiveDao.ObservableError('databaseNotFound')
+          const store = db.stores.get(storeName)
+          if(!store) return new ReactiveDao.ObservableError('storeNotFound')
+          if(typeof store.stat !== 'function') {
+            return new ReactiveDao.ObservableValue({ available: false, entryCount: null, usedBytes: null })
+          }
+          return new ReactiveDao.ObservableValue(store.stat())
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: (dbName, storeName) => {
+        const db = server.databaseStores.get(dbName)
+        if(!db) throw new Error('databaseNotFound')
+        const store = db.stores.get(storeName)
+        if(!store) throw new Error('storeNotFound')
+        if(typeof store.stat !== 'function') {
+          return { available: false, entryCount: null, usedBytes: null }
+        }
+        return store.stat()
       }
     },
     range: {

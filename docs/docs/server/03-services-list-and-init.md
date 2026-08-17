@@ -33,6 +33,7 @@ import timer from '@live-change/timer-service'
 import session from '@live-change/session-service'
 import user from '@live-change/user-service'
 import email from '@live-change/email-service'
+import web from '@live-change/web-service'
 import phone from '@live-change/phone-service'
 import passwordAuthentication from '@live-change/password-authentication-service'
 import userIdentification from '@live-change/user-identification-service'
@@ -52,6 +53,7 @@ export {
   session,
   user,
   email,
+  web,
   phone,
   passwordAuthentication,
   userIdentification,

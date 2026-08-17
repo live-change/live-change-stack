@@ -1,23 +1,8 @@
 import OpLogger from './OpLogger.js'
 import AtomicWriter from './AtomicWriter.js'
 import ReactiveDao from '@live-change/dao'
-
-function opLogWritter(store) {
-  let lastTime = Date.now()
-  let lastId = 0
-  return function(operation) {
-    const now = Date.now()
-    if(now === lastTime) {
-      lastId ++
-    } else {
-      lastId = 0
-      lastTime = now
-    }
-    const id = ((''+lastTime).padStart(16, '0'))+':'+((''+lastId).padStart(6, '0'))
-    store.put({ id, timestamp: lastTime, operation })
-    return id
-  }
-}
+import { combineStoreStats, readStoreStat } from './storeStats.js'
+import { clearOpLogStore, createOpLogWritter } from './clearOpLog.js'
 
 class Table {
   constructor(database, name, config) {
@@ -29,7 +14,7 @@ class Table {
     this.data = database.store(config.uid + '.data', { ...config, ...config.data })
     this.opLog = database.store(config.uid + '.opLog', { ...config, ...config.opLog })
 
-    this.opLogWritter = opLogWritter(this.opLog)
+    this.opLogWritter = createOpLogWritter(this.opLog)
     this.opLogger = new OpLogger(this.data, this.opLogWritter)
 
     this.atomicWriter = new AtomicWriter(this.opLogger)
@@ -84,45 +69,8 @@ class Table {
     return this.atomicWriter.update(id, operations, options)
   }
 
-  async clearOpLog(lastTimestamp, limit) {
-    const now = Date.now()
-    const nowStr = ((''+now).padStart(16, '0'))
-    if(lastTimestamp > now) throw new Error('cannot clear oplog in the future')
-    const opLogStart = (await this.opLog.rangeGet({ gt: '', limit: 1 }))[0]
-    if(!opLogStart) return { count: 0, last: "\xFF\xFF\xFF\xFF" }
-    let logId
-    try {
-      logId = this.opLogWritter({
-        type: 'clearOpLog',
-        from: opLogStart.id,
-        to: nowStr
-      })
-    } catch(e) { // impossible to put anything - database full - first delete something
-      logId = null
-    }
-    const removedStats = await this.opLog.rangeDelete({
-      lt: nowStr,
-      limit
-    })
-    if(!logId) { // Panic mode
-      logId = this.opLogWritter({
-        type: 'clearOpLog',
-        from: opLogStart.id,
-        to: nowStr
-      })
-    }
-    const opLogNewStart = (await this.opLog.rangeGet({ gt: '', limit: 1 }))[0]
-    if(opLogNewStart) {
-      this.opLog.put({
-        id: logId,
-        operation: {
-          type: 'clearOpLog',
-          from: opLogStart.id,
-          to: opLogNewStart ? opLogNewStart.id : (('' + lastTimestamp).padStart(16, '0'))
-        }
-      })
-    }
-    return removedStats
+  async clearOpLog(lastTimestamp, limit, options = {}) {
+    return clearOpLogStore(this.opLog, lastTimestamp, limit, this.opLogWritter, options)
   }
 
   async deleteOpLog() {
@@ -130,7 +78,7 @@ class Table {
     this.database.deleteStore(config.uid + '.opLog')
     this.database.stores.delete(config.uid + '.opLog')
     this.opLog = this.database.store(config.uid + '.opLog', { ...config, ...config.opLog })
-    this.opLogWritter = opLogWritter(this.opLog)
+    this.opLogWritter = createOpLogWritter(this.opLog)
     this.opLogger = new OpLogger(this.data, this.opLogWritter)
     this.atomicWriter = new AtomicWriter(this.opLogger)
   }
@@ -155,6 +103,13 @@ class Table {
     const config = this.configObservable.value
     await this.database.deleteStore(config.uid + '.data')
     await this.database.deleteStore(config.uid + '.opLog')
+  }
+
+  storeStats() {
+    return combineStoreStats(
+      readStoreStat(this.data),
+      readStoreStat(this.opLog)
+    )
   }
 }
 

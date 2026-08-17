@@ -41,6 +41,7 @@ export default defineUserConfig({
         { text: '15 Cron and intervals', link: '/server/15-cron-and-intervals.md' },
         { text: '16 Timers', link: '/server/16-timers.md' },
         { text: '17 Email and SMS', link: '/server/17-email-and-sms.md' },
+        { text: '17a Notification channels', link: '/server/17a-notification-channels.md' },
       ],
       '/frontend/': [
         { text: 'Frontend manual', link: '/frontend/README.md' },

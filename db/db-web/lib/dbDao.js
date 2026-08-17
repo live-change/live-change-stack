@@ -1,5 +1,41 @@
 import ReactiveDao from "@live-change/dao"
 
+function getDatabaseStorageStats(server, dbName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  const stats = db.storageStats()
+  return {
+    env: { available: false },
+    stores: stats.stores,
+    totals: stats.totals,
+    wasteBytes: null
+  }
+}
+
+function getTableStorageStats(server, dbName, tableName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  const table = db.table(tableName)
+  if(!table) throw new Error('tableNotFound')
+  return table.storeStats()
+}
+
+function getIndexStorageStats(server, dbName, indexName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  const config = db.config.indexes[indexName]
+  if(!config) throw new Error('indexNotFound')
+  return db.storageStatsForConfig('index', indexName, config)
+}
+
+function getLogStorageStats(server, dbName, logName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  const log = db.log(logName)
+  if(!log) throw new Error('logNotFound')
+  return log.storeStats()
+}
+
 function localRequests(server, scriptContext) {
   return {
     createDatabase: async (dbName, options = {}) => {
@@ -54,6 +90,26 @@ function localRequests(server, scriptContext) {
       const index = db.table(indexName)
       if(!index) throw new Error("indexNotFound")
       return index.clearOpLog(lastTimestamp || Date.now() - 60 * 1000, limit)
+    },
+    updateDatabaseStorage: async (dbName, storagePatch = {}) => {
+      if(typeof server.updateDatabaseStorage === 'function') {
+        return server.updateDatabaseStorage(dbName, storagePatch)
+      }
+      if(!server.metadata.databases[dbName]) throw new Error('databaseNotFound')
+      const dbMeta = server.metadata.databases[dbName]
+      dbMeta.storage = {
+        ...(dbMeta.storage || {}),
+        ...storagePatch
+      }
+      const db = server.databases.get(dbName)
+      if(db) {
+        db.config.storage = dbMeta.storage
+        if(db.configObservable) {
+          db.configObservable.set(JSON.parse(JSON.stringify(db.config)))
+        }
+      }
+      await server.saveMetadata()
+      return dbMeta.storage
     },
     createTable: async (dbName, tableName, options = {}) => {
       if(dbName === 'system') throw new Error("system database is not writable")
@@ -703,6 +759,46 @@ function localReads(server, scriptContext) {
         if(!log) throw new Error("logNotFound")
         return log.countGet(range)
       }
+    },
+    databaseStorageStats: {
+      observable: (dbName) => {
+        try {
+          return new ReactiveDao.ObservableValue(getDatabaseStorageStats(server, dbName))
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: async (dbName) => getDatabaseStorageStats(server, dbName)
+    },
+    tableStorageStats: {
+      observable: (dbName, tableName) => {
+        try {
+          return new ReactiveDao.ObservableValue(getTableStorageStats(server, dbName, tableName))
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: async (dbName, tableName) => getTableStorageStats(server, dbName, tableName)
+    },
+    indexStorageStats: {
+      observable: (dbName, indexName) => {
+        try {
+          return new ReactiveDao.ObservableValue(getIndexStorageStats(server, dbName, indexName))
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: async (dbName, indexName) => getIndexStorageStats(server, dbName, indexName)
+    },
+    logStorageStats: {
+      observable: (dbName, logName) => {
+        try {
+          return new ReactiveDao.ObservableValue(getLogStorageStats(server, dbName, logName))
+        } catch(e) {
+          return new ReactiveDao.ObservableError(e.message || e)
+        }
+      },
+      get: async (dbName, logName) => getLogStorageStats(server, dbName, logName)
     },
     query: {
       observable: (dbName, code, params = {}, sourceName = 'query/query.js') => {

@@ -1,8 +1,11 @@
 import fs from 'fs'
+import path from 'path'
 import { rimraf } from "rimraf"
 import lmdb from 'node-lmdb'
 import lmdbStore from'@live-change/db-store-lmdb'
 import rbTreeStore from'@live-change/db-store-rbtree'
+
+const unavailableEnvStat = () => ({ available: false })
 
 function createBackend({ name, url, maxDbs, mapSize }) {
   if(name == 'leveldb') {
@@ -32,7 +35,8 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       },
       async deleteStore(store) {
         await store.clear()
-      }
+      },
+      envStat: unavailableEnvStat
     }
   } else if(name == 'rocksdb') {
     return {
@@ -61,7 +65,8 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       },
       async deleteStore(store) {
         await store.clear()
-      }
+      },
+      envStat: unavailableEnvStat
     }
   } else if(name == 'memdown') {
     return {
@@ -90,7 +95,8 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       },
       async deleteStore(store) {
         await store.clear()
-      }
+      },
+      envStat: unavailableEnvStat
     }
   } else if(name == 'mem' || name == 'memory') {
     return {
@@ -110,23 +116,24 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       closeStore(store) {
       },
       async deleteStore(store) {
-      }
+      },
+      envStat: unavailableEnvStat
     }
   } else if(name == 'lmdb') {
     return {
       lmdb,
       Store: lmdbStore,
-      createDb(path, options) {
-        fs.mkdirSync(path, { recursive: true })
+      createDb(dbPath, options) {
+        fs.mkdirSync(dbPath, { recursive: true })
         const env = new this.lmdb.Env()
         const envConfig = {
-          path: path,
+          path: dbPath,
           maxDbs: maxDbs || 1024,
           mapSize: mapSize || (200 * 1024 * 1024 * 1024),
           ...options
         }
         env.open(envConfig)
-        env.path = path
+        env.path = dbPath
         return env
       },
       closeDb(db) {
@@ -148,6 +155,34 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       },
       async deleteStore(store) {
         store.lmdb.drop()
+      },
+      envStat(env) {
+        if(!env || typeof env.info !== 'function') return unavailableEnvStat()
+        const info = env.info()
+        const stat = env.stat()
+        const pageSize = stat.pageSize
+        const fileBytes = (info.lastPageNumber + 1) * pageSize
+        let apparentFileBytes = null
+        let allocatedFileBytes = null
+        try {
+          const st = fs.statSync(path.join(env.path, 'data.mdb'))
+          apparentFileBytes = st.size
+          allocatedFileBytes = st.blocks * 512
+        } catch(e) {
+          // file may not exist yet
+        }
+        return {
+          available: true,
+          mapSize: info.mapSize,
+          lastPageNumber: info.lastPageNumber,
+          lastTxnId: info.lastTxnId,
+          pageSize,
+          fileBytes,
+          apparentFileBytes,
+          allocatedFileBytes,
+          numReaders: info.numReaders,
+          maxReaders: info.maxReaders
+        }
       }
     }
   } else if(name == 'observabledb') {
@@ -189,7 +224,8 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       },
       deleteStore(store) {
         return connection.deleteStore(store.databaseName, store.storeName)
-      }
+      },
+      envStat: unavailableEnvStat
     }
   } else throw new Error("Unknown backend " + name)
 }

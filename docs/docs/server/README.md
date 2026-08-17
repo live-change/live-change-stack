@@ -43,6 +43,7 @@ This manual documents the **server-side** part of the Live Change framework: how
 15. [Cron and intervals](/server/15-cron-and-intervals.html) — cron-service: Schedule and Interval, triggers
 16. [Timers](/server/16-timers.html) — timer-service: createTimer, cancelTimer, one-shot and repeating
 17. [Email and SMS](/server/17-email-and-sms.html) — Sending email and SMS via triggers; rendering (frontend) note
+   - [Notification channels](/server/17a-notification-channels.html) — `notify` → email + web push, settings, VAPID
 18. [Describe command](/server/18-describe-command.html) — Inspecting services, models, indexes, triggers, events; changes and update commands
 19. [Raw HTTP and client credentials](/server/19-raw-http-client-credentials.html) — `resolveClientCredentials`, `serviceViewGetAsClient` for Express routes
 20. [Service data migrations](/server/20-migrations.html) — `definition.migration`, `migrations` diff, `runMigration` in `changes` / `update`

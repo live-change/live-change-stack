@@ -168,7 +168,16 @@
   },
   "notifications": {
     "notificationsSettings": "Ustawienia powiadomień",
-    "web": "Sieć",
+    "web": "Przeglądarka",
+    "webPushTitle": "Powiadomienia przeglądarki",
+    "webPushHint": "Otrzymuj web push nawet gdy ta karta jest zamknięta.",
+    "webPushEnable": "Włącz",
+    "webPushDisable": "Wyłącz",
+    "webPushEnabled": "Powiadomienia przeglądarki włączone",
+    "webPushDisabled": "Powiadomienia przeglądarki wyłączone",
+    "webPushUnsupported": "Ta przeglądarka nie obsługuje web push.",
+    "webPushPermissionDenied": "Odmowa uprawnień do powiadomień.",
+    "webPushNotConfigured": "Klucze VAPID nie są skonfigurowane na serwerze.",
     "settingsSaved": "Ustawienia powiadomień zapisane",
     "notifications": "Powiadomienia",
     "markAllAsRead": "Oznacz wszystkie jako przeczytane",
@@ -187,6 +196,17 @@
     "types": {
       "accessControl_Invitation": {
         "name": "Zaproszenie do kontroli dostępu"
+      },
+      "ops_MaintenanceNeeded": {
+        "name": "Konserwacja infrastruktury",
+        "openTask": "Otwórz zadanie konserwacji"
+      },
+      "todo_TaskAssigned": {
+        "name": "Przypisano zadanie",
+        "openTask": "Otwórz zadanie"
+      },
+      "example_TestNotification": {
+        "name": "Powiadomienie testowe"
       }
     }
   },

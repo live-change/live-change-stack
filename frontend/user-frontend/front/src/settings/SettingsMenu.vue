@@ -14,7 +14,7 @@
         <SettingsMenuItem v-if="(availableLocales?.length ?? 0) > 1"
                           name="user:locale" icon="language" :label="t('settings.languageAndLocale')" class="hidden md:block" />
 
-        <SettingsMenuItem v-if="clientConfig.notifications?.length"
+        <SettingsMenuItem v-if="clientConfig?.notificationTypes?.length"
                           name="user:notificationsSettings" icon="exclamation-circle" :label="t('settings.notifications')" />
 
       </ul>

@@ -24,6 +24,8 @@ const packageInfo = await fs.promises.readFile(fileURLToPath(
 
 import Debug from 'debug'
 const debug = Debug('db-server')
+import OpLogCleaner from './OpLogCleaner.js'
+import { DEFAULT_OP_LOG_RETENTION_MS } from './opLogRetention.js'
 
 class DatabaseStore {
   constructor(path, backends, options) {
@@ -68,6 +70,11 @@ class DatabaseStore {
     let store = this.getStore(name)
     return this.backends[store.backendName].deleteStore(store)
   }
+  envStat() {
+    const backend = this.backends.default
+    if(!backend || typeof backend.envStat !== 'function') return { available: false }
+    return backend.envStat(this.dbs.default)
+  }
 }
 
 class Server {
@@ -81,6 +88,8 @@ class Server {
 
     this.databasesListObservable = new ReactiveDao.ObservableList([])
     this.databasesListObservable.observe(() => {}) // prevent dispose and clear
+
+    this.opLogCleaner = null
 
     this.apiServer = new ReactiveDao.ReactiveServer((sessionId) => this.createDao(sessionId))
 
@@ -288,6 +297,82 @@ class Server {
     if(this.config.master) {
       await this.replicator.start()
     }
+    if(!initOptions.skipOpLogCleaner) {
+      this.startOpLogCleaner()
+    }
+  }
+
+  ensureOpLogCleaner() {
+    if(this.opLogCleaner) return this.opLogCleaner
+    this.opLogCleaner = new OpLogCleaner(this, {
+      defaultRetentionMs: this.config.opLogRetentionMs ?? DEFAULT_OP_LOG_RETENTION_MS,
+      intervalMs: this.config.opLogClearIntervalMs,
+      batchSize: this.config.opLogClearBatchSize,
+      maxBatchesPerDb: this.config.opLogClearMaxBatchesPerDb,
+      delayMs: this.config.opLogClearDelayMs,
+      disabled: this.config.opLogClearDisabled === true
+    })
+    return this.opLogCleaner
+  }
+
+  startOpLogCleaner() {
+    const cleaner = this.ensureOpLogCleaner()
+    cleaner.start()
+  }
+
+  stopOpLogCleaner() {
+    if(this.opLogCleaner) {
+      this.opLogCleaner.stop()
+      this.opLogCleaner = null
+    }
+  }
+
+  getOpLogCleanerStatus() {
+    if(!this.opLogCleaner) {
+      return {
+        running: false,
+        mode: null,
+        dbName: null,
+        databasesTotal: 0,
+        databasesDone: 0,
+        batch: 0,
+        deleted: 0,
+        lastDeleted: 0,
+        estimatedTotal: null,
+        estimatedDeletable: null,
+        progressPercent: null,
+        ratePerSec: null,
+        etaMs: null,
+        startedAt: null,
+        finishedAt: null,
+        lastError: null,
+        message: 'not started'
+      }
+    }
+    return this.opLogCleaner.getStatus()
+  }
+
+  async runOpLogCleaner(dbName = null, options = {}) {
+    const cleaner = this.ensureOpLogCleaner()
+    return cleaner.runNow(dbName, options)
+  }
+
+  async updateDatabaseStorage(dbName, storagePatch = {}) {
+    if(!this.metadata.databases[dbName]) throw new Error('databaseNotFound')
+    const dbMeta = this.metadata.databases[dbName]
+    dbMeta.storage = {
+      ...(dbMeta.storage || {}),
+      ...storagePatch
+    }
+    const db = this.databases.get(dbName)
+    if(db) {
+      db.config.storage = dbMeta.storage
+      if(db.configObservable) {
+        db.configObservable.set(JSON.parse(JSON.stringify(db.config)))
+      }
+    }
+    await this.saveMetadata()
+    return dbMeta.storage
   }
   async checkInfoIntegrity() {
     for(const dbName in this.metadata.databases) {
@@ -400,6 +485,7 @@ class Server {
   }
 
   async close() {
+    this.stopOpLogCleaner()
     if(this.http) {
       this.http.server.close()
     }

@@ -49,6 +49,26 @@ function serverOptions(yargs) {
     type: 'string',
     description: 'profiling log file path'
   })
+  yargs.option('opLogRetentionMs', {
+    type: 'number',
+    description: 'default opLog retention in ms when database storage.opLogRetentionMs is unset',
+    default: 2 * 60 * 60 * 1000
+  })
+  yargs.option('opLogClearIntervalMs', {
+    type: 'number',
+    description: 'interval between automatic opLog cleanup passes',
+    default: 5 * 60 * 1000
+  })
+  yargs.option('opLogClearBatchSize', {
+    type: 'number',
+    description: 'max opLog entries deleted per table/index per batch',
+    default: 40
+  })
+  yargs.option('opLogClearDisabled', {
+    type: 'boolean',
+    description: 'disable automatic opLog cleaner',
+    default: false
+  })
 }
 
 function storeOptions(yargs, defaults = {}) {
@@ -93,7 +113,10 @@ async function create({ dbRoot, backend, verbose }) {
 }
 
 async function serve(argv) {
-  const { dbRoot, backend, backendUrl, verbose, host, port, master, slowStart, profileLog } = argv
+  const {
+    dbRoot, backend, backendUrl, verbose, host, port, master, slowStart, profileLog,
+    opLogRetentionMs, opLogClearIntervalMs, opLogClearBatchSize, opLogClearDisabled
+  } = argv
   if(profileLog) {
     const out = profileOutput(profileLog)
     await db.profileLog.startLog(out, performance)
@@ -102,7 +125,11 @@ async function serve(argv) {
   if(verbose) console.info(`starting server in ${path.resolve(dbRoot)}`)
   let server = new Server({
     dbRoot, backend, backendUrl, master,
-    slowStart
+    slowStart,
+    opLogRetentionMs,
+    opLogClearIntervalMs,
+    opLogClearBatchSize,
+    opLogClearDisabled
   })
 
   process.on('unhandledRejection', (reason, promise) => {

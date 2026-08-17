@@ -536,6 +536,14 @@ class Store {
     return object
   }
 
+  stat() {
+    return {
+      available: false,
+      entryCount: null,
+      usedBytes: null
+    }
+  }
+
 }
 
 export default Store

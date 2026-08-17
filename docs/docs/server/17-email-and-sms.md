@@ -45,3 +45,7 @@ If **render** is set, the phone service uses **renderSms(render)** to produce co
 - **phone-service**: Configure provider (e.g. **accessToken** or env **SMSAPI_ACCESS_TOKEN** for SMSAPI), and **from** for sender id where applicable.
 
 Test addresses (e.g. @test.com for email, a test number for SMS) are often handled by the service without actually sending (log only and emit sent).
+
+## Notification delivery
+
+In-app **`notify`** can also fan out to email (and web push). See [Notification channels](/server/17a-notification-channels.html).

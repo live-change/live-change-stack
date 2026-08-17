@@ -25,6 +25,14 @@ const Notification = definition.model({
       type: String,
       validation: ['nonEmpty']
     },
+    emailState: {
+      type: String,
+      description: 'Email delivery state: pending | sent | error'
+    },
+    webPushState: {
+      type: String,
+      description: 'Web push delivery state: pending | sent | error'
+    },
     ...config.fields
   },
   indexes: {
@@ -151,6 +159,74 @@ definition.event({
   name: "emailNotification",
   async execute({ user, notifications }) {
     await Promise.all(notifications.map(notification => Notification.update(notification, { emailState: 'sent' })))
+  }
+})
+
+definition.event({
+  name: "webPushNotification",
+  async execute({ user, notifications }) {
+    await Promise.all(notifications.map(notification =>
+      Notification.update(notification, { webPushState: 'sent' })
+    ))
+  }
+})
+
+definition.event({
+  name: "channelDeliveryState",
+  async execute({ notification, emailState, webPushState }) {
+    const patch = {}
+    if (emailState !== undefined) patch.emailState = emailState
+    if (webPushState !== undefined) patch.webPushState = webPushState
+    if (!Object.keys(patch).length) return
+    await Notification.update(notification, patch)
+  }
+})
+
+definition.trigger({
+  name: 'markNotificationsEmailed',
+  properties: {
+    notifications: { type: Array, of: { type: String }, validation: ['nonEmpty'] },
+    user: { type: String }
+  },
+  async execute({ notifications, user }, context, emit) {
+    emit({ type: 'emailNotification', user, notifications })
+  }
+})
+
+definition.trigger({
+  name: 'markNotificationsWebPushed',
+  properties: {
+    notifications: { type: Array, of: { type: String }, validation: ['nonEmpty'] },
+    user: { type: String }
+  },
+  async execute({ notifications, user }, context, emit) {
+    emit({ type: 'webPushNotification', user, notifications })
+  }
+})
+
+definition.trigger({
+  name: 'setNotificationChannelState',
+  properties: {
+    notification: { type: String, validation: ['nonEmpty'] },
+    emailState: { type: String },
+    webPushState: { type: String }
+  },
+  async execute({ notification, emailState, webPushState }, context, emit) {
+    emit({ type: 'channelDeliveryState', notification, emailState, webPushState })
+  }
+})
+
+definition.trigger({
+  name: 'isNotificationChannelActive',
+  properties: {
+    userId: { type: String, validation: ['nonEmpty'] },
+    contactType: { type: String, validation: ['nonEmpty'] },
+    contactId: { type: String, validation: ['nonEmpty'] },
+    notificationType: { type: String, validation: ['nonEmpty'] }
+  },
+  async execute(params) {
+    const { isNotificationChannelActive } = await import('./deliveryPreferences.js')
+    return isNotificationChannelActive(params)
   }
 })
 
