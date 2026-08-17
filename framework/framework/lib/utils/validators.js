@@ -1,4 +1,4 @@
-import { mergeDeep } from "../utils.js"
+import { mergeDeep } from "./mergeDeep.js"
 
 export function nonEmpty(value) {
   if(!value) return 'empty'
