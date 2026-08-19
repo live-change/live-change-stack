@@ -398,6 +398,107 @@ class Server {
       }
     }
   }
+  async ensureSystemCatalogTables(dbName) {
+    if(dbName === 'system') return
+    const system = this.databases.get('system')
+    if(!system) return
+    for(const suffix of ['_tables', '_logs', '_indexes', '_indexState', '_indexDependencies']) {
+      const name = dbName + suffix
+      if(!system.config.tables[name]) {
+        await system.createTable(name)
+      }
+    }
+  }
+
+  sourceExistsInConfig(db, type, name) {
+    if(type === 'table') return !!db.config.tables[name]
+    if(type === 'index') return !!db.config.indexes[name]
+    if(type === 'log') return !!db.config.logs[name]
+    return false
+  }
+
+  async tryWakeIndexes(dbName, sourceType = null, sourceName = null) {
+    if(dbName === 'system') return
+    const system = this.databases.get('system')
+    const db = this.databases.get(dbName)
+    if(!system || !db) return
+    if(!system.config.tables[dbName + '_indexState']) return
+    const stateTable = system.table(dbName + '_indexState')
+    const depsTable = system.table(dbName + '_indexDependencies')
+    const states = await stateTable.rangeGet({})
+    const allDeps = await depsTable.rangeGet({})
+    const sleeping = states.filter(s => s.status === 'sleeping')
+    for(const state of sleeping) {
+      const deps = allDeps.filter(d => d.indexUid === state.id)
+      if(sourceType && sourceName) {
+        const matchesFailedOn = state.failedOn
+          && state.failedOn.type === sourceType
+          && state.failedOn.name === sourceName
+        const matchesDep = deps.some(d => d.type === sourceType && d.name === sourceName)
+        if(!matchesFailedOn && !matchesDep) continue
+      }
+      if(state.failedOn && !this.sourceExistsInConfig(db, state.failedOn.type, state.failedOn.name)) {
+        continue
+      }
+      if(deps.length > 0 && !deps.every(d => this.sourceExistsInConfig(db, d.type, d.name))) {
+        continue
+      }
+      if(!state.failedOn && deps.length === 0) continue
+      await db.wakeIndex(state.name)
+    }
+  }
+
+  wireIndexLifecycle(database, dbName) {
+    database.onAutoRemoveIndex = (name, uid) => {
+      const system = this.databases.get('system')
+      if(!system || !system.config.tables[dbName + '_indexes']) return
+      system.table(dbName + '_indexes').delete(uid)
+    }
+    database.onIndexState = (uid, name, patch) => {
+      const system = this.databases.get('system')
+      if(!system || !system.config.tables[dbName + '_indexState']) return
+      system.table(dbName + '_indexState').put({
+        id: uid,
+        name,
+        status: 'starting',
+        error: null,
+        failedOn: null,
+        phase: null,
+        needsFullRebuild: false,
+        updatedAt: Date.now(),
+        ...patch
+      })
+    }
+    database.onIndexDependency = (uid, indexName, type, sourceName) => {
+      const system = this.databases.get('system')
+      if(!system || !system.config.tables[dbName + '_indexDependencies']) return
+      const id = `${uid}:${type}:${sourceName}`
+      system.table(dbName + '_indexDependencies').put({
+        id,
+        indexUid: uid,
+        indexName,
+        type,
+        name: sourceName
+      })
+    }
+    database.onIndexRemoved = async (uid) => {
+      const system = this.databases.get('system')
+      if(!system) return
+      if(system.config.tables[dbName + '_indexState']) {
+        await system.table(dbName + '_indexState').delete(uid)
+      }
+      if(system.config.tables[dbName + '_indexDependencies']) {
+        const deps = await system.table(dbName + '_indexDependencies').rangeGet({
+          gte: uid + ':',
+          lte: uid + ':\xFF'
+        })
+        for(const dep of deps) {
+          await system.table(dbName + '_indexDependencies').delete(dep.id)
+        }
+      }
+    }
+  }
+
   async initDatabase(dbName, dbConfig) {
     const dbPath = this.config.temporary ? 'memory' : path.resolve(this.config.dbRoot, dbName+'.db')
     let dbStore = this.databaseStores.get(dbName)
@@ -420,12 +521,14 @@ class Server {
       dbName,
       (context) => new ScriptContext(context)
     )
-    database.onAutoRemoveIndex = (name, uid) => {
-      this.databases.get('system').table(dbName+'_indexes').delete(uid)
-    }
+    this.wireIndexLifecycle(database, dbName)
+    await this.ensureSystemCatalogTables(dbName)
     this.initializingDatabase = database
+    // temporarily register so wake/callbacks can resolve db during start
+    this.databases.set(dbName, database)
     await database.start(this.config)
     this.initializingDatabase = undefined
+    await this.tryWakeIndexes(dbName)
     return database
   }
 

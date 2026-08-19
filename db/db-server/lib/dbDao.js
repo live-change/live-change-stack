@@ -52,11 +52,7 @@ function localRequests(server, scriptContext) {
       const database = await server.initDatabase(dbName, options)
       server.databases.set(dbName, database)
       server.databasesListObservable.push(dbName)
-      await Promise.all([
-        server.databases.get('system').createTable(dbName + "_tables"),
-        server.databases.get('system').createTable(dbName + "_logs"),
-        server.databases.get('system').createTable(dbName + "_indexes")
-      ])
+      await server.ensureSystemCatalogTables(dbName)
       await server.saveMetadata()
       return 'ok'
     },
@@ -66,15 +62,19 @@ function localRequests(server, scriptContext) {
       delete server.metadata.databases[dbName]
       const database = server.databases.get(dbName)
       database.onAutoRemoveIndex = null
+      database.onIndexState = null
+      database.onIndexDependency = null
+      database.onIndexRemoved = null
       server.databases.delete(dbName)
       const dbStore = server.databaseStores.get(dbName)
       server.databaseStores.delete(dbName)
       server.databasesListObservable.remove(dbName)
-      await Promise.all([
-        server.databases.get('system').deleteTable(dbName + "_tables"),
-        server.databases.get('system').deleteTable(dbName + "_logs"),
-        server.databases.get('system').deleteTable(dbName + "_indexes")
-      ])
+      const system = server.databases.get('system')
+      const suffixes = ['_tables', '_logs', '_indexes', '_indexState', '_indexDependencies']
+      await Promise.all(suffixes.map(async (suffix) => {
+        const name = dbName + suffix
+        if(system.config.tables[name]) await system.deleteTable(name)
+      }))
       await server.saveMetadata()
       await dbStore.delete()
       return 'ok'
@@ -120,6 +120,7 @@ function localRequests(server, scriptContext) {
         name: table.name,
         config: table.configObservable.value
       })
+      await server.tryWakeIndexes(dbName, 'table', tableName)
       return 'ok'
     },
     deleteTable: async (dbName, tableName) => {
@@ -168,6 +169,7 @@ function localRequests(server, scriptContext) {
         name: index.name,
         config: index.configObservable.value
       })
+      await server.tryWakeIndexes(dbName, 'index', indexName)
       return 'ok'
     },
     deleteIndex: async (dbName, indexName) => {
@@ -179,16 +181,16 @@ function localRequests(server, scriptContext) {
         const list = db.indexesListObservable.list.slice()
         for(const foundIndexName of list) {
           if(foundIndexName.slice(0, base.length) !== base) continue
-          const index = await db.index(foundIndexName)
-          if(!index) throw new Error("indexNotFound")
-          const uid = index.configObservable.value.uid
+          const config = db.config.indexes[foundIndexName]
+          if(!config) throw new Error("indexNotFound")
+          const uid = config.uid
           await db.deleteIndex(foundIndexName)
           await server.databases.get('system').table(dbName + '_indexes').delete(uid)
         }
       } else {
-        const index = await db.index(indexName)
-        if(!index) throw new Error("indexNotFound")
-        const uid = index.configObservable.value.uid
+        const config = db.config.indexes[indexName]
+        if(!config) throw new Error("indexNotFound")
+        const uid = config.uid
         await db.deleteIndex(indexName)
         await server.databases.get('system').table(dbName + '_indexes').delete(uid)
       }
@@ -216,6 +218,7 @@ function localRequests(server, scriptContext) {
         name: log.name,
         config: log.configObservable.value
       })
+      await server.tryWakeIndexes(dbName, 'log', logName)
       return 'ok'
     },
     deleteLog: async (dbName, logName) => {
@@ -644,6 +647,60 @@ function localReads(server, scriptContext) {
         const index = await db.index(indexName)
         if(!index) throw new Error("indexNotFound")
         return index.codeObservable.value
+      }
+    },
+    indexState: {
+      observable: (dbName, indexNameOrUid) => {
+        const system = server.databases.get('system')
+        if(!system || !system.config.tables[dbName + '_indexState']) {
+          return new ReactiveDao.ObservableError('indexStateNotFound')
+        }
+        const db = server.databases.get(dbName)
+        const config = db && db.config.indexes[indexNameOrUid]
+        const uid = config ? config.uid : indexNameOrUid
+        return system.table(dbName + '_indexState').objectObservable(uid)
+      },
+      get: async (dbName, indexNameOrUid) => {
+        const system = server.databases.get('system')
+        if(!system || !system.config.tables[dbName + '_indexState']) return null
+        const db = server.databases.get(dbName)
+        const config = db && db.config.indexes[indexNameOrUid]
+        const uid = config ? config.uid : indexNameOrUid
+        return system.table(dbName + '_indexState').objectGet(uid)
+      }
+    },
+    indexStates: {
+      observable: (dbName) => {
+        const system = server.databases.get('system')
+        if(!system || !system.config.tables[dbName + '_indexState']) {
+          return new ReactiveDao.ObservableList([])
+        }
+        return system.table(dbName + '_indexState').rangeObservable({})
+      },
+      get: async (dbName) => {
+        const system = server.databases.get('system')
+        if(!system || !system.config.tables[dbName + '_indexState']) return []
+        return system.table(dbName + '_indexState').rangeGet({})
+      }
+    },
+    indexDependencies: {
+      observable: (dbName, indexUid) => {
+        const system = server.databases.get('system')
+        if(!system || !system.config.tables[dbName + '_indexDependencies']) {
+          return new ReactiveDao.ObservableList([])
+        }
+        return system.table(dbName + '_indexDependencies').rangeObservable({
+          gte: indexUid + ':',
+          lte: indexUid + ':\xFF'
+        })
+      },
+      get: async (dbName, indexUid) => {
+        const system = server.databases.get('system')
+        if(!system || !system.config.tables[dbName + '_indexDependencies']) return []
+        return system.table(dbName + '_indexDependencies').rangeGet({
+          gte: indexUid + ':',
+          lte: indexUid + ':\xFF'
+        })
       }
     },
     logConfig: {

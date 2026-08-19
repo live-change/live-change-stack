@@ -285,11 +285,7 @@ class DatabaseReplicator {
       const database = await this.server.initDatabase(this.name, this.databaseConfig)
       this.server.databases.set(this.name, database)
       this.server.databasesListObservable.push(this.name)
-      await Promise.all([
-        this.server.databases.get('system').createTable(this.name + "_tables"),
-        this.server.databases.get('system').createTable(this.name + "_logs"),
-        this.server.databases.get('system').createTable(this.name + "_indexes")
-      ])
+      await this.server.ensureSystemCatalogTables(this.name)
       await this.server.saveMetadata()
     }
     const database = this.server.databases.get(this.name)
@@ -366,7 +362,15 @@ class Replicator { // synchronizes database list
       this.server.databases.get('system').deleteTable(dbName + "_tables"),
       this.server.databases.get('system').deleteTable(dbName + "_logs"),
       this.server.databases.get('system').deleteTable(dbName + "_indexes")
-    ])
+    ].concat(
+      ['_indexState', '_indexDependencies'].map(suffix => {
+        const name = dbName + suffix
+        if(this.server.databases.get('system').config.tables[name]) {
+          return this.server.databases.get('system').deleteTable(name)
+        }
+        return Promise.resolve()
+      })
+    ))
     await this.server.saveMetadata()
   }
 }

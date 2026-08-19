@@ -284,16 +284,21 @@ async function update(changes, service, app, force) {
         }
       } break
       case "createProperty": {
+        // reverseMerge = fill missing only; existing row values (incl. arrays) win over defaults
         const table = generateTableName(change.model)
         const property = change.property
-        let update = {}
         const defaultValue = property.defaultValue ?? property.default
-        if(typeof defaultValue !== 'function') update[change.name] = defaultValue // functions not supported here
+        if(defaultValue === undefined || typeof defaultValue === 'function') {
+          debug("CREATE PROPERTY SKIP SCAN (no concrete default)", change.name)
+          break
+        }
+        let update = {}
+        update[change.name] = defaultValue
         debug("CREATE PROPERTY UPDATE", update)
         await dao.requestWithSettings(updaterRequestSettings, ['database', 'query'], database, `(${
             async (input, output, { table, update }) =>
               await input.table(table).onChange((obj, oldObj) => {
-                if(obj) output.table(table).update(obj.id, [{ op: 'merge', value: update }])
+                if(obj) output.table(table).update(obj.id, [{ op: 'reverseMerge', value: update }])
               })
         })`, { table, update })
       } break;

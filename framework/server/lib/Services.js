@@ -74,6 +74,7 @@ class Services {
     if(this.config.services) {
       for(const service of this.config.services) {
         if(service.module) {
+          console.log('[startup] loadService (module)', service.name || service.module?.name)
           const module = service.module
           const definition = module
           this.serviceDefinitions.push(definition)
@@ -82,6 +83,7 @@ class Services {
           try {
             const entryFile = await this.getServiceEntryFile(service)
             debug("SERVICE", service, 'ENTRY FILE', entryFile)
+            console.log('[startup] loadService begin', service.name, entryFile)
             const module = await import(entryFile)
             const definition = module.default
             if (definition.name !== service.name) {
@@ -89,6 +91,7 @@ class Services {
               process.exit(1)
             }
             this.serviceDefinitions.push(definition)
+            console.log('[startup] loadService done', service.name)
           } catch(e) {
             console.error("ERROR LOADING SERVICE", service)
             throw e
@@ -176,29 +179,38 @@ class Services {
   async update() {
     for(const defn of this.serviceDefinitions) {
       console.group()
-      //console.log("#### UPDATE SERVICE", defn.name)
+      console.log('[startup] updateService begin', defn.name)
       if(!defn.processed) {
+        console.log('[startup] processServiceDefinition', defn.name)
         app.processServiceDefinition(defn)
         defn.processed = true
       }
       await app.updateService(defn)
-      //console.log("#### UPDATED SERVICE", defn.name)
+      console.log('[startup] updateService done', defn.name)
       console.groupEnd()
     }
   }
 
   async start(startOptions) {
     // when starting all services at once remove triggerRoutes for cleanup
+    console.log('[startup] start: delete triggerRoutes')
     await app.dao.request(['database', 'deleteTable'], app.databaseName, 'triggerRoutes').catch(e => 'ok')
+    console.log('[startup] start: plugins begin', this.plugins.length)
     await Promise.all(this.plugins.map(plugin => plugin(app, this)))
-    this.servicesPromise = Promise.all(this.serviceDefinitions.map(defn => {
+    console.log('[startup] start: plugins done; starting services in parallel', this.serviceDefinitions.length)
+    this.servicesPromise = Promise.all(this.serviceDefinitions.map(async defn => {
+      console.log('[startup] startService begin', defn.name)
       if(!defn.processed) {
+        console.log('[startup] processServiceDefinition (late)', defn.name)
         app.processServiceDefinition(defn)
         defn.processed = true
       }
-      return app.startService(defn, startOptions)
+      const started = await app.startService(defn, startOptions)
+      console.log('[startup] startService done', defn.name)
+      return started
     }))
     this.services = await this.servicesPromise
+    console.log('[startup] all startService settled')
     if(!startOptions.stopped) {
       for(const service of this.services) {
         setTimeout(() => service.afterStart(startOptions), 0)

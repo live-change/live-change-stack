@@ -161,6 +161,10 @@
           <router-link v-else :to="indexLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
+          <Tag v-if="slotProps.data.indexStatus && slotProps.data.indexStatus !== 'ready'"
+               class="ml-2"
+               :severity="indexStatusSeverity(slotProps.data.indexStatus)"
+               :value="indexStatusLabel(slotProps.data)" />
         </template>
       </Column>
       <Column field="entryCount" header="Entries" :headerStyle="{ 'width': '90px' }">
@@ -197,6 +201,7 @@
   import Column from "primevue/column"
   import Button from "primevue/button"
   import InputText from "primevue/inputtext"
+  import Tag from "primevue/tag"
 
   import ConfirmPopup from 'primevue/confirmpopup'
   import Toast from 'primevue/toast'
@@ -413,6 +418,23 @@
     })
   }
 
+  function indexStatusSeverity(status) {
+    if(status === 'sleeping') return 'warn'
+    if(status === 'error') return 'danger'
+    if(status === 'starting') return 'info'
+    return 'success'
+  }
+
+  function indexStatusLabel(row) {
+    if(row.indexStatus === 'sleeping' && row.failedOn) {
+      return `sleeping: ${row.failedOn.type} ${row.failedOn.name}`
+    }
+    if(row.indexStatus === 'sleeping' && row.indexError) {
+      return `sleeping: ${row.indexError}`
+    }
+    return row.indexStatus || ''
+  }
+
   function deleteTable(event, id) {
     console.log('deleteTable', id)
     confirm.require({
@@ -576,10 +598,11 @@
     })())
   }
 
-  const [ tables, indexes, logs ] = await Promise.all([
+  const [ tables, indexes, logs, indexStates ] = await Promise.all([
     live(dao, { what: [dbApi, 'tables', dbName] }),
     live(dao, { what: [dbApi, 'indexes', dbName] }),
-    live(dao, { what: [dbApi, 'logs', dbName] })
+    live(dao, { what: [dbApi, 'logs', dbName] }),
+    live(dao, { what: [dbApi, 'indexStates', dbName] })
   ])
 
   await Promise.all([
@@ -588,7 +611,20 @@
   ])
 
   const tableRows = computed(() => mergeRows(tables.value, 'table'))
-  const indexRows = computed(() => mergeRows(indexes.value, 'index'))
+  const indexRows = computed(() => {
+    const rows = mergeRows(indexes.value, 'index')
+    const states = indexStates.value || []
+    const byName = new Map(states.map(s => [s.name, s]))
+    return rows.map(row => {
+      const state = byName.get(row.id)
+      return {
+        ...row,
+        indexStatus: state?.status || null,
+        indexError: state?.error || null,
+        failedOn: state?.failedOn || null
+      }
+    })
+  })
   const logRows = computed(() => mergeRows(logs.value, 'log'))
 
 </script>

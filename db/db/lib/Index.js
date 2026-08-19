@@ -7,12 +7,18 @@ import profileLog from './profileLog.js'
 import nextTick from 'next-tick'
 import { ChangeStream } from './ChangeStream.js'
 import { unitRange,rangeIntersection } from './utils.js'
+import { MissingSourceError, assertSourceExists } from './MissingSourceError.js'
 
 
 import Debug from 'debug'
 const debug = Debug('db')
 
 const opLogBatchSize = 128 /// TODO: increase after testing
+
+const INDEX_CREATING = 0
+const INDEX_UPDATING = 1
+const INDEX_READY = 2
+const INDEX_SLEEPING = 3
 
 class ObjectReader extends ChangeStream {
   constructor(tableReader, id) {
@@ -346,32 +352,35 @@ class OpLogReader {
     this.disposed = false
   }
   table(name) {
+    this.onNewSource('table', name)
+    assertSourceExists(this.database, 'table', name)
     const prefix = 'table_'+name
     let reader = this.tableReaders.find(tr => tr.prefix === prefix)
     if(!reader) {
       reader = new TableReader(this, prefix, this.database.table(name))
       this.tableReaders.push(reader)
-      this.onNewSource('table', name)
     }
     return reader
   }
   index(name) {
+    this.onNewSource('index', name)
+    assertSourceExists(this.database, 'index', name)
     const prefix = 'index_'+name
     let reader = this.tableReaders.find(tr => tr.prefix === prefix)
     if(!reader) {
       reader = new TableReader(this, prefix, this.database.index(name))
       this.tableReaders.push(reader)
-      this.onNewSource('index', name)
     }
     return reader
   }
   log(name) {
+    this.onNewSource('log', name)
+    assertSourceExists(this.database, 'log', name)
     const prefix = 'log_'+name
     let reader = this.tableReaders.find(tr => tr.prefix === prefix)
     if(!reader) {
       reader = new TableReader(this, prefix, this.database.log(name), true)
       this.tableReaders.push(reader)
-      this.onNewSource('log', name)
     }
     return reader
   }
@@ -466,17 +475,23 @@ class IndexWriter {
   constructor(index) {
     this.index = index
   }
+  isSleeping() {
+    return this.index.state === INDEX_SLEEPING
+  }
   put(object) {
+    if(this.isSleeping()) return
     const id = object.id
     if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
     this.index.put(object)
   }
   delete(object) {
+    if(this.isSleeping()) return
     const id = typeof object === 'string' ? object :  object.id
     if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
     this.index.delete(id)
   }
   update(id, ops) {
+    if(this.isSleeping()) return
     if(typeof id != 'string') {
       console.error("Index update id is corrupted", JSON.stringify(id))
       console.error("INDEX", this.index.name)
@@ -486,6 +501,7 @@ class IndexWriter {
     this.index.update(id, ops)
   }
   change(obj, oldObj) {
+    if(this.isSleeping()) return
     try {
       if (obj) {
         if (oldObj && oldObj.id !== obj.id) {
@@ -519,10 +535,6 @@ class IndexWriter {
   }
 }
 
-const INDEX_CREATING = 0
-const INDEX_UPDATING = 1
-const INDEX_READY = 2
-
 class Index extends Table {
   constructor(database, name, code, params, config) {
     super(database, name, config)
@@ -532,13 +544,103 @@ class Index extends Table {
     this.params = params
     this.code = code
     this.startPromise = null
+    this.needsFullRebuild = false
+    this.sleepError = null
+    this.lastSleepLogKey = null
+    this.lastPhase = null
+    this.waking = false
+  }
+  isSleeping() {
+    return this.state === INDEX_SLEEPING
+  }
+  sleepErrorKey(error) {
+    if(error instanceof MissingSourceError) {
+      return `missing:${error.sourceType}:${error.sourceName}`
+    }
+    return `error:${error && error.message}`
+  }
+  logSleepOnce(error) {
+    const key = this.sleepErrorKey(error)
+    if(this.lastSleepLogKey === key) return
+    this.lastSleepLogKey = key
+    if(error instanceof MissingSourceError) {
+      console.error("INDEX", this.name, "SLEEPING: missing", error.sourceType, error.sourceName)
+    } else {
+      console.error("INDEX", this.name, "SLEEPING:", error && error.message)
+    }
+  }
+  notifyIndexState(status, extra = {}) {
+    if(!this.database.onIndexState) return
+    const uid = this.configObservable.value.uid
+    const failedOn = this.sleepError instanceof MissingSourceError
+      ? { type: this.sleepError.sourceType, name: this.sleepError.sourceName }
+      : null
+    this.database.onIndexState(uid, this.name, {
+      status,
+      error: this.sleepError ? String(this.sleepError.message) : null,
+      failedOn,
+      phase: this.lastPhase,
+      needsFullRebuild: !!this.needsFullRebuild,
+      updatedAt: Date.now(),
+      ...extra
+    })
+  }
+  enterSleep(error) {
+    const phase = this.state === INDEX_CREATING ? 'creating'
+      : this.state === INDEX_UPDATING ? 'updating'
+      : this.lastPhase
+    if(this.state === INDEX_CREATING) this.needsFullRebuild = true
+    this.lastPhase = phase
+    this.sleepError = error
+    if(this.reader) {
+      try {
+        this.reader.dispose()
+      } catch(disposeError) {
+        // ignore dispose errors while entering sleep
+      }
+      this.reader = null
+    }
+    this.state = INDEX_SLEEPING
+    this.logSleepOnce(error)
+    this.notifyIndexState('sleeping', { phase })
+  }
+  async resetStoresForRebuild() {
+    if(this.reader) {
+      try {
+        this.reader.dispose()
+      } catch(disposeError) {
+        // ignore
+      }
+      this.reader = null
+    }
+    // Clear materialized data without dropping LMDB dbi (recreate can break handles)
+    while(true) {
+      const batch = await this.data.rangeGet({ limit: 256 })
+      if(!batch.length) break
+      for(const object of batch) {
+        await this.atomicWriter.delete(object.id)
+      }
+    }
+    await this.deleteOpLog()
+    this.needsFullRebuild = false
+  }
+  async prepareForWake() {
+    if(!this.needsFullRebuild) return
+    const lastOps = await this.opLog.rangeGet({ reverse: true, limit: 1 })
+    if(lastOps.length === 0) {
+      this.needsFullRebuild = false
+      return
+    }
+    await this.resetStoresForRebuild()
   }
   async startIndex() {
-    if(!this.startPromise)this.startPromise = this.startIndexInternal()
+    if(!this.startPromise) this.startPromise = this.startIndexInternal()
     return this.startPromise
   }
   async startIndexInternal() {
     debug("STARTING INDEX", this.name, "IN DATABASE", this.database.name)
+    this.sleepError = null
+    this.notifyIndexState('starting', { error: null, failedOn: null })
     debug("EXECUTING INDEX CODE", this.name)
     this.scriptContext = this.database.createScriptContext({
       /// TODO: script available routines
@@ -564,6 +666,7 @@ class Index extends Table {
       //console.log("RECREATING INDEX", this.name)
       let indexCreateTimestamp = Date.now()
       this.state = INDEX_CREATING
+      this.lastPhase = 'creating'
       let timeCounter = 0
       const startReader = new queryGet.QueryReader(this.database, () => (''+(++timeCounter)).padStart(16, '0'),
           (sourceType, sourceName) => this.addSource(sourceType, sourceName))
@@ -576,6 +679,7 @@ class Index extends Table {
       lastUpdateTimestamp = lastIndexOperation.timestamp - 1000 // one second overlap
       //console.log("UPDATING INDEX", this.name, "FROM", lastUpdateTimestamp)
       this.state = INDEX_UPDATING
+      this.lastPhase = 'updating'
     }
     const lastUpdateKey = ((''+lastUpdateTimestamp).padStart(16, '0'))+':'
     //console.log("INDEX SYNC FROM", lastUpdateKey)
@@ -589,6 +693,10 @@ class Index extends Table {
     debug("WAITING FOR CODE!", this.name)
     await codePromise
     this.state = INDEX_READY
+    this.lastPhase = null
+    this.needsFullRebuild = false
+    this.sleepError = null
+    this.lastSleepLogKey = null
     const startTime = Date.now()
     debug("INDEX STARTED!", this.name)
     await this.opLog.put({
@@ -598,24 +706,37 @@ class Index extends Table {
         type: 'indexed'
       }
     })
+    this.notifyIndexState('ready', { error: null, failedOn: null, phase: null, needsFullRebuild: false })
     debug("STARTED INDEX", this.name, "IN DATABASE", this.database.name)
   }
   async deleteIndex() {
-    this.reader.dispose()
+    if(this.reader) {
+      try {
+        this.reader.dispose()
+      } catch(disposeError) {
+        // ignore
+      }
+      this.reader = null
+    }
     await this.deleteTable()
   }
   addSource(sourceType, sourceName) {
     const config = JSON.parse(JSON.stringify(this.configObservable.value))
     if(!config.sources) config.sources = []
     const existingSourceInfo = config.sources.find(({type, name}) => type === sourceType && name === sourceName )
-    if(existingSourceInfo) return
-    const newSourceInfo = { type: sourceType, name: sourceName }
-    config.sources.push(newSourceInfo)
-    debug("NEW INDEX", this.name, "SOURCE DETECTED", sourceType, sourceName)
-    this.configObservable.set(config)
-    this.database.config.indexes[this.name] = config
-    this.database.handleConfigUpdated()
+    if(!existingSourceInfo) {
+      const newSourceInfo = { type: sourceType, name: sourceName }
+      config.sources.push(newSourceInfo)
+      debug("NEW INDEX", this.name, "SOURCE DETECTED", sourceType, sourceName)
+      this.configObservable.set(config)
+      this.database.config.indexes[this.name] = config
+      this.database.handleConfigUpdated()
+    }
+    if(this.database.onIndexDependency) {
+      this.database.onIndexDependency(config.uid, this.name, sourceType, sourceName)
+    }
   }
 }
 
+export { INDEX_CREATING, INDEX_UPDATING, INDEX_READY, INDEX_SLEEPING }
 export default Index

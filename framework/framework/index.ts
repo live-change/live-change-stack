@@ -30,6 +30,8 @@ export {
   MigrationDefinition
 }
 
+export { structuralPropertyFingerprint } from './lib/definition/PropertyDefinition.js'
+
 // Export all types from definition files
 export type { ActionDefinitionSpecification } from './lib/definition/ActionDefinition.js'
 export type { EventDefinitionSpecification } from './lib/definition/EventDefinition.js'

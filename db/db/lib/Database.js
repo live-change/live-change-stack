@@ -4,7 +4,6 @@ import Log from './Log.js'
 import queryGet from './queryGet.js'
 import queryObservable from './queryObservable.js'
 import getRandomValues from 'get-random-values'
-import nextTick from 'next-tick'
 
 import ReactiveDao from "@live-change/dao"
 
@@ -192,13 +191,19 @@ class Database {
   async deleteIndex(name) {
     const config = this.config.indexes[name]
     if(!config) throw new Error(`Index ${name} not found`)
-    const index = await this.index(name)
-    await index.deleteIndex()
+    const index = this.indexes.get(name)
+    if(index) {
+      await index.deleteIndex()
+      this.indexes.delete(name)
+    } else {
+      await this.deleteStore(config.uid + '.data')
+      await this.deleteStore(config.uid + '.opLog')
+    }
     delete this.config.indexes[name]
     this.saveConfig(this.config)
     this.configObservable.set(JSON.parse(JSON.stringify(this.config)))
     this.indexesListObservable.remove(name)
-    this.indexes.delete(name)
+    if(this.onIndexRemoved) this.onIndexRemoved(config.uid)
   }
 
   renameIndex(name, newName) {
@@ -275,21 +280,35 @@ class Database {
       try {
         await index.startIndex()
       } catch(error) {
-        if(config.sourceName) console.error("INDEX", name, "ERROR", error)
-          else console.error("INDEX", name, "ERROR", error, "CODE:\n", code)
-        console.error("DELETINGww INDEX", name)
-        delete this.config.indexes[name]
-        this.indexesListObservable.remove(name)
-        if(this.onAutoRemoveIndex && config) this.onAutoRemoveIndex(name, config.uid)        
-        await this.saveConfig(this.config)        
-        console.error("DELETED INDEX", name)
-        throw error
+        index.enterSleep(error)
+        return index
       }
-      this.indexes.set(name, index)
       return index
     }
-    await index.startPromise
+    if(index.isSleeping && index.isSleeping()) return index
+    if(index.startPromise) await index.startPromise
     return index
+  }
+
+  async wakeIndex(name) {
+    const index = this.indexes.get(name)
+    if(!index) return null
+    if(!index.isSleeping || !index.isSleeping()) return index
+    if(index.waking) return index
+    index.waking = true
+    try {
+      if(index.needsFullRebuild) await index.prepareForWake()
+      index.startPromise = null
+      index.lastSleepLogKey = null
+      try {
+        await index.startIndex()
+      } catch(error) {
+        index.enterSleep(error)
+      }
+      return index
+    } finally {
+      index.waking = false
+    }
   }
 
   queryGet(code) {
@@ -314,26 +333,13 @@ class Database {
 
   handleUnhandledRejectionInIndex(name, reason) {
     const config = this.config.indexes[name]
-    console.error("INDEX", name, "unhandledRejection", reason, "CODE:\n", config?.code,
-      "\nPARAMS:\n", config?.parameters, "\nSTACK:\n", reason.stack, "\nPROMISE:\n", reason.promise)
-    console.error("DELETING INDEX", name)
     const index = this.indexes.get(name)
     if(index) {
-      index.deleteIndex()
-      this.indexes.delete(name)
+      index.enterSleep(reason)
+      return
     }
-    nextTick(() => {
-      if(!this.config.indexes[name]) {
-        console.error("INDEX", name, "IS ALREADY DELETED")
-        console.trace("ALREADY DELETED")
-        return;
-      }
-      delete this.config.indexes[name]
-      this.indexesListObservable.remove(name)
-      if(this.onAutoRemoveIndex) this.onAutoRemoveIndex(name, config.uid)
-      this.saveConfig(this.config)
-    })
-
+    console.error("INDEX", name, "unhandledRejection", reason, "CODE:\n", config?.code,
+      "\nPARAMS:\n", config?.parameters, "\nSTACK:\n", reason.stack, "\nPROMISE:\n", reason.promise)
   }
   handleConfigUpdated() {
     this.saveConfig(this.config)

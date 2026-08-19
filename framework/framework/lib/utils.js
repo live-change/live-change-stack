@@ -58,7 +58,7 @@ function mapDifference(mapA, mapB) {
   return difference
 }
 
-function crudChanges(oldElements, newElements, elementName, newParamName, params = {}) {
+function crudChanges(oldElements, newElements, elementName, newParamName, params = {}, { equals } = {}) {
   let changes = []
   for(let newElementName in newElements) {
     let oldElement = oldElements[newElementName]
@@ -98,24 +98,29 @@ function crudChanges(oldElements, newElements, elementName, newParamName, params
     } else {
       if(newElement.computeChanges) {
         changes.push(...newElement.computeChanges(oldElement, params, newElementName))
-      } else if(
-          JSON.stringify({ ...oldElement, created: undefined })
-          !== JSON.stringify({ ...newElement, created: undefined })
-      ) {
-        let change = {
-          operation: "delete"+elementName,
-          ...params,
-          name: newElementName
+      } else {
+        const unchanged = equals
+          ? equals(oldElement, newElement)
+          : (
+            JSON.stringify({ ...oldElement, created: undefined })
+            === JSON.stringify({ ...newElement, created: undefined })
+          )
+        if(!unchanged) {
+          let change = {
+            operation: "delete"+elementName,
+            ...params,
+            name: newElementName
+          }
+          change[newParamName] = oldElement.toJSON ? oldElement.toJSON() : oldElement
+          changes.push(change)
+          change = {
+            operation: "create" + elementName,
+            name: newElementName,
+            ...params
+          }
+          change[newParamName] = newElement.toJSON ? newElement.toJSON() : newElement
+          changes.push(change)
         }
-        change[newParamName] = oldElement.toJSON ? oldElement.toJSON() : oldElement
-        changes.push(change)
-        change = {
-          operation: "create" + elementName,
-          name: newElementName,
-          ...params
-        }
-        change[newParamName] = newElement.toJSON ? newElement.toJSON() : newElement
-        changes.push(change)
       }
     }
   }

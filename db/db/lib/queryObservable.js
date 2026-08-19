@@ -1,6 +1,7 @@
 import ReactiveDao from "@live-change/dao"
 import { ChangeStream } from './ChangeStream.js'
 import { unitRange, rangeIntersection } from './utils.js'
+import { assertSourceExists } from './MissingSourceError.js'
 
 class ObjectObserver {
   #callback = null
@@ -251,12 +252,14 @@ class QueryReader {
   }
   table(name) {
     if(this.#onNewSource) this.#onNewSource('table', name)
+    assertSourceExists(this.#database, 'table', name)
     const prefix = 'table_' + name
     return this.getExistingReaderOrCreate(prefix,
         () => new TableReader(this, prefix, this.#database.table(name)))
   }
   log(name) {
     if(this.#onNewSource) this.#onNewSource('log', name)
+    assertSourceExists(this.#database, 'log', name)
     const prefix = 'log_' + name
     return this.getExistingReaderOrCreate(prefix,
         () => new TableReader(this, prefix, this.#database.log(name)))
@@ -264,6 +267,7 @@ class QueryReader {
   async index(name) {
     const prefix = 'index_' + name
     if(this.#onNewSource) this.#onNewSource('index', name)
+    assertSourceExists(this.#database, 'index', name)
     return await this.getExistingReaderOrCreate(prefix,
         async () => new TableReader(this, prefix, await this.#database.index(name)))
   }

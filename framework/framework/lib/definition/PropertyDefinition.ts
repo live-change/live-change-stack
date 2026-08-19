@@ -19,6 +19,32 @@ export interface PropertyDefinitionSpecification {
   default?: any
 }
 
+/**
+ * Structural fingerprint for DB schema diffs.
+ * Only type / nesting / defaults — meta fields (description, enum, validation, search, index, …) are ignored.
+ * default and defaultValue are normalized to a single `default` key.
+ */
+export function structuralPropertyFingerprint(prop: any): any {
+  if(!prop || typeof prop !== 'object') return prop
+  const out: Record<string, any> = {}
+  if('type' in prop && prop.type !== undefined && prop.type !== null) {
+    out.type = typeName(prop.type) ?? prop.type
+  }
+  if(prop.of) out.of = structuralPropertyFingerprint(prop.of)
+  if(prop.items) out.items = structuralPropertyFingerprint(prop.items)
+  if(prop.properties) {
+    out.properties = {}
+    for(const key of Object.keys(prop.properties).sort()) {
+      out.properties[key] = structuralPropertyFingerprint(prop.properties[key])
+    }
+  }
+  const defaultValue = prop.defaultValue !== undefined ? prop.defaultValue : prop.default
+  if(defaultValue !== undefined) {
+    out.default = defaultValue
+  }
+  return out
+}
+
 class PropertyDefinition<T extends PropertyDefinitionSpecification> {
   [key: string]: any
 
@@ -69,23 +95,11 @@ class PropertyDefinition<T extends PropertyDefinitionSpecification> {
 
   computeChanges( oldProperty, params, name) {
     let changes: Record<string, any>[] = []
-    let typeChanged = false
-    if(typeName(this.type) !== typeName(oldProperty.type)) typeChanged = true
-    if((this.of && typeName(this.of.type)) !== (oldProperty.of && typeName(oldProperty.of.type)))
-      typeChanged = true
-    if((this.items && typeName(this.items.type)) !== (oldProperty.items && typeName(oldProperty.items.type)))
-      typeChanged = true
-    if(typeChanged) {
+    const oldFp = structuralPropertyFingerprint(oldProperty)
+    const newFp = structuralPropertyFingerprint(this)
+    if(JSON.stringify(oldFp) !== JSON.stringify(newFp)) {
       changes.push({
         operation: "changePropertyType",
-        ...params,
-        property: name,
-        ...this
-      })
-    }
-    if(JSON.stringify(this.search) !== JSON.stringify(oldProperty.search)) {
-      changes.push({
-        operation: "changePropertySearch",
         ...params,
         property: name,
         ...this

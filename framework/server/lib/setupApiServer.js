@@ -15,16 +15,31 @@ async function setupApiServer(settings) {
     await app.dao.request(['database', 'createDatabase'], app.databaseName, {
       storage: { noMetaSync: true, noSync: true }
     }).catch(err => 'exists')
+    console.log('[startup] createDatabase done (or already exists)')
   }
 
   const services = new Services(config)
 
+  console.log('[startup] loadServices begin')
   await services.loadServices()
+  console.log('[startup] loadServices done, count=', services.serviceDefinitions?.length)
 
-  if(updateServices) await services.update()
+  if(updateServices) {
+    console.log('[startup] updateServices begin')
+    await services.update()
+    console.log('[startup] updateServices done')
+  } else {
+    console.log('[startup] updateServices skipped')
+  }
+
+  console.log('[startup] services.start begin', {
+    withServices: !!withServices,
+    stopped: settings.stopped
+  })
   await services.start(withServices
       ? { runCommands: true, handleEvents: true, indexSearch: true, stopped: settings.stopped }
       : { runCommands: false, handleEvents: false, indexSearch: false, stopped: true })
+  console.log('[startup] services.start done')
 
   if(settings.initScript) {
     if(config.init) {

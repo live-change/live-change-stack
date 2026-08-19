@@ -1,6 +1,7 @@
 import { TableWriter, LogWriter } from './queryUpdate.js'
 import { ChangeStream } from './ChangeStream.js'
 import { unitRange, rangeIntersection } from './utils.js'
+import { assertSourceExists } from './MissingSourceError.js'
 const maxGetLimit = 256
 
 class ObjectReader extends ChangeStream {
@@ -130,14 +131,17 @@ class QueryReader {
   }
   table(name) {
     if(this.#onNewSource) this.#onNewSource('table', name)
+    assertSourceExists(this.#database, 'table', name)
     return new TableReader(this.#database.table(name), this.#time)
   }
   index(name) {
     if(this.#onNewSource) this.#onNewSource('index', name)
+    assertSourceExists(this.#database, 'index', name)
     return new TableReader(this.#database.index(name), this.#time)
   }
   log(name) {
     if(this.#onNewSource) this.#onNewSource('log', name)
+    assertSourceExists(this.#database, 'log', name)
     return new TableReader(this.#database.log(name), this.#time)
   }
 }

@@ -1,4 +1,4 @@
-import PropertyDefinition from "./PropertyDefinition.js"
+import PropertyDefinition, { structuralPropertyFingerprint } from "./PropertyDefinition.js"
 import type { PropertyDefinitionSpecification } from "./PropertyDefinition.js"
 import { crudChanges, definitionToJSON } from "../utils.js"
 
@@ -93,7 +93,11 @@ class ModelDefinition<T extends ModelDefinitionSpecification> {
     let changes: Record<string, any>[] = []
     const json = this.toJSON()
     changes.push(...crudChanges(oldModel.properties || {}, json.properties || {},
-        "Property", "property", { model: this.name }))
+        "Property", "property", { model: this.name }, {
+          equals: (a, b) =>
+            JSON.stringify(structuralPropertyFingerprint(a)) ===
+            JSON.stringify(structuralPropertyFingerprint(b))
+        }))
     changes.push(...crudChanges(oldModel.indexes || {}, json.indexes || {},
         "Index", "index", { model: this.name, storage: this.storage }))
     if(oldModel.search && !this.search) changes.push({ operation: "searchDisabled", model: this.name })
