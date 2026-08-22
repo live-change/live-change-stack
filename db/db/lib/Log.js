@@ -1,6 +1,7 @@
 import AtomicWriter from './AtomicWriter.js'
 import ReactiveDao from "@live-change/dao"
 import { combineStoreStats, readStoreStat } from './storeStats.js'
+import { createDebouncedActivity } from './debouncedActivity.js'
 
 class Log {
   constructor(database, name, config) {
@@ -13,6 +14,7 @@ class Log {
 
     this.lastTime = Date.now()
     this.lastId = 0
+    this.activity = createDebouncedActivity()
   }
 
   async put(log) {
@@ -25,11 +27,13 @@ class Log {
     }
     const id = ((''+this.lastTime).padStart(16, '0'))+':'+((''+this.lastId).padStart(6, '0'))
     await this.data.put({ ...log, id, timestamp: this.lastTime })
+    this.activity.touch(id)
     return id
   }
 
   async putOld(log) {
     await this.data.put(log)
+    if(log && log.id != null) this.activity.touch(log.id)
   }
 
   async clear(before, maxCount = Infinity) {

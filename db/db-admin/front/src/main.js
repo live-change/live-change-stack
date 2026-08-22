@@ -12,6 +12,7 @@ import ToastService from 'primevue/toastservice'
 import StyleClass from 'primevue/styleclass'
 import Ripple from 'primevue/ripple'
 import BadgeDirective from 'primevue/badgedirective'
+import Tooltip from 'primevue/tooltip'
 import Aura from '@primeuix/themes/aura'
 import App from './App.vue'
 import Page from './Page.vue'
@@ -57,6 +58,7 @@ export function createApp(api) {
   app.directive('styleclass', StyleClass)
   app.directive('ripple', Ripple)
   app.directive('badge', BadgeDirective)
+  app.directive('tooltip', Tooltip)
 
   const head = createHead()
   app.use(head)

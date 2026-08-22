@@ -3,6 +3,7 @@ import AtomicWriter from './AtomicWriter.js'
 import ReactiveDao from '@live-change/dao'
 import { combineStoreStats, readStoreStat } from './storeStats.js'
 import { clearOpLogStore, createOpLogWritter } from './clearOpLog.js'
+import { createDebouncedActivity } from './debouncedActivity.js'
 
 class Table {
   constructor(database, name, config) {
@@ -20,6 +21,7 @@ class Table {
     this.atomicWriter = new AtomicWriter(this.opLogger)
 
     this.locks = new Map()
+    this.activity = createDebouncedActivity()
   }
 
   objectGet(key) {
@@ -50,7 +52,9 @@ class Table {
     const id = object.id
     if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
     try {
-      return await this.atomicWriter.put(object)
+      const result = await this.atomicWriter.put(object)
+      this.activity.touch(id)
+      return result
     } catch(e) {
       console.error("ERROR WHILE PUTTING OBJECT", object.id, "TO TABLE", this.name)
       console.error(e)
@@ -58,15 +62,19 @@ class Table {
     }
   }
 
-  delete(id) {
-    return this.atomicWriter.delete(id)
+  async delete(id) {
+    const result = await this.atomicWriter.delete(id)
+    this.activity.touch(id)
+    return result
   }
 
-  update(id, operations, options) {
+  async update(id, operations, options) {
     if(typeof id != 'string')
       throw new Error(`ID is not string: ${JSON.stringify(id)} while updating table ` + this.name
         + ' with ops' + JSON.stringify(operations))
-    return this.atomicWriter.update(id, operations, options)
+    const result = await this.atomicWriter.update(id, operations, options)
+    this.activity.touch(id)
+    return result
   }
 
   async clearOpLog(lastTimestamp, limit, options = {}) {

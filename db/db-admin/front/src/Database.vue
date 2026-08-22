@@ -62,6 +62,9 @@
           <router-link v-else :to="tableLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
+          <Suspense>
+            <ActivityBadge kind="table" :dbApi="dbApi" :dbName="dbName" :name="slotProps.data.id" />
+          </Suspense>
         </template>
       </Column>
       <Column field="entryCount" header="Entries" :headerStyle="{ 'width': '90px' }">
@@ -113,6 +116,9 @@
           <router-link v-else :to="logLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
+          <Suspense>
+            <ActivityBadge kind="log" :dbApi="dbApi" :dbName="dbName" :name="slotProps.data.id" />
+          </Suspense>
         </template>
       </Column>
       <Column field="entryCount" header="Entries" :headerStyle="{ 'width': '90px' }">
@@ -161,10 +167,17 @@
           <router-link v-else :to="indexLink(dbName, slotProps.data.id)">
             {{ slotProps.data.id  }}
           </router-link>
-          <Tag v-if="slotProps.data.indexStatus && slotProps.data.indexStatus !== 'ready'"
-               class="ml-2"
-               :severity="indexStatusSeverity(slotProps.data.indexStatus)"
-               :value="indexStatusLabel(slotProps.data)" />
+          <Suspense>
+            <ActivityBadge
+              kind="index"
+              :dbApi="dbApi"
+              :dbName="dbName"
+              :name="slotProps.data.id"
+              :indexStatus="slotProps.data.indexStatus"
+              :indexError="slotProps.data.indexError"
+              :failedOn="slotProps.data.failedOn"
+            />
+          </Suspense>
         </template>
       </Column>
       <Column field="entryCount" header="Entries" :headerStyle="{ 'width': '90px' }">
@@ -201,7 +214,7 @@
   import Column from "primevue/column"
   import Button from "primevue/button"
   import InputText from "primevue/inputtext"
-  import Tag from "primevue/tag"
+  import ActivityBadge from "./ActivityBadge.vue"
 
   import ConfirmPopup from 'primevue/confirmpopup'
   import Toast from 'primevue/toast'
@@ -416,23 +429,6 @@
         usedBytes: stats?.usedBytes ?? null
       }
     })
-  }
-
-  function indexStatusSeverity(status) {
-    if(status === 'sleeping') return 'warn'
-    if(status === 'error') return 'danger'
-    if(status === 'starting') return 'info'
-    return 'success'
-  }
-
-  function indexStatusLabel(row) {
-    if(row.indexStatus === 'sleeping' && row.failedOn) {
-      return `sleeping: ${row.failedOn.type} ${row.failedOn.name}`
-    }
-    if(row.indexStatus === 'sleeping' && row.indexError) {
-      return `sleeping: ${row.indexError}`
-    }
-    return row.indexStatus || ''
   }
 
   function deleteTable(event, id) {

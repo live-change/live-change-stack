@@ -8,6 +8,7 @@ import nextTick from 'next-tick'
 import { ChangeStream } from './ChangeStream.js'
 import { unitRange,rangeIntersection } from './utils.js'
 import { MissingSourceError, assertSourceExists } from './MissingSourceError.js'
+import { createDebouncedActivity } from './debouncedActivity.js'
 
 
 import Debug from 'debug'
@@ -396,72 +397,79 @@ class OpLogReader {
   }
   async readMore() {
     this.readingMore = true
-    do {
-      while(true) {
-        this.gotSignals = false
-        if(this.disposed) return
-        const now = Date.now()
-        //console.log("LOOKING FOR NEXT KEYS")
-        let possibleNextKeys = await Promise.all(
-            this.tableReaders.map(async tr => ({ reader: tr, key: await tr.nextKey() }))
-        )
-        //console.log("GOT NEXT KEYS")
-        if(this.disposed) return
-        //console.log("POSSIBLE NEXT KEYS", possibleNextKeys.map(({key, reader}) => [reader.prefix, key]))
-        if(possibleNextKeys.length === 0) { /// It could happen when oplog is cleared
-          return
-        }
-        let next = null
-        for (const possibleKey of possibleNextKeys) {
-          if (possibleKey.key && (!next || possibleKey.key < next.key)) {
-            next = possibleKey
+    const index = this.database.indexes.get(this.indexName)
+    try {
+      do {
+        while(true) {
+          this.gotSignals = false
+          if(this.disposed) return
+          const now = Date.now()
+          //console.log("LOOKING FOR NEXT KEYS")
+          let possibleNextKeys = await Promise.all(
+              this.tableReaders.map(async tr => ({ reader: tr, key: await tr.nextKey() }))
+          )
+          //console.log("GOT NEXT KEYS")
+          if(this.disposed) return
+          //console.log("POSSIBLE NEXT KEYS", possibleNextKeys.map(({key, reader}) => [reader.prefix, key]))
+          if(possibleNextKeys.length === 0) { /// It could happen when oplog is cleared
+            return
           }
-        }
-        //console.log("NEXT", next)
-        //console.log("NEXT KEY", next && next.reader && next.reader.prefix, next && next.key)
-        const lastKey = '\xFF\xFF\xFF\xFF'
-        //console.log("NEXT", !!next, "KEY", next && next.key, lastKey)
-        if(!next || next.key === lastKey) break // nothing to read
-        let otherReaderNext = null
-        for(const possibleKey of possibleNextKeys) {
-          if(possibleKey.reader !== next.reader && possibleKey.key
-              && (!otherReaderNext || possibleKey.key < otherReaderNext.key))
-            otherReaderNext = possibleKey
-        }
-        /*console.log("OTHER READ NEXT", otherReaderNext && otherReaderNext.reader && otherReaderNext.reader.prefix,
-            otherReaderNext && otherReaderNext.key)*/
-        let readEnd = (otherReaderNext && otherReaderNext.key) // Read to next other reader key
-            || (((''+(now - 1))).padStart(16, '0'))+':' // or to current timestamp
-        if(readEnd < next) {
-          readEnd = next.key+'\xff'
-        }
-
-        if((next.key||'') < this.currentKey) {
-          //debugger
-          console.error("time travel", next.key, this.currentKey)
-          //process.exit(1) /// TODO: do something about it!
-        }
-        //console.log("CKN", this.currentKey, '=>', next.key)
-        this.currentKey = next.key
-        //console.log("READ TO", readEnd)
-        try {
-          const readKey = await next.reader.readTo(readEnd)
-          //console.log("READED")
-          if(readKey) {
-            if((readKey||'') < this.currentKey) {
-              //debugger
-              console.error("time travel", readKey, this.currentKey)
-              //process.exit(1) /// TODO: do something about it!
+          let next = null
+          for (const possibleKey of possibleNextKeys) {
+            if (possibleKey.key && (!next || possibleKey.key < next.key)) {
+              next = possibleKey
             }
-            //console.log("CKR", this.currentKey, '=>', readKey)
-            this.currentKey = readKey
           }
-        } catch(error) {
-          this.database.handleUnhandledRejectionInIndex(this.indexName, error)
+          //console.log("NEXT", next)
+          //console.log("NEXT KEY", next && next.reader && next.reader.prefix, next && next.key)
+          const lastKey = '\xFF\xFF\xFF\xFF'
+          //console.log("NEXT", !!next, "KEY", next && next.key, lastKey)
+          if(!next || next.key === lastKey) break // nothing to read
+          let otherReaderNext = null
+          for(const possibleKey of possibleNextKeys) {
+            if(possibleKey.reader !== next.reader && possibleKey.key
+                && (!otherReaderNext || possibleKey.key < otherReaderNext.key))
+              otherReaderNext = possibleKey
+          }
+          /*console.log("OTHER READ NEXT", otherReaderNext && otherReaderNext.reader && otherReaderNext.reader.prefix,
+              otherReaderNext && otherReaderNext.key)*/
+          let readEnd = (otherReaderNext && otherReaderNext.key) // Read to next other reader key
+              || (((''+(now - 1))).padStart(16, '0'))+':' // or to current timestamp
+          if(readEnd < next) {
+            readEnd = next.key+'\xff'
+          }
+
+          if((next.key||'') < this.currentKey) {
+            //debugger
+            console.error("time travel", next.key, this.currentKey)
+            //process.exit(1) /// TODO: do something about it!
+          }
+          //console.log("CKN", this.currentKey, '=>', next.key)
+          this.currentKey = next.key
+          if(index && index.activity) index.activity.touch(this.currentKey)
+          //console.log("READ TO", readEnd)
+          try {
+            const readKey = await next.reader.readTo(readEnd)
+            //console.log("READED")
+            if(readKey) {
+              if((readKey||'') < this.currentKey) {
+                //debugger
+                console.error("time travel", readKey, this.currentKey)
+                //process.exit(1) /// TODO: do something about it!
+              }
+              //console.log("CKR", this.currentKey, '=>', readKey)
+              this.currentKey = readKey
+              if(index && index.activity) index.activity.touch(this.currentKey)
+            }
+          } catch(error) {
+            this.database.handleUnhandledRejectionInIndex(this.indexName, error)
+          }
         }
-      }
-    } while(this.gotSignals)
-    this.readingMore = false
+      } while(this.gotSignals)
+    } finally {
+      this.readingMore = false
+      if(index && index.activity) index.activity.idle()
+    }
   }
   dispose() {
     this.disposed = true
@@ -549,6 +557,25 @@ class Index extends Table {
     this.lastSleepLogKey = null
     this.lastPhase = null
     this.waking = false
+    // Catch-up activity driven by OpLogReader, not table put/delete materialization
+    this.activity = createDebouncedActivity()
+  }
+
+  async put(object) {
+    const id = object.id
+    if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
+    return this.atomicWriter.put(object)
+  }
+
+  async delete(id) {
+    return this.atomicWriter.delete(id)
+  }
+
+  async update(id, operations, options) {
+    if(typeof id != 'string')
+      throw new Error(`ID is not string: ${JSON.stringify(id)} while updating table ` + this.name
+        + ' with ops' + JSON.stringify(operations))
+    return this.atomicWriter.update(id, operations, options)
   }
   isSleeping() {
     return this.state === INDEX_SLEEPING
@@ -592,6 +619,7 @@ class Index extends Table {
     if(this.state === INDEX_CREATING) this.needsFullRebuild = true
     this.lastPhase = phase
     this.sleepError = error
+    const catchUpKey = this.reader?.currentKey
     if(this.reader) {
       try {
         this.reader.dispose()
@@ -603,6 +631,9 @@ class Index extends Table {
     this.state = INDEX_SLEEPING
     this.logSleepOnce(error)
     this.notifyIndexState('sleeping', { phase })
+    if(this.activity) {
+      this.activity.setError(error && error.message, catchUpKey)
+    }
   }
   async resetStoresForRebuild() {
     if(this.reader) {
@@ -707,6 +738,7 @@ class Index extends Table {
       }
     })
     this.notifyIndexState('ready', { error: null, failedOn: null, phase: null, needsFullRebuild: false })
+    if(this.activity) this.activity.clearError()
     debug("STARTED INDEX", this.name, "IN DATABASE", this.database.name)
   }
   async deleteIndex() {

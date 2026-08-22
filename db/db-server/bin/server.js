@@ -69,6 +69,16 @@ function serverOptions(yargs) {
     description: 'disable automatic opLog cleaner',
     default: false
   })
+  yargs.option('wsMaxFrameSize', {
+    describe: 'maximum size of websocket frame',
+    type: 'number',
+    default: 20 * 1024 * 1024
+  })
+  yargs.option('wsMaxMessageSize', {
+    describe: 'maximum size of websocket message',
+    type: 'number',
+    default: 20 * 1024 * 1024
+  })
 }
 
 function storeOptions(yargs, defaults = {}) {
@@ -115,7 +125,8 @@ async function create({ dbRoot, backend, verbose }) {
 async function serve(argv) {
   const {
     dbRoot, backend, backendUrl, verbose, host, port, master, slowStart, profileLog,
-    opLogRetentionMs, opLogClearIntervalMs, opLogClearBatchSize, opLogClearDisabled
+    opLogRetentionMs, opLogClearIntervalMs, opLogClearBatchSize, opLogClearDisabled,
+    wsMaxFrameSize, wsMaxMessageSize
   } = argv
   if(profileLog) {
     const out = profileOutput(profileLog)
@@ -129,7 +140,9 @@ async function serve(argv) {
     opLogRetentionMs,
     opLogClearIntervalMs,
     opLogClearBatchSize,
-    opLogClearDisabled
+    opLogClearDisabled,
+    maxReceivedFrameSize: wsMaxFrameSize,
+    maxReceivedMessageSize: wsMaxMessageSize
   })
 
   process.on('unhandledRejection', (reason, promise) => {

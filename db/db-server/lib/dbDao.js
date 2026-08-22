@@ -683,6 +683,60 @@ function localReads(server, scriptContext) {
         return system.table(dbName + '_indexState').rangeGet({})
       }
     },
+    tableActivity: {
+      observable: (dbName, tableName) => {
+        const empty = new ReactiveDao.ObservableValue({ busy: false, lastKey: null, error: null })
+        const db = server.databases.get(dbName)
+        if(!db) return empty
+        const table = db.tables.get(tableName)
+        if(!table || !table.activity) return empty
+        return table.activity.observable
+      },
+      get: async (dbName, tableName) => {
+        const empty = { busy: false, lastKey: null, error: null }
+        const db = server.databases.get(dbName)
+        if(!db) return empty
+        const table = db.tables.get(tableName)
+        if(!table || !table.activity) return empty
+        return table.activity.observable.value
+      }
+    },
+    indexActivity: {
+      observable: (dbName, indexName) => {
+        const empty = new ReactiveDao.ObservableValue({ busy: false, lastKey: null, error: null })
+        const db = server.databases.get(dbName)
+        if(!db) return empty
+        const index = db.indexes.get(indexName)
+        if(!index || !index.activity) return empty
+        return index.activity.observable
+      },
+      get: async (dbName, indexName) => {
+        const empty = { busy: false, lastKey: null, error: null }
+        const db = server.databases.get(dbName)
+        if(!db) return empty
+        const index = db.indexes.get(indexName)
+        if(!index || !index.activity) return empty
+        return index.activity.observable.value
+      }
+    },
+    logActivity: {
+      observable: (dbName, logName) => {
+        const empty = new ReactiveDao.ObservableValue({ busy: false, lastKey: null, error: null })
+        const db = server.databases.get(dbName)
+        if(!db) return empty
+        const log = db.logs.get(logName)
+        if(!log || !log.activity) return empty
+        return log.activity.observable
+      },
+      get: async (dbName, logName) => {
+        const empty = { busy: false, lastKey: null, error: null }
+        const db = server.databases.get(dbName)
+        if(!db) return empty
+        const log = db.logs.get(logName)
+        if(!log || !log.activity) return empty
+        return log.activity.observable.value
+      }
+    },
     indexDependencies: {
       observable: (dbName, indexUid) => {
         const system = server.databases.get('system')

@@ -561,8 +561,8 @@ class Server {
       let wsServer = new WebSocketServer({
         httpServer: server,
         autoAcceptConnections: false,
-        maxReceivedFrameSize: 1024*1024, // 1 MiB
-        maxReceivedMessageSize: 10*1024*1024, // 10 MiB
+        maxReceivedFrameSize: this.config.maxReceivedFrameSize ?? (20 * 1024 * 1024), // 20 MiB
+        maxReceivedMessageSize: this.config.maxReceivedMessageSize ?? (20 * 1024 * 1024) // 20 MiB
       })
       wsServer.on("request",(request) => {
         debug("WS URI", request.httpRequest.url, "FROM", request.remoteAddress)

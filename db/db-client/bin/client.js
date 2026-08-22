@@ -2,6 +2,8 @@
 
 import dump from '../lib/dump.js'
 import exec from '../lib/exec.js'
+import filterDump from '../lib/filterDump.js'
+import statsDump from '../lib/statsDump.js'
 import request from '../lib/request.js'
 import get from '../lib/get.js'
 import observe from '../lib/observe.js'
@@ -10,8 +12,8 @@ import parseList from '../lib/parseList.js'
 import yargs from 'yargs'
 
 process.on('unhandledRejection', (reason, event) => {
-  console.log('Unhandled Rejection at: Promise', 
-    "reason", reason, "stack", reason.stack, "promise", reason.promise)
+  console.error('Unhandled Rejection at: Promise',
+    "reason", reason, "stack", reason && reason.stack, "promise", reason && reason.promise)
 })
 
 process.on('uncaughtException', function (err) {
@@ -51,6 +53,36 @@ function dumpOptions(yargs) {
 function execOptions(yargs) {
   yargs.option('targetDb', {
     describe: 'target database name'
+  })
+  yargs.option('progressFile', {
+    describe: 'progress file path (default lcdbc-exec.progress); set false to disable. line= is last successful request; after timeout use --fromLine <inFlightLine> to retry',
+    type: 'string',
+    default: 'lcdbc-exec.progress'
+  })
+  yargs.option('fromLine', {
+    describe: '1-based inclusive file line to start from (matches progress line=). After success continue with line+1; after timeout retry with inFlightLine',
+    type: 'number',
+    default: 0
+  })
+  yargs.option('skipIndex', {
+    describe: 'skip createIndex requests (restore tables/logs only)',
+    type: 'boolean',
+    default: false
+  })
+  yargs.option('onlyIndex', {
+    describe: 'run only createIndex requests (and sync barriers)',
+    type: 'boolean',
+    default: false
+  })
+  yargs.option('requestTimeout', {
+    describe: 'request timeout in ms (0 = no timeout)',
+    type: 'number',
+    default: 0
+  })
+  yargs.option('excludeTable', {
+    describe: 'exclude put/putOldLog data for table or log name (repeatable)',
+    type: 'string',
+    array: true
   })
 }
 
@@ -125,8 +157,64 @@ yargs(process.argv.slice(2)) // eslint-disable-line
       })
     }, argv => {
       exec({
-        serverUrl: argv.serverUrl, verbose: argv.verbose, file: argv.file,
-        targetDb: argv.targetDb
+        serverUrl: argv.serverUrl,
+        verbose: argv.verbose,
+        file: argv.file,
+        targetDb: argv.targetDb,
+        progressFile: argv.progressFile,
+        fromLine: argv.fromLine,
+        skipIndex: argv.skipIndex,
+        onlyIndex: argv.onlyIndex,
+        requestTimeout: argv.requestTimeout,
+        excludeTable: argv.excludeTable
+      }).catch((error) => {
+        console.error(error && error.stack ? error.stack : error)
+        process.exit(1)
+      })
+    })
+    .command('filter [file]', 'filter dump jsonl to stdout (drop put/putOldLog for tables)', (yargs) => {
+      yargs.positional('file', {
+        describe: 'dump file (default stdin)',
+        default: '-'
+      })
+      yargs.option('excludeTable', {
+        describe: 'exclude put/putOldLog data for table or log name (repeatable)',
+        type: 'string',
+        array: true,
+        demandOption: true
+      })
+    }, argv => {
+      filterDump({
+        file: argv.file,
+        excludeTable: argv.excludeTable
+      }).catch((error) => {
+        console.error(error && error.stack ? error.stack : error)
+        process.exit(1)
+      })
+    })
+    .command('stats [file]', 'summarize dump put/putOldLog counts and sizes', (yargs) => {
+      yargs.positional('file', {
+        describe: 'dump file (default stdin)',
+        default: '-'
+      })
+      yargs.option('sort', {
+        describe: 'sort by bytes or entries (descending)',
+        choices: ['bytes', 'entries'],
+        default: 'bytes'
+      })
+      yargs.option('human', {
+        describe: 'human-readable sizes (KiB/MiB/GiB)',
+        type: 'boolean',
+        default: false
+      })
+    }, argv => {
+      statsDump({
+        file: argv.file,
+        sort: argv.sort,
+        human: argv.human
+      }).catch((error) => {
+        console.error(error && error.stack ? error.stack : error)
+        process.exit(1)
       })
     })
     .option('verbose', {
