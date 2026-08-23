@@ -9,6 +9,8 @@ const app = App.app()
 import Debug from 'debug'
 const debug = Debug('framework')
 
+import { startupLog, startupTimed, formatMs } from './startupLog.js'
+
 class Services {
   constructor(config) {
     if(!config) throw new Error("services config parameter is required")
@@ -74,7 +76,7 @@ class Services {
     if(this.config.services) {
       for(const service of this.config.services) {
         if(service.module) {
-          console.log('[startup] loadService (module)', service.name || service.module?.name)
+          startupLog('loadService (module)', service.name || service.module?.name)
           const module = service.module
           const definition = module
           this.serviceDefinitions.push(definition)
@@ -83,7 +85,8 @@ class Services {
           try {
             const entryFile = await this.getServiceEntryFile(service)
             debug("SERVICE", service, 'ENTRY FILE', entryFile)
-            console.log('[startup] loadService begin', service.name, entryFile)
+            const t0 = Date.now()
+            startupLog('loadService begin', service.name, entryFile)
             const module = await import(entryFile)
             const definition = module.default
             if (definition.name !== service.name) {
@@ -91,7 +94,7 @@ class Services {
               process.exit(1)
             }
             this.serviceDefinitions.push(definition)
-            console.log('[startup] loadService done', service.name)
+            startupLog('loadService done', service.name, `in ${formatMs(Date.now() - t0)}`)
           } catch(e) {
             console.error("ERROR LOADING SERVICE", service)
             throw e
@@ -179,38 +182,48 @@ class Services {
   async update() {
     for(const defn of this.serviceDefinitions) {
       console.group()
-      console.log('[startup] updateService begin', defn.name)
+      const serviceT0 = Date.now()
+      startupLog('updateService begin', defn.name)
       if(!defn.processed) {
-        console.log('[startup] processServiceDefinition', defn.name)
+        const t0 = Date.now()
+        startupLog('processServiceDefinition', defn.name, 'begin')
         app.processServiceDefinition(defn)
         defn.processed = true
+        startupLog('processServiceDefinition', defn.name, 'done', `in ${formatMs(Date.now() - t0)}`)
+      } else {
+        startupLog('processServiceDefinition', defn.name, 'skipped (already processed)')
       }
       await app.updateService(defn)
-      console.log('[startup] updateService done', defn.name)
+      startupLog('updateService done', defn.name, `total ${formatMs(Date.now() - serviceT0)}`)
       console.groupEnd()
     }
   }
 
   async start(startOptions) {
     // when starting all services at once remove triggerRoutes for cleanup
-    console.log('[startup] start: delete triggerRoutes')
-    await app.dao.request(['database', 'deleteTable'], app.databaseName, 'triggerRoutes').catch(e => 'ok')
-    console.log('[startup] start: plugins begin', this.plugins.length)
+    await startupTimed('start: delete triggerRoutes', () =>
+      app.dao.request(['database', 'deleteTable'], app.databaseName, 'triggerRoutes').catch(e => 'ok')
+    )
+    startupLog('start: plugins begin', this.plugins.length)
+    const pluginsT0 = Date.now()
     await Promise.all(this.plugins.map(plugin => plugin(app, this)))
-    console.log('[startup] start: plugins done; starting services in parallel', this.serviceDefinitions.length)
+    startupLog('start: plugins done', `in ${formatMs(Date.now() - pluginsT0)}; starting services in parallel`, this.serviceDefinitions.length)
     this.servicesPromise = Promise.all(this.serviceDefinitions.map(async defn => {
-      console.log('[startup] startService begin', defn.name)
+      const t0 = Date.now()
+      startupLog('startService begin', defn.name)
       if(!defn.processed) {
-        console.log('[startup] processServiceDefinition (late)', defn.name)
+        const pt0 = Date.now()
+        startupLog('processServiceDefinition (late)', defn.name, 'begin')
         app.processServiceDefinition(defn)
         defn.processed = true
+        startupLog('processServiceDefinition (late)', defn.name, 'done', `in ${formatMs(Date.now() - pt0)}`)
       }
       const started = await app.startService(defn, startOptions)
-      console.log('[startup] startService done', defn.name)
+      startupLog('startService done', defn.name, `in ${formatMs(Date.now() - t0)}`)
       return started
     }))
     this.services = await this.servicesPromise
-    console.log('[startup] all startService settled')
+    startupLog('all startService settled')
     if(!startOptions.stopped) {
       for(const service of this.services) {
         setTimeout(() => service.afterStart(startOptions), 0)

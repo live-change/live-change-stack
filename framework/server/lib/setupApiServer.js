@@ -3,6 +3,7 @@ import Services from '../lib/Services.js'
 import App from "@live-change/framework"
 const app = App.app()
 import * as DaoWebsocket from "@live-change/dao-websocket"
+import { startupLog, startupTimed } from './startupLog.js'
 
 async function setupApiServer(settings) {
   const { services: config, withServices, updateServices } = settings
@@ -15,39 +16,37 @@ async function setupApiServer(settings) {
     await app.dao.request(['database', 'createDatabase'], app.databaseName, {
       storage: { noMetaSync: true, noSync: true }
     }).catch(err => 'exists')
-    console.log('[startup] createDatabase done (or already exists)')
+    startupLog('createDatabase done (or already exists)')
   }
 
   const services = new Services(config)
 
-  console.log('[startup] loadServices begin')
-  await services.loadServices()
-  console.log('[startup] loadServices done, count=', services.serviceDefinitions?.length)
+  await startupTimed('loadServices', () => services.loadServices())
+  startupLog('loadServices count=', services.serviceDefinitions?.length)
 
   if(updateServices) {
-    console.log('[startup] updateServices begin')
-    await services.update()
-    console.log('[startup] updateServices done')
+    await startupTimed('updateServices', () => services.update())
   } else {
-    console.log('[startup] updateServices skipped')
+    startupLog('updateServices skipped')
   }
 
-  console.log('[startup] services.start begin', {
+  startupLog('services.start begin', {
     withServices: !!withServices,
     stopped: settings.stopped
   })
-  await services.start(withServices
+  await startupTimed('services.start', () => services.start(withServices
       ? { runCommands: true, handleEvents: true, indexSearch: true, stopped: settings.stopped }
-      : { runCommands: false, handleEvents: false, indexSearch: false, stopped: true })
-  console.log('[startup] services.start done')
+      : { runCommands: false, handleEvents: false, indexSearch: false, stopped: true }))
 
   if(settings.initScript) {
-    if(config.init) {
-      config.init(await services.getServicesObject())
-    } else {
-      const initScript = await import(await services.resolve(settings.initScript))
-      await (initScript.default || initScript)(await services.getServicesObject())
-    }
+    await startupTimed('initScript', async () => {
+      if(config.init) {
+        config.init(await services.getServicesObject())
+      } else {
+        const initScript = await import(await services.resolve(settings.initScript))
+        await (initScript.default || initScript)(await services.getServicesObject())
+      }
+    })
   }
 
   const apiServerConfig = {

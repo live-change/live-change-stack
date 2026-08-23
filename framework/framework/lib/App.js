@@ -7,6 +7,7 @@ import ServiceDefinition from "./definition/ServiceDefinition.js"
 import Service from "./runtime/Service.js"
 
 import profileLog from "./utils/profileLog.js"
+import { startupLog, formatMs } from "./utils/startupLog.js"
 
 import Dao from "./runtime/Dao.js"
 import SessionDao from "./runtime/SessionDao.js"
@@ -22,7 +23,7 @@ import autoValidation from "./processors/autoValidation.js"
 import indexCode from "./processors/indexCode.js"
 import queryExtensions from "./processors/queryExtensions.js"
 
-import databaseUpdater from "./updaters/database.js"
+import databaseUpdater, { ensureServicesTable } from "./updaters/database.js"
 import migrationsUpdater from "./updaters/migrations.js"
 
 import accessControlFilter from "./clientSideFilters/accessFilter.js"
@@ -164,7 +165,11 @@ class App {
     debug("APPLY CHANGES", JSON.stringify(changes, null, '  '))
     updaters = updaters || this.defaultUpdaters
     for(let updater of updaters) {
+      const name = updater.name || updater.displayName || 'anonymousUpdater'
+      const t0 = Date.now()
+      startupLog('updater', service.name, name, 'begin')
       await updater(changes, service, this, force)
+      startupLog('updater', service.name, name, 'done', `in ${formatMs(Date.now() - t0)}`)
     }
   }
 
@@ -177,26 +182,66 @@ class App {
   }
 
   async updateService( service, { updaters, force } = {}) {
+    const serviceT0 = Date.now()
     const profileOp = await this.profileLog.begin({
       operation: "updateService", serviceName: service.name, force
     })
 
-    this.dao.request(['database', 'createTable'], this.databaseName, 'services').catch(e => 'ok')
-    let oldServiceJson = await this.getOldServiceDefinition(service.name)
+    await ensureServicesTable(this)
 
+    let t0 = Date.now()
+    startupLog('updateService', service.name, 'getOldServiceDefinition begin')
+    let oldServiceJson = await this.getOldServiceDefinition(service.name)
+    startupLog('updateService', service.name, 'getOldServiceDefinition done', `in ${formatMs(Date.now() - t0)}`)
+
+    t0 = Date.now()
     let changes = this.computeChanges(oldServiceJson, service)
+    const byOp = {}
+    for (const c of changes) {
+      const op = c.operation || 'unknown'
+      byOp[op] = (byOp[op] || 0) + 1
+    }
+    startupLog(
+      'updateService', service.name, 'computeChanges done',
+      `in ${formatMs(Date.now() - t0)}`,
+      `changes=${changes.length}`,
+      Object.keys(byOp).length ? JSON.stringify(byOp) : '(no schema diffs)'
+    )
     //console.log("OLD SERVICE", JSON.stringify(oldServiceJson, null, '  '))
     //console.log("NEW SERVICE", JSON.stringify(service.toJSON(), null, '  '))
     //console.log("CHANGES", JSON.stringify(changes, null, '  '))
 
     /// TODO: chceck for overwriting renames, solve by addeding temporary names
 
+    t0 = Date.now()
+    startupLog('updateService', service.name, 'applyChanges begin', `updaters=${(updaters || this.defaultUpdaters).length}`)
     await this.applyChanges(changes, service, updaters || this.defaultUpdaters, force)
+    startupLog('updateService', service.name, 'applyChanges done', `in ${formatMs(Date.now() - t0)}`)
+
+    t0 = Date.now()
+    startupLog('updateService', service.name, 'toJSON begin')
     const serviceJson = typeof service.toJSON === 'function' ? service.toJSON() : service
+    const toJsonMs = Date.now() - t0
+    let jsonBytes = 0
+    try {
+      jsonBytes = Buffer.byteLength(JSON.stringify(serviceJson), 'utf8')
+    } catch (err) {
+      jsonBytes = -1
+    }
+    startupLog(
+      'updateService', service.name, 'toJSON done',
+      `in ${formatMs(toJsonMs)}`,
+      jsonBytes >= 0 ? `bytes=${jsonBytes}` : 'bytes=?'
+    )
+
+    t0 = Date.now()
+    startupLog('updateService', service.name, 'put begin')
     await this.dao.request(['database', 'put'], this.databaseName, 'services',
         { id: service.name, ...serviceJson })
+    startupLog('updateService', service.name, 'put done', `in ${formatMs(Date.now() - t0)}`)
 
     await this.profileLog.end(profileOp)
+    startupLog('updateService', service.name, 'app.updateService total', formatMs(Date.now() - serviceT0))
   }
 
   async startService( serviceDefinition, config = {}) {

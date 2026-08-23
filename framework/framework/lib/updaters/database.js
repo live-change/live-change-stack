@@ -1,6 +1,7 @@
 import * as utils from "../utils.js"
 import Debug from 'debug'
 const debug = Debug('framework:updaters:db')
+import { startupLog, formatMs } from "../utils/startupLog.js"
 
 const cartesian =
   (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
@@ -9,65 +10,163 @@ const updaterRequestSettings = {
   requestTimeout: 24 * 60 * 60 * 1000 // 24 hours
 }
 
-async function update(changes, service, app, force) {
+function dbEnsureSlot(app) {
+  if (!app._dbEnsure) app._dbEnsure = Object.create(null)
+  return app._dbEnsure
+}
 
-  const dao = app.dao
-  const database = app.databaseName
+/** Swallow create-already-exists (and any other) errors like the old .catch(e => 'ok'). */
+function ignoreExists(promise) {
+  return promise.catch(() => 'ok')
+}
 
-  dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'queries').catch(e => 'ok')
+/**
+ * Memoized ensure: one Promise per key on app._dbEnsure.
+ * Timing + startupLog live inside the Promise body (only on first create).
+ */
+function ensureOnce(app, key, run) {
+  const slot = dbEnsureSlot(app)
+  if (slot[key]) return slot[key]
+  slot[key] = (async () => {
+    const t0 = Date.now()
+    startupLog('ensure', key, 'begin')
+    try {
+      await run()
+      startupLog('ensure', key, 'done', `in ${formatMs(Date.now() - t0)}`)
+    } catch (err) {
+      startupLog(
+        'ensure', key, 'done (ignored error)',
+        `in ${formatMs(Date.now() - t0)}`,
+        err?.message || err
+      )
+    }
+  })()
+  return slot[key]
+}
 
-  if(!app.noCache) {
-    dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'cache').catch(e => 'ok')
-    dao.requestWithSettings(updaterRequestSettings, ['database', 'createIndex'], database, 'cache_byTimestamp', `${
+function daoReq(app, ...args) {
+  return ignoreExists(app.dao.requestWithSettings(updaterRequestSettings, ...args))
+}
+
+export function ensureServicesTable(app) {
+  return ensureOnce(app, 'services', async () => {
+    await daoReq(app, ['database', 'createTable'], app.databaseName, 'services')
+  })
+}
+
+export function ensureQueries(app) {
+  return ensureOnce(app, 'queries', async () => {
+    await daoReq(app, ['database', 'createTable'], app.databaseName, 'queries')
+  })
+}
+
+export function ensureCache(app) {
+  if (app.noCache) return Promise.resolve()
+  return ensureOnce(app, 'cache', async () => {
+    const database = app.databaseName
+    await daoReq(app, ['database', 'createTable'], database, 'cache')
+    await daoReq(app, ['database', 'createIndex'], database, 'cache_byTimestamp', `${
       async (input, output) => {
         await input.table('cache').onChange((obj, oldObj) => {
           if(obj && !oldObj) output.change({ id: obj.expiresAt+'_'+obj.id, to: obj.id }, null)
         })
       }
-    }`, {}).catch(e => 'ok')
-  }
+    }`, {})
+  })
+}
 
-  if(!app.shortEvents) {
-    dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'eventConsumers').catch(e => 'ok')
-    dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'eventReports').catch(e => 'ok')
-    if (app.splitEvents) {
-      dao.requestWithSettings(updaterRequestSettings, ['database', 'createLog'], database, service.name + '_events').catch(e => 'ok')
-    } else {
-      dao.requestWithSettings(updaterRequestSettings, ['database', 'createLog'], database, 'events').catch(e => 'ok')
-    }
-  }
+export function ensureEventMeta(app) {
+  if (app.shortEvents) return Promise.resolve()
+  return ensureOnce(app, 'eventMeta', async () => {
+    const database = app.databaseName
+    await daoReq(app, ['database', 'createTable'], database, 'eventConsumers')
+    await daoReq(app, ['database', 'createTable'], database, 'eventReports')
+  })
+}
 
-  if(!app.shortCommands) {
-    if (app.splitCommands) {
-      dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, service.name + '_commands').catch(e => 'ok')
-    } else {
-      dao.requestWithSettings(updaterRequestSettings,   ['database', 'createTable'], database, 'commands').catch(e => 'ok')
-      dao.requestWithSettings(updaterRequestSettings, ['database', 'createIndex'], database, 'commands_byTimestamp', `${
-        async (input, output) => {
-          await input.table('commands').onChange((obj, oldObj) => {
-            if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
-            if(!obj && oldObj) output.change(null, { id: oldObj.timestamp+'_'+oldObj.id, to: oldObj.id })
-          })
-        }
-      }`, {}).catch(e => 'ok')
-    }
+export function ensureEvents(app, service) {
+  if (app.shortEvents) return Promise.resolve()
+  const serviceName = service?.name
+  if (app.splitEvents) {
+    if (!serviceName) throw new Error('ensureEvents: service required when splitEvents')
+    return ensureOnce(app, `events:${serviceName}`, async () => {
+      await ensureEventMeta(app)
+      await daoReq(app, ['database', 'createLog'], app.databaseName, serviceName + '_events')
+    })
   }
-  if(!app.shortTriggers) {
-    dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'triggerRoutes').catch(e => 'ok')
-    if (app.splitTriggers) {
-      dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, service.name + '_triggers').catch(e => 'ok')
-    } else {
-      dao.requestWithSettings(updaterRequestSettings, ['database', 'createTable'], database, 'triggers').catch(e => 'ok')
-      dao.requestWithSettings(updaterRequestSettings, ['database', 'createIndex'], database, 'triggers_byTimestamp', `${
-        async (input, output) => {
-          await input.table('triggers').onChange((obj, oldObj) => {
-            if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
-            if(!obj && oldObj) output.change(null, { id: oldObj.timestamp+'_'+oldObj.id, to: oldObj.id })
-          })
-        }
-      }`, {}).catch(e => 'ok')
-    }
+  return ensureOnce(app, 'events', async () => {
+    await ensureEventMeta(app)
+    await daoReq(app, ['database', 'createLog'], app.databaseName, 'events')
+  })
+}
+
+export function ensureCommands(app, service) {
+  if (app.shortCommands) return Promise.resolve()
+  const serviceName = service?.name
+  if (app.splitCommands) {
+    if (!serviceName) throw new Error('ensureCommands: service required when splitCommands')
+    return ensureOnce(app, `commands:${serviceName}`, async () => {
+      await daoReq(app, ['database', 'createTable'], app.databaseName, serviceName + '_commands')
+    })
   }
+  return ensureOnce(app, 'commands', async () => {
+    const database = app.databaseName
+    await daoReq(app, ['database', 'createTable'], database, 'commands')
+    await daoReq(app, ['database', 'createIndex'], database, 'commands_byTimestamp', `${
+      async (input, output) => {
+        await input.table('commands').onChange((obj, oldObj) => {
+          if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
+          if(!obj && oldObj) output.change(null, { id: oldObj.timestamp+'_'+oldObj.id, to: oldObj.id })
+        })
+      }
+    }`, {})
+  })
+}
+
+export function ensureTriggerRoutes(app) {
+  if (app.shortTriggers) return Promise.resolve()
+  return ensureOnce(app, 'triggerRoutes', async () => {
+    await daoReq(app, ['database', 'createTable'], app.databaseName, 'triggerRoutes')
+  })
+}
+
+export function ensureTriggers(app, service) {
+  if (app.shortTriggers) return Promise.resolve()
+  const serviceName = service?.name
+  if (app.splitTriggers) {
+    if (!serviceName) throw new Error('ensureTriggers: service required when splitTriggers')
+    return ensureOnce(app, `triggers:${serviceName}`, async () => {
+      await ensureTriggerRoutes(app)
+      await daoReq(app, ['database', 'createTable'], app.databaseName, serviceName + '_triggers')
+    })
+  }
+  return ensureOnce(app, 'triggers', async () => {
+    const database = app.databaseName
+    await ensureTriggerRoutes(app)
+    await daoReq(app, ['database', 'createTable'], database, 'triggers')
+    await daoReq(app, ['database', 'createIndex'], database, 'triggers_byTimestamp', `${
+      async (input, output) => {
+        await input.table('triggers').onChange((obj, oldObj) => {
+          if(obj && !oldObj) output.change({ id: obj.timestamp+'_'+obj.id, to: obj.id }, null)
+          if(!obj && oldObj) output.change(null, { id: oldObj.timestamp+'_'+oldObj.id, to: oldObj.id })
+        })
+      }
+    }`, {})
+  })
+}
+
+async function databaseUpdater(changes, service, app, force) {
+
+  const dao = app.dao
+  const database = app.databaseName
+  const updaterT0 = Date.now()
+  startupLog('databaseUpdater', service.name, 'begin', `changes=${changes.length}`)
+
+  await ensureQueries(app)
+  if (!app.noCache) await ensureCache(app)
+  if (!app.shortEvents) await ensureEvents(app, service)
+  if (!app.shortCommands) await ensureCommands(app, service)
+  if (!app.shortTriggers) await ensureTriggers(app, service)
 
   const generateTableName = (modelName) => {
     return service.name+"_"+modelName
@@ -78,9 +177,12 @@ async function update(changes, service, app, force) {
   }
 
   async function doCreateIndexIfNotExists(indexName, functionCode, parameters, config) {
+    const t0 = Date.now()
+    startupLog('databaseUpdater', service.name, 'createIndex', indexName, 'begin')
     try {
       await dao.requestWithSettings(indexRequestSettings, ['database', 'createIndex'], database, indexName,
         functionCode, parameters, config)
+      startupLog('databaseUpdater', service.name, 'createIndex', indexName, 'created', `in ${formatMs(Date.now() - t0)}`)
     } catch(e) {
       if((e.message ?? e).toString().includes("already exists")) {
         const indexConfig = await dao.get(['database', 'indexConfig', database, indexName])
@@ -96,13 +198,16 @@ async function update(changes, service, app, force) {
         const match = indexConfigClean === requiredConfig        
         if(!match) {
           console.log("INDEXES NOT MATCHING, DELETING AND RECREATING", indexConfigClean, requiredConfig)
+          startupLog('databaseUpdater', service.name, 'createIndex', indexName, 'MISMATCH — delete+recreate')
           await dao.requestWithSettings(updaterRequestSettings, ['database', 'deleteIndex'], database, indexName)
           return await doCreateIndexIfNotExists(indexName, functionCode, parameters, config)
         } else {          
           console.log("INDEXES MATCHING, SKIPPING")
+          startupLog('databaseUpdater', service.name, 'createIndex', indexName, 'exists (match)', `in ${formatMs(Date.now() - t0)}`)
           return 'ok'
         }
       }      
+      startupLog('databaseUpdater', service.name, 'createIndex', indexName, 'FAILED', `after ${formatMs(Date.now() - t0)}`, e?.message || e)
       throw e
     }
   }
@@ -197,6 +302,11 @@ async function update(changes, service, app, force) {
   for(let i = 0; i < changes.length; i++) {
     const change = changes[i]
     debug("PROCESSING CHANGE", change)
+    const changeT0 = Date.now()
+    const changeLabel = change.operation
+      + (change.name ? `:${change.name}` : '')
+      + (change.model?.name ? `@${change.model.name}` : (typeof change.model === 'string' ? `@${change.model}` : ''))
+    startupLog('databaseUpdater', service.name, 'change', `${i + 1}/${changes.length}`, changeLabel, 'begin')
     switch(change.operation) {
       case "createModel": {
         const model = change.model
@@ -373,10 +483,13 @@ async function update(changes, service, app, force) {
       } break;
       default:
     }
+    startupLog('databaseUpdater', service.name, 'change', `${i + 1}/${changes.length}`, changeLabel, 'done', `in ${formatMs(Date.now() - changeT0)}`)
   }
   debug("DATABASE UPDATED")
 
   debug("CHECKING DATABASE INTEGRITY...")
+  const integrityT0 = Date.now()
+  startupLog('databaseUpdater', service.name, 'integrityCheck begin')
   const indexes = await dao.get(['database', 'indexesList', database])
   for(const modelName in service.models) {
     const tableName = generateTableName(modelName)
@@ -385,6 +498,7 @@ async function update(changes, service, app, force) {
       const fullIndexName = tableName + '_' + indexName
       if(!indexes.includes(fullIndexName)) {
         debug("table ", modelName, " index", fullIndexName, "not found! creating...")
+        startupLog('databaseUpdater', service.name, 'integrity: missing index', fullIndexName)
         await createIndex(generateTableName(modelName), indexName, model.indexes[indexName])
       }
     }
@@ -393,10 +507,13 @@ async function update(changes, service, app, force) {
     const fullIndexName = generateTableName(indexName)
     if(!indexes.includes(fullIndexName)) {
       debug("index", fullIndexName, "not found! creating...")
+      startupLog('databaseUpdater', service.name, 'integrity: missing index', fullIndexName)
       await createIndex(null, indexName, service.indexes[indexName])
     }
   }
+  startupLog('databaseUpdater', service.name, 'integrityCheck done', `in ${formatMs(Date.now() - integrityT0)}`)
+  startupLog('databaseUpdater', service.name, 'total', formatMs(Date.now() - updaterT0))
 }
 
-export default update
+export default databaseUpdater
 
