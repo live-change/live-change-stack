@@ -1,3 +1,6 @@
+import Debug from 'debug'
+const debugPut = Debug('db:profilePut')
+
 function getProperty(of, propertyName) {
   const path = propertyName.split('.')
   let p = of
@@ -191,12 +194,29 @@ class WriteQueue {
   async put(object) {
     if(typeof object.id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
     if(!object.id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
+    const profile = debugPut.enabled
+    const t0 = profile ? performance.now() : 0
     this.operations = []
     if(this.writePromise) await this.writePromise
-    this.writePromise = this.store.put(object).then(ok => this.writePromise = null)
+    const tWait = profile ? performance.now() : 0
+    const write = this.store.put(object)
+    this.writePromise = write.then(ok => {
+      this.writePromise = null
+      return ok
+    })
     this.writeValue = object
-    this.writePromise.then(ok => this.tryDeleteQueue())
-    return this.writePromise
+    this.writePromise.then(() => this.tryDeleteQueue())
+    const result = await write
+    if(profile) {
+      debugPut(
+        'atomic.put id=%s waitPrev=%sms write=%sms total=%sms',
+        object.id,
+        (tWait - t0).toFixed(1),
+        (performance.now() - tWait).toFixed(1),
+        (performance.now() - t0).toFixed(1)
+      )
+    }
+    return result
   }
 
   async delete() {

@@ -28,6 +28,7 @@
   "dependencies": {
     "@live-change/dao": "0.9.226",
     "@live-change/flatten-interval-tree": "0.9.226",
+    "debug": "^4.3.4",
     "napi-macros": "^2.0.0",
     "node-lmdb": "^0.10.1",
     "p-queue": "^8.1.1"

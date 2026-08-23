@@ -221,24 +221,24 @@ class App {
     t0 = Date.now()
     startupLog('updateService', service.name, 'toJSON begin')
     const serviceJson = typeof service.toJSON === 'function' ? service.toJSON() : service
+    const serviceRow = { id: service.name, ...serviceJson }
+    const serviceRowJson = JSON.stringify(serviceRow)
     const toJsonMs = Date.now() - t0
-    let jsonBytes = 0
-    try {
-      jsonBytes = Buffer.byteLength(JSON.stringify(serviceJson), 'utf8')
-    } catch (err) {
-      jsonBytes = -1
-    }
+    const jsonBytes = Buffer.byteLength(serviceRowJson, 'utf8')
     startupLog(
       'updateService', service.name, 'toJSON done',
       `in ${formatMs(toJsonMs)}`,
-      jsonBytes >= 0 ? `bytes=${jsonBytes}` : 'bytes=?'
+      `bytes=${jsonBytes}`
     )
 
     t0 = Date.now()
-    startupLog('updateService', service.name, 'put begin')
-    await this.dao.request(['database', 'put'], this.databaseName, 'services',
-        { id: service.name, ...serviceJson })
-    startupLog('updateService', service.name, 'put done', `in ${formatMs(Date.now() - t0)}`)
+    if(JSON.stringify(oldServiceJson) === serviceRowJson) {
+      startupLog('updateService', service.name, 'put skipped', 'unchanged')
+    } else {
+      startupLog('updateService', service.name, 'put begin')
+      await this.dao.request(['database', 'put'], this.databaseName, 'services', serviceRow)
+      startupLog('updateService', service.name, 'put done', `in ${formatMs(Date.now() - t0)}`)
+    }
 
     await this.profileLog.end(profileOp)
     startupLog('updateService', service.name, 'app.updateService total', formatMs(Date.now() - serviceT0))

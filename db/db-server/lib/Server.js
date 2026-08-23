@@ -24,6 +24,7 @@ const packageInfo = await fs.promises.readFile(fileURLToPath(
 
 import Debug from 'debug'
 const debug = Debug('db-server')
+const debugPut = Debug('db:profilePut')
 import OpLogCleaner from './OpLogCleaner.js'
 import { DEFAULT_OP_LOG_RETENTION_MS } from './opLogRetention.js'
 
@@ -504,6 +505,13 @@ class Server {
     let dbStore = this.databaseStores.get(dbName)
     if(!dbStore) {
       debug("CREATE DB", dbPath, dbConfig.storage)
+      debugPut(
+        'initDatabase name=%s path=%s storage=%o backend=%o',
+        dbName,
+        dbPath,
+        dbConfig.storage || null,
+        dbConfig.backend || null
+      )
       const backend = this.backends[dbConfig.backend?.name ?? dbConfig.backend ?? 'default']
       dbStore = new DatabaseStore(dbPath, { ...this.backends, default: backend },
         typeof dbConfig.backend == 'object' ? dbConfig.backend : dbConfig.storage

@@ -4,6 +4,9 @@ import ReactiveDao from '@live-change/dao'
 import { combineStoreStats, readStoreStat } from './storeStats.js'
 import { clearOpLogStore, createOpLogWritter } from './clearOpLog.js'
 import { createDebouncedActivity } from './debouncedActivity.js'
+import Debug from 'debug'
+
+const debugPut = Debug('db:profilePut')
 
 class Table {
   constructor(database, name, config) {
@@ -51,8 +54,20 @@ class Table {
   async put(object) {
     const id = object.id
     if(!id) throw new Error(`ID is empty ${JSON.stringify(object)}`)
+    const profile = debugPut.enabled
+    const t0 = profile ? performance.now() : 0
+    const bytes = profile ? Buffer.byteLength(JSON.stringify(object)) : 0
     try {
       const result = await this.atomicWriter.put(object)
+      if(profile) {
+        debugPut(
+          'table.put table=%s id=%s bytes=%d atomicPut=%sms',
+          this.name,
+          id,
+          bytes,
+          (performance.now() - t0).toFixed(1)
+        )
+      }
       this.activity.touch(id)
       return result
     } catch(e) {

@@ -4,6 +4,9 @@ import { rimraf } from "rimraf"
 import lmdb from 'node-lmdb'
 import lmdbStore from'@live-change/db-store-lmdb'
 import rbTreeStore from'@live-change/db-store-rbtree'
+import Debug from 'debug'
+
+const debugPut = Debug('db:profilePut')
 
 const unavailableEnvStat = () => ({ available: false })
 
@@ -134,6 +137,28 @@ function createBackend({ name, url, maxDbs, mapSize }) {
         }
         env.open(envConfig)
         env.path = dbPath
+        env.openConfig = envConfig
+        if(debugPut.enabled) {
+          let info = null
+          let stat = null
+          let file = null
+          try { info = env.info() } catch(e) { info = { error: String(e) } }
+          try { stat = env.stat() } catch(e) { stat = { error: String(e) } }
+          try {
+            const st = fs.statSync(path.join(dbPath, 'data.mdb'))
+            file = { size: st.size, blocks: st.blocks, allocatedBytes: st.blocks * 512 }
+          } catch(e) {
+            file = { error: String(e) }
+          }
+          debugPut(
+            'env.open path=%s openConfig=%o env.info=%o env.stat=%o data.mdb=%o',
+            dbPath,
+            envConfig,
+            info,
+            stat,
+            file
+          )
+        }
         return env
       },
       closeDb(db) {
@@ -148,7 +173,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
             db.openDbi({
               name,
               create: true
-            }), options)
+            }), { ...options, name })
       },
       closeStore(store) {
         store.lmdb.close()

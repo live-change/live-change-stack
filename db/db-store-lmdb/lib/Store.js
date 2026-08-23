@@ -2,6 +2,27 @@ import IntervalTreeLib from '@live-change/flatten-interval-tree'
 const IntervalTree = IntervalTreeLib.default
 import ReactiveDao from "@live-change/dao"
 import lmdb from 'node-lmdb'
+import Debug from 'debug'
+
+const debugPut = Debug('db:profilePut')
+const loggedEnvs = new WeakSet()
+
+function logEnvOnce(env, storeName) {
+  if(!debugPut.enabled || !env || loggedEnvs.has(env)) return
+  loggedEnvs.add(env)
+  let info = null
+  let stat = null
+  try { info = env.info() } catch(e) { info = { error: String(e) } }
+  try { stat = env.stat() } catch(e) { stat = { error: String(e) } }
+  debugPut(
+    'env.info store=%s path=%s openConfig=%o info=%o stat=%o',
+    storeName || '?',
+    env.path,
+    env.openConfig || null,
+    info,
+    stat
+  )
+}
 
 class ObjectObservable extends ReactiveDao.ObservableValue {
   constructor(store, key) {
@@ -312,6 +333,7 @@ class Store {
   constructor(env, db, options = {}) {
     this.env = env
     this.lmdb = db
+    this.name = options.name || null
 
     const {
       serialization = JSON
@@ -595,12 +617,30 @@ class Store {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
     if(!id) throw new Error("ID must not be empty string!")
+    const profile = debugPut.enabled
+    if(profile) logEnvOnce(this.env, this.name)
+    const t0 = profile ? performance.now() : 0
     let oldObject = null
+    let oldBytes = 0
+    let newBytes = 0
+    const tBegin = profile ? performance.now() : 0
     const txn = this.env.beginTxn()
+    const tTxn = profile ? performance.now() : 0
+    let tGet = tTxn
+    let tParse = tTxn
+    let tStr = tTxn
+    let tPut = tTxn
     try {
       const json = txn.getString(this.lmdb, id)
+      tGet = profile ? performance.now() : 0
+      oldBytes = profile && json ? json.length : 0
       oldObject = json ? this.serialization.parse(json) : null
-      txn.putString(this.lmdb, id, this.serialization.stringify(object), { noOverwrite: false })
+      tParse = profile ? performance.now() : 0
+      const encoded = this.serialization.stringify(object)
+      newBytes = profile ? encoded.length : 0
+      tStr = profile ? performance.now() : 0
+      txn.putString(this.lmdb, id, encoded, { noOverwrite: false })
+      tPut = profile ? performance.now() : 0
     } catch(err) {
       console.log("ERROR WHILE PUTTING OBJECT", id)
       console.error(err)
@@ -610,6 +650,7 @@ class Store {
     } finally {
       txn.commit()
     }
+    const tCommit = profile ? performance.now() : 0
     const objectObservable = this.objectObservables.get(id)
     if (objectObservable) objectObservable.set(object, oldObject)
     const rangeObservables = this.rangeObservablesTree.search([id, id])
@@ -627,6 +668,29 @@ class Store {
     }
     for (const rangeObservable of rangeObservables) {
       rangeObservable.putObject(object, oldObject)
+    }
+    if(profile) {
+      const tEnd = performance.now()
+      debugPut(
+        'store.put name=%s id=%s oldBytes=%d newBytes=%d beginTxn=%sms getString=%sms parse=%sms stringify=%sms putString=%sms commit=%sms notify=%sms total=%sms observables={object:%d range:%d count:%d rangeHits:%d objectHit:%s}',
+        this.name || '?',
+        id,
+        oldBytes,
+        newBytes,
+        (tTxn - tBegin).toFixed(1),
+        (tGet - tTxn).toFixed(1),
+        (tParse - tGet).toFixed(1),
+        (tStr - tParse).toFixed(1),
+        (tPut - tStr).toFixed(1),
+        (tCommit - tPut).toFixed(1),
+        (tEnd - tCommit).toFixed(1),
+        (tEnd - t0).toFixed(1),
+        this.objectObservables.size,
+        this.rangeObservables.size,
+        this.countObservables.size,
+        rangeObservables.length,
+        !!objectObservable
+      )
     }
     return oldObject
   }

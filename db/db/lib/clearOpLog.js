@@ -1,3 +1,6 @@
+import Debug from 'debug'
+const debugPut = Debug('db:profilePut')
+
 function padTimestamp(ts) {
   return ('' + ts).padStart(16, '0')
 }
@@ -31,7 +34,18 @@ function createOpLogWritter(store) {
       lastTime = now
     }
     const id = padTimestamp(lastTime) + ':' + (('' + lastId).padStart(6, '0'))
+    const profile = debugPut.enabled
+    const t0 = profile ? performance.now() : 0
     store.put({ id, timestamp: lastTime, operation })
+    if(profile) {
+      debugPut(
+        'opLogWritter.put store=%s id=%s opType=%s ms=%s awaited=false',
+        store.name || '?',
+        id,
+        operation && operation.type,
+        (performance.now() - t0).toFixed(1)
+      )
+    }
     return id
   }
 }

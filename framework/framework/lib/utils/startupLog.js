@@ -1,7 +1,11 @@
 /**
  * Shared [startup] logger — absolute ISO time, +since process start, Δ since last log.
+ * Off by default. Enable with DEBUG=framework:startup
  */
 
+import Debug from 'debug'
+
+const debug = Debug('framework:startup')
 const processStartMs = Date.now()
 let lastLogMs = processStartMs
 
@@ -14,12 +18,13 @@ function formatMs(ms) {
  * @param {...unknown} args
  */
 export function startupLog(...args) {
+  if (!debug.enabled) return
   const now = Date.now()
   const sinceStart = now - processStartMs
   const delta = now - lastLogMs
   lastLogMs = now
   const iso = new Date(now).toISOString()
-  console.log(`[startup ${iso} +${formatMs(sinceStart)} Δ${formatMs(delta)}]`, ...args)
+  debug(`[startup ${iso} +${formatMs(sinceStart)} Δ${formatMs(delta)}]`, ...args)
 }
 
 /**
