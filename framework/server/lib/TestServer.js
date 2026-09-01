@@ -12,6 +12,7 @@ import setupApiSockJs from './setupApiSockJs.js'
 import setupApiWs from './setupApiWs.js'
 import setupDbServer from './setupDbServer.js'
 import createLoopbackDao from './createLoopbackDao.js'
+import setupApiEndpoints from './setupApiEndpoints.js'
 import SsrServer from './SsrServer.js'
 import fs from "fs"
 import os from "os"
@@ -50,6 +51,8 @@ class TestServer {
       updateServices: true,
       ...this.config
     }, this.dbServer)
+
+    await setupApiEndpoints(this.expressApp, this.apiServer)
 
     this.ssrServer = null
     if(withSsr) {

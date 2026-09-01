@@ -111,7 +111,7 @@
     ].join(' ')
   })
 
-  const flow = inject("flow")
+  const flow = inject("flow", null)
 
   function handleMouseDown(event) {
     event.preventDefault()

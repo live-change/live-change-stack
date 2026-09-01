@@ -53,6 +53,7 @@ export default defineConfig(async ({ command, mode, isSsrBuild, isPreview }) => 
               'badge': ssrTransformCustomDir,
               'shared-element': ssrTransformCustomDir,
               'lazy': ssrTransformCustomDir,
+              'tooltip': ssrTransformCustomDir,
             }
           }
         },

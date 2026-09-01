@@ -1,7 +1,7 @@
 import { ref, unref, reactive, computed, inject, provide, watch } from "vue"
 
 export function useFlow(options) {
-  const existingFlow = inject("flow")
+  const existingFlow = inject("flow", null)
   if(existingFlow && options) throw new Error("Flow already exists")
   if(existingFlow) return existingFlow
 
@@ -98,14 +98,15 @@ export function useFlow(options) {
   }
 
   function findNode(nodeId) {
+    nodeId = getNodeId(nodeId)
     if(options.findNode) return options.findNode(nodeId)
     if(options.findNodeIndex) return unref(nodes)[options.findNodeIndex(nodeId)]
-    return unref(nodes).value.find(n => n.id == node)
+    return unref(nodes).find(n => n.id == nodeId)
   }
   function findNodeIndex(nodeId) {
     nodeId = getNodeId(nodeId)
     if(options.findNodeIndex) return options.findNodeIndex(nodeId)
-    return unref(nodes).value.findIndex(n => n.id == node)
+    return unref(nodes).findIndex(n => n.id == nodeId)
   }
   function getNodeId(nodeId) {
     if(typeof nodeId == "string") return nodeId
@@ -118,14 +119,15 @@ export function useFlow(options) {
   }
 
   function findEdge(edgeId) {
+    edgeId = getEdgeId(edgeId)
     if(options.findEdge) return options.findEdge(edgeId)
     if(options.findEdgeIndex) return unref(edges)[options.findEdgeIndex(edgeId)]
-    return unref(edges).value.find(e => e.id == edgeId)
+    return unref(edges).find(e => e.id == edgeId)
   }
   function findEdgeIndex(edgeId) {
     edgeId = getEdgeId(edgeId)
     if(options.findEdgeIndex) return options.findEdgeIndex(edgeId)
-    return unref(edges).value.findIndex(e => e.id == edgeId)
+    return unref(edges).findIndex(e => e.id == edgeId)
   }
   function getEdgeId(edgeId) {
     if(typeof edgeId == "string") return edgeId
@@ -160,7 +162,6 @@ export function useFlow(options) {
   function setPortElement(nodeId, portId, element, direction) {
     nodeId = getNodeId(nodeId)
     if (typeof portId != "string") portId = portId.id ?? `${nodeId}/${portId.name}`
-    console.log("setPortElement", nodeId, portId, element)
     const nodeView = nodeViews.get(nodeId)
     if(!nodeView) {
       return
@@ -265,9 +266,8 @@ export function useFlow(options) {
   }
 
   function startDrawEdge(nodeId, portId, event, newEdgeOptions) {
-    console.log("startDrawEdge", nodeId, portId, event)
     nodeId = getNodeId(nodeId)
-    if (typeof portId != "string") portId = portId.id ?? `${node.id}/${portId.name}`
+    if (typeof portId != "string") portId = portId.id ?? `${nodeId}/${portId.name}`
     dragState.value = {
       type: "drawEdge",
       node: nodeId,
@@ -283,7 +283,7 @@ export function useFlow(options) {
     if(options.deleteEdge) {
       options.deleteEdge(unref(edges)[edgeIndex])
     } else {
-      edges.splice(edgeIndex, 1)
+      unref(edges).splice(edgeIndex, 1)
     }
   }
 
@@ -298,7 +298,7 @@ export function useFlow(options) {
     if(options.deleteNode) {
       options.deleteNode(unref(nodes)[nodeIndex])
     } else {
-      nodes.splice(nodeIndex, 1)
+      unref(nodes).splice(nodeIndex, 1)
     }
   }
 

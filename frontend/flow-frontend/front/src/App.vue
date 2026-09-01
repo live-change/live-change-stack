@@ -7,15 +7,18 @@
 </template>
 
 <script setup>
-  import 'primevue/resources/themes/saga-green/theme.css'
-  import "@fortawesome/fontawesome-free/css/all.min.css"
 
-  import { ViewRoot, NavBar } from "@live-change/frontend-base"
+  import { useLocale } from '@live-change/vue3-components'
+  const locale = useLocale()
+  locale.captureLocale()
+
+  import NavBar from "./NavBar.vue"
+  import ViewRoot from "@live-change/frontend-base/ViewRoot.vue"
 
   import { computed } from 'vue'
   import { useHead } from '@vueuse/head'
   useHead(computed(() => ({
-    title: 'Title',
+    title: 'Flow editor',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport',
@@ -28,13 +31,36 @@
     }
   })))
 
-  import { watch } from 'vue'
-  import { client as useClient, useApi } from '@live-change/vue3-ssr'
-  const client = useClient()
-  watch(client, (newClient, oldClient) => {
-    console.log("WATCH CLIENT", oldClient, '=>', newClient)
-  })
-
-  const api = useApi()
-
 </script>
+
+<style>
+  @import "tailwindcss";
+  @plugin "tailwindcss-primeui";
+
+  @custom-variant dark (&:where(.app-dark-mode, .app-dark-mode *));
+
+  :root { font-family: 'Verdana', sans-serif; }
+  @supports (font-variation-settings: normal) {
+    :root { font-family: 'Verdana var', sans-serif; }
+  }
+  html,body
+  {
+    min-height:100%;
+    font-family: 'Verdana var', 'Verdana', sans-serif;
+  }
+
+  @layer base {
+    a {
+      color: var(--p-blue-700);
+      text-decoration: underline;
+    }
+    a:hover {
+      color: var(--p-blue-900);
+      text-decoration: none;
+    }
+    a:visited {
+      color: var(--p-purple-800);
+    }
+  }
+
+</style>

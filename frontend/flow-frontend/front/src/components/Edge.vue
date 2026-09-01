@@ -17,7 +17,7 @@
 
   const { edge } = toRefs(props)
 
-  const flow = inject("flow")
+  const flow = inject("flow", null)
 
   const srcView = computed(() => edge.value.src.node && flow.getPortView(edge.value.src.node, edge.value.src.port))
   const destView = computed(() => edge.value.dest.node && flow.getPortView(edge.value.dest.node, edge.value.dest.port))

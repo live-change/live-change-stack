@@ -18,6 +18,7 @@ This manual documents the **frontend** part of the Live Change Framework:
 - **Frontend base** (`@live-change/frontend-base`) — client/server entry, layout, Tailwind, PrimeVue
 - **Auto-form** (`@live-change/frontend-auto-form`) — automatic forms and CRUDs based on models
 - **Template project** (`@live-change/frontend-template`) — a ready-made app wired to many services
+- **Flow editor** (`@live-change/flow-frontend`) — headless node-and-edge canvas
 
 ## Contents
 
@@ -34,4 +35,5 @@ This manual documents the **frontend** part of the Live Change Framework:
 11. [Locale and time](/frontend/11-locale-and-time.md) — language, timezone, time utilities, emails
 12. [Describe command](/frontend/12-describe-command.md) — discovering views, actions, and models for frontend development
 13. [E2E lifecycle pattern](/frontend/13-e2e-lifecycle-pattern.md) — stable node:test teardown with `e2eSuite`, `env`, and `withBrowser`
+14. [Flow editor](/frontend/14-flow-frontend.md) — `@live-change/flow-frontend` canvas, kitchen sink (`/`) vs calculation (`/calc`) with flow-service
 

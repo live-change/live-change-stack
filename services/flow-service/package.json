@@ -1,0 +1,33 @@
+{
+  "name": "@live-change/flow-service",
+  "version": "0.9.226",
+  "description": "Visual graph persistence for LiveChange: Graph, Node, and Edge models",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test node --import tsx --test --test-concurrency=1 --test-force-exit tests/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-stack/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-stack",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "type": "module",
+  "dependencies": {
+    "@live-change/framework": "0.9.226",
+    "@live-change/relations-plugin": "0.9.226"
+  },
+  "devDependencies": {
+    "@live-change/server": "0.9.226",
+    "@live-change/session-service": "0.9.226",
+    "tsx": "^4.21.0"
+  }
+}

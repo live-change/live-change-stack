@@ -203,6 +203,16 @@ definition.model({
 })
 ```
 
+## Step 3b – `hashId` for nested `*Any`
+
+Set **`hashId: true`** on a model whose **object id will be stored as a parent field of another `*Any`** (nested JSON.stringify in Edge-style combination index keys). Example: flow **Node** (`propertyOfAny` graph+logic) is hashed because **Edge** indexes `source` / `destination` Node ids. Do **not** hash a uid leaf (Edge).
+
+- Resulting id is `h_` plus 22 base64url characters. Look up via generated views, not by rebuilding the composite.
+- Auto-added `byOwner (hash)` is **index** `hash: true` (suffix only). It is **not** `hashId` and does not shorten parent prefixes.
+- LMDB string keys are UTF-16, max ~254 JS characters. Failure is **`MDB_BAD_VALSIZE`**. Tests on `mem` / TestServer do not hit this.
+
+Full rules: **`docs/docs/server/09-02-propertyOfAny-itemOfAny.md`** (When to set hashId). Flow Node: **`docs/docs/server/22-flow-service.md`**.
+
 ## Step 4 – Use `foreignModel` for cross-service relations
 
 1. At the top of the domain file, declare:

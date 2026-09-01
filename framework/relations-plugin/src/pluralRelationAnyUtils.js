@@ -14,6 +14,8 @@ import {
   cloneAndPrepareAccessControl as cloneAndPrepareSingleAccessControl,
   propertiesWithoutDefaults
 } from './utils.js'
+import { allCombinations } from "./combinations.js"
+import { createIdentifiersProperties } from './singularRelationAnyUtils.js'
 import { fireChangeTriggers } from "./changeTriggers.js"
 import { mcpFields } from './mcpUtils.js'
 
@@ -62,6 +64,48 @@ function defineRangeView(config, context, external = true) {
       return path
     }
   })
+}
+
+function definePartialRangeViews(config, context, external = true) {
+  const { service, modelRuntime, otherPropertyNames, modelName, model } = context
+  if(otherPropertyNames.length < 2) return
+  const identifierCombinations = allCombinations(otherPropertyNames).slice(0, -1)
+  const sourceAccessControl = external && (config.readAccessControl || config.writeAccessControl)
+  const accessControl = cloneAndPrepareAccessControl(sourceAccessControl, otherPropertyNames)
+  const reverseWord = context.partialReverseRelationWord || context.reverseRelationWord || 'Owned'
+  for(const combination of identifierCombinations) {
+    const propsUpperCase = combination.map(prop => prop[0].toUpperCase() + prop.slice(1))
+    const indexName = 'by' + propsUpperCase.join('And')
+    const joinedCombinationName = combination[0] +
+      (combination.length > 1 ? ('And' + propsUpperCase.slice(1).join('And')) : '')
+    const viewName = joinedCombinationName + reverseWord + pluralize(modelName)
+    const identifiers = createIdentifiersProperties(combination)
+    service.view({
+      name: viewName,
+      properties: {
+        ...identifiers,
+        ...App.rangeProperties
+      },
+      returns: {
+        type: Array,
+        of: {
+          type: model
+        }
+      },
+      internal: !external,
+      global: config.globalView,
+      access: external && (config.readAccess || config.writeAccess),
+      accessControl,
+      ...mcpFields(config, 'list'),
+      daoPath(params, { client, context }) {
+        const owner = []
+        for (const key of combination) {
+          owner.push(params[key + 'Type'], params[key])
+        }
+        return modelRuntime().sortedIndexRangePath(indexName, owner, App.extractRange(params))
+      }
+    })
+  }
 }
 
 function defineSingleView(config, context, external = true) {
@@ -370,7 +414,7 @@ function defineSortIndex(context, sortFields) {
 }
 
 export {
-  defineSingleView, defineRangeView,
+  defineSingleView, defineRangeView, definePartialRangeViews,
   defineCreateAction, defineUpdateAction, defineDeleteAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
   defineSortIndex

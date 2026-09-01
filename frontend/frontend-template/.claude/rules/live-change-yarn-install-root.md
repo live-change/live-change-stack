@@ -1,0 +1,36 @@
+---
+description: Install Yarn/npm only at the live-change repo root; never nested yarn install
+---
+
+# Yarn install only at the live-change repo root
+
+This is a Yarn workspaces monorepo. Nested `yarn install` / `npm install` creates a second `node_modules` tree that **shadows** the hoisted packages (duplicate Vue, PrimeVue, `@live-change/*`). Symptoms include unstyled PrimeVue (native checkbox instead of ToggleSwitch) and broken Vite resolution.
+
+## Allowed
+
+Run install **only** in the umbrella repo root: the directory whose `package.json` has `workspaces` listing `live-change-stack/...` and `vole-apps/apps` (usually `live-change/`).
+
+```bash
+# from live-change/
+yarn install
+fnm exec -- yarn install
+```
+
+To add a dependency: edit that package’s `package.json`, then install from the **same root**, or from the root run `yarn workspace <package-name> add <dep>`.
+
+## Forbidden
+
+Never `yarn install`, `npm install`, `yarn add`, or `npm install <pkg>` inside:
+
+- `live-change-stack/` (it has its own `workspaces` field — that is bait, not a second root)
+- `vole-apps/`, `vole-apps/apps/`
+- any path already listed in the root `workspaces` array
+- any `@live-change/*` package directory
+
+Do **not** `cd` into a subfolder to “just install one package”.
+
+## If you find nested installs
+
+If you see `live-change-stack/node_modules` or a nested `yarn.lock` next to a package that belongs to the root workspace: **stop**. Tell the user. Do not install further.
+
+Trees with their **own** `yarn.lock` that are **not** in the root `workspaces` list: ask the user before installing.

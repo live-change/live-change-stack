@@ -93,6 +93,8 @@ For relations where the parent type varies at runtime (`propertyOfAny`, `itemOfA
 
 The `Type` field has `type: 'type'` with an enum of possible types. The value field has `type: 'any'`.
 
+`(hash)` on index names such as `byOwner (hash)` means the index is created with **`hash: true`** (the child-id **suffix** of the index key). That is not relation **`hashId`**, which hashes the **object id** itself. See [When to set hashId](/server/09-02-propertyOfAny-itemOfAny.html#when-to-set-hashid).
+
 With `extendedWith`, additional type+value pairs are added (e.g. `sessionOrUserProperty: { extendedWith: ['object'] }` adds `objectType` + `object`).
 
 ### Important: do not re-declare auto-added fields

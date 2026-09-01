@@ -17,7 +17,7 @@
 
   const { node } = toRefs(props)
 
-  const flow = inject("flow")
+  const flow = inject("flow", null)
 
   const element = ref(null)
 

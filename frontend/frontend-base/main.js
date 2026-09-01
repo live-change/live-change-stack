@@ -13,6 +13,7 @@ import { PrimeVueDialogSymbol } from 'primevue/usedialog'
 import StyleClass from 'primevue/styleclass'
 import Ripple from 'primevue/ripple'
 import BadgeDirective from 'primevue/badgedirective'
+import Tooltip from 'primevue/tooltip'
 import VueLazyLoad from 'vue3-lazyload'
 import { createI18n } from 'vue-i18n'
 import { createHead } from "@vueuse/head"
@@ -93,6 +94,7 @@ export async function createApp(config, api, App, createRouter, host, headers, r
   app.directive('styleclass', StyleClass)
   app.directive('ripple', Ripple)
   app.directive('badge', BadgeDirective)
+  app.directive('tooltip', Tooltip)
 
   app.use(VueLazyLoad, {
     // options...

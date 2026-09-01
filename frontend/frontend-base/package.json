@@ -28,7 +28,7 @@
     "@lezer/html": "=1.3.6",
     "@lezer/java": "=1.0.4",
     "@lezer/javascript": "=1.4.7",
-    "@lezer/json": "=1.0.1",
+    "@lezer/json": "^1.0.1",
     "@lezer/markdown": "=1.1.0",
     "@lezer/php": "=1.0.1",
     "@lezer/python": "=1.1.8",

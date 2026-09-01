@@ -77,6 +77,7 @@
     "services/cron-service",
     "services/feedback-service",
     "services/codemirror-service",
+    "services/flow-service",
     "services/tags-service",
     "pattern/pattern",
     "pattern/pattern-db",

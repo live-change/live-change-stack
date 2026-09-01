@@ -42,6 +42,7 @@ export default defineUserConfig({
         { text: '16 Timers', link: '/server/16-timers.md' },
         { text: '17 Email and SMS', link: '/server/17-email-and-sms.md' },
         { text: '17a Notification channels', link: '/server/17a-notification-channels.md' },
+        { text: '22 Flow service', link: '/server/22-flow-service.md' },
       ],
       '/frontend/': [
         { text: 'Frontend manual', link: '/frontend/README.md' },
@@ -54,6 +55,10 @@ export default defineUserConfig({
         { text: '07 Analytics and marketing', link: '/frontend/07-analytics-and-marketing.md' },
         { text: '08 Best practices and patterns', link: '/frontend/08-best-practices-and-patterns.md' },
         { text: '10 Path and live', link: '/frontend/10-path-and-live.md' },
+        { text: '11 Locale and time', link: '/frontend/11-locale-and-time.md' },
+        { text: '12 Describe command', link: '/frontend/12-describe-command.md' },
+        { text: '13 E2E lifecycle', link: '/frontend/13-e2e-lifecycle-pattern.md' },
+        { text: '14 Flow editor', link: '/frontend/14-flow-frontend.md' },
         { text: '09 API – vue3-components', link: '/frontend/09-api-vue3-components.md' },
         { text: '09 API – vue3-ssr', link: '/frontend/09-api-vue3-ssr.md' },
         { text: '09 API – frontend-auto-form', link: '/frontend/09-api-frontend-auto-form.md' },

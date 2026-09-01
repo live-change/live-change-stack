@@ -225,6 +225,13 @@ definition.model({
 
 Use `fnm exec -- node server/start.js describe --service myService --model MyModel --output yaml` (from the app root, with fnm — see `live-change-node-toolchain-fnm`) to see all fields including auto-added ones.
 
+## `hashId` vs index `hash` (critical)
+
+- Auto-added `byOwner (hash)` is **index** `hash: true`: it hashes only the **child-id suffix**. Parent ids stay in the index-key prefix.
+- **`hashId: true`** on the relation hashes the **object id** (`h_` + 22 chars). Set it on a model whose id will be a parent of another `*Any` (e.g. flow Node, not Edge). Index `hash` is not a substitute.
+- Nested Any composites in index keys exceed LMDB’s ~254-character UTF-16 limit. Symptom: **`MDB_BAD_VALSIZE`**. Tests on `mem` do not catch this.
+- Details: `docs/docs/server/09-02-propertyOfAny-itemOfAny.md` (When to set hashId).
+
 ## Indexes
 
 - Declare indexes explicitly when you frequently query by a field or field combination.

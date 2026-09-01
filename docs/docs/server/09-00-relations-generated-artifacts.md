@@ -68,7 +68,7 @@ Pattern: `{changeType}{ServiceNameCapitalized}_{ModelName}`.
 ```javascript
 {
   objectType,   // e.g. 'myService_MyModel'
-  object,       // record id (property models: composite id from owner identifiers)
+  object,       // record id (property models: composite from owner identifiers, or hashed if hashId is set)
   identifiers,  // parent owner fields, e.g. { user: '...' } or { sessionOrUserType, sessionOrUser }
   data,         // new writable data (null on delete)
   oldData,      // previous writable data (null on create)

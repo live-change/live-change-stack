@@ -12,7 +12,7 @@ import {
 } from './itemEvents.js'
 
 import {
-  defineSingleView, defineRangeView,
+  defineSingleView, defineRangeView, definePartialRangeViews,
   defineCreateAction, defineUpdateAction, defineDeleteAction,
   defineCreateTrigger, defineUpdateTrigger, defineDeleteTrigger,
   defineSortIndex
@@ -42,6 +42,7 @@ export default function(service, app) {
 
     context.relationWord = 'Item'
     context.reverseRelationWord = 'Owned'
+    context.partialReverseRelationWord = 'Owned'
 
     context.identifiers = defineAnyProperties(context.model, context.otherPropertyNames, config)
     context.model.identifiers = [
@@ -63,8 +64,8 @@ export default function(service, app) {
       !!(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl))
     defineRangeView(config, context,
       !!(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl))
-    /// TODO: multiple views with all properties combinations
-    /// TODO: multiple views with limited fields
+    definePartialRangeViews(config, context,
+      !!(config.readAccess || config.writeAccess || config.readAccessControl || config.writeAccessControl))
 
     defineGlobalRangeView(config, context, !!config.readAllAccess)
 

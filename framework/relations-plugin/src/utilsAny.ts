@@ -252,28 +252,29 @@ export function defineDeleteByOwnerEvents(config, context) {
   } = context
   const bucketSize = config.deleteCascade?.deleteBucketSize ?? 128
   const delayMs = config.deleteCascade?.delayMs ?? 0
-  for(const propertyName of otherPropertyNames) {
-    const eventName = modelName + 'DeleteByOwner'
-    service.events[eventName] = new EventDefinition({
-      name: eventName,
-      properties: {
-        ownerType: {
-          type: String,
-          validation: ['nonEmpty']
-        },
-        owner: {
-          type: String,
-          validation: ['nonEmpty']
-        }
+  const eventName = modelName + 'DeleteByOwner'
+  service.events[eventName] = new EventDefinition({
+    name: eventName,
+    properties: {
+      ownerType: {
+        type: String,
+        validation: ['nonEmpty']
       },
-      async execute({ ownerType, owner }) {
-        const runtime = modelRuntime()
-        if(sameIdAsParent) {
-          return await enqueueDeleteCascade(() =>
-            runtime.delete(JSON.stringify(ownerType) + ':' + JSON.stringify(owner)))
-        }
-        const tableName = runtime.tableName
-        const prefix = JSON.stringify(ownerType) + ':' + JSON.stringify(owner)
+      owner: {
+        type: String,
+        validation: ['nonEmpty']
+      }
+    },
+    async execute({ ownerType, owner }) {
+      const runtime = modelRuntime()
+      if(sameIdAsParent) {
+        return await enqueueDeleteCascade(() =>
+          runtime.delete(JSON.stringify(ownerType) + ':' + JSON.stringify(owner)))
+      }
+      const tableName = runtime.tableName
+      const prefix = JSON.stringify(ownerType) + ':' + JSON.stringify(owner)
+      const seen = new Set()
+      for(const propertyName of otherPropertyNames) {
         const indexName = tableName + '_by' + propertyName[0].toUpperCase() + propertyName.slice(1)
         let bucket
         let gt = ''
@@ -287,12 +288,17 @@ export function defineDeleteByOwnerEvents(config, context) {
           bucket = await app.dao.get(['database', 'indexRange', app.databaseName, indexName, range])
           if(bucket.length === 0) break
           gt = bucket[bucket.length - 1].id
-          await Promise.all(bucket.map(({to}) => enqueueDeleteCascade(() => runtime.delete(to))))
+          const toDelete = bucket.map(({ to }) => to).filter(to => {
+            if(!to || seen.has(to)) return false
+            seen.add(to)
+            return true
+          })
+          await Promise.all(toDelete.map(to => enqueueDeleteCascade(() => runtime.delete(to))))
           if(delayMs) await sleep(delayMs)
         } while (bucket.length === bucketSize)
       }
-    })
-  }
+    }
+  })
 }
 
 export function defineParentDeleteTrigger(config, context) {

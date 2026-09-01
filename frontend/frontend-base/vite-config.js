@@ -49,7 +49,7 @@ const ssrTransformCustomDir = () => {
 let version = process.env.VERSION ?? 'unknown'
 
 export default async ({ command, mode, version, isSsrBuild, isPreview }, options = {
-  ssrDisabledDirectives: ['ripple', 'styleclass', 'badge', 'shared-element', 'lazy']
+  ssrDisabledDirectives: ['ripple', 'styleclass', 'badge', 'shared-element', 'lazy', 'tooltip']
 }) => {
   //console.log("VITE CONFIG", command, mode, process.argv)
   return {

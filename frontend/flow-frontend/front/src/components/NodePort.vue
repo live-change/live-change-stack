@@ -42,7 +42,7 @@
 
   const { node, portId, direction, newEdgeOptions } = toRefs(props)
 
-  const flow = inject("flow")
+  const flow = inject("flow", null)
 
   const element = ref(null)
 
@@ -56,7 +56,6 @@
 
   function handleMouseDown(event) {
     event.preventDefault()
-    console.log("start draw edge", node.value.id, portId.value)
     flow.startDrawEdge(node.value, portId.value, event, newEdgeOptions)
   }
 

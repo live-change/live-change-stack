@@ -15,13 +15,14 @@
            transform, transformOrigin: '0 0',
            width: flow?.size?.width + 'px', height: flow?.size?.height + 'px'
          }">
-<!--      <pre class="absolute text-xs">{{ JSON.stringify(freeEdge, null, 2) }}</pre>-->
       <svg xmlns="http://www.w3.org/2000/svg" class="absolute w-full h-full pointer-events-none">
         <slot name="background-edges" v-bind="flow" />
       </svg>
-      <slot v-bind="flow" />
       <svg xmlns="http://www.w3.org/2000/svg" class="absolute w-full h-full pointer-events-none">
         <slot name="foreground-edges" v-bind="flow" />
+      </svg>
+      <slot v-bind="flow" />
+      <svg xmlns="http://www.w3.org/2000/svg" class="absolute w-full h-full pointer-events-none">
         <slot name="free-edge" v-bind="{ freeEdge, flow }" />
       </svg>
     </div>
@@ -30,7 +31,7 @@
 
 <script setup>
 
-  import { defineProps, defineEmits, toRefs, reactive, ref, onMounted, onUnmounted, watch, computed } from "vue"
+  import { defineProps, defineEmits, toRefs, reactive, ref, onMounted, onUnmounted, watch, computed, unref } from "vue"
   import { useFlow } from "./index.js"
 
   const viewport = ref(null)
@@ -127,7 +128,7 @@
         if(flow.options.connect) {
           flow.options.connect(newEdge)
         } else {
-          flow.edges.push(newEdge)
+          unref(flow.edges).push(newEdge)
         }
       }
     },

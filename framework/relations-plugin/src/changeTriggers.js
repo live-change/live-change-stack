@@ -185,6 +185,7 @@ function registerParentDeleteTriggers(context, config) {
           }
         },
         timeout: config.parentDeleteTriggerTimeout,
+        waitForEvents: true,
         async execute({object}, {client, service, trigger}, emit) {
           await triggerDeleteOnParentDeleteTriggers(context, propertyName, [object],
               otherType, object, emit, trigger, config)
@@ -205,7 +206,9 @@ function registerParentDeleteTriggers(context, config) {
         }
       },
       timeout: config.parentDeleteTriggerTimeout,
+      waitForEvents: true,
       async execute({ objectType, object }, {client, service, trigger}, emit) {
+        if(parentsTypes?.length && !parentsTypes.includes(objectType)) return
         for(const propertyName of otherPropertyNames) {
           await triggerDeleteOnParentDeleteTriggers(context, propertyName, [objectType, object],
               objectType, object, emit, trigger, config)

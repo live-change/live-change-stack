@@ -45,6 +45,8 @@ The field name is derived from the parent model name with the first letter lower
 
 Each auto-added field has `type: ParentModelType` and `validation: ['nonEmpty']`.
 
+`propertyOf` and `itemOf` also accept **`hashId`** (`true` or `'hybrid'`) — the same flag as on `*Any`. Use it when this model's id will be nested into another relation's index keys. Details: [When to set hashId](/server/09-02-propertyOfAny-itemOfAny.html#when-to-set-hashid).
+
 For multi-parent relations, all combinations of indexes are auto-created. You can override field names with `propertyNames` in the config.
 
 Example — `itemOf: { what: Billing }` adds `billing` field automatically:
