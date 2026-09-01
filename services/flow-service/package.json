@@ -1,6 +1,6 @@
 {
   "name": "@live-change/flow-service",
-  "version": "0.9.226",
+  "version": "0.9.227",
   "description": "Visual graph persistence for LiveChange: Graph, Node, and Edge models",
   "main": "index.js",
   "scripts": {
@@ -22,12 +22,12 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.9.226",
-    "@live-change/relations-plugin": "0.9.226"
+    "@live-change/framework": "^0.9.227",
+    "@live-change/relations-plugin": "^0.9.227"
   },
   "devDependencies": {
-    "@live-change/server": "0.9.226",
-    "@live-change/session-service": "0.9.226",
+    "@live-change/server": "^0.9.227",
+    "@live-change/session-service": "^0.9.227",
     "tsx": "^4.21.0"
   }
 }
