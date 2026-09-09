@@ -80,8 +80,8 @@ class Log {
     await this.database.deleteStore(config.uid + '.log')
   }
 
-  storeStats() {
-    return combineStoreStats(readStoreStat(this.data), null)
+  async storeStats() {
+    return combineStoreStats(await readStoreStat(this.data), null)
   }
 
 }

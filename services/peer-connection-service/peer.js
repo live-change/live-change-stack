@@ -80,7 +80,7 @@ definition.trigger({
   properties: {
   },
   async execute({ session, peer }, context, emit) {
-    console.log("PEER ONLINE PARAMS", { session, peer })
+    // console.log("PEER ONLINE PARAMS", { session, peer })
     const { channelType, channel, peerSession, instance } = decodePeerId(peer)
     if(peerSession !== session) throw new Error('wrongSession')
     /// TODO: check channel access
@@ -96,7 +96,7 @@ definition.trigger({
   properties: {
   },
   async execute({ session, peer }, context, emit) {
-    console.log("PEER OFFLINE PARAMS", { session, peer })
+    // console.log("PEER OFFLINE PARAMS", { session, peer })
     const { channelType, channel, peerSession, instance } = decodePeerId(peer)
     if(peerSession !== session) throw new Error('wrongSession')
     emit({

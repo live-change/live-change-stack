@@ -146,9 +146,9 @@ class OpLogCleaner {
     }
   }
 
-  estimateOpLogEntries(db) {
+  async estimateOpLogEntries(db) {
     try {
-      const stats = db.storageStats()
+      const stats = await db.storageStats()
       let total = 0
       for(const store of stats.stores || []) {
         const count = store?.opLog?.entryCount
@@ -167,7 +167,7 @@ class OpLogCleaner {
     let entryCount = null
     if(typeof opLog.stat === 'function') {
       try {
-        const stat = opLog.stat()
+        const stat = await opLog.stat()
         if(stat?.available && typeof stat.entryCount === 'number') {
           entryCount = stat.entryCount
         }
@@ -471,7 +471,7 @@ class OpLogCleaner {
     const delayMs = options.delayMs ?? this.delayMs
     const mode = options.mode || this.status.mode || 'auto'
     const runStartedAt = this.status.startedAt || Date.now()
-    const estimatedTotal = this.estimateOpLogEntries(db)
+    const estimatedTotal = await this.estimateOpLogEntries(db)
     const estimatedDeletableDb = await this.estimateDeletableOpLogEntries(db, cutoff)
     const deletedBeforeDb = this.status.deleted || 0
     let estimatedDeletable = estimatedDeletableDb == null

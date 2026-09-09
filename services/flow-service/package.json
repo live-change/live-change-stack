@@ -22,12 +22,13 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.227",
-    "@live-change/relations-plugin": "^0.9.227"
+    "@live-change/framework": "0.9.227",
+    "@live-change/relations-plugin": "0.9.227"
   },
   "devDependencies": {
-    "@live-change/server": "^0.9.227",
-    "@live-change/session-service": "^0.9.227",
+    "@live-change/server": "0.9.227",
+    "@live-change/session-service": "0.9.227",
     "tsx": "^4.21.0"
-  }
+  },
+  "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9"
 }

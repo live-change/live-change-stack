@@ -346,19 +346,20 @@ class Database {
     this.configObservable.set(JSON.parse(JSON.stringify(this.config)))
   }
 
-  storageStatsForConfig(type, name, config) {
+  async storageStatsForConfig(type, name, config) {
     const uid = config.uid
     let combined
     if(type === 'log') {
       combined = combineStoreStats(
-        readStoreStat(this.store(uid + '.log', { ...config, ...config.data })),
+        await readStoreStat(this.store(uid + '.log', { ...config, ...config.data })),
         null
       )
     } else {
-      combined = combineStoreStats(
+      const [data, opLog] = await Promise.all([
         readStoreStat(this.store(uid + '.data', { ...config, ...config.data })),
         readStoreStat(this.store(uid + '.opLog', { ...config, ...config.opLog }))
-      )
+      ])
+      combined = combineStoreStats(data, opLog)
     }
     return {
       type,
@@ -368,17 +369,18 @@ class Database {
     }
   }
 
-  storageStats() {
-    const stores = []
+  async storageStats() {
+    const jobs = []
     for(const name in this.config.tables) {
-      stores.push(this.storageStatsForConfig('table', name, this.config.tables[name]))
+      jobs.push(this.storageStatsForConfig('table', name, this.config.tables[name]))
     }
     for(const name in this.config.indexes) {
-      stores.push(this.storageStatsForConfig('index', name, this.config.indexes[name]))
+      jobs.push(this.storageStatsForConfig('index', name, this.config.indexes[name]))
     }
     for(const name in this.config.logs) {
-      stores.push(this.storageStatsForConfig('log', name, this.config.logs[name]))
+      jobs.push(this.storageStatsForConfig('log', name, this.config.logs[name]))
     }
+    const stores = await Promise.all(jobs)
 
     let dataUsedBytes = 0
     let opLogUsedBytes = 0

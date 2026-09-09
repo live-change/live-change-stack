@@ -262,6 +262,7 @@ class Server {
   }
   async initialize(initOptions = {}) {
     if(!this.config.temporary) {
+      await fs.promises.mkdir(this.config.dbRoot, { recursive: true })
       const normalMetadataPath = path.resolve(this.config.dbRoot, 'metadata.json')
       const backupMetadataPath = path.resolve(this.config.dbRoot, 'metadata.json.bak')
       const normalMetadataExists = await fs.promises.access(normalMetadataPath).catch(err => false)

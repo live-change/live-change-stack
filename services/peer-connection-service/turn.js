@@ -30,7 +30,6 @@ async function createTurnConfiguration({ client }) {
   const expire = Date.now() / 1000 + turnExpireTime | 0
   const username = await randomHexString(10)
   const rusername = expire + ':' + username
-  console.log("TURN SECRET", secret, rusername)
   const password = crypto
     .createHmac('sha1', secret)
     .update(rusername)

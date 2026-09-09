@@ -6,10 +6,10 @@ export function unavailableStoreStat() {
   }
 }
 
-export function readStoreStat(store) {
+export async function readStoreStat(store) {
   if(!store || typeof store.stat !== 'function') return unavailableStoreStat()
   try {
-    const stat = store.stat()
+    const stat = await store.stat()
     if(!stat || !stat.available) return unavailableStoreStat()
     return stat
   } catch(e) {

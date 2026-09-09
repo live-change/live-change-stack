@@ -22,12 +22,12 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
   "dependencies": {
-    "@live-change/dao": "^0.9.227",
-    "@live-change/dao-sockjs": "^0.9.227",
-    "@live-change/db-server": "^0.9.227",
-    "@live-change/framework": "^0.9.227",
+    "@live-change/dao": "0.9.227",
+    "@live-change/dao-sockjs": "0.9.227",
+    "@live-change/db-server": "0.9.227",
+    "@live-change/framework": "0.9.227",
     "@live-change/sockjs": "0.4.1",
-    "@live-change/uid": "^0.9.227",
+    "@live-change/uid": "0.9.227",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.67.3",
     "@opentelemetry/exporter-logs-otlp-http": "^0.209.0",
@@ -47,5 +47,5 @@
     "websocket": "^1.0.34",
     "yargs": "^17.7.2"
   },
-  "gitHead": "8b9b3bae11b5347f01de0cd09d5d8535a0d251cf"
+  "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9"
 }

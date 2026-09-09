@@ -6,6 +6,22 @@ import Debug from 'debug'
 
 const debugPut = Debug('db:profilePut')
 const loggedEnvs = new WeakSet()
+const LMDB_SLOW_MS = Number(process.env.LMDB_SLOW_MS || 50)
+
+function withLmdbNative(info, fn) {
+  const t = globalThis.__lcNativeTrace
+  const started = performance.now()
+  t?.enter(info)
+  try {
+    return fn()
+  } finally {
+    const dtMs = performance.now() - started
+    t?.leave(dtMs)
+    if (dtMs >= LMDB_SLOW_MS) {
+      console.log('[lmdb] slow', { ...info, dtMs: Math.round(dtMs) })
+    }
+  }
+}
 
 function logEnvOnce(env, storeName) {
   if(!debugPut.enabled || !env || loggedEnvs.has(env)) return
@@ -348,22 +364,24 @@ class Store {
 
   objectGet(key) {
     if(!key) throw new Error("key is required")
-    const txn = this.env.beginTxn()
-    let json
-    try {
-      json = txn.getString(this.lmdb, key)
-    } catch(error) {
+    return withLmdbNative({ op: 'objectGet', store: this.name, id: key }, () => {
+      const txn = this.env.beginTxn()
+      let json
+      try {
+        json = txn.getString(this.lmdb, key)
+      } catch(error) {
 
-    } finally {
-      txn.commit()
-    }
-    if(!json) return Promise.resolve(null)
-    try {
-      const obj = JSON.parse(json)
-      return Promise.resolve(obj)
-    } catch(e) {
-      return Promise.reject(e)
-    }
+      } finally {
+        txn.commit()
+      }
+      if(!json) return Promise.resolve(null)
+      try {
+        const obj = JSON.parse(json)
+        return Promise.resolve(obj)
+      } catch(e) {
+        return Promise.reject(e)
+      }
+    })
   }
 
   objectObservable(key) {
@@ -376,6 +394,7 @@ class Store {
   rangeGet(range) {  
     if(!range) throw new Error("range not defined")      
     return new Promise((resolve, reject) => {
+      withLmdbNative({ op: 'rangeGet', store: this.name, range }, () => {
       let keys = []
       let data
       let found
@@ -447,6 +466,7 @@ class Store {
         //console.log("] TXN")
       }
       resolve(data)
+      })
     })
   }
 
@@ -461,6 +481,7 @@ class Store {
     if(!range) throw new Error("range not defined")
     const keysOnly = options.keysOnly === true
     return new Promise((resolve, reject) => {
+      withLmdbNative({ op: 'rangeDelete', store: this.name, range, keysOnly }, () => {
       let keys = []
       let count, last
       let found
@@ -541,12 +562,14 @@ class Store {
         //console.log("] TXN")
       }
       resolve({ count, last })
+      })
     })
   }
 
   async countGet(range) {
     if(!range) throw new Error("range not defined")
     return new Promise((resolve, reject) => {
+      withLmdbNative({ op: 'countGet', store: this.name, range }, () => {
       let found
       let count = 0
       //console.log("TXN [")
@@ -603,6 +626,7 @@ class Store {
         //console.log("] TXN")
       }
       resolve(count)
+      })
     })
   }
 
@@ -624,12 +648,18 @@ class Store {
     let oldBytes = 0
     let newBytes = 0
     const tBegin = profile ? performance.now() : 0
+    let tTxn = tBegin
+    let tGet = tBegin
+    let tParse = tBegin
+    let tStr = tBegin
+    let tPut = tBegin
+    withLmdbNative({ op: 'put', store: this.name, id }, () => {
     const txn = this.env.beginTxn()
-    const tTxn = profile ? performance.now() : 0
-    let tGet = tTxn
-    let tParse = tTxn
-    let tStr = tTxn
-    let tPut = tTxn
+    tTxn = profile ? performance.now() : 0
+    tGet = tTxn
+    tParse = tTxn
+    tStr = tTxn
+    tPut = tTxn
     try {
       const json = txn.getString(this.lmdb, id)
       tGet = profile ? performance.now() : 0
@@ -650,6 +680,7 @@ class Store {
     } finally {
       txn.commit()
     }
+    })
     const tCommit = profile ? performance.now() : 0
     const objectObservable = this.objectObservables.get(id)
     if (objectObservable) objectObservable.set(object, oldObject)
@@ -696,6 +727,7 @@ class Store {
   }
 
   async delete(id) {
+    return withLmdbNative({ op: 'delete', store: this.name, id }, () => {
     const txn = this.env.beginTxn()
     let object = null
     try {
@@ -715,9 +747,11 @@ class Store {
       rangeObservable.deleteObject(object || { id })
     }
     return object
+    })
   }
 
   stat() {
+    return withLmdbNative({ op: 'stat', store: this.name }, () => {
     const txn = this.env.beginTxn({ readOnly: true })
     try {
       const s = this.lmdb.stat(txn)
@@ -735,6 +769,7 @@ class Store {
     } finally {
       txn.abort()
     }
+    })
   }
 
 }

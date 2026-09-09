@@ -435,8 +435,7 @@ class Store {
       const max = range.lt || range.lte
       if(range.reverse) {
         if(max) {
-          const key = range.lt ? this.tree.lt(max) : this.tree.le(max)
-          cursor = key ? this.tree.at(key) : this.tree.end
+          cursor = range.lt ? this.tree.lt(max) : this.tree.le(max)
         } else {
           cursor = this.tree.end
         }
@@ -451,10 +450,9 @@ class Store {
         }
       } else {
         if(min) {
-          const key = range.gt ? this.tree.gt(min) : this.tree.ge(min)
-          cursor = key ? this.tree.at(key) : this.tree.end
+          cursor = range.gt ? this.tree.gt(min) : this.tree.ge(min)
         } else {
-          cursor = this.tree.end
+          cursor = this.tree.begin
         }
         while((!range.limit || keys.length < range.limit) && cursor.key !== undefined) {
           if(range.lt && cursor.key >= range.lt) break;
@@ -490,8 +488,9 @@ class Store {
   async put(object) {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
+    if(!id) throw new Error("ID must not be empty string!")
     const oldObjectJson = this.tree.get(id)
-    const oldObject = oldObjectJson && this.serialization.parse(oldObjectJson)
+    const oldObject = oldObjectJson ? this.serialization.parse(oldObjectJson) : null
     if(oldObjectJson) {
       this.tree = this.tree.remove(id)
     }

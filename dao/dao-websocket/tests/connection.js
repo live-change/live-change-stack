@@ -66,9 +66,10 @@ test("time value", (t) => {
   })
 
   t.test('disconnect from server', (t) => {
-    t.plan(1)
-    client.settings.onDisconnect = () => {
+    t.plan(2)
+    client.settings.onDisconnect = (info) => {
       t.pass("disconnected")
+      t.equal(typeof info?.code, 'number', 'close code is a number')
       t.end()
       process.exit();
     }

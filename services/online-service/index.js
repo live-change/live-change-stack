@@ -8,6 +8,16 @@ const app = App.app()
 
 const logger = App.utils.loggingHelpers('online', '0.1.0')
 
+function onlineLog(event, extra) {
+  if (extra === undefined) console.log(`[online] ${event}`)
+  else console.log(`[online] ${event}`, extra)
+}
+
+function logTrigger(triggerName, params) {
+  logger.log("TRIGGER", triggerName, params)
+  onlineLog('TRIGGER', { triggerName, params })
+}
+
 const definition = app.createServiceDefinition({
   name: 'online'
 })
@@ -28,27 +38,28 @@ async function sendOnlineEvent(path) {
       const { group } = params
       logger.log("PARAMs", params)
       const triggerName = `${group}Online`
-      logger.log("TRIGGER", triggerName)
+      logTrigger(triggerName, params)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     } else if(type === 'user') {
       const { group, user } = params
       const triggerName = `user${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Online`
-      logger.log("TRIGGER", triggerName)
+      logTrigger(triggerName, params)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     } else if(type === 'session') {
       const { group, session } = params
       const triggerName = `session${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Online`
-      logger.log("TRIGGER", triggerName)
+      logTrigger(triggerName, params)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     }
   } catch(error) {
-    logger.error("ONLINE EVENT ERROR")
+    logger.error("ONLINE EVENT ERROR", error)
+    console.error('[online] ONLINE EVENT ERROR', error)
   }
 }
 
@@ -59,32 +70,34 @@ async function sendOfflineEvent(path) {
     if(type === 'object') {
       const { group } = params
       const triggerName = `${group}Offline`
-      logger.log("TRIGGER", triggerName)
+      logTrigger(triggerName, params)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     } else if(type === 'user') {
       const { group, user } = params
       const triggerName = `user${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Offline`
-      logger.log("TRIGGER", triggerName)
+      logTrigger(triggerName, params)
       await app.trigger({ type: triggerName }, {
         ...params,
       })
     } else if(type === 'session') {
       const { group, session } = params
       const triggerName = `session${group ? group.slice(0, 1).toUpperCase() + group.slice(1) : ''}Offline`
-      logger.log("TRIGGER", triggerName)
+      logTrigger(triggerName, params)
       await app.trigger({ type: triggerName }, {
         ...params
       })
     }
   } catch(error) {
-    logger.error("OFFLINE EVENT ERROR")
+    logger.error("OFFLINE EVENT ERROR", error)
+    console.error('[online] OFFLINE EVENT ERROR', error)
   }
 }
 
 async function sendAllOfflineEvent() {
   logger.log("SEND ALL OFFLINE EVENT")
+  onlineLog('SEND ALL OFFLINE EVENT')
   await app.trigger({ type: `allOffline` }, { })
 }
 
@@ -99,7 +112,8 @@ class SelfObservable extends ReactiveDao.Observable {
     this.offlineEventTimeout = null
     this.lastEvent = null
 
-    logger.log("PATH", this.path, "IS ONLINE")
+    logger.log("PATH", JSON.stringify(this.path), "IS ONLINE")
+    onlineLog('PATH IS ONLINE', this.path)
     this.setOnlineEventTimeout()
   }
   setOnlineEventTimeout() {
@@ -136,14 +150,16 @@ class SelfObservable extends ReactiveDao.Observable {
     this.fireObserver(observer, 'set', this.observers.length)
   }
   unobserve(observer) {
-    logger.log("ONLINE UNOBSERVED")
+    logger.log("ONLINE UNOBSERVED", JSON.stringify(this.path), "observersLeft", Math.max(0, this.observers.length - 1))
+    onlineLog('UNOBSERVED', { path: this.path, observersLeft: Math.max(0, this.observers.length - 1) })
     this.observers.splice(this.observers.indexOf(observer), 1)
     this.fireObservers('set', this.observers.length)
     if(this.isUseless()) this.dispose()
   }
   dispose() {
     this.disposed = true
-    logger.log("PATH", this.path, "IS OFFLINE")
+    logger.log("PATH", JSON.stringify(this.path), "IS OFFLINE")
+    onlineLog('PATH IS OFFLINE', this.path)
     this.disposeTimeout = setTimeout(() => {
       if(this.disposed) {
         selfObservables.delete(JSON.stringify(this.path))
@@ -160,7 +176,8 @@ class SelfObservable extends ReactiveDao.Observable {
     this.disposed = false
     this.clearOfflineEventTimeout()
     this.setOnlineEventTimeout()
-    logger.log("PATH", this.path, "IS ONLINE AGAIN")
+    logger.log("PATH", JSON.stringify(this.path), "IS ONLINE AGAIN")
+    onlineLog('PATH IS ONLINE AGAIN', this.path)
   }
 }
 
@@ -201,9 +218,25 @@ definition.afterStart(async service => {
   const httpServer = http.createServer() // TODO: pure HTTP API
   httpServer.listen(onlinePort)
 
-  let wsServer = new WebSocketServer({httpServer, autoAcceptConnections: false})
+  let wsServer = new WebSocketServer({
+    httpServer,
+    autoAcceptConnections: false,
+    // Default websocket keepaliveGracePeriod is 10s. This hop is in-process with
+    // the API server; a stall can miss the pong and drop presence. Widen grace only here.
+    keepaliveGracePeriod: 40000
+  })
   wsServer.on("request",(request) => {
+    const remote = request.remoteAddress
+      || request.httpRequest?.socket?.remoteAddress
+      || request.httpRequest?.connection?.remoteAddress
+      || null
+    logger.log("ONLINE WS ACCEPT", { remote })
+    onlineLog('WS ACCEPT', { remote })
     let serverConnection = new ReactiveDaoWebsocket.server(request)
+    serverConnection.on('close', (reasonCode, description) => {
+      logger.log("ONLINE WS CLOSE", { remote, reasonCode, description })
+      onlineLog('WS CLOSE', { remote, reasonCode, description })
+    })
     reactiveServer.handleConnection(serverConnection)
   })
 
@@ -211,6 +244,15 @@ definition.afterStart(async service => {
 })
 
 const onlineClient = new ReactiveDaoWebsocket.client("api-server-"+process.pid, onlineUrl)
+onlineClient.on('connect', () => {
+  logger.log("ONLINE CLIENT CONNECT", { url: onlineUrl, pid: process.pid })
+})
+onlineClient.on('disconnect', (info) => {
+  logger.log("ONLINE CLIENT DISCONNECT", { url: onlineUrl, pid: process.pid, info: info ?? null })
+})
+onlineClient.on('reconnect', () => {
+  logger.log("ONLINE CLIENT RECONNECT", { url: onlineUrl, pid: process.pid })
+})
 
 definition.view({
   name: "session",

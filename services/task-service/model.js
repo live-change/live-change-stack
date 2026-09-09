@@ -25,6 +25,9 @@ const taskProperties = {
   result: {
     type: Object
   },
+  error: {
+    type: String
+  },
   hash: {
     type: String,
   },

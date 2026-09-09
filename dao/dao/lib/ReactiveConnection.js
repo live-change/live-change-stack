@@ -147,8 +147,8 @@ class Connection extends EventEmitter {
     if(this.settings.timeSynchronization) this.settings.timeSynchronization.setConnection(this)
 
     /// Backward compatibility TODO: remove in future
-    this.on('disconnect', () => this.settings.onDisconnect && this.settings.onDisconnect() )
-    this.on('connect', () => this.settings.onConnect && this.settings.onConnect() )
+    this.on('disconnect', (...args) => this.settings.onDisconnect && this.settings.onDisconnect(...args) )
+    this.on('connect', (...args) => this.settings.onConnect && this.settings.onConnect(...args) )
   }
 
   connectionInfo() {
@@ -336,11 +336,11 @@ class Connection extends EventEmitter {
     if(handler) handler(message)
   }
 
-  handleDisconnect() {
+  handleDisconnect(info) {
     if(this.settings.logLevel > 0) debug( "disconnected")
     this.connected = false
     const queuedConnectionId = this.connectedCounter
-    this.emit('disconnect')
+    this.emit('disconnect', info)
     for(const req of this.waitingRequests.values()) {
       if(req.settings.disconnectDebug)
         console.error("SENT REQUEST", req.msg, "BEFORE DISCONNECTED WITH SETTINGS", req.settings)

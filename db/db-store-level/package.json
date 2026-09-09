@@ -4,7 +4,7 @@
   "description": "Database with observable data for live queries",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test tape tests/*"
+    "test": "NODE_ENV=test tape tests/*observable.js tests/store-*.js tests/prefix-isolation.js"
   },
   "repository": {
     "type": "git",
@@ -22,17 +22,14 @@
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
   "devDependencies": {
-    "encoding-down": "^7.1.0",
     "leveldown": "^6.1.0",
-    "levelup": "^5.1.1",
-    "memdown": "^6.1.1",
+    "p-queue": "^8.1.1",
     "rimraf": "^5.0.5",
-    "subleveldown": "^6.0.1",
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.227",
-    "@live-change/flatten-interval-tree": "^0.9.227"
+    "@live-change/dao": "0.9.227",
+    "@live-change/flatten-interval-tree": "0.9.227"
   },
-  "gitHead": "8b9b3bae11b5347f01de0cd09d5d8535a0d251cf"
+  "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9"
 }

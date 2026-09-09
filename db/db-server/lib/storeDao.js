@@ -47,7 +47,12 @@ function localReads(server) {
           if(typeof store.stat !== 'function') {
             return new ReactiveDao.ObservableValue({ available: false, entryCount: null, usedBytes: null })
           }
-          return new ReactiveDao.ObservableValue(store.stat())
+          const obs = new ReactiveDao.ObservableValue(undefined)
+          Promise.resolve(store.stat()).then(
+            value => obs.set(value),
+            error => obs.error(error)
+          )
+          return obs
         } catch(e) {
           return new ReactiveDao.ObservableError(e.message || e)
         }

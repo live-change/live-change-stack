@@ -28,7 +28,7 @@ class WebSocketConnection extends ReactiveConnection {
       if (connection.readyState === WebSocket.CONNECTING) return setTimeout(connection.onopen, 230)
       this.handleConnect()
     }).bind(this)
-    const disconnect = () => {
+    const disconnect = (ev) => {
       let ef = function () {
       }
       connection.onclose = ef
@@ -36,19 +36,24 @@ class WebSocketConnection extends ReactiveConnection {
       connection.onheartbeat = ef
       connection.onopen = ef
       connection.onerror = ef
-      this.handleDisconnect()
+      const info = {}
+      if (ev && typeof ev === 'object') {
+        if (typeof ev.code === 'number') info.code = ev.code
+        if (typeof ev.reason === 'string' && ev.reason) info.reason = ev.reason
+      }
+      this.handleDisconnect(Object.keys(info).length ? info : undefined)
     }
-    connection.onclose = (function () {
-      debug("connection", this.url, " close")
-      disconnect()
+    connection.onclose = (function (ev) {
+      debug("connection", this.url, " close", ev && ev.code, ev && ev.reason)
+      disconnect(ev)
     }).bind(this)
     connection.onmessage = (function (e) {
       const message = JSON.parse(e.data)
       this.handleMessage(message)
     }).bind(this)
     connection.onerror = (function(err) {
-      debug("connection", this.url, "error", err.message)
-      disconnect()
+      debug("connection", this.url, "error", err && err.message)
+      disconnect(err)
     })
   }
 

@@ -1,106 +1,112 @@
 import fs from 'fs'
 import path from 'path'
+import { createRequire } from 'module'
 import { rimraf } from "rimraf"
 import lmdb from 'node-lmdb'
 import lmdbStore from'@live-change/db-store-lmdb'
 import rbTreeStore from'@live-change/db-store-rbtree'
+import levelStore from '@live-change/db-store-level'
+import rocksStore from '@live-change/db-store-rocksdb'
+import sqliteStore, { applyPragmas } from '@live-change/db-store-sqlite'
 import Debug from 'debug'
 
+const require = createRequire(import.meta.url)
 const debugPut = Debug('db:profilePut')
 
 const unavailableEnvStat = () => ({ available: false })
 
+function dirFileStat(dir) {
+  if(!dir || !fs.existsSync(dir)) return unavailableEnvStat()
+  let apparent = 0
+  let allocated = 0
+  let fileCount = 0
+  function walk(d) {
+    let entries
+    try {
+      entries = fs.readdirSync(d, { withFileTypes: true })
+    } catch(e) {
+      return
+    }
+    for(const entry of entries) {
+      const full = path.join(d, entry.name)
+      if(entry.isDirectory()) walk(full)
+      else {
+        try {
+          const st = fs.statSync(full)
+          fileCount++
+          apparent += st.size
+          allocated += (st.blocks || 0) * 512
+        } catch(e) {}
+      }
+    }
+  }
+  walk(dir)
+  if(!fileCount) return unavailableEnvStat()
+  return {
+    available: true,
+    fileBytes: apparent,
+    apparentFileBytes: apparent,
+    allocatedFileBytes: allocated || apparent
+  }
+}
+
+function openDown(Down, dbPath, options) {
+  // rocksdb/leveldown createIfMissing mkdir is not recursive — parent of
+  // dbRoot/<name>.db must exist, same as lmdb/sqlite createDb.
+  fs.mkdirSync(dbPath, { recursive: true })
+  const db = Down(dbPath)
+  db.path = dbPath
+  db._opened = new Promise((resolve, reject) => {
+    db.open({ createIfMissing: true, ...(options || {}) }, err => {
+      if(err) reject(err)
+      else resolve()
+    })
+  })
+  return db
+}
+
+function closeDown(db) {
+  return new Promise((resolve, reject) => {
+    if(!db || typeof db.close !== 'function') return resolve()
+    db.close(err => err ? reject(err) : resolve())
+  })
+}
+
+function createDownBackend(Store, Down) {
+  return {
+    Store,
+    Down,
+    createDb(dbPath, options) {
+      return openDown(this.Down, dbPath, options)
+    },
+    closeDb(db) {
+      return closeDown(db)
+    },
+    async deleteDb(db) {
+      await closeDown(db)
+      if(db && db.path) await rimraf(db.path)
+    },
+    createStore(db, name, options) {
+      return new this.Store(db, { ...options, prefix: name + '\x00' })
+    },
+    closeStore(store) {
+    },
+    async deleteStore(store) {
+      await store.clear()
+    },
+    envStat(db) {
+      return dirFileStat(db && db.path)
+    }
+  }
+}
+
 function createBackend({ name, url, maxDbs, mapSize }) {
   if(name == 'leveldb') {
-    return {
-      levelup: require('levelup'),
-      leveldown: require('leveldown'),
-      subleveldown: require('subleveldown'),
-      encoding: require('encoding-down'),
-      Store: require('@live-change/db-store-level'),
-      createDb(path, options) {
-        const db = this.levelup(this.leveldown(path, options), options)
-        db.path = path
-        return db
-      },
-      closeDb(db) {
-        db.close()
-      },
-      async deleteDb(db) {
-        db.close()
-        await rimraf(db.path)
-      },
-      createStore(db, name, options) {
-        return new this.Store(this.subleveldown(db, name,
-            { ...options, keyEncoding: 'ascii', valueEncoding: 'json' }))
-      },
-      closeStore(store) {
-      },
-      async deleteStore(store) {
-        await store.clear()
-      },
-      envStat: unavailableEnvStat
-    }
+    return createDownBackend(levelStore, require('leveldown'))
   } else if(name == 'rocksdb') {
-    return {
-      levelup: require('levelup'),
-      rocksdb: require('level-rocksdb'),
-      subleveldown: require('subleveldown'),
-      encoding: require('encoding-down'),
-      Store: require('@live-change/db-store-level'),
-      createDb(path, options) {
-        const db = this.levelup(this.rocksdb(path, options), options)
-        db.path = path
-        return db
-      },
-      closeDb(db) {
-        db.close()
-      },
-      async deleteDb(db) {
-        db.close()
-        await rimraf(db.path)
-      },
-      createStore(db, name, options) {
-        return new this.Store(this.subleveldown(db, name,
-            { ...options, keyEncoding: 'ascii', valueEncoding: 'json' }))
-      },
-      closeStore(store) {
-      },
-      async deleteStore(store) {
-        await store.clear()
-      },
-      envStat: unavailableEnvStat
-    }
+    return createDownBackend(rocksStore, require('rocksdb'))
   } else if(name == 'memdown') {
-    return {
-      levelup: require('levelup'),
-      memdown: require('memdown'),
-      subleveldown: require('subleveldown'),
-      encoding: require('encoding-down'),
-      Store: require('@live-change/db-store-level'),
-      createDb(path, options) {
-        const db = this.levelup(this.memdown(path, options), options)
-        db.path = path
-        return db
-      },
-      closeDb(db) {
-        db.close()
-      },
-      async deleteDb(db) {
-        db.close()
-        await rimraf(db.path)
-      },
-      createStore(db, name, options) {
-        return new this.Store(this.subleveldown(db, name,
-            { ...options, keyEncoding: 'ascii', valueEncoding: 'json' }))
-      },
-      closeStore(store) {
-      },
-      async deleteStore(store) {
-        await store.clear()
-      },
-      envStat: unavailableEnvStat
-    }
+    return createDownBackend(levelStore, require('memdown'))
   } else if(name == 'mem' || name == 'memory') {
     return {
       Store: rbTreeStore,
@@ -251,6 +257,53 @@ function createBackend({ name, url, maxDbs, mapSize }) {
         return connection.deleteStore(store.databaseName, store.storeName)
       },
       envStat: unavailableEnvStat
+    }
+  } else if(name == 'sqlite') {
+    const Database = require('better-sqlite3')
+    return {
+      Store: sqliteStore,
+      Database,
+      createDb(dbPath, options) {
+        fs.mkdirSync(dbPath, { recursive: true })
+        const db = new Database(path.join(dbPath, 'data.sqlite'))
+        applyPragmas(db, { mapSize, ...options })
+        db.path = dbPath
+        return db
+      },
+      closeDb(db) {
+        if(db && db.open) db.close()
+      },
+      async deleteDb(db) {
+        if(db) {
+          try {
+            if(db.open) db.close()
+          } catch(e) {}
+          if(db.path) await rimraf(db.path)
+        }
+      },
+      createStore(db, name, options) {
+        return new this.Store(db, { ...options, name })
+      },
+      closeStore(store) {
+      },
+      async deleteStore(store) {
+        store.drop()
+      },
+      envStat(db) {
+        if(!db || typeof db.pragma !== 'function') return unavailableEnvStat()
+        const pageCount = db.pragma('page_count', { simple: true })
+        const pageSize = db.pragma('page_size', { simple: true })
+        const freelistCount = db.pragma('freelist_count', { simple: true })
+        const journalMode = db.pragma('journal_mode', { simple: true })
+        return {
+          available: true,
+          pageCount,
+          pageSize,
+          freelistCount,
+          journalMode,
+          fileBytes: pageCount * pageSize
+        }
+      }
     }
   } else throw new Error("Unknown backend " + name)
 }

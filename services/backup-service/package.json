@@ -9,14 +9,14 @@
   "author": "Michał Łaszczewski <michal@emikse.com>",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@live-change/db-client": "^0.9.227",
-    "@live-change/framework": "^0.9.227",
+    "@live-change/db-client": "0.9.227",
+    "@live-change/framework": "0.9.227",
     "express": "^4.18.2",
     "express-basic-auth": "^1.2.1",
     "fs-extra": "^11.1.1",
     "p-queue": "^8.1.1",
     "progress-stream": "^2.0.0"
   },
-  "gitHead": "8b9b3bae11b5347f01de0cd09d5d8535a0d251cf",
+  "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9",
   "type": "module"
 }

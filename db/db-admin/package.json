@@ -19,14 +19,14 @@
   "type": "module",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
-    "@live-change/dao": "^0.9.227",
-    "@live-change/dao-message": "^0.9.227",
-    "@live-change/dao-sockjs": "^0.9.227",
-    "@live-change/dao-vue3": "^0.9.227",
-    "@live-change/dao-websocket": "^0.9.227",
-    "@live-change/framework": "^0.9.227",
-    "@live-change/vue3-components": "^0.9.227",
-    "@live-change/vue3-ssr": "^0.9.227",
+    "@live-change/dao": "0.9.227",
+    "@live-change/dao-message": "0.9.227",
+    "@live-change/dao-sockjs": "0.9.227",
+    "@live-change/dao-vue3": "0.9.227",
+    "@live-change/dao-websocket": "0.9.227",
+    "@live-change/framework": "0.9.227",
+    "@live-change/vue3-components": "0.9.227",
+    "@live-change/vue3-ssr": "0.9.227",
     "@primeuix/themes": "^1.2.1",
     "@vueuse/core": "^12.3.0",
     "@vueuse/head": "^2.0.0",
@@ -50,7 +50,7 @@
     "vue3-scroll-border": "0.1.7"
   },
   "devDependencies": {
-    "@live-change/codeceptjs-helper": "^0.9.227",
+    "@live-change/codeceptjs-helper": "0.9.227",
     "@vitejs/plugin-vue": "^6.0.0",
     "@wdio/selenium-standalone-service": "^8.15.0",
     "codeceptjs": "^3.7.6",
@@ -65,5 +65,5 @@
   "author": "Michał Łaszczewski <michal@laszczewski.pl>",
   "license": "ISC",
   "description": "",
-  "gitHead": "8b9b3bae11b5347f01de0cd09d5d8535a0d251cf"
+  "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9"
 }

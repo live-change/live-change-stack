@@ -1,0 +1,35 @@
+{
+  "name": "@live-change/db-store-sqlite",
+  "version": "0.9.227",
+  "description": "SQLite store with observable data for live queries",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test tape tests/*observable.js tests/store-*.js tests/prefix-isolation.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "author": {
+    "email": "m8@em8.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-stack/issues"
+  },
+  "type": "module",
+  "homepage": "https://github.com/live-change/live-change-stack",
+  "devDependencies": {
+    "p-queue": "^8.1.1",
+    "rimraf": "^5.0.5",
+    "tape": "^5.7.4"
+  },
+  "dependencies": {
+    "@live-change/dao": "0.9.227",
+    "@live-change/flatten-interval-tree": "0.9.227",
+    "better-sqlite3": "^11.10.0"
+  },
+  "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9"
+}

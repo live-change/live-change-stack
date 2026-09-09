@@ -12,7 +12,6 @@ definition.view({
   },
   daoPath(params, { client, context }) {
     //return Session.path(client.session)
-    console.log("CURRENT SESSION(", client.session)
     return ['database', 'queryObject', app.databaseName, `(${
       async (input, output, { session, tableName }) => {
         const mapper = (obj) => (obj || {

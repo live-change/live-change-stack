@@ -205,7 +205,7 @@ ReactiveConnection settings
     requestSendTimeout: 2300,
     
     /**
-      How long request will wait for response; 0 for no timeout
+      How long request will wait for response; 0 or omitted / Infinity for no timeout
     **/
     requestTimeout: 0,
     
@@ -240,6 +240,10 @@ ReactiveConnection settings
     timeSynchronization: null
   }
 ```
+
+`disconnect` is a **transport** event (not a DAO JSON message). The websocket client may emit `disconnect` with `{ code, reason }` from the WebSocket close (e.g. 1009 message too big). Listeners that ignore extra arguments stay valid. `settings.onDisconnect` receives the same optional argument.
+
+`requestWithSettings(settings, method, ...args)` overlays per-request flags (for example `queueActiveRequestsOnDisconnect` and `requestTimeout`) on the connection defaults.
 
 Time Synchronization
 ========

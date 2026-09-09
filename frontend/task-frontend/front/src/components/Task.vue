@@ -107,11 +107,9 @@
   })
 
   const taskColor = computed(() => {
-    console.log("TD", taskData.value, "AT", allTasks.value)
-    console.trace('taskColor', taskData.value)
     switch(taskData.value?.state) {
       case 'failed': return 'text-red-600'
-      default: {}
+      default: return ''
     }
   })
 

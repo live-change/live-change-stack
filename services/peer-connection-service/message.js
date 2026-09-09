@@ -93,7 +93,6 @@ definition.view({
     if(visibilityTest) return true
     if(!peer) throw new Error("peer parameter is required")
     const { peerSession } = decodePeerId(peer)
-    console.log('MESSAGES ACCESS', { peerSession, clientSession: client.session })
     return peerSession === client.session
   },
   async daoPath({ peer, gt, lt, gte, lte, limit, reverse }, { client, service }, method) {
@@ -107,12 +106,6 @@ definition.view({
       limit,
       reverse
     }
-    const messages = await Message.rangeGet(range)
-    console.log("MESSAGES RANGE", JSON.stringify({ peer, gt, lt, gte, lte, limit, reverse }) ,
-        "\n  TO", JSON.stringify(range),
-        "\n  RESULTS", messages.length, messages.map(m => m.id))
-
-    /* console.log("MESSAGES RANGE", range, "RESULTS", messages.length)*/
     return Message.rangePath(range)
   }
 })
@@ -120,7 +113,6 @@ definition.view({
 let lastMessageTime = new Map()
 
 async function postMessage(props, { client, service }, emit) {
-  console.log("POST MESSAGE", props)
   const channelId = props.to
   let lastTime = lastMessageTime.get(channelId)
   const now = new Date()
@@ -178,7 +170,6 @@ definition.action({
   async execute(props, { client, service }, emit) {
     console.error('postMessage is deprecated, use postMessages instead')
     await postMessage(props, { client, service }, emit)
-    console.log("MESSAGE POSTED!")
   }
 })
 

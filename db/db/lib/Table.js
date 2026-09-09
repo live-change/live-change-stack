@@ -128,11 +128,12 @@ class Table {
     await this.database.deleteStore(config.uid + '.opLog')
   }
 
-  storeStats() {
-    return combineStoreStats(
+  async storeStats() {
+    const [data, opLog] = await Promise.all([
       readStoreStat(this.data),
       readStoreStat(this.opLog)
-    )
+    ])
+    return combineStoreStats(data, opLog)
   }
 }
 

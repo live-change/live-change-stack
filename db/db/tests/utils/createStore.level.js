@@ -1,32 +1,32 @@
-import levelup from 'levelup'
-import leveldown from 'leveldown'
-import subleveldown from 'subleveldown'
-
+import { createRequire } from 'module'
 import Store from '@live-change/db-store-level'
 
-const levels = new Map()
+const require = createRequire(import.meta.url)
+const leveldown = require('leveldown')
+
+const downs = new Map()
+
+function openDown(dbPath) {
+  let down = downs.get(dbPath)
+  if(down) return down
+  down = leveldown(dbPath)
+  down.path = dbPath
+  down._opened = new Promise((resolve, reject) => {
+    down.open({ createIfMissing: true }, err => err ? reject(err) : resolve())
+  })
+  downs.set(dbPath, down)
+  return down
+}
 
 export default function(dbPath, name) {
-  let level = levels.get(dbPath)
-  if(!level) {
-    level = levelup(leveldown(dbPath))
-    levels.set(dbPath, level)
-  }
-  const store = new Store(subleveldown(level, name, { keyEncoding: 'ascii', valueEncoding: 'json' }))
+  const down = openDown(dbPath)
+  const store = new Store(down, { prefix: name + '\x00' })
   store.close = async function() {
+    await down._opened
     await new Promise((resolve, reject) => {
-      level.createReadStream({ keys: true, values: true }).on('data', function ({ key, value }) {
-        //console.log("key:", key.toString('ascii') )
-        //console.log("value:", value.toString('ascii') )
-      })
-      .on('error', function (err) {
-        reject(err)
-      })
-      .on('close', function () {
-      })
-      .on('end', ()=> resolve('readed'))
+      down.close(err => err ? reject(err) : resolve())
     })
-    await level.close()
+    downs.delete(dbPath)
   }
   return store
 }
