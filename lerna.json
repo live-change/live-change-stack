@@ -14,6 +14,8 @@
     "db/db-store-indexeddb",
     "db/db-store-localstorage",
     "db/db-store-level",
+    "db/db-store-rocksdb",
+    "db/db-store-sqlite",
     "db/db-store-lmdb",
     "db/db-store-observable-db",
     "db/db-store-rbtree",

@@ -21,6 +21,9 @@
   },
   "type": "module",
   "homepage": "https://github.com/live-change/live-change-stack",
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "p-queue": "^8.1.1",
     "rimraf": "^5.0.5",
@@ -28,8 +31,8 @@
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "0.9.227",
-    "@live-change/flatten-interval-tree": "0.9.227"
+    "@live-change/dao": "^0.9.228",
+    "@live-change/flatten-interval-tree": "^0.9.228"
   },
   "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9"
 }
