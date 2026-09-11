@@ -1,6 +1,6 @@
 {
   "name": "@live-change/survey-service",
-  "version": "0.9.228",
+  "version": "0.9.229",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,10 +21,10 @@
     "url": "https://www.viamage.com/"
   },
   "dependencies": {
-    "@live-change/access-control-service": "^0.9.228",
-    "@live-change/framework": "^0.9.228",
-    "@live-change/relations-plugin": "^0.9.228",
-    "@live-change/user-service": "^0.9.228"
+    "@live-change/access-control-service": "^0.9.229",
+    "@live-change/framework": "^0.9.229",
+    "@live-change/relations-plugin": "^0.9.229",
+    "@live-change/user-service": "^0.9.229"
   },
   "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9",
   "type": "module"
