@@ -25,7 +25,7 @@ function resolveCutoff(lastTimestamp, now) {
 function createOpLogWritter(store) {
   let lastTime = Date.now()
   let lastId = 0
-  return function(operation) {
+  return async function(operation) {
     const now = Date.now()
     if(now === lastTime) {
       lastId ++
@@ -36,10 +36,10 @@ function createOpLogWritter(store) {
     const id = padTimestamp(lastTime) + ':' + (('' + lastId).padStart(6, '0'))
     const profile = debugPut.enabled
     const t0 = profile ? performance.now() : 0
-    store.put({ id, timestamp: lastTime, operation })
+    await store.put({ id, timestamp: lastTime, operation })
     if(profile) {
       debugPut(
-        'opLogWritter.put store=%s id=%s opType=%s ms=%s awaited=false',
+        'opLogWritter.put store=%s id=%s opType=%s ms=%s awaited=true',
         store.name || '?',
         id,
         operation && operation.type,
@@ -50,27 +50,26 @@ function createOpLogWritter(store) {
   }
 }
 
-function writeClearOpLogMarker(opLog, writter, fromId, deleteBeforeStr) {
+async function writeClearOpLogMarker(opLog, writter, fromId, deleteBeforeStr) {
   const w = writter || createOpLogWritter(opLog)
-  const logId = w({
+  const logId = await w({
     type: 'clearOpLog',
     from: fromId,
     to: deleteBeforeStr
   })
-  return Promise.resolve(opLog.rangeGet({ gt: '', limit: 1 })).then(rows => {
-    const opLogNewStart = rows[0]
-    if(opLogNewStart) {
-      opLog.put({
-        id: logId,
-        operation: {
-          type: 'clearOpLog',
-          from: fromId,
-          to: opLogNewStart.id
-        }
-      })
-    }
-    return logId
-  })
+  const rows = await opLog.rangeGet({ gt: '', limit: 1 })
+  const opLogNewStart = rows[0]
+  if(opLogNewStart) {
+    await opLog.put({
+      id: logId,
+      operation: {
+        type: 'clearOpLog',
+        from: fromId,
+        to: opLogNewStart.id
+      }
+    })
+  }
+  return logId
 }
 
 async function clearOpLogStore(opLog, lastTimestamp, limit, opLogWritter = null, options = {}) {

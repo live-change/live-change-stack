@@ -51,7 +51,7 @@ class OpLogger {
       }
       return res
     }
-    for(let output of this.outputs) output({ type: 'put', object, oldObject: res })
+    for(let output of this.outputs) await output({ type: 'put', object, oldObject: res })
     if(profile) {
       const tOut = performance.now()
       debugPut(
@@ -71,7 +71,7 @@ class OpLogger {
   async delete(id) {
     let object = await this.store.delete(id)
     if(object) {
-      for(let output of this.outputs) output({ type: 'delete', object })
+      for(let output of this.outputs) await output({ type: 'delete', object })
     }
     return object
   }

@@ -393,11 +393,20 @@ class App {
         }]])
         let observer
         const promise = new Promise((resolve, reject) => {
-          observer = (signal, value) => {
+          observer = (signal, value) => { 
             if(signal !== 'set') return reject('unknownSignal')
             if(!value) return
             if(value.state === 'done') return resolve(value.result)
             if(value.state === 'failed') return reject(value.error)
+            if(value.state === 'new') return;
+            if(!value.state) return;
+            const state = value?.state
+            this.loggingHelpers.log(
+              `trigger ${trigger.id} got unknown state ${state ?? '(none)'}`,
+              { type: trigger.type, service: trigger.service, signal }
+            )
+            console.error("trigger got unknown state", value?.state)
+            process.exit(1)
           }
           objectObservable.observe(observer)
         }).finally(() => {

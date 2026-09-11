@@ -552,19 +552,11 @@ class Store {
         const objectObservable = this.objectObservables.get(id)
         if(objectObservable) objectObservable.set(object, oldObject)
         const rangeObservables = this.rangeObservablesTree.search([id, id])
-        for(let rangeObservable of rangeObservables) {
-          if(rangeObservable.rangeDescr[0] > id) {
-            console.error("TREE LEAKING", rangeObservable.rangeDescr[0], ">", id)
-            console.error("ID", id, "IS OUT OF", rangeObservable.rangeDescr)
-            process.exit(1)
-          }
-          if(rangeObservable.rangeDescr[1] < id) {
-            console.error("TREE LEAKING", rangeObservable.rangeDescr[1], "<", id)
-            console.error("ID", id, "IS OUT OF", rangeObservable.rangeDescr)
-            process.exit(1)
-          }
-        }
         for(const rangeObservable of rangeObservables) {
+          if(rangeObservable.rangeDescr[0] > id || rangeObservable.rangeDescr[1] < id) {
+            console.error("TREE LEAKING", "ID", id, "IS OUT OF", rangeObservable.rangeDescr)
+            continue
+          }
           await rangeObservable.putObject(object, oldObject)
         }
         return oldObject

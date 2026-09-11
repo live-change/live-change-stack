@@ -43,6 +43,16 @@ function prefixEnd(prefix) {
   return prefix + '\xFF'
 }
 
+function idInRange(id, range) {
+  if(range.gt && !(id > range.gt)) return false
+  if(range.gte && !(id >= range.gte)) return false
+  if(range.lt && !(id < range.lt)) return false
+  if(range.lte && !(id <= range.lte)) return false
+  return true
+}
+
+const WRITE_BATCH_LIMIT = 256
+
 function iteratorNext(iterator) {
   return new Promise((resolve, reject) => {
     iterator.next((err, key, value) => {
@@ -145,9 +155,9 @@ class RangeObservable extends ReactiveDao.ObservableList {
 
   async putObject(object, oldObject) {
     await this.readPromise
+    if(this.disposed) return
     const id = object.id
-    if(this.range.gt && !(id > this.range.gt)) return
-    if(this.range.lt && !(id < this.range.lt)) return
+    if(!idInRange(id, this.range)) return
     if(!this.range.reverse) {
       if(this.range.limit && this.list.length == this.range.limit) {
         for(let i = 0, l = this.list.length; i < l; i++) {
@@ -218,9 +228,9 @@ class RangeObservable extends ReactiveDao.ObservableList {
   async deleteObject(object) {
     if(!object) return
     await this.readPromise
+    if(this.disposed) return
     const id = object.id
-    if(this.range.gt && !(id > this.range.gt)) return
-    if(this.range.lt && !(id < this.range.lt)) return
+    if(!idInRange(id, this.range)) return
     if(this.range.limit && (this.list.length == this.range.limit || this.refillPromise)) {
       let exists
       let last
@@ -357,6 +367,8 @@ class Store {
     this.countObservables = new Map()
     this.rangeObservablesTree = new IntervalTree()
     this.locks = new Map()
+    this.writeQueue = []
+    this.writeInFlight = null
   }
 
   async ready() {
@@ -439,6 +451,76 @@ class Store {
     return new Promise((resolve, reject) => {
       this.down.batch(ops, err => err ? reject(err) : resolve())
     })
+  }
+
+  createWriteOp(type, key) {
+    const op = {
+      type,
+      key,
+      value: undefined,
+      skip: false,
+      resolved: false
+    }
+    op.ready = new Promise(resolve => {
+      op.readyResolve = () => {
+        if(op.resolved) return
+        op.resolved = true
+        resolve()
+      }
+    })
+    return op
+  }
+
+  enqueueWrite(op) {
+    return new Promise((resolve, reject) => {
+      op.resolve = resolve
+      op.reject = reject
+      this.writeQueue.push(op)
+      if(!this.writeInFlight) {
+        this.writeInFlight = this.drainWrites()
+      }
+    })
+  }
+
+  async drainWrites() {
+    try {
+      while(this.writeQueue.length) {
+        const head = this.writeQueue[0]
+        await head.ready
+        const pending = []
+        while(this.writeQueue.length && this.writeQueue[0].resolved
+            && pending.length < WRITE_BATCH_LIMIT) {
+          pending.push(this.writeQueue.shift())
+        }
+        const ops = pending.filter(op => !op.skip)
+        try {
+          if(ops.length == 1) {
+            const op = ops[0]
+            if(op.type == 'del') await this.downDel(op.key)
+            else await this.downPut(op.key, op.value)
+          } else if(ops.length > 1) {
+            await this.downBatch(ops.map(op => op.type == 'del'
+              ? { type: 'del', key: op.key }
+              : { type: 'put', key: op.key, value: op.value }))
+          }
+          for(const op of pending) op.resolve()
+        } catch(err) {
+          for(const op of pending) op.reject(err)
+          const rest = this.writeQueue.splice(0)
+          for(const op of rest) {
+            op.skip = true
+            op.readyResolve()
+            op.reject(err)
+          }
+          break
+        }
+      }
+    } finally {
+      this.writeInFlight = null
+      if(this.writeQueue.length) {
+        this.writeInFlight = this.drainWrites()
+      }
+    }
   }
 
   downClear(opts) {
@@ -541,6 +623,8 @@ class Store {
     const id = object.id
     if(typeof id != 'string') throw new Error(`ID is not string: ${JSON.stringify(id)}`)
     if(!id) throw new Error("ID must not be empty string!")
+    const op = this.createWriteOp('put', this.encodeKey(id))
+    const writePromise = this.enqueueWrite(op)
     let lock
     while(lock = this.locks.get(id)) await lock
     const updateLock = (async () => {
@@ -548,26 +632,24 @@ class Store {
         await this.ready()
         const raw = await this.downGet(this.encodeKey(id))
         const oldObject = raw == null ? null : parseValue(raw)
-        await this.downPut(this.encodeKey(id), JSON.stringify(object))
+        op.value = JSON.stringify(object)
+        op.readyResolve()
+        await writePromise
         const objectObservable = this.objectObservables.get(id)
         if(objectObservable) objectObservable.set(object, oldObject)
         const rangeObservables = this.rangeObservablesTree.search([id, id])
-        for(let rangeObservable of rangeObservables) {
-          if(rangeObservable.rangeDescr[0] > id) {
-            console.error("TREE LEAKING", rangeObservable.rangeDescr[0], ">", id)
-            console.error("ID", id, "IS OUT OF", rangeObservable.rangeDescr)
-            process.exit(1)
-          }
-          if(rangeObservable.rangeDescr[1] < id) {
-            console.error("TREE LEAKING", rangeObservable.rangeDescr[1], "<", id)
-            console.error("ID", id, "IS OUT OF", rangeObservable.rangeDescr)
-            process.exit(1)
-          }
-        }
         for(const rangeObservable of rangeObservables) {
+          if(rangeObservable.rangeDescr[0] > id || rangeObservable.rangeDescr[1] < id) {
+            console.error("TREE LEAKING", "ID", id, "IS OUT OF", rangeObservable.rangeDescr)
+            continue
+          }
           await rangeObservable.putObject(object, oldObject)
         }
         return oldObject
+      } catch(err) {
+        op.skip = true
+        op.readyResolve()
+        throw err
       } finally {
         this.locks.delete(id)
       }
@@ -577,6 +659,8 @@ class Store {
   }
 
   async delete(id) {
+    const op = this.createWriteOp('del', this.encodeKey(id))
+    const writePromise = this.enqueueWrite(op)
     let lock
     while(lock = this.locks.get(id)) await lock
     const deleteLock = (async () => {
@@ -584,8 +668,14 @@ class Store {
         await this.ready()
         const raw = await this.downGet(this.encodeKey(id))
         const object = raw == null ? null : parseValue(raw)
-        if(!object) return null
-        await this.downDel(this.encodeKey(id))
+        if(!object) {
+          op.skip = true
+          op.readyResolve()
+          await writePromise
+          return null
+        }
+        op.readyResolve()
+        await writePromise
         const objectObservable = this.objectObservables.get(id)
         if(objectObservable) objectObservable.set(null)
         const rangeObservables = this.rangeObservablesTree.search([id, id])
@@ -593,6 +683,10 @@ class Store {
           await rangeObservable.deleteObject(object)
         }
         return object
+      } catch(err) {
+        op.skip = true
+        op.readyResolve()
+        throw err
       } finally {
         this.locks.delete(id)
       }

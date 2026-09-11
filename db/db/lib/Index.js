@@ -300,7 +300,12 @@ class TableReader extends ChangeStream {
         process.exit(11)
       }
       //console.log("FB", this.opLogBuffer && this.opLogBuffer.length)
-      if (this.opLogBuffer && this.opLogBuffer.length) return this.opLogBuffer[0].id
+      if (this.opLogBuffer && this.opLogBuffer.length) {
+        if(this.opLogBuffer.length > 1) {
+          this.opLogBuffer.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+        }
+        return this.opLogBuffer[0].id
+      }
       //console.log("NK", this.opLogObservable && this.opLogObservable.list, " < ", opLogBatchSize)
       if (this.opLogObservable && this.opLogObservable.list && this.opLogObservable.list.length < opLogBatchSize)
         return null // waiting for more
@@ -326,6 +331,29 @@ class TableReader extends ChangeStream {
           if(op.type === 'delete') {
             //console.log("DELETE CHANGE", next)
             await this.change(null, op.object, op.object.id, next.id)
+          }
+          if(op.type === 'clearOpLog') {
+            /// The opLog cleaner deleted entries in [op.from, op.to).
+            /// If our reader position is behind op.to, we missed entries
+            /// that were cleared before we could process them.
+            /// This only happens on async-write stores (rocksdb) where the
+            /// opLog write is fire-and-forget and the cleaner can race ahead.
+            const reader = this.opLogReader
+            if(reader.currentKey < op.to) {
+              console.warn(
+                `[db:index] ${reader.indexName} fell behind clearOpLog marker` +
+                ` (currentKey=${reader.currentKey} < to=${op.to})` +
+                ` — entries in [${op.from}, ${op.to}) were cleared before the index processed them` +
+                ` — triggering full rebuild`
+              )
+              const index = reader.database.indexes.get(reader.indexName)
+              if(index) index.needsFullRebuild = true
+              throw new Error(
+                `index ${reader.indexName} fell behind clearOpLog marker` +
+                ` (currentKey=${reader.currentKey} < to=${op.to})` +
+                ` — full rebuild required`
+              )
+            }
           }
         } else {
           console.error("NULL OPERATION", next)
@@ -634,6 +662,18 @@ class Index extends Table {
     if(this.activity) {
       this.activity.setError(error && error.message, catchUpKey)
     }
+    // For non-missing-source errors (e.g. clearOpLog race), schedule an
+    // auto-wake retry. MissingSourceError requires the source to be
+    // created first, so wakeIndexesDependingOnSource handles those.
+    if(!(error instanceof MissingSourceError)) {
+      const indexName = this.name
+      const database = this.database
+      setTimeout(() => {
+        database.wakeIndex(indexName).catch(err => {
+          console.error(`[db:index] auto-wake retry failed for ${indexName}`, err)
+        })
+      }, 1000)
+    }
   }
   async resetStoresForRebuild() {
     if(this.reader) {
@@ -703,7 +743,7 @@ class Index extends Table {
           (sourceType, sourceName) => this.addSource(sourceType, sourceName))
       await this.codeFunction(startReader, this.writer)
       lastUpdateTimestamp = indexCreateTimestamp - 1000 // one second overlay
-      this.opLogWritter({
+      await this.opLogWritter({
         type: 'indexed'
       })
     } else {

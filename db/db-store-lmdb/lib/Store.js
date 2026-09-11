@@ -23,6 +23,14 @@ function withLmdbNative(info, fn) {
   }
 }
 
+function idInRange(id, range) {
+  if(range.gt && !(id > range.gt)) return false
+  if(range.gte && !(id >= range.gte)) return false
+  if(range.lt && !(id < range.lt)) return false
+  if(range.lte && !(id <= range.lte)) return false
+  return true
+}
+
 function logEnvOnce(env, storeName) {
   if(!debugPut.enabled || !env || loggedEnvs.has(env)) return
   loggedEnvs.add(env)
@@ -135,9 +143,9 @@ class RangeObservable extends ReactiveDao.ObservableList {
 
   async putObject(object, oldObject) {
     await this.readPromise
+    if(this.disposed) return
     const id = object.id
-    if(this.range.gt && !(id > this.range.gt)) return
-    if(this.range.lt && !(id < this.range.lt)) return
+    if(!idInRange(id, this.range)) return
     if(!this.range.reverse) {
       if(this.range.limit && this.list.length == this.range.limit) {
         for(let i = 0, l = this.list.length; i < l; i++) {
@@ -208,9 +216,9 @@ class RangeObservable extends ReactiveDao.ObservableList {
   async deleteObject(object) {
     if(!object) return;
     await this.readPromise
+    if(this.disposed) return
     const id = object.id
-    if(this.range.gt && !(id > this.range.gt)) return
-    if(this.range.lt && !(id < this.range.lt)) return
+    if(!idInRange(id, this.range)) return
     if(this.range.limit && (this.list.length == this.range.limit || this.refillPromise)) {
       let exists
       let last
@@ -685,19 +693,11 @@ class Store {
     const objectObservable = this.objectObservables.get(id)
     if (objectObservable) objectObservable.set(object, oldObject)
     const rangeObservables = this.rangeObservablesTree.search([id, id])
-    for(let rangeObservable of rangeObservables) {
-      if(rangeObservable.rangeDescr[0] > id) {
-        console.error("TREE LEAKING", rangeObservable.rangeDescr[0], ">", id)
-        console.error("ID", id, "IS OUT OF", rangeObservable.rangeDescr)
-        process.exit(1)
+    for(const rangeObservable of rangeObservables) {
+      if(rangeObservable.rangeDescr[0] > id || rangeObservable.rangeDescr[1] < id) {
+        console.error("TREE LEAKING", "ID", id, "IS OUT OF", rangeObservable.rangeDescr)
+        continue
       }
-      if(rangeObservable.rangeDescr[1] < id) {
-        console.error("TREE LEAKING", rangeObservable.rangeDescr[1], "<", id)
-        console.error("ID", id, "IS OUT OF", rangeObservable.rangeDescr)
-        process.exit(1)
-      }
-    }
-    for (const rangeObservable of rangeObservables) {
       rangeObservable.putObject(object, oldObject)
     }
     if(profile) {
