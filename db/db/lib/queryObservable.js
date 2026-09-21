@@ -80,10 +80,12 @@ class Reader extends ChangeStream {
   #observable = null
   #observers = []
   #disposed = false
+  #key = null
 
-  constructor(queryReader) {
+  constructor(queryReader, key) {
     super()
     this._queryReader = queryReader
+    this.#key = key
   }
   async startObserver(factory) {
 /*    if(this._queryReader.state != READER_READING)
@@ -95,9 +97,16 @@ class Reader extends ChangeStream {
     await observer.readPromise()
     observer.dispose = async () => {
       const observerIndex = this.#observers.indexOf(observer)
-      if(observerIndex === -1) throw new Error('Observer double dispose')
+      if(observerIndex === -1) return
       this.#observers.splice(observerIndex, 1)
-      ;(await this.#observable).unobserve(observer)
+      const observable = this.#observable
+      if(observable) {
+        try {
+          ;(await observable).unobserve(observer)
+        } catch(e) {
+        }
+      }
+      this.releaseIfUnused()
     }
     return observer
   }
@@ -108,13 +117,35 @@ class Reader extends ChangeStream {
       throw new Error("observer not found")
     }
     this.#observers.splice(index, 1)
-    ;(await this.#observable).unobserve(observer)
+    const observable = this.#observable
+    if(observable) {
+      ;(await observable).unobserve(observer)
+    }
+    this.releaseIfUnused()
+  }
+  releaseIfUnused() {
+    if(this.#observers.length > 0) return
+    if(this.#disposed) return
+    this.#observable = null
+    if(this.#key && this._queryReader) this._queryReader.releaseReader(this.#key)
   }
   async dispose() {
+    if(this.#disposed) return
+    this.#disposed = true
     this.disposed = true
-    for(let observer of this.#observers) {
-      ;(await this.#observable).unobserve(observer)
+    const observers = this.#observers
+    this.#observers = []
+    const observable = this.#observable
+    this.#observable = null
+    if(observable) {
+      for(let observer of observers) {
+        try {
+          ;(await observable).unobserve(observer)
+        } catch(e) {
+        }
+      }
     }
+    if(this.#key && this._queryReader) this._queryReader.releaseReader(this.#key)
   }
 }
 
@@ -122,8 +153,8 @@ class ObjectReader extends Reader {
   #table = null
   #id = null
   #tableReader = null
-  constructor(queryReader, table, id, tableReader) {
-    super(queryReader)
+  constructor(queryReader, table, id, tableReader, key) {
+    super(queryReader, key)
     this.#table = table
     this.#id = id
     this.#tableReader = tableReader
@@ -156,8 +187,8 @@ class RangeReader extends Reader {
   #range = null
   #tableReader = null 
 
-  constructor(queryReader, table, range, tableReader) {
-    super(queryReader)
+  constructor(queryReader, table, range, tableReader, key) {
+    super(queryReader, key)
     this.#table = table
     this.#range = range
     this.#tableReader = tableReader
@@ -190,7 +221,7 @@ class TableReader extends Reader {
   #table = null
 
   constructor(queryReader, prefix, table) {
-    super(queryReader)
+    super(queryReader, prefix)
     this.#prefix = prefix
     this.#table = table
   }
@@ -204,12 +235,14 @@ class TableReader extends Reader {
     return await this.#table.rangeGet(range)
   }
   range(range) {
-    return this._queryReader.getExistingReaderOrCreate(this.#prefix+':'+JSON.stringify(range),
-        () => new RangeReader(this._queryReader, this.#table, range, this))
+    const key = this.#prefix+':'+JSON.stringify(range)
+    return this._queryReader.getExistingReaderOrCreate(key,
+        () => new RangeReader(this._queryReader, this.#table, range, this, key))
   }
   object(id) {
-    return this._queryReader.getExistingReaderOrCreate(this.#prefix+'#'+id,
-        () => new ObjectReader(this._queryReader, this.#table, id, this))
+    const key = this.#prefix+'#'+id
+    return this._queryReader.getExistingReaderOrCreate(key,
+        () => new ObjectReader(this._queryReader, this.#table, id, this, key))
   }
   async objectGet(id) {
     return await this.#table.objectGet(id)
@@ -244,11 +277,20 @@ class QueryReader {
       reader = create()
       this.#readers.set(key, reader)
     }
-    if(reader.then) return reader.then(rd => {
+    if(reader && reader.then) return reader.then(rd => {
+      const current = this.#readers.get(key)
+      if(current !== reader && current !== rd) {
+        if(rd && typeof rd.dispose === 'function') rd.dispose()
+        return rd
+      }
       this.#readers.set(key, rd)
       return rd
     })
     return reader
+  }
+  releaseReader(key) {
+    if(key == null) return
+    this.#readers.delete(key)
   }
   table(name) {
     if(this.#onNewSource) this.#onNewSource('table', name)
@@ -273,13 +315,16 @@ class QueryReader {
   }
   dispose() {
     this.state = READER_DISPOSED
-    for(const reader of this.#readers.values()) {
-      if(reader.then) {
-        reader.then(rd => rd.dispose())
-      } else {
+    const readers = [...this.#readers.values()]
+    for(const reader of readers) {
+      if(reader && reader.then) {
+        reader.then(rd => rd && typeof rd.dispose === 'function' && rd.dispose())
+      } else if(reader && typeof reader.dispose === 'function') {
         reader.dispose()
       }
     }
+    this.#readers.clear()
+    this.#onNewSource = null
   }
 }
 
