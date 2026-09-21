@@ -79,14 +79,8 @@ async function startCommandExecutor(service, config) {
                 attributes: spanAttributes(command, service, action) 
               }, queueContext, async (handleEventsSpan) => {
               
-                if(service.app.shortEvents) {            
-                  const bucket = {}
-                  const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
-                    const handlerService = service.app.startedServices[event.service]
-                    const handler = handlerService.events[event.type]
-                    handlerService.exentQueue.queue(() => handler.execute(event, bucket))
-                  }))
-                  if (action.definition.waitForEvents) await eventsPromise
+                if(service.app.shortEvents) {
+                  await service.app.handleShortEvents(emit.emittedEvents, action.definition.waitForEvents)
                 } else {
                   const events = await emit.commit()            
                   if (action.definition.waitForEvents)
@@ -137,13 +131,7 @@ async function startCommandExecutor(service, config) {
               attributes: spanAttributes(command, service, action) 
             }, handleContext, async (handleEventsSpan) => {
               if(service.app.shortEvents) {
-                const bucket = {}
-                const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
-                  const handlerService = service.app.startedServices[event.service]
-                  const handler = handlerService.events[event.type]
-                  handlerService.exentQueue.queue(() => handler.execute(event, bucket))
-                }))
-                if (action.definition.waitForEvents) await eventsPromise
+                await service.app.handleShortEvents(emit.emittedEvents, action.definition.waitForEvents)
               } else {
                 const events = await emit.commit()
                 if (action.definition.waitForEvents)

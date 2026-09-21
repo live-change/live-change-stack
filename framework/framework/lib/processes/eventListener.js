@@ -18,6 +18,7 @@ async function spanAttributes(ev, service) {
 
 async function startEventListener(service, config) {
   if(!config.handleEvents) return
+  if(service.app.shortEvents) return
 
   if(service.app.splitEvents) {
     service.eventSourcing = new EventSourcing(service.dao, service.databaseName,

@@ -359,7 +359,7 @@ function getResetFunction(config, context) {
       type: eventName,      
       identifiers: {
         ...identifiers,
-        [modelPropertyName]: properties[modelPropertyName]
+        [modelPropertyName]: properties[modelPropertyName] 
       }
     })
     return id

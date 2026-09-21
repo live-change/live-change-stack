@@ -102,7 +102,7 @@ class TriggerHandler {
             const _trace = {}
             propagation.inject(context.active(), _trace)
             const flags = {triggerId: trig.id, reportFinished, _trace }
-            const emit = service.app.splitEvents
+            const emit = (service.app.splitEvents && !service.app.shortEvents)
               ? new SplitEmitQueue(service, flags)
               : new SingleEmitQueue(service, flags)
 
@@ -129,10 +129,14 @@ class TriggerHandler {
             return await tracer.startActiveSpan('emitEvents', {
               kind: SpanKind.INTERNAL, 
               attributes: spanAttributes(trig, service) 
-            }, queueContext, async (emitEventsSpan) => {              
-              const events = await emit.commit()
-              if (this.definition.waitForEvents)
-                await service.app.waitForEvents(reportFinished, events, this.definition.waitForEvents)
+            }, queueContext, async (emitEventsSpan) => {
+              if(service.app.shortEvents) {
+                await service.app.handleShortEvents(emit.emittedEvents, this.definition.waitForEvents)
+              } else {
+                const events = await emit.commit()
+                if (this.definition.waitForEvents)
+                  await service.app.waitForEvents(reportFinished, events, this.definition.waitForEvents)
+              }
               emitEventsSpan.end()
               handleSpan.end()
               queueSpan.end()
@@ -160,7 +164,7 @@ class TriggerHandler {
         const _trace = {}
         propagation.inject(context.active(), _trace)
         const flags = { triggerId: trig.id, reportFinished, _trace }
-        const emit = service.app.splitEvents
+        const emit = (service.app.splitEvents && !service.app.shortEvents)
           ? new SplitEmitQueue(service, flags)
           : new SingleEmitQueue(service, flags)
         let result        
@@ -184,10 +188,14 @@ class TriggerHandler {
         return tracer.startActiveSpan('emitEvents', { 
           kind: SpanKind.INTERNAL, 
           attributes: spanAttributes(trig, service) 
-        }, async (emitEventsSpan) => {          
-          const events = await emit.commit()      
-          if(this.definition.waitForEvents)
-            await service.app.waitForEvents(reportFinished, events, this.definition.waitForEvents)
+        }, async (emitEventsSpan) => {
+          if(service.app.shortEvents) {
+            await service.app.handleShortEvents(emit.emittedEvents, this.definition.waitForEvents)
+          } else {
+            const events = await emit.commit()
+            if(this.definition.waitForEvents)
+              await service.app.waitForEvents(reportFinished, events, this.definition.waitForEvents)
+          }
           emitEventsSpan.end()
           handleSpan.end()
           await service.profileLog.end(profileOp)
