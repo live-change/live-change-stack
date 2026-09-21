@@ -13,7 +13,7 @@ class ObservablePromiseProxy extends Observable {
     }
     this.promise = promise
     this.promise.then((result) => {
-      if(result.observe) {
+      if(result && result.observe) {
         this.init(result)
       } else {
         this.init(new ObservableValue(result))
@@ -26,17 +26,36 @@ class ObservablePromiseProxy extends Observable {
 
   init(observable) {
     this.observable = observable
-    if(!this.disposed) this.observable.observe(this.observer)
+    if(this.disposed) {
+      if(typeof observable.dispose === 'function') {
+        observable.dispose()
+      }
+      return
+    }
+    this.observable.observe(this.observer)
   }
 
   dispose() {
     this.disposed = true
-    if(this.observable) this.observable.unobserve(this.observer)
+    if(this.observable) {
+      try {
+        this.observable.unobserve(this.observer)
+      } catch(e) {
+        if(typeof this.observable.dispose === 'function') {
+          this.observable.dispose()
+        }
+      }
+    }
   }
 
   respawn() {
     this.disposed = false
-    if(this.observable) this.observable.observe(this.observer)
+    if(this.observable) {
+      if(this.observable.isDisposed && this.observable.isDisposed()) {
+        if(typeof this.observable.respawn === 'function') this.observable.respawn()
+      }
+      this.observable.observe(this.observer)
+    }
   }
   observe(observer) {
     if(this.observable) {
