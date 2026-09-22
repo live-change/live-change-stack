@@ -3,6 +3,12 @@
   "version": "0.9.229",
   "description": "Database with observable data for live queries",
   "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./test-helpers/*": "./test-helpers/*",
+    "./lib/*": "./lib/*"
+  },
   "scripts": {
     "test": "NODE_ENV=test tape tests/*.js"
   },

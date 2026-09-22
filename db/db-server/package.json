@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test tape tests/*.js",
+    "test:triggers-stall": "NODE_ENV=test tape tests/stress/triggers-queue-stall.js",
     "build": "tsc --allowJs && copyfiles node_modules/@live-change/framework/package.json dist && copyfiles node_modules/@live-change/cli/package.json dist && copyfiles node_modules/@live-change/server/package.json dist",
     "runBuilt": "cross-env NODE_ENV=production node dist/bin/server.js --verbose serve --slowStart --dbRoot db-test.db"
   },

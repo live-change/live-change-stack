@@ -70,8 +70,8 @@ class RangeObservable extends ReactiveDao.ObservableList {
     this.disposed = false
     this.ready = false
     this.respawnId = 0
-    this.refillId = 0
-    this.refillPromise = null
+    this.refillQueue = []
+    this.refillRunning = false
 
     this.forward = null
 
@@ -145,48 +145,78 @@ class RangeObservable extends ReactiveDao.ObservableList {
     }
   }
 
-  refillDeleted(from, limit) {
-    this.refillId ++
-    const refillId = this.refillId
-    let promise = (async () => {
-      let req
-      if(!this.range.reverse) {
-        req = { gt: from, limit }
-        if(this.range.lt) req.lt = this.range.lt
-        if(this.range.lte) req.lte = this.range.lte
-      } else {
-        req = { lt: from, limit, reverse: true }
-        if(this.range.gt) req.gt = this.range.gt
-        if(this.range.gte) req.gte = this.range.gte
+  refillDeleted(from, need) {
+    if(this.disposed) return Promise.resolve()
+    return new Promise((resolve, reject) => {
+      this.refillQueue.push({ from, need, resolve, reject })
+      this._drainRefill()
+    })
+  }
+
+  async _syncWindow() {
+    if(this.disposed || !this.range.limit) return
+    const reverse = !!this.range.reverse
+    const truth = await this.store.rangeGet(this.range)
+    if(this.disposed) return
+    const same = truth.length === this.list.length &&
+      truth.every((o, i) => this.list[i] && this.list[i].id === o.id)
+    if(same) return
+    const truthIds = new Set(truth.map(o => o.id))
+    for(const obj of this.list.slice()) {
+      if(!truthIds.has(obj.id)) this.removeByField('id', obj.id, obj)
+    }
+    for(const object of truth) {
+      this.putByField('id', object.id, object, reverse)
+    }
+    while(this.list.length > truth.length) {
+      const popped = this.list.pop()
+      this.fireObservers('removeByField', 'id', popped.id, popped)
+    }
+    while(this.range.limit && this.list.length > this.range.limit) {
+      const popped = this.list.pop()
+      this.fireObservers('removeByField', 'id', popped.id, popped)
+    }
+  }
+
+  async _drainRefill() {
+    if(this.refillRunning) return
+    this.refillRunning = true
+    const allJobs = []
+    try {
+      while(this.refillQueue.length) {
+        allJobs.push(...this.refillQueue.splice(0))
+        await this._syncWindow()
       }
-      const objects = await this.store.rangeGet(req)
-      if(this.refillId != refillId) return this.refillPromise
-      for(let object of objects) this.push(object)
-      this.refillPromise = null
-    })()
-    this.refillPromise = promise
-    return promise
+      await this._syncWindow()
+    } catch(err) {
+      this.refillRunning = false
+      for(const job of allJobs) job.reject(err)
+      for(const job of this.refillQueue.splice(0)) job.reject(err)
+      return
+    }
+    this.refillRunning = false
+    for(const job of allJobs) job.resolve()
+    if(this.refillQueue.length) this._drainRefill()
   }
 
   async deleteObject(object) {
-    if(!object) return;
+    if(!object) return
     await this.readPromise
+    if(this.disposed) return
     const id = object.id
     if(this.range.gt && !(id > this.range.gt)) return
     if(this.range.lt && !(id < this.range.lt)) return
-    if(this.range.limit && (this.list.length == this.range.limit || this.refillPromise)) {
-      let exists
-      let last
-      for(let obj of this.list) {
-        if(obj.id == id) exists = obj
-        else last = obj
-      }
-      this.removeByField('id', id, object)
-      if(exists) await this.refillDeleted(
-          last && last.id || (this.reverse ? this.range.lt || this.range.lte : this.range.gt || this.range.gte),
-          this.range.limit - this.list.length)
-    } else {
-      this.removeByField('id', id, object)
+    let exists = false, last = null
+    for(let obj of this.list) {
+      if(obj.id == id) exists = obj
+      else last = obj
+    }
+    this.removeByField('id', id, object)
+    if(exists && this.range.limit) {
+      const need = this.range.limit - this.list.length
+      if(need > 0) await this.refillDeleted(
+        last && last.id || (this.range.reverse ? this.range.lt || this.range.lte : this.range.gt || this.range.gte),
+        need)
     }
   }
 
@@ -198,6 +228,8 @@ class RangeObservable extends ReactiveDao.ObservableList {
     }
 
     this.disposed = true
+    const pending = this.refillQueue.splice(0)
+    for(const job of pending) job.resolve()
     this.respawnId++
     this.changesStream = null
 
@@ -216,6 +248,8 @@ class RangeObservable extends ReactiveDao.ObservableList {
     this.respawnId++
     this.ready = false
     this.disposed = false
+    this.refillQueue = []
+    this.refillRunning = false
     this.startReading()
   }
 }

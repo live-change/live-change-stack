@@ -5,7 +5,7 @@ import fs from 'fs'
 
 import Store from '../lib/Store.js'
 
-const dbPath = `./test.ro.db`
+const dbPath = `./test.rro.db`
 rimraf.sync(dbPath)
 fs.mkdirSync(dbPath)
 const env = new lmdb.Env();
