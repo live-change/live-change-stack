@@ -50,7 +50,7 @@
 <script setup>
 
   import ScrollBorder from 'vue3-scroll-border'
-  import { ref, unref, toRefs, defineProps, defineEmits, watch, computed } from 'vue'
+  import { ref, unref, toRefs, defineProps, defineEmits, watch, computed, onBeforeUnmount } from 'vue'
   import { rangeBuckets } from '@live-change/vue3-ssr'
 
   const props = defineProps({
@@ -186,6 +186,10 @@
   } else {
     throw new Error("Either buckets or pathFunction must be provided")
   }
+
+  onBeforeUnmount(() => {
+    buckets.value?.dispose?.()
+  })
 
   watch(() => frozen.value, (frozen) => {
     if(frozen) buckets.value.freeze()

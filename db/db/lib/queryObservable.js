@@ -316,15 +316,15 @@ class QueryReader {
   dispose() {
     this.state = READER_DISPOSED
     const readers = [...this.#readers.values()]
-    for(const reader of readers) {
-      if(reader && reader.then) {
+    this.#readers.clear()
+    this.#onNewSource = null
+    for (const reader of readers) {
+      if (reader && reader.then) {
         reader.then(rd => rd && typeof rd.dispose === 'function' && rd.dispose())
-      } else if(reader && typeof reader.dispose === 'function') {
+      } else if (reader && typeof reader.dispose === 'function') {
         reader.dispose()
       }
     }
-    this.#readers.clear()
-    this.#onNewSource = null
   }
 }
 
@@ -462,9 +462,15 @@ class QueryObservable extends ReactiveDao.ObservableList {
   }
 
   async startReading() {
+    const spawnId = this.respawnId
     this.reader = new QueryReader(this.database)
     this.writer = new QueryWriter(this, this.database)
     await this.code(this.reader, this.writer)
+    if (this.disposed || spawnId !== this.respawnId) {
+      this.reader.dispose()
+      this.writer.dispose()
+      return
+    }
     this.reader.state = READER_OBSERVING
     this.writer.getResultsAndStartObservation()
   }
@@ -482,17 +488,18 @@ class QueryObservable extends ReactiveDao.ObservableList {
   }
 
   dispose() {
+    this.disposed = true
+    this.respawnId++
     if(this.forward) {
       this.forward.unobserve(this)
       this.forward = null
+      super.dispose()
       return
     }
 
     if(this.reader) this.reader.dispose()
     if(this.writer) this.writer.dispose()
-
-    this.disposed = true
-    this.respawnId++
+    super.dispose()
   }
 
   respawn() {
@@ -520,9 +527,15 @@ class QuerySingleObservable extends ReactiveDao.ObservableValue {
   }
 
   async startReading() {
+    const spawnId = this.respawnId
     this.reader = new QueryReader(this.database)
     this.writer = new QueryWriter(this, this.database)
     await this.code(this.reader, this.writer)
+    if (this.disposed || spawnId !== this.respawnId) {
+      this.reader.dispose()
+      this.writer.dispose()
+      return
+    }
     this.reader.state = READER_OBSERVING
     this.writer.getSingleResultAndStartObservation()
   }
@@ -538,16 +551,18 @@ class QuerySingleObservable extends ReactiveDao.ObservableValue {
   }
 
   dispose() {
+    this.disposed = true
+    this.respawnId++
     if(this.forward) {
       this.forward.unobserve(this)
       this.forward = null
+      super.dispose()
       return
     }
 
     if(this.reader) this.reader.dispose()
-
-    this.disposed = true
-    this.respawnId++
+    if(this.writer) this.writer.dispose()
+    super.dispose()
   }
 
   respawn() {

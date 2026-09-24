@@ -101,18 +101,39 @@ class Observation {
   }
   handleNotifyMessage({ signal, args }) {
     if(this.disposed) return
-    if(signal === "set" && args[0] && typeof args[0] === 'object') args[0][sourceSymbol] = this.what      
+    if(signal === "set" && args[0] && typeof args[0] === 'object') args[0][sourceSymbol] = this.what
     this.receivedSignals.push({ signal, args })
     for(let observable of this.observables) {
       utils.nextTick(() => {
         if(typeof observable == 'function') observable(signal, ...args)
           else if(observable.notify) observable.notify(signal, ...args)
-            else observable[signal](...args)        
+            else observable[signal](...args)
         if(signal === "set" && observable.getValue) {
           const value = observable.getValue()
           if(value && typeof value === 'object') value[sourceSymbol] = this.what
         }
       })
+    }
+    // receivedSignals is a replay buffer for late-attaching observables.
+    // It grows one entry per notify and is never cleared — a memory leak.
+    // For a CommandQueue trigger observation, every command object (with
+    // FindRule hits and post content) is retained forever in the buffer.
+    //
+    // Bound it: when the buffer grows larger than the observable's current
+    // state, the incremental signals are redundant — collapse to a single
+    // 'set' carrying the current value. A late attacher then gets the
+    // full current state via the replay, and live signals afterwards.
+    if(signal === "set") {
+      this.receivedSignals = [{ signal, args }]
+    } else if(this.observables.length > 0) {
+      const observable = this.observables[0]
+      if(typeof observable.getValue === 'function') {
+        const value = observable.getValue()
+        const size = Array.isArray(value) ? value.length : (value !== undefined ? 1 : 0)
+        if(this.receivedSignals.length > size + 64) {
+          this.receivedSignals = [{ signal: "set", args: [value] }]
+        }
+      }
     }
   }
 }

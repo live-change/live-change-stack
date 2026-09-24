@@ -100,6 +100,9 @@ async function setupApiServer(settings) {
   }
 
   const apiServer = await app.createLiveApiServer(apiServerConfig)
+  // Expose for in-process diagnostics (dumpObservations). Last one wins.
+  app.apiServer = apiServer
+  if (typeof globalThis !== 'undefined') globalThis.__liveChangeApiServer = apiServer
 
   const internalCredentials = { internal: true, roles: ['admin'] }
 
