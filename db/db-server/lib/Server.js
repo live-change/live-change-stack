@@ -419,6 +419,26 @@ class Server {
     return false
   }
 
+  async rebuildDependentIndexes(dbName, sourceIndexName, visited = new Set()) {
+    if(dbName === 'system') return
+    const system = this.databases.get('system')
+    const db = this.databases.get(dbName)
+    if(!system || !db) return
+    if(!system.config.tables[dbName + '_indexDependencies']) return
+    const allDeps = await system.table(dbName + '_indexDependencies').rangeGet({})
+    const dependents = allDeps.filter(d =>
+      d.type === 'index' && d.name === sourceIndexName && d.indexName && d.indexName !== sourceIndexName
+    )
+    for(const dep of dependents) {
+      if(visited.has(dep.indexName)) continue
+      if(!db.config.indexes[dep.indexName]) continue
+      console.info(
+        `[db:index] cascade rebuild ${dep.indexName} after ${sourceIndexName}`
+      )
+      await db.rebuildIndex(dep.indexName, visited)
+    }
+  }
+
   async tryWakeIndexes(dbName, sourceType = null, sourceName = null) {
     if(dbName === 'system') return
     const system = this.databases.get('system')
@@ -482,6 +502,9 @@ class Server {
         type,
         name: sourceName
       })
+    }
+    database.onIndexRebuilt = async (indexName, visited) => {
+      await this.rebuildDependentIndexes(dbName, indexName, visited)
     }
     database.onIndexRemoved = async (uid) => {
       const system = this.databases.get('system')

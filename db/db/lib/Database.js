@@ -290,12 +290,13 @@ class Database {
     return index
   }
 
-  async wakeIndex(name) {
+  async wakeIndex(name, visited = new Set()) {
     const index = this.indexes.get(name)
     if(!index) return null
     if(!index.isSleeping || !index.isSleeping()) return index
     if(index.waking) return index
     index.waking = true
+    const wasFullRebuild = !!index.needsFullRebuild
     try {
       if(index.needsFullRebuild) await index.prepareForWake()
       index.startPromise = null
@@ -304,6 +305,50 @@ class Database {
         await index.startIndex()
       } catch(error) {
         index.enterSleep(error)
+      }
+      if(
+        wasFullRebuild
+        && !(index.isSleeping && index.isSleeping())
+        && this.onIndexRebuilt
+      ) {
+        visited.add(name)
+        await this.onIndexRebuilt(name, visited)
+      }
+      return index
+    } finally {
+      index.waking = false
+    }
+  }
+
+  /**
+   * Full rebuild of an existing index (clear data + opLog, recreate from sources).
+   * After success, onIndexRebuilt cascades to indexes that depend on this one.
+   */
+  async rebuildIndex(name, visited = new Set()) {
+    if(visited.has(name)) return this.indexes.get(name) ?? null
+    visited.add(name)
+    let index = this.indexes.get(name)
+    if(!index) {
+      const config = this.config.indexes[name]
+      if(!config) return null
+      index = await this.index(name)
+    }
+    if(!index) return null
+    if(index.waking) return index
+    index.waking = true
+    try {
+      index.needsFullRebuild = true
+      await index.resetStoresForRebuild()
+      index.startPromise = null
+      index.lastSleepLogKey = null
+      index.sleepError = null
+      try {
+        await index.startIndex()
+      } catch(error) {
+        index.enterSleep(error)
+      }
+      if(!(index.isSleeping && index.isSleeping()) && this.onIndexRebuilt) {
+        await this.onIndexRebuilt(name, visited)
       }
       return index
     } finally {

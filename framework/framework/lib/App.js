@@ -321,8 +321,11 @@ class App {
         if(typeof data !== 'object') throw new Error("trigger must be object")
         if(trigger.service) return await this.triggerService(trigger, data, true)
         if(this.shortTriggers) {
-          const triggers = this.triggerRoutes[trigger.type] /// TODO: check if it is right
-          return await Promise.all(triggers.map(t => t.execute(data)))
+          const routes = this.triggerRoutes[trigger.type]
+          if(!routes?.length) return []
+          if(!trigger.id) trigger.id = this.generateUid()
+          trigger.data = data
+          return await Promise.all(routes.map(t => t.trigger.executeShort(trigger, t.service)))
         }
         const profileOp = await this.profileLog.begin({
           operation: "callTrigger", triggerType: trigger.type, id: data.id, by: data.by
@@ -366,7 +369,8 @@ class App {
           const service = this.startedServices[trigger.service]
           const triggers = service.triggers[trigger.type]
           if(!triggers) return []
-          const result = await Promise.all(triggers.map(t => t.execute(data)))
+          if(!trigger.id) trigger.id = this.generateUid()
+          const result = await Promise.all(triggers.map(t => t.executeShort(trigger, service)))
           if(!returnArray && Array.isArray(result) && result.length === 1) return result[0]
           return result
         }

@@ -98,7 +98,8 @@ class Table {
 
   async deleteOpLog() {
     const config = this.configObservable.value
-    this.database.deleteStore(config.uid + '.opLog')
+    this.atomicWriter?.cancel?.()
+    await this.database.deleteStore(config.uid + '.opLog')
     this.database.stores.delete(config.uid + '.opLog')
     this.opLog = this.database.store(config.uid + '.opLog', { ...config, ...config.opLog })
     this.opLogWritter = createOpLogWritter(this.opLog)

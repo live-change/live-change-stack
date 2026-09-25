@@ -80,6 +80,8 @@
     "services/feedback-service",
     "services/codemirror-service",
     "services/flow-service",
+    "services/score-service",
+    "services/achievement-service",
     "services/tags-service",
     "pattern/pattern",
     "pattern/pattern-db",

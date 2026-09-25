@@ -2,9 +2,14 @@ import App from '@live-change/framework'
 const app = App.app()
 
 import definition from './definition.js'
+import config from './config.js'
 
 export function normalizeTagName(name) {
   return String(name || '').trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+export function tagId(tagType, name) {
+  return App.encodeIdentifier([tagType, normalizeTagName(name)])
 }
 
 const Tag = definition.model({
@@ -25,7 +30,7 @@ const Tag = definition.model({
       type: String,
       validation: ['nonEmpty'],
       input: 'select',
-      options: ['hardSkill', 'softSkill', 'keyValue']
+      options: config.tagTypes
     },
     name: {
       type: String,
@@ -43,40 +48,84 @@ const Tag = definition.model({
   }
 })
 
-definition.action({
-  name: 'ensureTag',
-  properties: {
-    tagType: {
-      type: String,
-      validation: ['nonEmpty']
-    },
-    name: {
-      type: String,
-      validation: ['nonEmpty', { name: 'maxLength', length: 120 }]
-    }
+function assertKnownTagType(tagType) {
+  if(!config.tagTypes.includes(tagType)) throw app.logicError('unknownTagType')
+}
+
+async function executeEnsureTag({ tagType, name }, { client, service }, emit) {
+  assertKnownTagType(tagType)
+  const normalizedName = normalizeTagName(name)
+  if(!normalizedName.length) throw app.logicError('emptyTagName')
+  const id = tagId(tagType, name)
+  const existing = await Tag.get(id)
+  if(existing) return existing
+  const displayName = String(name).trim()
+  const data = {
+    tagType,
+    name: displayName.length ? displayName : normalizedName,
+    normalizedName
+  }
+  emit({
+    type: 'TagCreated',
+    tag: id,
+    data
+  })
+  return { id, ...data }
+}
+
+definition.event({
+  name: 'TagCreated',
+  async execute({ tag, data }) {
+    await Tag.create({
+      id: tag,
+      ...data
+    })
+  }
+})
+
+const ensureTagProperties = {
+  tagType: {
+    type: String,
+    validation: ['nonEmpty']
   },
+  name: {
+    type: String,
+    validation: ['nonEmpty', { name: 'maxLength', length: 120 }]
+  }
+}
+
+const ensureTagQueuedBy = (c) => JSON.stringify([
+  'ensureTag',
+  c.data.tagType,
+  normalizeTagName(c.data.name)
+])
+
+const ensureTagActionQueuedBy = (c) => JSON.stringify([
+  'ensureTag',
+  c.tagType,
+  normalizeTagName(c.name)
+])
+
+definition.trigger({
+  name: 'ensureTag',
+  properties: ensureTagProperties,
   returns: {
     type: Tag
   },
-  async execute({ tagType, name }, { client, service }, emit) {
-    const normalizedName = normalizeTagName(name)
-    if(!normalizedName.length) {
-      throw new Error('tags_emptyTagName')
-    }
-    const id = App.encodeIdentifier([tagType, normalizedName])
-    const existing = await Tag.get(id)
-    if(existing) {
-      return existing
-    }
-    const displayName = String(name).trim()
-    await Tag.create({
-      id,
-      tagType,
-      name: displayName.length ? displayName : normalizedName,
-      normalizedName
-    })
-    return await Tag.get(id)
-  }
+  queuedBy: ensureTagQueuedBy,
+  waitForEvents: true,
+  execute: executeEnsureTag
+})
+
+definition.action({
+  name: 'ensureTag',
+  properties: ensureTagProperties,
+  returns: {
+    type: Tag
+  },
+  queuedBy: ensureTagActionQueuedBy,
+  waitForEvents: true,
+  execute: executeEnsureTag
 })
 
 definition.view({
@@ -106,11 +155,19 @@ definition.view({
       range,
       `${JSON.stringify(tagType)}:${JSON.stringify(namePrefix).slice(0, -1)}`,
       `${JSON.stringify(tagType)}:${JSON.stringify(namePrefix).slice(0, -1)}`
-    )    
-    //console.log("TAG PATH RANGE", pathRange)
-    const path = Tag.sortedIndexRangePath('byTagTypeAndNormalizedName', [tagType], pathRange)
-    //console.log("RESULT", await app.dao.get(path))
-    return path
+    )
+    return Tag.sortedIndexRangePath('byTagTypeAndNormalizedName', [tagType], pathRange)
+  }
+})
+
+definition.beforeStart(async () => {
+  for(const item of config.seedTags) {
+    if(!item?.tagType || item.name == null) continue
+    await app.triggerService({
+      service: definition.name,
+      type: 'ensureTag',
+      client: { internal: true }
+    }, item)
   }
 })
 

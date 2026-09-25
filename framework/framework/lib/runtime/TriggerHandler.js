@@ -205,6 +205,100 @@ class TriggerHandler {
     }
   }
 
+  makeEmit(service, envelope) {
+    const reportFinished = this.definition.waitForEvents ? 'trigger_' + envelope.id : undefined
+    const _trace = {}
+    propagation.inject(context.active(), _trace)
+    const flags = { triggerId: envelope.id, reportFinished, _trace }
+    const emit = (service.app.splitEvents && !service.app.shortEvents)
+      ? new SplitEmitQueue(service, flags)
+      : new SingleEmitQueue(service, flags)
+    return { emit, reportFinished }
+  }
+
+  async runAndCommit(service, envelope, emit, reportFinished) {
+    const result = await service.app.assertTime(
+      'trigger ' + this.definition.name,
+      this.definition.timeout || 10000,
+      () => this.doExecute(envelope, (...args) => emit.emit(...args))
+    )
+    if (service.app.shortEvents) {
+      const bucket = {}
+      const eventsPromise = Promise.all(emit.emittedEvents.map(event => {
+        const eventService = service.app.startedServices[event.service] || service
+        const handler = eventService.events[event.type]
+        if (!handler) return
+        const queue = eventService.eventQueue
+        if (queue) return queue.queue(() => handler.execute(event, bucket))
+        return handler.execute(event, bucket)
+      }))
+      if (this.definition.waitForEvents) await eventsPromise
+    } else {
+      const events = await emit.commit()
+      if (this.definition.waitForEvents) {
+        await service.app.waitForEvents(reportFinished, events, this.definition.waitForEvents)
+      }
+    }
+    return result
+  }
+
+  /**
+   * shortTriggers path: no triggers-table roundtrip. Triggers with queuedBy still
+   * serialize through KeyBasedExecutionQueues, with waitForEvents inside the
+   * routine (same mutex as execute). Triggers without queuedBy run inline.
+   */
+  async executeShort(trig, service) {
+    const envelope = trig && typeof trig === 'object' && trig.data !== undefined
+      ? trig
+      : {
+          id: service.app.generateUid(),
+          type: this.definition.name,
+          data: trig,
+          client: trig?.client
+        }
+    if (!envelope.id) envelope.id = service.app.generateUid()
+
+    const profileOp = await service.profileLog.begin({
+      operation: 'queueTrigger', triggerType: this.definition.name,
+      triggerId: envelope.id, by: envelope.by
+    })
+
+    if (this.queueKeyFunction) {
+      const routine = () => service.profileLog.profile({
+        operation: 'runTrigger', triggerType: this.definition.name,
+        commandId: envelope.id, by: envelope.by
+      }, async () => {
+        const { emit, reportFinished } = this.makeEmit(service, envelope)
+        try {
+          return await this.runAndCommit(service, envelope, emit, reportFinished)
+        } catch (e) {
+          this.loggingHelpers.error(`Trigger ${this.definition.name} error `, e.stack)
+          throw e
+        }
+      })
+      try {
+        routine.key = this.queueKeyFunction(envelope)
+      } catch (e) {
+        this.loggingHelpers.error("Queue key function error ", e)
+      }
+      this.loggingHelpers.log("Trigger queue key", routine.key)
+      const promise = service.keyBasedExecutionQueues.queue(routine)
+      await service.profileLog.endPromise(profileOp, promise)
+      return promise
+    }
+
+    this.loggingHelpers.log("Not queued trigger started", envelope)
+    try {
+      const { emit, reportFinished } = this.makeEmit(service, envelope)
+      const result = await this.runAndCommit(service, envelope, emit, reportFinished)
+      await service.profileLog.end(profileOp)
+      return result
+    } catch (e) {
+      this.loggingHelpers.error(`Trigger ${this.definition.name} error `, e.stack)
+      throw e
+    }
+  }
+
 }
 
 export default TriggerHandler

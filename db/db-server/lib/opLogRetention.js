@@ -1,4 +1,4 @@
-const DEFAULT_OP_LOG_RETENTION_MS = 2 * 60 * 60 * 1000
+const DEFAULT_OP_LOG_RETENTION_MS = 24 * 60 * 60 * 1000
 
 function resolveOpLogRetentionMs(dbConfig, serverDefault = DEFAULT_OP_LOG_RETENTION_MS) {
   const value = dbConfig?.storage?.opLogRetentionMs

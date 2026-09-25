@@ -7,7 +7,7 @@ import OpLogCleaner from '../lib/OpLogCleaner.js'
 
 test("resolveOpLogRetentionMs", t => {
   t.plan(5)
-  t.equal(resolveOpLogRetentionMs({}), DEFAULT_OP_LOG_RETENTION_MS, 'default 2h')
+  t.equal(resolveOpLogRetentionMs({}), DEFAULT_OP_LOG_RETENTION_MS, 'default 24h')
   t.equal(resolveOpLogRetentionMs({ storage: {} }), DEFAULT_OP_LOG_RETENTION_MS, 'empty storage default')
   t.equal(resolveOpLogRetentionMs({ storage: { opLogRetentionMs: false } }), false, 'false disables')
   t.equal(resolveOpLogRetentionMs({ storage: { opLogRetentionMs: 0 } }), false, '0 disables')

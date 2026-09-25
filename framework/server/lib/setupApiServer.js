@@ -14,8 +14,15 @@ async function setupApiServer(settings) {
     console.log("creating database", app.databaseName)
 
     await app.dao.request(['database', 'createDatabase'], app.databaseName, {
-      storage: { noMetaSync: true, noSync: true }
+      storage: {
+        noMetaSync: true,
+        noSync: true,
+        opLogRetentionMs: 24 * 60 * 60 * 1000
+      }
     }).catch(err => 'exists')
+    await app.dao.request(['database', 'updateDatabaseStorage'], app.databaseName, {
+      opLogRetentionMs: 24 * 60 * 60 * 1000
+    }).catch(() => {})
     startupLog('createDatabase done (or already exists)')
   }
 

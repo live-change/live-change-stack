@@ -74,6 +74,7 @@ function localRequests(server, scriptContext) {
       database.onIndexState = null
       database.onIndexDependency = null
       database.onIndexRemoved = null
+      database.onIndexRebuilt = null
       server.databases.delete(dbName)
       const dbStore = server.databaseStores.get(dbName)
       server.databaseStores.delete(dbName)
@@ -179,6 +180,14 @@ function localRequests(server, scriptContext) {
         config: index.configObservable.value
       })
       await server.tryWakeIndexes(dbName, 'index', indexName)
+      return 'ok'
+    },
+    rebuildIndex: async (dbName, indexName) => {
+      if(dbName === 'system') throw new Error("system database is not writable")
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      const index = await db.rebuildIndex(indexName)
+      if(!index) throw new Error('indexNotFound')
       return 'ok'
     },
     deleteIndex: async (dbName, indexName) => {
@@ -389,6 +398,11 @@ function remoteRequests(server) {
       const db = server.databases.get(dbName)
       if(!db) throw new Error('databaseNotFound')
       return server.masterDao.request(['database', 'createIndex'], dbName, indexName, code, params, options )
+    },
+    rebuildIndex: async (dbName, indexName) => {
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      return server.masterDao.request(['database', 'rebuildIndex'], dbName, indexName)
     },
     deleteIndex: async (dbName, indexName, options) => {
       const db = server.databases.get(dbName)

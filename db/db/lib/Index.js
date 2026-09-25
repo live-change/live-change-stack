@@ -581,6 +581,7 @@ class Index extends Table {
     this.code = code
     this.startPromise = null
     this.needsFullRebuild = false
+    this.forceRecreate = false
     this.sleepError = null
     this.lastSleepLogKey = null
     this.lastPhase = null
@@ -684,7 +685,10 @@ class Index extends Table {
       }
       this.reader = null
     }
-    // Clear materialized data without dropping LMDB dbi (recreate can break handles)
+    // Clear materialized data without dropping LMDB dbi (recreate can break handles).
+    // Keep the opLog store too — drop+reopen of a named DBI on LMDB throws
+    // "Invalid argument". INDEX_CREATING (forceRecreate) rescans sources;
+    // OpLogReader then only consumes ops from lastUpdateTimestamp.
     while(true) {
       const batch = await this.data.rangeGet({ limit: 256 })
       if(!batch.length) break
@@ -692,8 +696,8 @@ class Index extends Table {
         await this.atomicWriter.delete(object.id)
       }
     }
-    await this.deleteOpLog()
     this.needsFullRebuild = false
+    this.forceRecreate = true
   }
   async prepareForWake() {
     if(!this.needsFullRebuild) return
@@ -733,7 +737,9 @@ class Index extends Table {
     const lastIndexOperations = await this.opLog.rangeGet({ reverse: true, limit: 1 })
     const lastIndexOperation = lastIndexOperations[0]
     let lastUpdateTimestamp = 0
-    if(!lastIndexOperation) { // Create Index from scratch
+    const recreateFromSources = this.forceRecreate || !lastIndexOperation
+    this.forceRecreate = false
+    if(recreateFromSources) { // Create Index from scratch
       //console.log("RECREATING INDEX", this.name)
       let indexCreateTimestamp = Date.now()
       this.state = INDEX_CREATING
