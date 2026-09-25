@@ -20,9 +20,10 @@ class ChangeStream {
     throw new Error("abstract method - not implemented")
   }
   async to(output) {
-    return this.onChange(async (obj, oldObj, id, timestamp) => {
+    const cb = async (obj, oldObj, id, timestamp) => {
       if(obj || oldObj) await output.change(obj, oldObj, id, timestamp)
-    })
+    }
+    this.onChange(cb)
     await this.observerPromise
   }  
   filter(func) {
@@ -69,19 +70,21 @@ class ChangeStream {
     return pipe
   }
   async readInBuckets(bucketCallback, bucketSize = 128) {
-    let position = ''
+    let position = undefined
     let readed = 0
     do {
-      const bucket = await this.rangeGet({ gt: position, limit: bucketSize })
+      const range = { limit: bucketSize }
+      if(position !== undefined) range.gt = position
+      const bucket = await this.rangeGet(range)
       readed = bucket.length
       if(!bucket.length) break
       position = bucket[bucket.length - 1].id
       await bucketCallback(bucket)
     } while(readed === bucketSize)
   }
-  cross(other, selfToRange, otherToRange, bucketSize = 128) { 
+  cross(other, selfToRange, otherToRange, bucketSize = 128) {
     const pipe = new ChangeStreamPipe()
-    const observerPromise = this.onChange(async (obj, oldObj, id, timestamp) => {     
+    const observerPromise = this.onChange(async (obj, oldObj, id, timestamp) => {
       const otherRange = await selfToRange(obj || oldObj)
       if(!otherRange) return // ignore
       if(typeof otherRange === 'string') { // single id
@@ -97,7 +100,7 @@ class ChangeStream {
       }, bucketSize)
     })
     const otherObserverPromise = other.onChange(async (otherObj, oldOtherObj, id, timestamp) => {
-      const selfRange = await otherToRange(otherObj || oldOtherObj)      
+      const selfRange = await otherToRange(otherObj || oldOtherObj)
       if(!selfRange) return // ignore
       const otherId = id
       if(typeof selfRange === 'string') { // single id
@@ -110,7 +113,7 @@ class ChangeStream {
           const id = obj.id
           await pipe.change([obj, otherObj], [obj, oldOtherObj], [id, otherId], timestamp)
         }
-      }, bucketSize)    
+      }, bucketSize)
     })
     pipe.master = this
     pipe.observerPromise = Promise.all([observerPromise, otherObserverPromise])
@@ -146,7 +149,7 @@ class ChangeStreamPipe extends ChangeStream {
   }
   onChange(cb) {
     this.callbacks.push(cb)
-    return cb
+    return this.observerPromise
   }
   async unobserve(cb) {
     const cbIndex = this.callbacks.indexOf(cb)

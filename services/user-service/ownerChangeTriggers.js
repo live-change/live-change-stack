@@ -1,6 +1,22 @@
 import App from '@live-change/framework'
 import { fireChangeTriggers, extractObjectData } from '@live-change/relations-plugin'
 
+function fireOwnedChange({
+  service, modelName, app, objectType, object, identifiers, oldData, data, trigger
+}) {
+  return fireChangeTriggers({
+    service,
+    modelName,
+    app,
+    objectType,
+    object,
+    identifiers,
+    oldData,
+    data,
+    trigger
+  })
+}
+
 export function propertyIdFromOwnerParts(ownerParts) {
   return ownerParts.map(p => JSON.stringify(p)).join(':')
 }
@@ -22,7 +38,7 @@ export async function fireItemOwnerTransferChange({
 }) {
   const oldData = extractObjectData(writeableProperties, entity, {})
   const data = App.utils.mergeDeep({}, oldData, to)
-  await fireChangeTriggers({
+  await fireOwnedChange({
     service, modelName, app, objectType, object: entity.id,
     identifiers: { ...to },
     oldData,
@@ -35,7 +51,7 @@ export async function fireItemUpdateChange({
   service, modelName, app, objectType, writeableProperties,
   entity, data, identifiers, trigger
 }) {
-  await fireChangeTriggers({
+  await fireOwnedChange({
     service, modelName, app, objectType, object: entity.id,
     identifiers,
     oldData: extractObjectData(writeableProperties, entity, {}),
@@ -48,7 +64,7 @@ export async function fireItemDeleteChange({
   service, modelName, app, objectType, writeableProperties,
   entity, identifiers, trigger
 }) {
-  await fireChangeTriggers({
+  await fireOwnedChange({
     service, modelName, app, objectType, object: entity.id,
     identifiers: identifiers || {
       sessionOrUserType: entity.sessionOrUserType,
@@ -65,7 +81,7 @@ export async function fireItemDeleteChange({
 export async function firePropertySetChange({
   service, modelName, app, objectType, id, identifiers, data, trigger
 }) {
-  await fireChangeTriggers({
+  await fireOwnedChange({
     service, modelName, app, objectType, object: id,
     identifiers, oldData: null, data, trigger
   })
@@ -75,7 +91,7 @@ export async function firePropertyUpdateChange({
   service, modelName, app, objectType, writeableProperties,
   id, identifiers, entity, data, trigger
 }) {
-  await fireChangeTriggers({
+  await fireOwnedChange({
     service, modelName, app, objectType, object: id,
     identifiers,
     oldData: entity ? extractObjectData(writeableProperties, entity, {}) : null,
@@ -88,7 +104,7 @@ export async function firePropertyResetChange({
   service, modelName, app, objectType, writeableProperties,
   id, identifiers, entity, trigger
 }) {
-  await fireChangeTriggers({
+  await fireOwnedChange({
     service, modelName, app, objectType, object: id,
     identifiers,
     oldData: extractObjectData(writeableProperties, entity, {}),
@@ -104,14 +120,14 @@ export async function firePropertyTransferChange({
   const fromId = polymorphicPropertyId(fromIdentifiers, ownerPrefix, extendedWith)
   const toId = polymorphicPropertyId(toIdentifiers, ownerPrefix, extendedWith)
   const data = extractObjectData(writeableProperties, sourceEntity, {})
-  await fireChangeTriggers({
+  await fireOwnedChange({
     service, modelName, app, objectType, object: fromId,
     identifiers: fromIdentifiers,
     oldData: data,
     data: null,
     trigger
   })
-  await fireChangeTriggers({
+  await fireOwnedChange({
     service, modelName, app, objectType, object: toId,
     identifiers: toIdentifiers,
     oldData: null,

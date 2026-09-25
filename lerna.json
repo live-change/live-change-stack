@@ -83,6 +83,7 @@
     "services/score-service",
     "services/achievement-service",
     "services/tags-service",
+    "services/socials-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",

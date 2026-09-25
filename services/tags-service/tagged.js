@@ -41,7 +41,8 @@ function assertKnownTagType(tagType) {
   if(!config.tagTypes.includes(tagType)) throw app.logicError('unknownTagType')
 }
 
-function ownerAccess({ ownerType, owner }, { client }) {
+function ownerAccess({ ownerType, owner }, { client, visibilityTest }) {
+  if(visibilityTest) return true
   if(client?.internal) return true
   if(ownerType === 'user_User' && owner && owner === client?.user) return true
   return false

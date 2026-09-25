@@ -200,6 +200,8 @@
           <Button v-else
                   @click="ev => startIndexRename(ev, slotProps.data.id)" type="button"
                   icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" />
+          <Button @click="ev => rebuildIndex(ev, slotProps.data.id)" type="button"
+                  icon="pi pi-refresh" class="p-button-rounded p-button-success mr-2" />
           <Button @click="ev => deleteIndex(ev, slotProps.data.id)" type="button"
                   icon="pi pi-trash" class="p-button-rounded p-button-danger" />
         </template>
@@ -562,6 +564,25 @@
         workingZone.addPromise('deleteIndex', (async () => {
           await dao.request([dbApi, 'deleteIndex'], dbName, id)
           toast.add({ severity:'info', summary: `Index ${id} deleted`, life: 1500 })
+          await refreshStorageStats()
+        })())
+      },
+      reject: () => {
+        toast.add({ severity:'error', summary: 'Rejected', detail: 'You have rejected', life: 3000 })
+      }
+    })
+  }
+
+  function rebuildIndex(event, id) {
+    confirm.require({
+      target: event.currentTarget,
+      message: `Rebuild index ${id}? This will clear its data and rescan from sources.`,
+      icon: 'pi pi-info-circle',
+      acceptClass: 'p-button-success',
+      accept: async () => {
+        workingZone.addPromise('rebuildIndex', (async () => {
+          await dao.request([dbApi, 'rebuildIndex'], dbName, id)
+          toast.add({ severity:'info', summary: `Index ${id} rebuilt`, life: 1500 })
           await refreshStorageStats()
         })())
       },

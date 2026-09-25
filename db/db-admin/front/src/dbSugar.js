@@ -13,6 +13,7 @@ const dbRequests = [
     'createIndex',
     'deleteIndex',
     'renameIndex',
+    'rebuildIndex',
     'createLog',
     'deleteLog',
     'renameLog',
