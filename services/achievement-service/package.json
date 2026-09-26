@@ -1,0 +1,35 @@
+{
+  "name": "@live-change/achievement-service",
+  "version": "0.9.229",
+  "description": "Config-defined achievements with idempotent progress SET and one unlock per code",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test node --import tsx --test --test-concurrency=1 --test-force-exit tests/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/live-change/live-change-stack.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/live-change/live-change-stack/issues"
+  },
+  "homepage": "https://github.com/live-change/live-change-stack",
+  "author": {
+    "email": "michal@laszczewski.pl",
+    "name": "Michał Łaszczewski",
+    "url": "https://www.viamage.com/"
+  },
+  "type": "module",
+  "dependencies": {
+    "@live-change/framework": "0.9.229",
+    "@live-change/relations-plugin": "0.9.229"
+  },
+  "devDependencies": {
+    "@live-change/score-service": "0.9.229",
+    "@live-change/server": "0.9.229",
+    "@live-change/session-service": "0.9.229",
+    "tsx": "^4.21.0"
+  },
+  "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9"
+}

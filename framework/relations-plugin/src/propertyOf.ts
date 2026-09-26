@@ -33,6 +33,7 @@ export interface PropertyOfConfig extends RelationConfig {
   updateAccess?: AccessSpecification
   setOrUpdateAccess?: AccessSpecification
   resetAccess?: AccessSpecification
+  deleteAccess?: AccessSpecification
   readAllAccess?: AccessSpecification
   singleAccess?: AccessSpecification
   singleAccessControl?: AccessControlSettings
@@ -43,6 +44,7 @@ export interface PropertyOfConfig extends RelationConfig {
   setAccessControl?: AccessControlSettings
   updateAccessControl?: AccessControlSettings
   resetAccessControl?: AccessControlSettings
+  deleteAccessControl?: AccessControlSettings
   setOrUpdateAccessControl?: AccessControlSettings
   views?: {
     type: 'range' | 'object'
@@ -118,6 +120,9 @@ export default function(service, app) {
 
     if(config.resetAccess || config.writeAccess || config.resetAccessControl || config.writeAccessControl) {
       defineResetAction(config, context)
+    }
+    if(config.resetAccess || config.writeAccess || config.resetAccessControl || config.writeAccessControl
+        || config.deleteAccess || config.deleteAccessControl) {
       defineDeleteAction(config, context)
     }
 

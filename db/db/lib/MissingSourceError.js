@@ -18,7 +18,7 @@ function assertSourceExists(database, type, name) {
     // .data snapshot in that state returns stale or partial rows,
     // which become duchy in dependent indexes. Treat a not-yet-ready
     // source as missing so the dependent sleeps and wakes when the
-    // source becomes ready (wakeIndexesDependingOnSource).
+    // source becomes INDEX_READY (onIndexReady → tryWakeIndexes).
     const index = database.indexes.get(name)
     if(index && index.state !== 2 /* INDEX_READY */) {
       throw new MissingSourceError('index', name)

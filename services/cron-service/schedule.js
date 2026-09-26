@@ -22,6 +22,10 @@ export const Schedule = definition.model({
       roles: config.adminRoles,
       objects: scheduleAccessControlObjects
     },
+    deleteAccessControl: {
+      roles: config.adminRoles,
+      objects: ({ schedule }) => [{ objectType: 'cron_Schedule', object: schedule }]
+    },
     readAccessControl: {
       roles: config.adminRoles,
       objects: scheduleAccessControlObjects

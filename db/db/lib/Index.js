@@ -586,6 +586,7 @@ class Index extends Table {
     this.lastSleepLogKey = null
     this.lastPhase = null
     this.waking = false
+    this.readyNotified = false
     // Catch-up activity driven by OpLogReader, not table put/delete materialization
     this.activity = createDebouncedActivity()
   }
@@ -663,9 +664,10 @@ class Index extends Table {
     if(this.activity) {
       this.activity.setError(error && error.message, catchUpKey)
     }
-    // For non-missing-source errors (e.g. clearOpLog race), schedule an
-    // auto-wake retry. MissingSourceError requires the source to be
-    // created first, so wakeIndexesDependingOnSource handles those.
+    this.readyNotified = false
+    // MissingSourceError waits for the source to appear (create*) or
+    // become INDEX_READY (onIndexReady → tryWakeIndexes). Other errors
+    // get a short auto-wake retry.
     if(!(error instanceof MissingSourceError)) {
       const indexName = this.name
       const database = this.database
@@ -710,7 +712,17 @@ class Index extends Table {
   }
   async startIndex() {
     if(!this.startPromise) this.startPromise = this.startIndexInternal()
-    return this.startPromise
+    await this.startPromise
+    // After startPromise resolves so waiters of this index are not blocked
+    // while dependents wake (they may await this index's startPromise).
+    if(this.state === INDEX_READY && this.database.onIndexReady && !this.readyNotified) {
+      this.readyNotified = true
+      try {
+        await this.database.onIndexReady(this.name)
+      } catch(err) {
+        console.error(`[db:index] wake dependents after ${this.name} ready failed`, err)
+      }
+    }
   }
   async startIndexInternal() {
     debug("STARTING INDEX", this.name, "IN DATABASE", this.database.name)

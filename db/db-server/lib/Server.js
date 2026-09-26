@@ -15,6 +15,7 @@ import createBackend from './backend.js'
 import Replicator from './Replicator.js'
 import { profileLog } from '@live-change/db'
 import { Database } from '@live-change/db'
+import { INDEX_READY } from '@live-change/db/lib/Index.js'
 import ReactiveDao from '@live-change/dao'
 
 import { fileURLToPath } from 'url'
@@ -419,6 +420,13 @@ class Server {
     return false
   }
 
+  sourceReadyInDb(db, type, name) {
+    if(!this.sourceExistsInConfig(db, type, name)) return false
+    if(type !== 'index') return true
+    const index = db.indexes.get(name)
+    return !!index && index.state === INDEX_READY
+  }
+
   async rebuildDependentIndexes(dbName, sourceIndexName, visited = new Set()) {
     if(dbName === 'system') return
     const system = this.databases.get('system')
@@ -449,9 +457,26 @@ class Server {
     const depsTable = system.table(dbName + '_indexDependencies')
     const states = await stateTable.rangeGet({})
     const allDeps = await depsTable.rangeGet({})
-    const sleeping = states.filter(s => s.status === 'sleeping')
-    for(const state of sleeping) {
-      const deps = allDeps.filter(d => d.indexUid === state.id)
+    const candidates = new Map()
+    for(const state of states) {
+      if(state.status === 'sleeping' && state.name) candidates.set(state.name, state)
+    }
+    for(const [name, index] of db.indexes.entries()) {
+      if(!index.isSleeping || !index.isSleeping()) continue
+      const existing = candidates.get(name) || {}
+      const failedOn = index.sleepError?.sourceType
+        ? { type: index.sleepError.sourceType, name: index.sleepError.sourceName }
+        : existing.failedOn ?? null
+      candidates.set(name, {
+        ...existing,
+        id: existing.id || index.configObservable.value.uid,
+        name,
+        status: 'sleeping',
+        failedOn
+      })
+    }
+    for(const state of candidates.values()) {
+      const deps = allDeps.filter(d => d.indexUid === state.id || d.indexName === state.name)
       if(sourceType && sourceName) {
         const matchesFailedOn = state.failedOn
           && state.failedOn.type === sourceType
@@ -459,10 +484,10 @@ class Server {
         const matchesDep = deps.some(d => d.type === sourceType && d.name === sourceName)
         if(!matchesFailedOn && !matchesDep) continue
       }
-      if(state.failedOn && !this.sourceExistsInConfig(db, state.failedOn.type, state.failedOn.name)) {
+      if(state.failedOn && !this.sourceReadyInDb(db, state.failedOn.type, state.failedOn.name)) {
         continue
       }
-      if(deps.length > 0 && !deps.every(d => this.sourceExistsInConfig(db, d.type, d.name))) {
+      if(deps.length > 0 && !deps.every(d => this.sourceReadyInDb(db, d.type, d.name))) {
         continue
       }
       if(!state.failedOn && deps.length === 0) continue
@@ -502,6 +527,9 @@ class Server {
         type,
         name: sourceName
       })
+    }
+    database.onIndexReady = async (indexName) => {
+      await this.tryWakeIndexes(dbName, 'index', indexName)
     }
     database.onIndexRebuilt = async (indexName, visited) => {
       await this.rebuildDependentIndexes(dbName, indexName, visited)

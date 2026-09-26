@@ -114,13 +114,16 @@ definition.action({
   name: 'tag',
   properties: tagProperties,
   access: ownerAccess,
-  queuedBy: (c) => JSON.stringify([
-    'tag',
-    c.ownerType,
-    c.owner,
-    c.tagType,
-    normalizeTagName(c.name)
-  ]),
+  queuedBy: (c) => {
+    const params = c.parameters || c
+    return JSON.stringify([
+      'tag',
+      params.ownerType,
+      params.owner,
+      params.tagType,
+      normalizeTagName(params.name)
+    ])
+  },
   waitForEvents: true,
   execute: executeTag
 })
@@ -181,12 +184,15 @@ definition.action({
   name: 'untag',
   properties: untagProperties,
   access: ownerAccess,
-  queuedBy: (c) => JSON.stringify([
-    'untag',
-    c.ownerType,
-    c.owner,
-    resolveTagId(c)
-  ]),
+  queuedBy: (c) => {
+    const params = c.parameters || c
+    return JSON.stringify([
+      'untag',
+      params.ownerType,
+      params.owner,
+      resolveTagId(params)
+    ])
+  },
   waitForEvents: true,
   execute: executeUntag
 })

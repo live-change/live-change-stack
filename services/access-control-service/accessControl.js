@@ -26,7 +26,7 @@ definition.processor({
       
         const { objectType, object } = properties
         const objects = [].concat(
-          config.objects ? config.objects(properties) :
+          config.objects ? await config.objects(properties) :
             ((objectType && object) ? [{ objectType, object }] : [])
         )
 
@@ -58,7 +58,7 @@ definition.processor({
         const { client } = context
         const { objectType, object } = properties
         const objects = [].concat(
-          config.objects ? config.objects(properties) :
+          config.objects ? await config.objects(properties) :
             ((objectType && object) ? [{ objectType, object }] : [])
         )
         if(objects.length === 0) {

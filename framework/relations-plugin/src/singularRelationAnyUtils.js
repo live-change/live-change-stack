@@ -414,7 +414,7 @@ function defineDeleteAction(config, context) {
   } = context
   const actionName = 'delete' + modelName
   model.crud.delete ??= actionName
-  const sourceAccessControl = config.resetAccessControl || config.writeAccessControl
+  const sourceAccessControl = config.deleteAccessControl || config.resetAccessControl || config.writeAccessControl
   const accessControl = cloneAndPrepareAccessControl(
     sourceAccessControl, [modelPropertyName], [objectType]
   )
@@ -426,7 +426,7 @@ function defineDeleteAction(config, context) {
         validation: ['nonEmpty']
       }
     },
-    access: config.resetAccess || config.writeAccess,
+    access: config.deleteAccess || config.resetAccess || config.writeAccess,
     accessControl,
     queuedBy: otherPropertyNames,
     waitForEvents: true,

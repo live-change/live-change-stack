@@ -75,6 +75,7 @@ function localRequests(server, scriptContext) {
       database.onIndexDependency = null
       database.onIndexRemoved = null
       database.onIndexRebuilt = null
+      database.onIndexReady = null
       server.databases.delete(dbName)
       const dbStore = server.databaseStores.get(dbName)
       server.databaseStores.delete(dbName)

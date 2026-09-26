@@ -25,6 +25,10 @@ export const Interval = definition.model({
       roles: config.adminRoles,
       objects: intervalAccessControlObjects
     },
+    deleteAccessControl: {
+      roles: config.adminRoles,
+      objects: ({ interval }) => [{ objectType: 'cron_Interval', object: interval }]
+    },
     readAccessControl: {
       roles: [...config.adminRoles, ...config.readerRoles],
       objects: intervalAccessControlObjects
