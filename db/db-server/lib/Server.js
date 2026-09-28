@@ -300,6 +300,16 @@ class Server {
     if(this.config.master) {
       await this.replicator.start()
     }
+    // Wait for all non-system databases' indexes to settle (INDEX_READY or
+    // INDEX_SLEEPING) before starting the opLog cleaner. Otherwise the
+    // cleaner can delete opLog entries that indexes are still catching up on,
+    // or that sleeping indexes need for their wake-up catch-up.
+    const settlePromises = []
+    for(const [dbName, database] of this.databases) {
+      if(dbName === 'system') continue
+      settlePromises.push(database.whenIndexesSettled())
+    }
+    await Promise.all(settlePromises)
     if(!initOptions.skipOpLogCleaner) {
       this.startOpLogCleaner()
     }

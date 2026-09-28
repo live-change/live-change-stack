@@ -61,12 +61,16 @@ const Redirect = definition.model({
 const UrlToTarget = definition.index({
   name: 'Urls',
   function: async function(input, output) {
-    const urlMapper = urlType => ({targetType, domain, path, target}) =>
-      ({
-        id: `"${targetType}":${JSON.stringify(domain)}:${JSON.stringify(path)}_"${target}"`,
+    const urlMapper = urlType => (obj) => {
+      if(!obj) return obj
+      const { targetType, domain, path, target, id } = obj
+      const key = [targetType, domain || '', path].map(value => JSON.stringify(value)).join(':')
+      return {
+        id: key + '_' + urlType + '_' + id,
         target, domain, path,
         type: urlType
-      })
+      }
+    }
     const redirectMapper = urlMapper('redirect')
     const canonicalMapper = urlMapper('canonical')
     await input.table('url_Redirect').onChange(
@@ -81,12 +85,16 @@ const UrlToTarget = definition.index({
 const UrlToTargetWithoutDomain = definition.index({
   name: 'UrlsWithoutDomain',
   function: async function(input, output) {
-    const urlMapper = urlType => ({targetType, domain, path, target}) =>
-      ({
-        id: `"${targetType}":${JSON.stringify(path)}_"${target}"`,
+    const urlMapper = urlType => (obj) => {
+      if(!obj) return obj
+      const { targetType, domain, path, target, id } = obj
+      const key = [targetType, path].map(value => JSON.stringify(value)).join(':')
+      return {
+        id: key + '_' + urlType + '_' + id,
         target, domain, path,
         type: urlType
-      })
+      }
+    }
     const redirectMapper = urlMapper('redirect')
     const canonicalMapper = urlMapper('canonical')
     await input.table('url_Redirect').onChange(

@@ -198,6 +198,29 @@ test('parallel recordScore on the same board leaves unique dense positions', asy
   assert.ok(byScore[1].position < byScore[2].position)
 })
 
+test('scoreEventsByRecipientCreatedAt lists events by createdAt', async () => {
+  const firstCause = await createCause('profile', 'chrono-1')
+  await record('chrono', 'scoreTest_ProfileUnlock', firstCause)
+  await new Promise(resolve => setTimeout(resolve, 30))
+  const secondCause = await createCause('invite', 'chrono-2')
+  await record('chrono', 'scoreTest_Invite', secondCause)
+  const rows = await scoreService().models.ScoreEvent.sortedIndexRangeGet(
+    'byRecipientCreatedAt',
+    ['user_User', 'chrono']
+  )
+  assert.equal(rows.length, 2)
+  assert.ok(new Date(rows[0].createdAt).getTime() <= new Date(rows[1].createdAt).getTime())
+  assert.equal(rows[0].score, 10)
+  assert.equal(rows[1].score, 30)
+  const newestFirst = await scoreService().models.ScoreEvent.sortedIndexRangeGet(
+    'byRecipientCreatedAt',
+    ['user_User', 'chrono'],
+    { reverse: true }
+  )
+  assert.equal(newestFirst[0].score, 30)
+  assert.equal(newestFirst[1].score, 10)
+})
+
 test('profile counter is not ranked', async () => {
   const cause = await createCause('profile', 'profile-only')
   await record('profile-only', 'scoreTest_ProfileUnlock', cause)

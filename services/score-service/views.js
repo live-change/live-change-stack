@@ -34,6 +34,36 @@ definition.view({
 })
 
 definition.view({
+  name: 'scoreEventsByRecipientCreatedAt',
+  properties: {
+    recipientType: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    recipient: {
+      type: String,
+      validation: ['nonEmpty']
+    },
+    ...App.rangeProperties
+  },
+  returns: {
+    type: Array,
+    of: {
+      type: ScoreEvent
+    }
+  },
+  access: open,
+  async daoPath({ recipientType, recipient, ...props }) {
+    const range = App.extractRange(props)
+    return ScoreEvent.sortedIndexRangePath(
+      'byRecipientCreatedAt',
+      [recipientType, recipient],
+      range
+    )
+  }
+})
+
+definition.view({
   name: 'ranking',
   properties: {
     topicType: {

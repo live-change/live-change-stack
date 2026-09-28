@@ -1,5 +1,5 @@
 import Table from './Table.js'
-import Index from './Index.js'
+import Index, { INDEX_CREATING, INDEX_UPDATING, INDEX_READY, INDEX_SLEEPING } from './Index.js'
 import Log from './Log.js'
 import queryGet from './queryGet.js'
 import queryObservable from './queryObservable.js'
@@ -9,6 +9,7 @@ import ReactiveDao from "@live-change/dao"
 
 import { combineStoreStats, readStoreStat } from './storeStats.js'
 import { clearOpLogStore } from './clearOpLog.js'
+import MissingSourceError from './MissingSourceError.js'
 
 import Debug from 'debug'
 const debug = Debug('db')
@@ -42,28 +43,74 @@ class Database {
   }
 
   async start(startConfig = {}) {
-    if(startConfig.slowStart) {
-      for(let name in this.config.tables) await this.table(name)
-      for(let name in this.config.logs) await this.log(name)
-      for(let name in this.config.indexes) await (async (name) => {
-        try {
-          await this.index(name)
-        } catch(error) {
-          return 'ok'
+    this.startPromise = (async () => {
+      if(startConfig.slowStart) {
+        for(let name in this.config.tables) await this.table(name)
+        for(let name in this.config.logs) await this.log(name)
+        for(let name in this.config.indexes) await (async (name) => {
+          try {
+            await this.index(name)
+          } catch(error) {
+            return 'ok'
+          }
+        })(name)
+      } else {
+        let promises = []
+        for(let name in this.config.tables) promises.push(this.table(name))
+        for(let name in this.config.logs) promises.push(this.log(name))
+        for(let name in this.config.indexes) promises.push((async (name) => {
+          try {
+            await this.index(name)
+          } catch(error) {
+            return 'ok'
+          }
+        })(name))
+        await Promise.all(promises)
+      }
+      // Final wake pass: indexes that entered sleep after their source became ready
+      // (race condition: source fired onIndexReady while dependent was still
+      // in startIndexInternal, not yet sleeping, so tryWakeIndexes missed it)
+      for(const [name, index] of this.indexes.entries()) {
+        if(!index.isSleeping()) continue
+        const err = index.sleepError
+        if(!(err instanceof MissingSourceError)) continue
+        if(err.sourceType === 'index') {
+          const source = this.indexes.get(err.sourceName)
+          if(source && source.state === INDEX_READY) {
+            await this.wakeIndex(name).catch(() => {})
+          }
         }
-      })(name)
-    } else {
-      let promises = []
-      for(let name in this.config.tables) promises.push(this.table(name))
-      for(let name in this.config.logs) promises.push(this.log(name))
-      for(let name in this.config.indexes) promises.push((async (name) => {
-        try {
-          await this.index(name)
-        } catch(error) {
-          return 'ok'
-        }
-      })(name))
-      return Promise.all(promises).then(r => 'ok')
+      }
+      return 'ok'
+    })()
+    return this.startPromise
+  }
+
+  /**
+   * Returns true when no index is INDEX_CREATING or INDEX_UPDATING.
+   * Indexes that are INDEX_READY or INDEX_SLEEPING are considered settled.
+   * Used by OpLogCleaner to avoid deleting opLog entries that indexes
+   * are still catching up on.
+   */
+  allIndexesReadyOrSleeping() {
+    for(const index of this.indexes.values()) {
+      if(index.state === INDEX_CREATING || index.state === INDEX_UPDATING) return false
+    }
+    return true
+  }
+
+  /**
+   * Resolves when all indexes have settled (INDEX_READY or INDEX_SLEEPING)
+   * and the final wake pass in start() has completed.
+   * If an index is sleeping with MissingSourceError for a source that is
+   * now ready, the final wake pass in start() will wake it before this resolves.
+   */
+  async whenIndexesSettled() {
+    if(this.startPromise) await this.startPromise
+    // start() includes the final wake pass, but wakeIndex is async and
+    // may still be in progress — wait for any INDEX_CREATING/UPDATING to settle
+    while(!this.allIndexesReadyOrSleeping()) {
+      await new Promise(resolve => setTimeout(resolve, 100))
     }
   }
 

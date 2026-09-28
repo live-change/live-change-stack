@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test tape tests/*"
+    "test": "NODE_ENV=test node --import tsx --test --test-concurrency=1 --test-force-exit tests/*.test.js"
   },
   "repository": {
     "type": "git",
@@ -24,10 +24,16 @@
   "dependencies": {
     "@live-change/framework": "0.9.229",
     "@live-change/relations-plugin": "0.9.229",
+    "latinize": "0.5.0",
     "lru-cache": "^7.12.0",
     "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0",
     "prosemirror-model": "^1.18.1"
+  },
+  "devDependencies": {
+    "@live-change/server": "0.9.229",
+    "@live-change/session-service": "0.9.229",
+    "tsx": "^4.21.0"
   },
   "gitHead": "7d4dc92dcb9a50381292dded7d8766a3cadbecf9"
 }

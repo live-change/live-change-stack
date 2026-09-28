@@ -323,6 +323,18 @@ class OpLogCleaner {
     try {
       let done = 0
       for(const dbName of dbNames) {
+        // Skip databases whose indexes haven't settled yet — an index
+        // still in INDEX_CREATING / INDEX_UPDATING may need the opLog
+        // entries we would delete here.
+        if(dbName !== 'system') {
+          const db = this.server.databases.get(dbName)
+          if(db && typeof db.allIndexesReadyOrSleeping === 'function'
+             && !db.allIndexesReadyOrSleeping()) {
+            debug('skip', dbName, 'indexes not settled')
+            this.setStatus({ dbName, message: `skip ${dbName} (indexes not settled)` })
+            continue
+          }
+        }
         await this.cleanDatabase(dbName, {
           batchSize: this.batchSize,
           maxBatches: this.maxBatchesPerDb,

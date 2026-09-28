@@ -192,18 +192,21 @@
       <Column field="usedBytes" header="Total" :headerStyle="{ 'width': '100px' }">
         <template #body="slotProps">{{ formatBytes(slotProps.data.usedBytes) }}</template>
       </Column>
-      <Column :headerStyle="{ 'width': '140px' }">
+      <Column :headerStyle="{ width: '12rem', minWidth: '12rem' }"
+              :bodyStyle="{ width: '12rem', minWidth: '12rem', whiteSpace: 'nowrap' }">
         <template #body="slotProps">
-          <Button v-if="indexRename === slotProps.data.id"
-                  @click="ev => finishIndexRename(ev, slotProps.data.id)" type="button"
-                  icon="pi pi-save" class="p-button-rounded p-button-primary mr-2" />
-          <Button v-else
-                  @click="ev => startIndexRename(ev, slotProps.data.id)" type="button"
-                  icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" />
-          <Button @click="ev => rebuildIndex(ev, slotProps.data.id)" type="button"
-                  icon="pi pi-refresh" class="p-button-rounded p-button-success mr-2" />
-          <Button @click="ev => deleteIndex(ev, slotProps.data.id)" type="button"
-                  icon="pi pi-trash" class="p-button-rounded p-button-danger" />
+          <div class="flex flex-nowrap items-center justify-end gap-2">
+            <Button v-if="indexRename === slotProps.data.id"
+                    @click="ev => finishIndexRename(ev, slotProps.data.id)" type="button"
+                    icon="pi pi-save" class="p-button-rounded p-button-primary" />
+            <Button v-else
+                    @click="ev => startIndexRename(ev, slotProps.data.id)" type="button"
+                    icon="pi pi-pencil" class="p-button-rounded p-button-warning" />
+            <Button @click="ev => rebuildIndex(ev, slotProps.data.id)" type="button"
+                    icon="pi pi-refresh" class="p-button-rounded p-button-success" />
+            <Button @click="ev => deleteIndex(ev, slotProps.data.id)" type="button"
+                    icon="pi pi-trash" class="p-button-rounded p-button-danger" />
+          </div>
         </template>
       </Column>
     </DataTable>

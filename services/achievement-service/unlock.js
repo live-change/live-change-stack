@@ -20,7 +20,7 @@ export const Unlock = definition.model({
   properties: {
     score: {
       type: Number,
-      validation: ['nonEmpty']
+      validation: ['number', { name: 'min', value: 0 }]
     },
     category: {
       type: String,
@@ -93,15 +93,17 @@ definition.trigger({
       unlockedAt: new Date()
     })
 
-    await triggerService({
-      service: 'score',
-      type: 'recordScore'
-    }, {
-      recipientType,
-      recipient,
-      causeType: 'achievement_Unlock',
-      cause: createdId
-    })
+    if(spec.score) {
+      await triggerService({
+        service: 'score',
+        type: 'recordScore'
+      }, {
+        recipientType,
+        recipient,
+        causeType: 'achievement_Unlock',
+        cause: createdId
+      })
+    }
 
     return createdId
   }

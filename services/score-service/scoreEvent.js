@@ -29,6 +29,11 @@ export const ScoreEvent = definition.model({
     createdAt: {
       type: Date
     }
+  },
+  indexes: {
+    byRecipientCreatedAt: {
+      property: ['recipientType', 'recipient', 'createdAt']
+    }
   }
 })
 

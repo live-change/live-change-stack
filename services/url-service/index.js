@@ -2,15 +2,10 @@ import App from '@live-change/framework'
 const app = App.app()
 
 import definition from './definition.js'
+import defaultCreateFromTitle from './createFromTitle.js'
 const config = definition.config
 const {
-  createFromTitle = (title) => {
-    let path = title
-    path = path.replace(/[@]+/g, '-at-')
-    path = path.replace(/[_/\\\\ -]+/g, '-')
-    path = path.replace(/[^a-z0-9-]+/gi, '')
-    return path
-  },
+  createFromTitle = defaultCreateFromTitle,
   urlWriterRoles = ['writer']
 } = config
 
@@ -43,7 +38,8 @@ definition.view({
     }
   },
   daoPath(params, { client, service }, method) {
-    const { targetType, domain, path } = params
+    const { targetType, path } = params
+    const domain = params.domain || ''
     const dp = UrlToTarget.rangePath([ targetType, domain, path ], App.extractRange(params))
     //console.log("URLS PATH", params, '=>', dp)
     return dp
@@ -97,7 +93,8 @@ definition.view({
     }
   },
   daoPath(params, { client, service }, method) {
-    const { targetType, domain } = params
+    const { targetType } = params
+    const domain = params.domain || ''
     const dp = UrlToTarget.rangePath([ targetType, domain ], App.extractRange(params))
     //console.log("URLS PATH", params, '=>', dp)
     return dp
@@ -119,9 +116,46 @@ const charsets = {
 
 const defaultRandomPathLength = 5
 
+function sameDomain(a, b) {
+  return (a || '') === (b || '')
+}
+
+function randomPath(randomCharacters, length) {
+  let path = ''
+  const charactersLength = randomCharacters.length
+  for(let i = 0; i < length; i++) {
+    path += randomCharacters.charAt(Math.floor(Math.random() * charactersLength))
+  }
+  return path
+}
+
+function cutPath(path, cutLength) {
+  if(path.length <= cutLength) return path
+  let lastSep = path.lastIndexOf('-')
+  if(lastSep > cutLength - 40) return path.slice(0, lastSep)
+  return path.slice(0, cutLength)
+}
+
+async function othersOnPath(targetType, domain, fullPath, target) {
+  const canonicals = await Canonical.sortedIndexRangeGet('byUrl', [targetType, domain, fullPath]) || []
+  const redirects = await Redirect.sortedIndexRangeGet('byUrl', [targetType, domain, fullPath]) || []
+  return [...canonicals, ...redirects].filter(row => row.target !== target)
+}
+
+async function deleteOwnRedirectsAt(targetType, target, domain, path, emit) {
+  const owned = await Redirect.indexRangeGet('byTarget', [targetType, target]) || []
+  for(const row of owned) {
+    if(!sameDomain(row.domain, domain) || row.path !== path) continue
+    emit({
+      type: 'RedirectDeleted',
+      redirect: row.id
+    })
+  }
+}
+
 async function generateUrl(props, emit) {
-  console.log("GENERATE URL", props)
   if(!props.targetType || !props.target) throw new Error("url must have target")
+  const domain = props.domain || ''
   const prefix = props.prefix || ''
   const suffix = props.suffix || ''
   const randomCharacters = props.charset ? charsets[props.charset] : charsets.all
@@ -132,28 +166,14 @@ async function generateUrl(props, emit) {
   let random = false
   if(props.path) {
     path = props.path
-    const cutLength = maxLength - sufixLength/// because max id size
-    if(path.length > cutLength) {
-      let lastSep = path.lastIndexOf('-')
-      if(lastSep > cutLength - 40) path = path.slice(0, lastSep)
-      else path = path.slice(0, cutLength)
-    }
-  } else {
-    if(props.title) { // generated from title
-      path = createFromTitle(props.title)
-      const cutLength = maxLength - sufixLength /// because max id size
-      while(path.length > cutLength) {
-        let lastSep = path.lastIndexOf('-')
-        if(lastSep > cutLength - 40) path = path.slice(0, lastSep)
-        else path = path.slice(0, cutLength)
-      }
-    } else { // random
-      random = true
-      const charactersLength = randomCharacters.length
-      for(let i = 0; i < randomPathLength; i++) {
-        path += randomCharacters.charAt(Math.floor(Math.random() * charactersLength))
-      }
-    }
+    path = cutPath(path, maxLength - sufixLength)
+  } else if(props.title) {
+    path = createFromTitle(props.title)
+    path = cutPath(path, maxLength - sufixLength)
+  }
+  if(!path) {
+    random = true
+    path = randomPath(randomCharacters, randomPathLength)
   }
   const basePath = path
 
@@ -161,31 +181,19 @@ async function generateUrl(props, emit) {
   let conflict = false
   do {
     const fullPath = prefix + path + suffix
-    console.log("TRYING PATH", prefix + path + suffix)
-    const res = await UrlToTarget.rangeGet([props.targetType, props.domain, fullPath])
-    const count = res?.length ?? 0
-    if(count === 0) {
-      //Url.create({ id: `${group}_${path}`, group, path: prefix + path + suffix, to: props.to || null })
+    const others = await othersOnPath(
+      props.targetType, domain, fullPath, props.target
+    )
+    if(others.length === 0) {
       created = true
     } else {
-      console.log("PATH TAKEN", prefix + path + suffix)
-
-      if(path.length >= maxLength) { /// because max id size
+      if(path.length >= maxLength) {
         if(random) {
-          const charactersLength = randomCharacters.length
-          path = ''
-          for(let i = 0; i < randomPathLength; i++) {
-            path += randomCharacters.charAt(Math.floor(Math.random() * charactersLength))
-          }
+          path = randomPath(randomCharacters, randomPathLength)
         } else {
           path = basePath
         }
-        const cutLength = maxLength - 10
-        if(path.length > cutLength) {
-          let lastSep = path.lastIndexOf('-')
-          if(lastSep > cutLength - 40) path = path.slice(0, lastSep)
-          else path = path.slice(0, cutLength)
-        }
+        path = cutPath(path, maxLength - 10)
       }
 
       if(!conflict) path += '-'
@@ -199,6 +207,18 @@ async function generateUrl(props, emit) {
   const canonicalId = App.encodeIdentifier([props.targetType, props.target])
   const existingCanonical = await Canonical.get(canonicalId)
 
+  if(!props.redirect
+    && existingCanonical
+    && sameDomain(existingCanonical.domain, domain)
+    && existingCanonical.path === fullPath
+  ) {
+    return {
+      url: canonicalId,
+      domain,
+      path: fullPath
+    }
+  }
+
   let url
   if(props.redirect) {
     url = app.generateUid()
@@ -210,11 +230,14 @@ async function generateUrl(props, emit) {
         target: props.target,
       },
       data: {
-        domain: props.domain,
+        domain,
         path: fullPath
       }
     })
   } else {
+    await deleteOwnRedirectsAt(
+      props.targetType, props.target, domain, fullPath, emit
+    )
     if(existingCanonical) {
       emit({
         type: 'RedirectCreated',
@@ -236,7 +259,7 @@ async function generateUrl(props, emit) {
         target: props.target
       },
       data: {
-        domain: props.domain,
+        domain,
         path: fullPath
       }
     })
@@ -245,8 +268,8 @@ async function generateUrl(props, emit) {
 
   return {
     url,
-    domain: props.domain,
-    path: prefix + path + suffix
+    domain,
+    path: fullPath
   }
 }
 
@@ -370,14 +393,22 @@ definition.action({
   },
   queuedBy: 'targetType',
   async execute({ targetType, target, domain, path, redirect }, { client, service }, emit) {
+    domain = domain || ''
     while(path[0] === '/') path = path.slice(1)
 
-    const res = await UrlToTarget.rangeGet([targetType, domain, path])
-    const count = res?.length ?? 0
-    if(count > 0) throw { properties: { path: "taken" } }
+    const others = await othersOnPath(targetType, domain, path, target)
+    if(others.length > 0) throw { properties: { path: "taken" } }
 
     const canonicalId = App.encodeIdentifier([targetType, target])
     const existingCanonical = await Canonical.get(canonicalId)
+
+    if(!redirect
+      && existingCanonical
+      && sameDomain(existingCanonical.domain, domain)
+      && existingCanonical.path === path
+    ) {
+      return canonicalId
+    }
 
     let url
     if(redirect) {
@@ -393,6 +424,7 @@ definition.action({
         }
       })
     } else {
+      await deleteOwnRedirectsAt(targetType, target, domain, path, emit)
       if(existingCanonical) {
         emit({
           type: 'RedirectCreated',
