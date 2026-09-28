@@ -1,5 +1,6 @@
 <template>
   <a v-ripple
+     data-testid="user-menu-trigger"
      v-styleclass="{ selector: '@next', enterFromClass: 'hidden', leaveToClass: 'hidden', hideOnOutsideClick: true }"
      class="relative shadow-none b shrink-0">
       <span class="flex mx-0 px-3 align-items-center font-medium justify-content-center

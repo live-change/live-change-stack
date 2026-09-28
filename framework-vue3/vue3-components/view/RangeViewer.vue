@@ -20,12 +20,15 @@
     <slot v-if="itemsCount === 0" name="empty"></slot>
 
     <template v-for="(bucket, bucketIndex) in buckets?.buckets ?? []" :key="bucket.id">
-
-      <slot v-for="(item, itemIndex) in bucket.data" v-bind="{ item, bucket, itemIndex, bucketIndex }">
-        <h4>{{bucketIndex}}.{{itemIndex}}</h4>
-        <pre>{{ item }}</pre>
-      </slot>
-
+      <template
+        v-for="(item, itemIndex) in bucket.data"
+        :key="itemKeyValue(item, itemIndex)"
+      >
+        <slot v-bind="{ item, bucket, itemIndex, bucketIndex }">
+          <h4>{{bucketIndex}}.{{itemIndex}}</h4>
+          <pre>{{ item }}</pre>
+        </slot>
+      </template>
     </template>
 
     <slot v-if="frozen && buckets?.changed" name="changedBottom"></slot>
@@ -130,7 +133,17 @@
       type: String,
       default: 'div'
     },
+    itemKey: {
+      type: [String, Function],
+      default: undefined
+    }
   })
+
+  function itemKeyValue(item, itemIndex) {
+    if(typeof props.itemKey === 'function') return props.itemKey(item)
+    if(typeof props.itemKey === 'string') return item?.[props.itemKey]
+    return itemIndex
+  }
 
   const {
     pathFunction, bucketSize, initialPosition, softClose,

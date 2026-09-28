@@ -2,6 +2,7 @@
   <ul class="list-none p-0 m-0 flex select-none flex-col">
     <li>
       <router-link :to="{ name: 'user:identification' }"
+                   data-testid="user-menu-profile"
                    v-ripple
                    class="flex px-6 py-2 items-center 
                           text-surface-600 hover:text-surface-900 hover:bg-surface-100
