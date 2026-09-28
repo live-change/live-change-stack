@@ -1,6 +1,6 @@
 {
   "name": "@live-change/socials-service",
-  "version": "0.9.230",
+  "version": "0.9.231",
   "description": "Polymorphic social profile links with platform prefixes",
   "main": "index.js",
   "scripts": {
@@ -22,12 +22,12 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.9.230",
-    "@live-change/relations-plugin": "0.9.230"
+    "@live-change/framework": "^0.9.231",
+    "@live-change/relations-plugin": "^0.9.231"
   },
   "devDependencies": {
-    "@live-change/server": "0.9.230",
-    "@live-change/session-service": "0.9.230",
+    "@live-change/server": "^0.9.231",
+    "@live-change/session-service": "^0.9.231",
     "tsx": "^4.21.0"
   },
   "gitHead": "dce3ca9bbe8c025874a4927dc1b273566d0bee67"
