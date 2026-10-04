@@ -31,7 +31,10 @@
   onMounted(() => isMounted.value = true)
   onUnmounted(() => isMounted.value = false)
 
-  const workingZone = inject('workingZone')
+  // /_db is mounted with meta.raw, so the app WorkingZone is not a parent.
+  const workingZone = inject('workingZone', null) || {
+    addPromise(_name, promise) { return promise }
+  }
 
   const props = defineProps({
     dbApi: {

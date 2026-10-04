@@ -13,6 +13,7 @@ import basicAuth from 'express-basic-auth'
 const expressApp = express()
 import fs from 'fs'
 import { createBackup, createBackupLogger, currentBackupPath, removeOldBackups } from './backup.js'
+import { resolveBackupFileRetention } from './backupRetention.js'
 import { restoreBackup } from './restore.js'
 import {
   getLastEventId, removeOldEvents, removeOldOpLogs,
@@ -33,10 +34,21 @@ const backupServerUsername = config.username || process.env.BACKUP_SERVER_USERNA
 const backupServerPassword = config.password || process.env.BACKUP_SERVER_PASSWORD
 
 const backupsDir = config.dir || './backups'
+const fileRetention = resolveBackupFileRetention({ env: process.env, config })
 
 fs.mkdirSync(backupsDir, { recursive: true })
 
 const backupLog = createBackupLogger(backupsDir)
+
+async function pruneBackupFiles(options = {}) {
+  await removeOldBackups(
+    backupsDir,
+    fileRetention.maxAgeMs,
+    fileRetention.minBackups,
+    backupLog,
+    { cleanupIncomplete: fileRetention.cleanupIncomplete, ...options }
+  )
+}
 
 let queue
 (async () => {
@@ -151,8 +163,12 @@ function doBackup() {
       let lastTriggerTimestamp = await getLastTriggerTimestamp()
       let lastCommandTimestamp = await getLastCommandTimestamp()
 
-      await removeOldBackups(backupsDir, 10 * TWENTY_FOUR_HOURS, 10, backupLog)
-      await createBackup(path, backupLog)
+      await pruneBackupFiles()
+      try {
+        await createBackup(path, backupLog)
+      } finally {
+        await pruneBackupFiles()
+      }
 
       console.log("====== CLEAR STATS:")
       console.log("Last event id:", lastEventId)
@@ -208,6 +224,11 @@ function doBackup() {
     const detail = err && err.stack ? err.stack : String(err)
     console.error("BACKUP FAILED:", err)
     await backupLog(`backup failed: ${detail}`)
+    try {
+      await pruneBackupFiles()
+    } catch (pruneErr) {
+      await backupLog(`backup failed prune incomplete failed: ${pruneErr}`)
+    }
     currentBackup = null
   })
   return currentBackup
@@ -295,6 +316,14 @@ definition.afterStart(() => {
 
   expressApp.listen(backupServerPort, () => {
     console.log(`backup port listening on ${backupServerPort}`)
+    console.log('Backup file retention:', fileRetention)
+    ;(async () => {
+      while(!queue) await new Promise(resolve => setTimeout(resolve, 20))
+      console.log('Startup backup prune:')
+      await queue.add(() => pruneBackupFiles())
+      console.log('Startup backup prune completed')
+    })().catch(err => console.error('Startup backup prune failed:', err))
+
     setTimeout(async () => {
       console.log('Service init backup:')
       await queue.add(() => doBackup())

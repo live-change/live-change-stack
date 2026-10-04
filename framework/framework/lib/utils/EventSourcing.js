@@ -16,14 +16,85 @@ class EventSourcing {
     this.reader = null
     this.lastPositionSave = Date.now()
     this.lastSavedPosition = 0
+    this.savePromise = null
+    this.saveTimer = null
+    this.saveTimerResolve = null
+    this.skipSaveThrottle = false
     this.allEventHandlers = []
     this.eventTypeHandlers = new Map()
     this.onBucketEnd = () => {}
   }
+
+  saveThrottleMs() {
+    return this.config.saveThrottle || 1000
+  }
+
+  clearSaveTimer() {
+    if(this.saveTimer) {
+      clearTimeout(this.saveTimer)
+      this.saveTimer = null
+    }
+    if(this.saveTimerResolve) {
+      const resolve = this.saveTimerResolve
+      this.saveTimerResolve = null
+      resolve()
+    }
+  }
+
+  scheduleSave(delay) {
+    if(this.saveTimer || this.savePromise) return
+    this.saveTimer = setTimeout(() => {
+      this.saveTimer = null
+      this.saveTimerResolve = null
+      this.ensureSave()
+    }, delay)
+  }
+
+  ensureSave() {
+    if(this.savePromise) return
+    if(!this.state || this.lastSavedPosition == this.state.position) return
+    const run = this.flushSave()
+    this.savePromise = run
+    run.then(() => {
+      if(this.savePromise === run) this.savePromise = null
+    }, err => {
+      if(this.savePromise === run) this.savePromise = null
+      console.error('EVENT SOURCING POSITION SAVE ERROR', err)
+      // Leave dirty; retry on the next event or saveState/dispose. Do not busy-loop.
+      this.scheduleSave(this.saveThrottleMs())
+    })
+  }
+
+  async flushSave() {
+    while(this.state && this.lastSavedPosition != this.state.position) {
+      const snapshot = { ...this.state, position: this.state.position }
+      const savedPosition = snapshot.position
+      await this.connection.request(
+        ['database', 'put'], this.database, 'eventConsumers', snapshot
+      )
+      this.lastSavedPosition = savedPosition
+      this.lastPositionSave = Date.now()
+      if(this.lastSavedPosition == this.state.position) break
+      const wait = this.saveThrottleMs() - (Date.now() - this.lastPositionSave)
+      if(wait > 0 && !this.skipSaveThrottle) {
+        await new Promise(resolve => {
+          this.saveTimerResolve = resolve
+          this.saveTimer = setTimeout(() => {
+            this.saveTimer = null
+            this.saveTimerResolve = null
+            resolve()
+          }, wait)
+        })
+      }
+    }
+  }
+
   async dispose() {
+    this.clearSaveTimer()
     if(this.reader) this.reader.dispose()
     await this.saveState()
   }
+
   async start() {
     await this.connection.request(['database', 'createTable'], this.database, 'eventConsumers', this.config.storage ?? {})
       .catch(e => 'ok')
@@ -59,14 +130,32 @@ class EventSourcing {
     )
     await this.reader.start()
   }
+
   async saveState() {
-    //console.log("SAVE CONSUMER STATE", this.state)
-    this.lastPositionSave = Date.now()
-    const savedPosition = this.state.position
-    await this.connection.request(
-        ['database', 'put'], this.database, 'eventConsumers', this.state)
-    this.lastSavedPosition = savedPosition
+    this.skipSaveThrottle = true
+    this.clearSaveTimer()
+    try {
+      if(this.savePromise) {
+        try {
+          await this.savePromise
+        } catch(e) {
+          // Inflight fire-and-forget failed; retry below if still dirty.
+        }
+      }
+      if(this.state && this.lastSavedPosition != this.state.position) {
+        const run = this.flushSave()
+        this.savePromise = run
+        try {
+          await run
+        } finally {
+          if(this.savePromise === run) this.savePromise = null
+        }
+      }
+    } finally {
+      this.skipSaveThrottle = false
+    }
   }
+
   async handleEvent(event, mainEvent) {
     if(event.type == 'bucket') { // Handle buckets
       let handledEvents = []
@@ -119,15 +208,18 @@ class EventSourcing {
     }
   }
 
-  async savePosition() {
-    if(this.lastSavedPosition == this.state.position) return
-    //console.log("SAVE POSITION", Date.now(), this.lastPositionSave )
-    if(Date.now() - this.lastPositionSave <= (this.config.saveThrottle || 1000)) {
-      setTimeout(() => this.savePosition(), this.config.saveThrottle || 1000)
+  savePosition() {
+    if(!this.state || this.lastSavedPosition == this.state.position) return
+    if(this.savePromise) return
+    const elapsed = Date.now() - this.lastPositionSave
+    const throttle = this.saveThrottleMs()
+    if(elapsed < throttle) {
+      this.scheduleSave(throttle - elapsed)
       return
     }
-    this.saveState()
+    this.ensureSave()
   }
+
   addAllEventsHandler(handler) {
     this.allEventHandlers.push(handler)
   }

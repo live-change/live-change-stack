@@ -75,7 +75,10 @@
   import { useConfirm } from 'primevue/useconfirm'
   const confirm = useConfirm()
 
-  const workingZone = inject('workingZone')
+  // /_db is mounted with meta.raw, so the app WorkingZone is not a parent.
+  const workingZone = inject('workingZone', null) || {
+    addPromise(_name, promise) { return promise }
+  }
 
   function formatBytes(value) {
     if(value == null || Number.isNaN(value)) return 'n/a'

@@ -4,6 +4,7 @@ const app = App.app()
 import definition from './definition.js'
 
 import { queueDuration, loadMoreAfter } from './config.js'
+import { insertTimerSorted, removeTimerFromQueue } from './timerQueueCore.js'
 
 
 let timersQueue = []
@@ -209,32 +210,22 @@ export async function startTimers() {
 
 export function insertTimer(timer) {
   //console.log("INSERT TIMER", timer, "TO", timersQueue)
-  if(timersById.has(timer.id)) return //throw new Error("INSERT TIMER DUPLICATED!!!")
-  timersById.set(timer.id, timer)
-  for(let i = 0; i < timersQueue.length; i++) {
-    if(timer.timestamp < timersQueue[i].timestamp) {
-      timersQueue.splice(i, 0, timer)
-      if(i === 0) { // reset timers loop
-        resetTimersLoop()
-      }
-      return;
-    }
+  const { inserted, index } = insertTimerSorted(timersQueue, timersById, timer)
+  if (!inserted) return
+  const appended = index === timersQueue.length - 1
+  if (!appended) {
+    if (index === 0) resetTimersLoop()
+    return
   }
-  timersQueue.push(timer)
-  if(!timersLoopStarted) {
+  if (!timersLoopStarted) {
     startTimersLoop()
-  } else if(timer.timestamp - Date.now() < 1000) {
+  } else if (timer.timestamp - Date.now() < 1000) {
     resetTimersLoop()
   }
 }
 
 export function removeTimer(timerId) {
-  for(let i = 0; i < timersQueue; i++) {
-    if(timersQueue[i].id === timerId) {
-      timersQueue.splice(i, 1)
-    }
-  }
-  timersById.delete(timerId)
+  removeTimerFromQueue(timersQueue, timersById, timerId)
 }
 
 definition.afterStart(async () => {

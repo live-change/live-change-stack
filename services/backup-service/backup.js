@@ -12,6 +12,7 @@ import { once } from 'events'
 import { finished } from 'node:stream/promises'
 import os from "os"
 import path from 'path'
+import { removeOldBackups } from './removeOldBackups.js'
 
 function currentBackupPath(backupsDir = './backups/') {
   const dateString = new Date().toISOString().slice(0,-1).replace(/[T:\\.-]/gi, '_')
@@ -54,13 +55,6 @@ async function writeDbBackup(stream) {
     stream.destroy()
     throw err
   }
-}
-
-function parseBackupTimestamp(basename) {
-  const match = basename.match(/^(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d+)/)
-  if(!match) return null
-  const [_full, year, month, day, hour, minute, second, millis] = match
-  return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}.${millis}Z`)
 }
 
 async function createBackup(backupPath, log) {
@@ -129,45 +123,6 @@ async function createBackup(backupPath, log) {
       await log(`cleanup tar tmp failed: ${cleanupErr}`)
     }
     throw err
-  }
-}
-
-async function removeOldBackups(backupsDir = '../../backups/', maxAge = 10*24*3600*1000, minBackups = 10, log) {
-  const resolvedDir = path.resolve(backupsDir)
-  const dirents = await fs.promises.readdir(resolvedDir, { withFileTypes: true })
-  const now = Date.now()
-
-  const backups = []
-  for(const dirent of dirents) {
-    if(!dirent.isFile()) continue
-    const file = dirent.name
-    if(!file.endsWith('.tar.gz')) continue
-    const date = parseBackupTimestamp(file.replace(/\.tar\.gz$/, ''))
-    if(!date || Number.isNaN(date.getTime())) continue
-    backups.push({ file, date })
-  }
-
-  backups.sort((a, b) => a.date - b.date)
-  const olderBackups = backups
-      .slice(0, backups.length - minBackups)
-      .filter(backup => now - backup.date > maxAge)
-  for(const backup of olderBackups) {
-    const backupPath = path.join(resolvedDir, backup.file)
-    console.log("REMOVING OLD BACKUP:", backupPath)
-    if(log) await log(`removeOldBackups removing archive ${backupPath}`)
-    await fse.remove(backupPath)
-  }
-
-  for(const dirent of dirents) {
-    if(!dirent.isDirectory()) continue
-    const name = dirent.name
-    const date = parseBackupTimestamp(name)
-    if(!date || Number.isNaN(date.getTime())) continue
-    if(now - date <= maxAge) continue
-    const dirPath = path.join(resolvedDir, name)
-    console.log("REMOVING OLD BACKUP DIRECTORY:", dirPath)
-    if(log) await log(`removeOldBackups removing stale directory ${dirPath}`)
-    await fse.remove(dirPath)
   }
 }
 

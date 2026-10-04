@@ -251,7 +251,10 @@
   import { useConfirm } from 'primevue/useconfirm'
   const confirm = useConfirm()
 
-  const workingZone = inject('workingZone')
+  // /_db is mounted with meta.raw, so the app WorkingZone is not a parent.
+  const workingZone = inject('workingZone', null) || {
+    addPromise(_name, promise) { return promise }
+  }
 
   function formatBytes(value) {
     if(value == null || Number.isNaN(value)) return 'n/a'
@@ -584,9 +587,18 @@
       acceptClass: 'p-button-success',
       accept: async () => {
         workingZone.addPromise('rebuildIndex', (async () => {
-          await dao.request([dbApi, 'rebuildIndex'], dbName, id)
-          toast.add({ severity:'info', summary: `Index ${id} rebuilt`, life: 1500 })
-          await refreshStorageStats()
+          try {
+            await dao.request([dbApi, 'rebuildIndex'], dbName, id)
+            toast.add({ severity:'info', summary: `Index ${id} rebuilt`, life: 1500 })
+            await refreshStorageStats()
+          } catch(error) {
+            toast.add({
+              severity: 'error',
+              summary: `Index ${id} not rebuilt`,
+              detail: error.message || String(error),
+              life: 3000
+            })
+          }
         })())
       },
       reject: () => {

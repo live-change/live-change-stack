@@ -51,6 +51,29 @@ app.config = {
 }
 ```
 
+## Backup file retention
+
+`@live-change/backup-service` keeps completed `*.tar.gz` archives and deletes leftover timestamp directories / `*.tar.gz.tmp` from interrupted runs. `retentionMs` on the backup service is a **database** cutoff (events / commands / triggers / opLogs after a successful dump), not file retention.
+
+File retention is **ENV > service config > default**. Defaults: 10 archives, 10 days, cleanup incomplete on.
+
+| Knob | ENV | `app.config` `backup` | Default |
+|------|-----|----------------------|---------|
+| completed archives to keep | `BACKUP_MIN_COUNT` | `minBackups` | `10` |
+| max age of extra archives (ms) | `BACKUP_MAX_AGE_MS` | `maxAgeMs` | 10 days |
+| delete leftover dirs / `*.tar.gz.tmp` immediately | `BACKUP_CLEAN_INCOMPLETE` (`0`/`false`/`off` to disable) | `cleanupIncomplete` | `true` |
+
+`BACKUP_MIN_COUNT=0` (or `minBackups: 0`) clamps to **1**. `maxAgeMs: 0` deletes extras immediately, so `minBackups: 1` leaves a single completed archive. Prune runs on service start, before each backup, and after each create attempt.
+
+```javascript
+{
+  name: 'backup',
+  port: 8007,
+  minBackups: 1,
+  maxAgeMs: 0,
+}
+```
+
 ## Example: service options (userIdentification fields)
 
 Service-specific options are passed through to the service definition. Example: custom fields for user identification:
