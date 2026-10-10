@@ -1,4 +1,27 @@
 import ReactiveDao from "@live-change/dao"
+import { INDEX_CREATING, INDEX_UPDATING } from '@live-change/db/lib/Index.js'
+
+function indexCatchUpStateName(state) {
+  if(state === INDEX_CREATING) return 'creating'
+  if(state === INDEX_UPDATING) return 'updating'
+  return state
+}
+
+async function whenIndexesSettledRequest(server, dbName) {
+  const db = server.databases.get(dbName)
+  if(!db) throw new Error('databaseNotFound')
+  // Wake sleeping indexes whose sources became ready during updateServices
+  // (covers the "INDEXES MATCHING, SKIPPING" path, which does not re-fire tryWakeIndexes).
+  await server.tryWakeIndexes(dbName).catch(() => {})
+  const before = []
+  for(const [name, index] of db.indexes.entries()) {
+    if(index.state === INDEX_CREATING || index.state === INDEX_UPDATING) {
+      before.push({ name, state: indexCatchUpStateName(index.state) })
+    }
+  }
+  await db.whenIndexesSettled()
+  return { ok: true, waited: before }
+}
 
 function observableFromAsync(fn) {
   const obs = new ReactiveDao.ObservableValue(undefined)
@@ -120,6 +143,9 @@ function localRequests(server, scriptContext) {
     runOpLogCleaner: async (dbName = null, options = {}) => {
       const result = await server.runOpLogCleaner(dbName, options)
       return { started: result.started, status: result.status }
+    },
+    whenIndexesSettled: async (dbName) => {
+      return whenIndexesSettledRequest(server, dbName)
     },
     createTable: async (dbName, tableName, options = {}) => {
       if(dbName === 'system') throw new Error("system database is not writable")
@@ -377,6 +403,9 @@ function remoteRequests(server) {
     },
     runOpLogCleaner: async (dbName = null, options = {}) => {
       return server.masterDao.request(['database', 'runOpLogCleaner'], dbName, options)
+    },
+    whenIndexesSettled: async (dbName) => {
+      return server.masterDao.request(['database', 'whenIndexesSettled'], dbName)
     },
     createTable: async (dbName, tableName, options = {}) => {
       const db = server.databases.get(dbName)

@@ -181,7 +181,9 @@ There is **no** `create` operation — use `put` for new rows.
 
 ### Schema (usually framework / updaters)
 
-`createDatabase`, `deleteDatabase`, `createTable`, `deleteTable`, `renameTable`, `createIndex`, `deleteIndex`, `renameIndex`, `createLog`, `deleteLog`, `renameLog`, `clearDatabaseOpLogs`, `clearTableOpLog`, `clearIndexOpLog`, `updateDatabaseStorage`, `runOpLogCleaner`.
+`createDatabase`, `deleteDatabase`, `createTable`, `deleteTable`, `renameTable`, `createIndex`, `deleteIndex`, `renameIndex`, `createLog`, `deleteLog`, `renameLog`, `clearDatabaseOpLogs`, `clearTableOpLog`, `clearIndexOpLog`, `updateDatabaseStorage`, `runOpLogCleaner`, `whenIndexesSettled`.
+
+`whenIndexesSettled` waits until every index in the database is `INDEX_READY` or `INDEX_SLEEPING`. It first wakes sleeping indexes whose sources are already ready (covers the updater skip-if-exists path). Returns `{ ok, waited: [{ name, state }] }` — `waited` is the list of indexes that were still `creating`/`updating` when the wait started. The framework calls this after `updateServices` and before `services.start`, so `afterStart` (task restart, cron) does not read a partial index snapshot.
 
 ### Logs
 

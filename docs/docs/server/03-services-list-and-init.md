@@ -156,3 +156,15 @@ export default definition
 ```
 
 The **definition** is what the framework uses; the side-effect imports register models, actions, views, and triggers on that definition.
+
+## Startup sequence
+
+`setupApiServer` starts services in this order:
+
+1. `loadServices` — load service modules
+2. `updateServices` — create/update tables and indexes (`createIndex` skip-if-exists does not wait for READY)
+3. `waitForIndexesSettled` — wake sleeping indexes whose sources are now ready, then wait until none are still catching up (`INDEX_CREATING` / `INDEX_UPDATING`). `INDEX_SLEEPING` (missing source) does not block. Disable with `waitForIndexesOnStart: false`. Older db-server without this request is logged and ignored.
+4. `services.start` — start command/event/index processes
+5. `afterStart` — task restart, cron intervals, and other per-service hooks
+
+Waiting after update and before start prevents `afterStart` from reading a partial snapshot of an index that is still catching up (empty `runningTaskRootsByName` would skip task restart forever).

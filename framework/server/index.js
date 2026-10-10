@@ -6,6 +6,7 @@ import TestServer from './lib/TestServer.js'
 import createLoopbackDao from './lib/createLoopbackDao.js'
 import renderTemplate from './lib/renderTemplate.js'
 import setupApiServer from './lib/setupApiServer.js'
+import { waitForIndexesSettled } from './lib/waitForIndexesSettled.js'
 import setupApiSockJs from './lib/setupApiSockJs.js'
 import setupApiWs from './lib/setupApiWs.js'
 import { setupApiEndpoints, setupEndpointsProxyPaths } from './lib/setupApiEndpoints.js'
@@ -26,6 +27,7 @@ export {
   serverDao,
   renderTemplate,
   setupApiServer,
+  waitForIndexesSettled,
   setupApiSockJs,
   setupApiWs,
   setupApiEndpoints,

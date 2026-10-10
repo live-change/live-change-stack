@@ -4,6 +4,8 @@ import App from "@live-change/framework"
 const app = App.app()
 import * as DaoWebsocket from "@live-change/dao-websocket"
 import { startupLog, startupTimed } from './startupLog.js'
+import { waitForIndexesSettled } from './waitForIndexesSettled.js'
+export { waitForIndexesSettled }
 
 async function setupApiServer(settings) {
   const { services: config, withServices, updateServices } = settings
@@ -36,6 +38,10 @@ async function setupApiServer(settings) {
   } else {
     startupLog('updateServices skipped')
   }
+
+  // Wait until indexes catch up after update (create/skip/wake) so afterStart
+  // (task restart, cron) does not read a partial CREATING/UPDATING snapshot.
+  await startupTimed('waitForIndexesSettled', () => waitForIndexesSettled(app, settings))
 
   startupLog('services.start begin', {
     withServices: !!withServices,
