@@ -32,6 +32,7 @@ import {
 } from "@live-change/server"
 
 import { DaoCache } from '@live-change/dao'
+import { addLocalDevSplitCommandOptions, pickStringVersion, runLocalDevSplit } from './localDevSplit.js'
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection', 
@@ -367,6 +368,16 @@ export default function starter(servicesConfig = null, args = {}, extraArgs = {}
       await setupTelemetry(argv, servicesConfig)
       await setupApp({...argv, uidBorders: '[]'})
       await server({...argv, uidBorders: '[]'}, true)
+    })
+    .command('localDevSplit', 'run API and SSR as separate dev processes', (yargs) => {
+      ssrServerOptions(yargs)
+      apiServerOptions(yargs)
+      startOptions(yargs)
+      addLocalDevSplitCommandOptions(yargs)
+    }, async (argv) => {
+      argv = { ...extraArgs, ...argv }
+      argv.version = pickStringVersion(extraArgs.version, process.env.VERSION, argv.version)
+      await runLocalDevSplit(argv)
     })
     .command('describe', 'describe server', (yargs) => {
       yargs.option('service', {

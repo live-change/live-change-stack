@@ -24,3 +24,5 @@ dist
 .env.test.local
 .env.production.local
 link-deps-4-build.sh
+logs/
+eventloop-stall-*

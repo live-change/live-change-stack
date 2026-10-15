@@ -54,6 +54,8 @@ export async function createApp(config, api, App, createRouter, host, headers, r
 
   app.config.globalProperties.$response = response
   app.config.globalProperties.$host = host
+  app.config.globalProperties.$url = url
+  app.config.globalProperties.$requestHeaders = headers
 
   api.installInstanceProperties(app.config.globalProperties)
 

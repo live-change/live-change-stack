@@ -47,3 +47,13 @@ connection->request({"deviceManager", "registerDeviceConnection"}, args, setting
 ```
 
 Always ensure that the `args` parameter in your DAO `request` or `observable` calls is an array.
+
+## Development process isolation
+
+Production SSR uses a `vm` `RenderContext` pool (`Renderer.withContext`). Development does not: `withContext` is a no-op, and each request calls Vite `ssrLoadModule` plus `transformIndexHtml(url)` in the main isolate.
+
+That is why `localDev` (API + Vite/SSR in one process) leaks over a long session. Vue observers, leftover `renderPage` frames, unique prompt URLs in the Vite module graph, and per-DAO `clientSideDefinition` JSON.parse all share a heap with RocksDB.
+
+Do not put a load balancer in front of Vite in dev — HMR and middleware mode break. The supported local isolation is `localDevSplit` in `@live-change/cli`: a long-lived `localApiServer` process and a restartable `ssrDev` process (no `--withApi`, DAO over `ws://…/api/ws`). See the CLI README for flags, logs, and the death policy.
+
+The API child is sacred: the runner waits indefinitely for DAO websocket ready (index rebuild / cache cleanup / migrations have no startup timeout) and dies if the API dies. The SSR child is disposable.

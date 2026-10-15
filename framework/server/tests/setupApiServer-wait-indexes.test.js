@@ -40,6 +40,18 @@ test('waitForIndexesSettled proceeds when db-server does not implement the reque
   assert.match(result.error, /unknownRequest/)
 })
 
+test('SsrServer prefers string settings.version then process.env.VERSION', () => {
+  const src = fs.readFileSync(new URL('../lib/SsrServer.js', import.meta.url), 'utf8')
+  assert.match(src, /typeof settings\.version === 'string'/)
+  assert.match(src, /process\.env\.VERSION/)
+})
+
+test('setupApiServer version view ignores yargs boolean and uses VERSION env', () => {
+  const src = fs.readFileSync(new URL('../lib/setupApiServer.js', import.meta.url), 'utf8')
+  assert.match(src, /typeof settings\.version === 'string'/)
+  assert.match(src, /process\.env\.VERSION/)
+})
+
 test('setupApiServer waits for indexes between updateServices and services.start', () => {
   const src = fs.readFileSync(new URL('../lib/setupApiServer.js', import.meta.url), 'utf8')
   const update = src.indexOf("startupTimed('updateServices'")

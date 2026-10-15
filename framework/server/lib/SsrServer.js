@@ -18,7 +18,9 @@ class SsrServer {
     this.manifest = manifest
     this.settings = settings
 
-    this.version = settings.version || 'unknown'
+    this.version = (typeof settings.version === 'string' && settings.version)
+      || process.env.VERSION
+      || 'unknown'
     this.express = express
     if(!this.settings.spa || this.settings.dev) {
       this.renderer = new Renderer(manifest, settings)

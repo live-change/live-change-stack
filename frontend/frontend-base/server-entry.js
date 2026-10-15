@@ -41,6 +41,10 @@ export function serverEntry(App, createRouter, config = {}) {
       config, api, App, createRouter, host, headers, response, url
     )
 
+    if (response.status >= 300 && response.status < 400 && response.headers.Location) {
+      return { html: '', data: {}, meta: { headTags: '' }, modules: [], response }
+    }
+
     app.directive('shared-element', {})
 
     // set the router to the desired URL before rendering

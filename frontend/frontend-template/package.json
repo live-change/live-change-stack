@@ -5,6 +5,8 @@
     "memDev": "tsx --inspect --expose-gc server/start.js memDev --enableSessions --initScript ./init.js --dbAccess",
     "localDevInit": "tsx server/start.js localDev --enableSessions --initScript ./init.js --dbAccess",
     "localDev": "tsx server/start.js localDev --enableSessions --dbAccess",
+    "localDevSplit": "node --import tsx server/start.js localDevSplit --enableSessions --wsMaxFrameSize=10485760 --dbAccess --dbBackend rocksdb",
+    "localDevSplitInit": "node --import tsx server/start.js localDevSplit --enableSessions --wsMaxFrameSize=10485760 --initScript ./init.js --dbAccess --dbBackend rocksdb",
     "dev": "tsx --inspect --expose-gc server/start.js dev --enableSessions",
     "ssrDev": "tsx server/start.js ssrDev --enableSessions",
     "serveAllMem": "cross-env NODE_ENV=production node dist/server/start.js ssrServer --withApi --withServices --updateServices --enableSessions --withDb --dbBackend mem --createDb",
