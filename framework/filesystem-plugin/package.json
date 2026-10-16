@@ -1,6 +1,6 @@
 {
   "name": "@live-change/filesystem-plugin",
-  "version": "0.9.232",
+  "version": "0.9.233",
   "description": "",
   "main": "index.js",
   "scripts": {
