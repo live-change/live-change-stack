@@ -1,6 +1,6 @@
 {
   "name": "@live-change/elasticsearch-plugin",
-  "version": "0.9.233",
+  "version": "0.9.234",
   "description": "",
   "main": "index.js",
   "scripts": {
