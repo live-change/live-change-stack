@@ -45,6 +45,6 @@
   "optionalDependencies": {
     "better-sqlite3": "^11.10.0",
     "leveldown": "^6.1.0",
-    "@live-change/rocksdb": "file:../../../rocksdb"
+    "@live-change/rocksdb": "^5.2.2"
   }
 }

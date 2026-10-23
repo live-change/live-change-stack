@@ -64,7 +64,7 @@
     "@live-change/server": "0.9.233"
   },
   "optionalDependencies": {
-    "@live-change/rocksdb": "file:../../../rocksdb",
+    "@live-change/rocksdb": "^5.2.2",
     "better-sqlite3": "^11.10.0",
     "leveldown": "^6.1.0",
     "memdown": "^6.1.1"
