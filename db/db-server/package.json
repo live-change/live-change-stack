@@ -38,19 +38,19 @@
     "vite-plugin-vue-images": "^0.6.1"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.233",
-    "@live-change/dao-message": "^0.9.233",
-    "@live-change/dao-sockjs": "^0.9.233",
-    "@live-change/dao-websocket": "^0.9.233",
-    "@live-change/db": "^0.9.233",
-    "@live-change/db-admin": "^0.9.233",
-    "@live-change/db-client": "^0.9.233",
-    "@live-change/db-store-level": "^0.9.233",
-    "@live-change/db-store-lmdb": "^0.9.233",
-    "@live-change/db-store-observable-db": "^0.9.233",
-    "@live-change/db-store-rbtree": "^0.9.233",
-    "@live-change/db-store-rocksdb": "^0.9.233",
-    "@live-change/db-store-sqlite": "^0.9.233",
+    "@live-change/dao": "0.9.233",
+    "@live-change/dao-message": "0.9.233",
+    "@live-change/dao-sockjs": "0.9.233",
+    "@live-change/dao-websocket": "0.9.233",
+    "@live-change/db": "0.9.233",
+    "@live-change/db-admin": "0.9.233",
+    "@live-change/db-client": "0.9.233",
+    "@live-change/db-store-level": "0.9.233",
+    "@live-change/db-store-lmdb": "0.9.233",
+    "@live-change/db-store-observable-db": "0.9.233",
+    "@live-change/db-store-rbtree": "0.9.233",
+    "@live-change/db-store-rocksdb": "0.9.233",
+    "@live-change/db-store-sqlite": "0.9.233",
     "@live-change/sockjs": "0.4.1",
     "@tailwindcss/vite": "^4.1.0",
     "express": "^4.18.2",
@@ -61,13 +61,13 @@
     "yargs": "^17.7.2"
   },
   "peerDependencies": {
-    "@live-change/server": "0.9.232"
+    "@live-change/server": "0.9.233"
   },
   "optionalDependencies": {
     "better-sqlite3": "^11.10.0",
     "leveldown": "^6.1.0",
     "memdown": "^6.1.1",
-    "rocksdb": "^5.2.1"
+    "@live-change/rocksdb": "file:../../../rocksdb"
   },
   "gitHead": "dce3ca9bbe8c025874a4927dc1b273566d0bee67"
 }

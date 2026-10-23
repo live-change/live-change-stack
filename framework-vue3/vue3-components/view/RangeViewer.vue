@@ -142,6 +142,10 @@
   function itemKeyValue(item, itemIndex) {
     if(typeof props.itemKey === 'function') return props.itemKey(item)
     if(typeof props.itemKey === 'string') return item?.[props.itemKey]
+    if(item && typeof item === 'object') {
+      const id = item.to ?? item.id
+      if(id != null && id !== '') return id
+    }
     return itemIndex
   }
 

@@ -86,7 +86,7 @@ function eventsPathRange(range) {
       <p class="text-center text-surface-500 my-4">No articles yet.</p>
     </template>
     <template #default="{ item: article }">
-      <Card class="mb-2">
+      <Card :key="article.to ?? article.id" class="mb-2">
         <template #content>
           <h3>{{ article.title }}</h3>
           <p class="text-sm text-surface-500">By {{ article.authorProfile?.firstName }}</p>
@@ -102,6 +102,7 @@ Key props:
 | Prop | Default | Description |
 |---|---|---|
 | `pathFunction` | required | `(range) => path` – builds the DAO path for a given range |
+| `itemKey` | `to` / `id` | Vue list key. Default is `item.to ?? item.id`, not the row index — pass a string or function if your items have neither. |
 | `bucketSize` | `20` | Items per page |
 | `canLoadTop` / `canLoadBottom` | `true` | Whether loading in each direction is allowed |
 | `canDropTop` / `canDropBottom` | `false` | Whether to drop pages that scrolled far out of view |

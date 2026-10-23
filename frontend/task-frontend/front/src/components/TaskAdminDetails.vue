@@ -119,6 +119,7 @@
     <div class="mt-2">
       <div class="font-semibold">Subtasks:</div>
       <range-viewer :pathFunction="tasksPathFunction" :key="JSON.stringify(tasksPathConfig)"
+                  item-key="id"
                   :canLoadTop="false" :canDropBottom="false"
                   loadBottomSensorSize="3000px" dropBottomSensorSize="12000px">
         <template #empty>
@@ -128,7 +129,7 @@
         </template>
 
         <template #default="{ item: task }">     
-          <TaskAdminCard :task="task" class="mt-1"  />
+          <TaskAdminCard :key="task.to ?? task.id" :task="task" class="mt-1"  />
         </template>
       </range-viewer>
     </div>    

@@ -13,7 +13,6 @@ function setupApiWs(httpServer, apiServer, options = {}) {
     maxReceivedMessageSize
   })
   wsServer.on("request",(request) => {
-    console.log("WS URI", request.httpRequest.url)
     if(request.httpRequest.url != "/api/ws") return request.reject()
     let serverConnection = new DaoWebsocket.server(request)
     apiServer.handleConnection(serverConnection)

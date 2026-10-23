@@ -21,7 +21,7 @@
       <component :is="taskResultComponent" :task="taskData" :result="taskData.result" :taskType="taskType" />
     </div>
     <div class="ml-6">
-      <Task v-for="task in childTasks" :key="taskId" :task="task" :tasks="allTasks" :taskTypes="taskTypes" />
+      <Task v-for="child in childTasks" :key="child.to ?? child.id" :task="child" :tasks="allTasks" :taskTypes="taskTypes" />
     </div>
   </div>
 </template>

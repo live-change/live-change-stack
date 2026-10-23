@@ -104,7 +104,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
   if(name == 'leveldb') {
     return createDownBackend(levelStore, require('leveldown'))
   } else if(name == 'rocksdb') {
-    return createDownBackend(rocksStore, require('rocksdb'))
+    return createDownBackend(rocksStore, require('@live-change/rocksdb'))
   } else if(name == 'memdown') {
     return createDownBackend(levelStore, require('memdown'))
   } else if(name == 'mem' || name == 'memory') {

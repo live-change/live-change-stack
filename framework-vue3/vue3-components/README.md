@@ -109,7 +109,7 @@ Komponenty widoków są zintegrowane z DAO i `RangeBuckets`:
 
 - **`ScrollLoader`** – ładowanie kolejnych stron danych przy przewijaniu
 - **`VisibleArea`** – reagowanie na widoczność fragmentu DOM
-- **`RangeViewer`** – prezentacja danych podzielonych na zakresy
+- **`RangeViewer`** – prezentacja danych podzielonych na zakresy. Domyślny Vue `:key` to `item.to ?? item.id` (nie indeks na liście), żeby stan UI (np. rozwinięcie) nie skakał przy dopływie nowych wierszy. Nadpisanie: `item-key="id"` albo funkcja.
 
 Użycie `ScrollLoader` w typowym widoku listy:
 

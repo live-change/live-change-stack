@@ -21,6 +21,7 @@
     <!-- <pre>tasksPathConfig = {{ tasksPathConfig }}</pre> -->
 
     <range-viewer :pathFunction="tasksPathFunction" :key="JSON.stringify(tasksPathConfig)"
+                  item-key="id"
                   :canLoadTop="false" :canDropBottom="false"
                   loadBottomSensorSize="3000px" dropBottomSensorSize="12000px">
       <template #empty>
@@ -31,7 +32,7 @@
 
       <template #default="{ item: task }">     
         <!-- <TaskAdminCard :task="task" :tasks="task.subTasks" class="mt-1"  /> -->
-        <TaskAdminCard :task="task" class="mt-1"  />
+        <TaskAdminCard :key="task.to ?? task.id" :task="task" class="mt-1"  />
       </template>
     </range-viewer>
     

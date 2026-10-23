@@ -2,7 +2,7 @@ import { createRequire } from 'module'
 import { rimraf } from 'rimraf'
 
 const require = createRequire(import.meta.url)
-const rocksdb = require('rocksdb')
+const rocksdb = require('@live-change/rocksdb')
 
 export async function openTestDown(dbPath) {
   await rimraf(dbPath)
