@@ -1,6 +1,6 @@
 {
   "name": "@live-change/upload-service",
-  "version": "0.9.234",
+  "version": "0.9.235",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.234",
-    "@live-change/relations-plugin": "^0.9.234",
+    "@live-change/framework": "^0.9.235",
+    "@live-change/relations-plugin": "^0.9.235",
     "pluralize": "^8.0.0",
     "progress-stream": "^2.0.0"
   },
