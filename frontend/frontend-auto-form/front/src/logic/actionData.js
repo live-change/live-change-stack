@@ -29,8 +29,8 @@ export default async function actionData(options) {
     savedDraftToast = "Draft saved",
     discardedDraftToast = "Draft discarded",
 
-    onDone = ({ result, data }) => {},
-    onError = ({ error, data }) => { throw error } ,
+    onDone = () => {},
+    onError = (error) => { throw error },
     onReset = () => {},
 
     onDraftSaved = () => {},

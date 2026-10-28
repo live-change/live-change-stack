@@ -25,14 +25,14 @@
     "access": "public"
   },
   "devDependencies": {
-    "@live-change/rocksdb": "^5.2.2",
+    "@live-change/rocksdb": "5.2.2",
     "p-queue": "^8.1.1",
     "rimraf": "^5.0.5",
     "tape": "^5.7.4"
   },
   "dependencies": {
-    "@live-change/dao": "^0.9.235",
-    "@live-change/flatten-interval-tree": "^0.9.235"
+    "@live-change/dao": "0.9.235",
+    "@live-change/flatten-interval-tree": "0.9.235"
   },
   "gitHead": "dce3ca9bbe8c025874a4927dc1b273566d0bee67"
 }

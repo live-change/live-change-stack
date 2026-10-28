@@ -22,8 +22,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "^0.9.235",
-    "@live-change/relations-plugin": "^0.9.235",
+    "@live-change/framework": "0.9.235",
+    "@live-change/relations-plugin": "0.9.235",
     "pluralize": "^8.0.0"
   },
   "gitHead": "dce3ca9bbe8c025874a4927dc1b273566d0bee67"
