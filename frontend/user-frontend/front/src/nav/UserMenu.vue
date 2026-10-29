@@ -1,87 +1,50 @@
 <template>
   <ul class="list-none p-0 m-0 flex select-none flex-col">
-    <li>
-      <router-link :to="{ name: 'user:identification' }"
-                   data-testid="user-menu-profile"
-                   v-ripple
-                   class="flex px-6 py-2 items-center 
-                          text-surface-600 hover:text-surface-900 hover:bg-surface-100
-                          dark:text-surface-400 dark:hover:text-surface-100 dark:hover:bg-surface-800
-                          font-medium border-round cursor-pointer p-ripple no-underline
-                          transition-colors duration-300 ease-in-out"
-      >
-        <i class="pi pi-user mr-3"></i>
-        <span>{{ t('nav.profile') }}</span>
-      </router-link>
-    </li>
-    <li v-if="!client.user">
-      <router-link :to="{ name: 'user:signUpEmail' }"
-                   v-ripple
-                   class="flex px-6 py-2 items-center 
-                          text-surface-600 hover:text-surface-900 hover:bg-surface-100
-                          dark:text-surface-400 dark:hover:text-surface-100 dark:hover:bg-surface-800
-                          font-medium border-round cursor-pointer p-ripple no-underline
-                          transition-colors duration-300 ease-in-out"
-      >
-        <i class="pi pi-user-plus mr-3"></i>
-        <span>{{ t('nav.signUp') }}</span>
-      </router-link>
-    </li>
-    <li v-if="!client.user">
-      <router-link :to="{ name: 'user:signInEmail' }"
-                   v-ripple
-                   class="flex px-6 py-2 items-center 
-                          text-surface-600 hover:text-surface-900 hover:bg-surface-100
-                          dark:text-surface-400 dark:hover:text-surface-100 dark:hover:bg-surface-800
-                          font-medium border-round cursor-pointer p-ripple no-underline
-                          transition-colors duration-300 ease-in-out"
-      >
-        <i class="pi pi-key mr-3"></i>
-        <span>{{ t('nav.signIn') }}</span>
-      </router-link>
-    </li>
-    <li v-if="client.user">
-      <router-link :to="{ name: 'user:settings' }"
-                   v-ripple
-                   class="flex px-6 py-2 items-center 
-                          text-surface-600 hover:text-surface-900 hover:bg-surface-100
-                          dark:text-surface-400 dark:hover:text-surface-100 dark:hover:bg-surface-800
-                          font-medium border-round cursor-pointer p-ripple no-underline
-                          transition-colors duration-300 ease-in-out"
-      >
-        <i class="pi pi-cog mr-3"></i>
-        <span>{{ t('nav.settings') }}</span>
-      </router-link>
-    </li>
-    <li v-if="client.user">
-      <router-link :to="{ name: 'user:signOut' }"
-                   v-ripple
-                   class="flex px-6 py-2 items-center 
-                   text-surface-600 hover:text-surface-900 hover:bg-surface-100
-                          dark:text-surface-400 dark:hover:text-surface-100 dark:hover:bg-surface-800
-                          font-medium border-round cursor-pointer p-ripple no-underline
-                          transition-colors duration-300 ease-in-out"
-      >
-        <i class="pi pi-power-off mr-3"></i>
-        <span>{{ t('nav.signOut') }}</span>
-      </router-link>
-    </li>
+    <slot name="top" />
+    <UserMenuItem
+      :to="{ name: 'user:identification' }"
+      icon="pi pi-user"
+      data-testid="user-menu-profile"
+    >
+      {{ t('nav.profile') }}
+    </UserMenuItem>
+    <UserMenuItem
+      v-if="!client.user"
+      :to="{ name: 'user:signUpEmail' }"
+      icon="pi pi-user-plus"
+    >
+      {{ t('nav.signUp') }}
+    </UserMenuItem>
+    <UserMenuItem
+      v-if="!client.user"
+      :to="{ name: 'user:signInEmail' }"
+      icon="pi pi-key"
+    >
+      {{ t('nav.signIn') }}
+    </UserMenuItem>
+    <UserMenuItem
+      v-if="client.user"
+      :to="{ name: 'user:settings' }"
+      icon="pi pi-cog"
+    >
+      {{ t('nav.settings') }}
+    </UserMenuItem>
+    <slot name="beforeSignOut" />
+    <UserMenuItem
+      v-if="client.user"
+      :to="{ name: 'user:signOut' }"
+      icon="pi pi-power-off"
+    >
+      {{ t('nav.signOut') }}
+    </UserMenuItem>
   </ul>
 </template>
 
 <script setup>
-
-  import { path, live, actions } from '@live-change/vue3-ssr'
   import { client as useClient } from '@live-change/vue3-ssr'
-  import { toRefs } from '@vueuse/core'
-
   import { useI18n } from 'vue-i18n'
+  import UserMenuItem from './UserMenuItem.vue'
+
   const { t } = useI18n()
-
   const client = useClient()
-
 </script>
-
-<style lang="scss">
-
-</style>

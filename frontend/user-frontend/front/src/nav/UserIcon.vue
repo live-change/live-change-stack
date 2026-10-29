@@ -31,7 +31,14 @@
           </template>
           <template v-slot:default="{ isWorking }">
             <div :style="(isWorking || isLoading) ? 'filter: blur(4px)' : ''" class="working-blur">
-              <UserMenu />
+              <UserMenu>
+                <template #top>
+                  <slot name="menu-top" />
+                </template>
+                <template #beforeSignOut>
+                  <slot name="menu-before-sign-out" />
+                </template>
+              </UserMenu>
             </div>
           </template>
         </working-zone>

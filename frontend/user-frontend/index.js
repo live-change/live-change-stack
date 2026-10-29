@@ -9,7 +9,8 @@ import { notificationTypes } from "./front/src/notifications/notificationTypes.j
 export { NotificationsIcon, SimpleNotification, notificationTypes, UnknownNotification }
 
 import UserIcon from "./front/src/nav/UserIcon.vue"
-export { UserIcon }
+import UserMenuItem from "./front/src/nav/UserMenuItem.vue"
+export { UserIcon, UserMenuItem }
 
 import Password from "./front/src/password/Password.vue"
 export { Password }
