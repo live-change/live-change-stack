@@ -1,6 +1,6 @@
 {
   "name": "@live-change/secret-code-service",
-  "version": "0.9.236",
+  "version": "0.9.237",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/framework": "0.9.236",
+    "@live-change/framework": "^0.9.237",
     "nodemailer": "^6.7.2"
   },
   "gitHead": "dce3ca9bbe8c025874a4927dc1b273566d0bee67"
