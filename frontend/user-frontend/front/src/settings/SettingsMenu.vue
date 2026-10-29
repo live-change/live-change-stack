@@ -35,6 +35,8 @@
         <SettingsMenuItem v-if="client.user" name="user:delete" icon="trash" :label="t('settings.deleteAccount')" />
 
       </ul>
+
+      <ul class="list-none p-0 m-0 border-t border-surface"></ul>
     </div>
 
   </div>

@@ -13,7 +13,7 @@
          class="p-4 md:p-8 grow flex flex-col flex-auto items-center relative">
       <slot></slot>
     </div>
-    <div v-if="pageType === 'wide'" class="relative grow flex flex-col [&>:first-child]:grow [&>:first-child]:flex [&>:first-child]:flex-col">
+    <div v-if="pageType === 'wide'" class="relative grow flex flex-col">
       <slot></slot>
     </div>
     <div>

@@ -22,9 +22,9 @@
   },
   "type": "module",
   "dependencies": {
-    "@live-change/access-control-service": "^0.9.236",
-    "@live-change/framework": "^0.9.236",
-    "@live-change/relations-plugin": "^0.9.236"
+    "@live-change/access-control-service": "0.9.236",
+    "@live-change/framework": "0.9.236",
+    "@live-change/relations-plugin": "0.9.236"
   },
   "gitHead": "dce3ca9bbe8c025874a4927dc1b273566d0bee67"
 }
