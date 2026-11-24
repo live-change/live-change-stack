@@ -89,6 +89,7 @@
     "services/flow-service",
     "services/score-service",
     "services/achievement-service",
+    "services/agent-mcp-service",
     "pattern/pattern",
     "pattern/pattern-db",
     "frontend/frontend-base",

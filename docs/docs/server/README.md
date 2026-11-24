@@ -49,3 +49,4 @@ This manual documents the **server-side** part of the Live Change framework: how
 20. [Service data migrations](/server/20-migrations.html) — `definition.migration`, `migrations` diff, `runMigration` in `changes` / `update`
 21. [Database DAO protocol](/server/21-database-dao.html) — `tableRange`, `tableObject`, `put`, `update` for migrations and low-level DB access
 22. [Flow service](/server/22-flow-service.html) — Graph / Node / Edge persistence, `*Types` config, cascade, uniqueness
+23. [Agent MCP service](/server/23-agent-mcp-service.html) — Shared MCP endpoints, open mode and token sessions, settings snippets

@@ -10,6 +10,7 @@ import ReactiveDao from "@live-change/dao"
 import { combineStoreStats, readStoreStat } from './storeStats.js'
 import { clearOpLogStore } from './clearOpLog.js'
 import MissingSourceError from './MissingSourceError.js'
+import { formatIndexProgress } from './indexProgress.js'
 
 import Debug from 'debug'
 const debug = Debug('db')
@@ -97,6 +98,24 @@ class Database {
       if(index.state === INDEX_CREATING || index.state === INDEX_UPDATING) return false
     }
     return true
+  }
+
+  // Indexes still in INDEX_CREATING or INDEX_UPDATING, with the cursor and
+  // sources they already publish. Nothing here is written on the build path.
+  busyIndexes() {
+    const rows = []
+    for(const index of this.indexes.values()) {
+      if(index.state !== INDEX_CREATING && index.state !== INDEX_UPDATING) continue
+      const progress = formatIndexProgress(index)
+      rows.push({
+        name: index.name,
+        phase: progress.phase || (index.state === INDEX_CREATING ? 'creating' : 'updating'),
+        sources: progress.sources,
+        cursor: progress.cursor,
+        cursorAt: progress.cursorAt
+      })
+    }
+    return rows
   }
 
   /**

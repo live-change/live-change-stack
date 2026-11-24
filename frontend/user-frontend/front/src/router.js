@@ -14,6 +14,7 @@ import feedbackRoutes from "./feedback/routes.js"
 import { passwordResetRoutes, passwordChangeRoutes } from "./password/routes.js"
 import { notificationsSettingsRoutes, notificationsRoutes } from "./notifications/routes.js"
 import localeSettingsRoutes from "./locale/routes.js"
+import mcpTokensRoutes from "./mcpTokens/routes.js"
 
 import { dbAdminRoutes } from "@live-change/db-admin"
 
@@ -41,7 +42,8 @@ export function userRoutes(config = {}) {
         ...connectedRoutes({ ...config, prefix: '' }),
         ...identificationRoutes({ ...config, prefix: '' }),
         ...notificationsSettingsRoutes({ ...config, prefix: '' }),
-        ...localeSettingsRoutes({ ...config, prefix: '' })
+        ...localeSettingsRoutes({ ...config, prefix: '' }),
+        ...mcpTokensRoutes({ ...config, prefix: '' })
       ]
     })
 

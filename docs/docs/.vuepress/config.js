@@ -43,6 +43,7 @@ export default defineUserConfig({
         { text: '17 Email and SMS', link: '/server/17-email-and-sms.md' },
         { text: '17a Notification channels', link: '/server/17a-notification-channels.md' },
         { text: '22 Flow service', link: '/server/22-flow-service.md' },
+        { text: '23 Agent MCP service', link: '/server/23-agent-mcp-service.md' },
       ],
       '/frontend/': [
         { text: 'Frontend manual', link: '/frontend/README.md' },

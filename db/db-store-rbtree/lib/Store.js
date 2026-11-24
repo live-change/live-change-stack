@@ -220,13 +220,15 @@ class RangeObservable extends ReactiveDao.ObservableList {
     }
 
     this.disposed = true
+    this.list = undefined
     const pending = this.refillQueue.splice(0)
     for(const job of pending) job.resolve()
     this.respawnId++
     this.changesStream = null
 
     this.store.rangeObservables.delete(this.rangeKey)
-    let removed = this.store.rangeObservablesTree.remove(this.rangeDescr, this)
+    const removed = this.store.rangeObservablesTree.remove(this.rangeDescr, this)
+    if(!removed) console.error('RANGE TREE LEAK: remove failed for', this.rangeKey)
   }
 
   respawn() {

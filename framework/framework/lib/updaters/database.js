@@ -2,6 +2,7 @@ import * as utils from "../utils.js"
 import Debug from 'debug'
 const debug = Debug('framework:updaters:db')
 import { startupLog, formatMs } from "../utils/startupLog.js"
+import { withStartupPhase } from "../utils/startupProgress.js"
 
 const cartesian =
   (...a) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
@@ -177,6 +178,11 @@ async function databaseUpdater(changes, service, app, force) {
   }
 
   async function doCreateIndexIfNotExists(indexName, functionCode, parameters, config) {
+    return withStartupPhase(`createIndex ${indexName}`, () =>
+      createIndexIfNotExists(indexName, functionCode, parameters, config))
+  }
+
+  async function createIndexIfNotExists(indexName, functionCode, parameters, config) {
     const t0 = Date.now()
     startupLog('databaseUpdater', service.name, 'createIndex', indexName, 'begin')
     try {

@@ -5,6 +5,8 @@ const dbRequests = [
     'clearDatabaseOpLogs',
     'clearTableOpLog',
     'clearIndexOpLog',
+    'compactDatabase',
+    'compactDatabaseRange',
     'updateDatabaseStorage',
     'runOpLogCleaner',
     'createTable',

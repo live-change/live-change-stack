@@ -100,6 +100,16 @@ function localRequests(server, scriptContext) {
       if(!index) throw new Error("indexNotFound")
       return index.clearOpLog(lastTimestamp || Date.now() - 60 * 1000, limit)
     },
+    compactDatabase: async (dbName) => {
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      return { supported: false, backend: null }
+    },
+    compactDatabaseRange: async (dbName) => {
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      return { supported: false, backend: null }
+    },
     updateDatabaseStorage: async (dbName, storagePatch = {}) => {
       if(typeof server.updateDatabaseStorage === 'function') {
         return server.updateDatabaseStorage(dbName, storagePatch)

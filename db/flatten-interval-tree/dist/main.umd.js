@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
     typeof define === 'function' && define.amd ? define(['exports'], factory) :
     (global = global || self, factory(global['@flatten-js/interval-tree'] = {}));
-}(this, function (exports) { 'use strict';
+}(this, (function (exports) { 'use strict';
 
     /**
      * Created by Alex Bol on 4/1/2017.
@@ -610,9 +610,13 @@
             if (search_node.less_than(node)) {
                 return this.tree_search(node.left, search_node);
             }
-            else {
-                return this.tree_search(node.right, search_node);
+            // keys equal but value mismatch: object values have no less_than,
+            // so duplicates of the same interval can sit in either subtree
+            if (node.item.key.equal_to(search_node.item.key)) {
+                return this.tree_search(node.left, search_node)
+                    || this.tree_search(node.right, search_node);
             }
+            return this.tree_search(node.right, search_node);
         }
 
         // Original search_interval method; container res support push() insertion
@@ -796,10 +800,10 @@
         };
     }
 
-    exports.default = IntervalTree;
-    exports.Node = Node;
     exports.Interval = Interval;
+    exports.Node = Node;
+    exports.default = IntervalTree;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
+})));

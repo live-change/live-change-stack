@@ -100,6 +100,7 @@
     "authorization": "AUTHORIZATION",
     "connectedAccounts": "Connected Accounts",
     "changePassword": "Change Password",
+    "mcpTokens": "MCP tokens",
     "deleteAccount": "Delete Account",
     "localeSettings": "Locale settings",
     "language": "Language",
@@ -322,5 +323,29 @@
   "signOut": {
     "title": "Sign Out",
     "signingOut": "Signing out"
+  },
+  "mcpTokens": {
+    "title": "MCP tokens",
+    "intro": "A token is your account. The agent does not send a user id. Copy a snippet into Cursor, Claude Code, or Codex.",
+    "unavailable": "This application does not expose an agent MCP server.",
+    "openOnly": "The MCP endpoints on this server do not require a token.",
+    "openEndpoints": "Open endpoints",
+    "newToken": "New token",
+    "name": "Name",
+    "create": "Create token",
+    "created": "Token created",
+    "copyOnce": "Copy the configuration now. The secret is not shown again.",
+    "bearer": "Bearer token",
+    "secretHidden": "Shown once, right after you create the token",
+    "secretGone": "The secret is not stored, so the tool setup cannot be shown again.",
+    "expand": "Show setup",
+    "collapse": "Hide setup",
+    "list": "Your tokens",
+    "empty": "No tokens yet.",
+    "revoke": "Revoke",
+    "revokeConfirm": "Revoke this token? Clients using it will stop working.",
+    "revoked": "Token revoked",
+    "copy": "Copy",
+    "copied": "Copied"
   }
 }

@@ -28,6 +28,7 @@ const debug = Debug('db-server')
 const debugPut = Debug('db:profilePut')
 import OpLogCleaner from './OpLogCleaner.js'
 import { DEFAULT_OP_LOG_RETENTION_MS } from './opLogRetention.js'
+import { attachStartupProgress } from './startupProgress.js'
 
 class DatabaseStore {
   constructor(path, backends, options) {
@@ -76,6 +77,13 @@ class DatabaseStore {
     const backend = this.backends.default
     if(!backend || typeof backend.envStat !== 'function') return { available: false }
     return backend.envStat(this.dbs.default)
+  }
+  compact(range) {
+    const backend = this.backends.default
+    if(!backend || typeof backend.compact !== 'function') {
+      return { supported: false, backend: backend && backend.name || null }
+    }
+    return backend.compact(this.dbs.default, range)
   }
 }
 
@@ -262,56 +270,67 @@ class Server {
     })
   }
   async initialize(initOptions = {}) {
-    if(!this.config.temporary) {
-      await fs.promises.mkdir(this.config.dbRoot, { recursive: true })
-      const normalMetadataPath = path.resolve(this.config.dbRoot, 'metadata.json')
-      const backupMetadataPath = path.resolve(this.config.dbRoot, 'metadata.json.bak')
-      const normalMetadataExists = await fs.promises.access(normalMetadataPath).catch(err => false)
-      const backupMetadataExists = await fs.promises.access(backupMetadataPath).catch(err => false)
-      if(initOptions.forceNew && (normalMetadataExists || backupMetadataExists))
-        throw new Error("database already exists")
-      const normalMetadata = await fs.promises.readFile(normalMetadataPath, "utf8")
-          .then(json => JSON.parse(json)).catch(err => null)
-      const backupMetadata = await fs.promises.readFile(backupMetadataPath, "utf8")
-          .then(json => JSON.parse(json)).catch(err => null)
-      this.metadata = normalMetadata
-      if(!normalMetadata) this.metadata = backupMetadata
-      if(this.metadata && backupMetadata && this.metadata.timestamp < backupMetadata.timestamp)
-        this.metadata = backupMetadata
-      if(!this.metadata && (normalMetadataExists || backupMetadataExists)) throw new Error("database is broken")
-    }
-    if(!this.metadata) {
-      this.metadata = {
-        databases: {
-          system: {
-            tables: {},
-            indexes: {},
-            logs: {}
+    const progress = attachStartupProgress(this)
+    progress.setStep('reading metadata')
+    try {
+      if(!this.config.temporary) {
+        await fs.promises.mkdir(this.config.dbRoot, { recursive: true })
+        const normalMetadataPath = path.resolve(this.config.dbRoot, 'metadata.json')
+        const backupMetadataPath = path.resolve(this.config.dbRoot, 'metadata.json.bak')
+        const normalMetadataExists = await fs.promises.access(normalMetadataPath).catch(err => false)
+        const backupMetadataExists = await fs.promises.access(backupMetadataPath).catch(err => false)
+        if(initOptions.forceNew && (normalMetadataExists || backupMetadataExists))
+          throw new Error("database already exists")
+        const normalMetadata = await fs.promises.readFile(normalMetadataPath, "utf8")
+            .then(json => JSON.parse(json)).catch(err => null)
+        const backupMetadata = await fs.promises.readFile(backupMetadataPath, "utf8")
+            .then(json => JSON.parse(json)).catch(err => null)
+        this.metadata = normalMetadata
+        if(!normalMetadata) this.metadata = backupMetadata
+        if(this.metadata && backupMetadata && this.metadata.timestamp < backupMetadata.timestamp)
+          this.metadata = backupMetadata
+        if(!this.metadata && (normalMetadataExists || backupMetadataExists)) throw new Error("database is broken")
+      }
+      if(!this.metadata) {
+        this.metadata = {
+          databases: {
+            system: {
+              tables: {},
+              indexes: {},
+              logs: {}
+            }
           }
         }
       }
-    }
-    for(const dbName in this.metadata.databases) {
-      const dbConfig = this.metadata.databases[dbName]
-      this.databases.set(dbName, await this.initDatabase(dbName, dbConfig))
-      this.databasesListObservable.push(dbName)
-    }
-    await this.checkInfoIntegrity()
-    if(this.config.master) {
-      await this.replicator.start()
-    }
-    // Wait for all non-system databases' indexes to settle (INDEX_READY or
-    // INDEX_SLEEPING) before starting the opLog cleaner. Otherwise the
-    // cleaner can delete opLog entries that indexes are still catching up on,
-    // or that sleeping indexes need for their wake-up catch-up.
-    const settlePromises = []
-    for(const [dbName, database] of this.databases) {
-      if(dbName === 'system') continue
-      settlePromises.push(database.whenIndexesSettled())
-    }
-    await Promise.all(settlePromises)
-    if(!initOptions.skipOpLogCleaner) {
-      this.startOpLogCleaner()
+      for(const dbName in this.metadata.databases) {
+        const dbConfig = this.metadata.databases[dbName]
+        progress.setStep(`opening ${dbName}`)
+        this.databases.set(dbName, await this.initDatabase(dbName, dbConfig))
+        this.databasesListObservable.push(dbName)
+      }
+      progress.setStep('checking database info')
+      await this.checkInfoIntegrity()
+      if(this.config.master) {
+        progress.setStep('starting replication')
+        await this.replicator.start()
+      }
+      // Wait for all non-system databases' indexes to settle (INDEX_READY or
+      // INDEX_SLEEPING) before starting the opLog cleaner. Otherwise the
+      // cleaner can delete opLog entries that indexes are still catching up on,
+      // or that sleeping indexes need for their wake-up catch-up.
+      progress.setStep('waiting for indexes')
+      const settlePromises = []
+      for(const [dbName, database] of this.databases) {
+        if(dbName === 'system') continue
+        settlePromises.push(database.whenIndexesSettled())
+      }
+      await Promise.all(settlePromises)
+      if(!initOptions.skipOpLogCleaner) {
+        progress.setStep('starting opLog cleaner')
+        this.startOpLogCleaner()
+      }
+    } finally {
+      progress.clearStep()
     }
   }
 
@@ -658,6 +677,7 @@ class Server {
   }
 
   async close() {
+    if(this.startupProgress) this.startupProgress.stop()
     this.stopOpLogCleaner()
     if(this.http) {
       this.http.server.close()

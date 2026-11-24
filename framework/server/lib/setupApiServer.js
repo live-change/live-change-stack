@@ -4,6 +4,7 @@ import App from "@live-change/framework"
 const app = App.app()
 import * as DaoWebsocket from "@live-change/dao-websocket"
 import { startupLog, startupTimed } from './startupLog.js'
+import { withStartupPhase } from '@live-change/framework/lib/utils/startupProgress.js'
 import { waitForIndexesSettled } from './waitForIndexesSettled.js'
 export { waitForIndexesSettled }
 
@@ -30,36 +31,37 @@ async function setupApiServer(settings) {
 
   const services = new Services(config)
 
-  await startupTimed('loadServices', () => services.loadServices())
+  await withStartupPhase('loadServices', () => startupTimed('loadServices', () => services.loadServices()))
   startupLog('loadServices count=', services.serviceDefinitions?.length)
 
   if(updateServices) {
-    await startupTimed('updateServices', () => services.update())
+    await withStartupPhase('updateServices', () => startupTimed('updateServices', () => services.update()))
   } else {
     startupLog('updateServices skipped')
   }
 
   // Wait until indexes catch up after update (create/skip/wake) so afterStart
   // (task restart, cron) does not read a partial CREATING/UPDATING snapshot.
-  await startupTimed('waitForIndexesSettled', () => waitForIndexesSettled(app, settings))
+  await withStartupPhase('waitForIndexesSettled', () =>
+    startupTimed('waitForIndexesSettled', () => waitForIndexesSettled(app, settings)))
 
   startupLog('services.start begin', {
     withServices: !!withServices,
     stopped: settings.stopped
   })
-  await startupTimed('services.start', () => services.start(withServices
+  await withStartupPhase('services.start', () => startupTimed('services.start', () => services.start(withServices
       ? { runCommands: true, handleEvents: true, indexSearch: true, stopped: settings.stopped }
-      : { runCommands: false, handleEvents: false, indexSearch: false, stopped: true }))
+      : { runCommands: false, handleEvents: false, indexSearch: false, stopped: true })))
 
   if(settings.initScript) {
-    await startupTimed('initScript', async () => {
+    await withStartupPhase('initScript', () => startupTimed('initScript', async () => {
       if(config.init) {
         config.init(await services.getServicesObject())
       } else {
         const initScript = await import(await services.resolve(settings.initScript))
         await (initScript.default || initScript)(await services.getServicesObject())
       }
-    })
+    }))
   }
 
   const apiServerConfig = {

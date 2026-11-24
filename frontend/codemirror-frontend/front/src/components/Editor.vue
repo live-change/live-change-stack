@@ -4,15 +4,18 @@
 
 <script setup>
   import { onMounted, onBeforeUnmount, ref, computed, watch, getCurrentInstance, nextTick } from 'vue'
-  import { EditorState, Compartment } from '@codemirror/state'
+  import { EditorState, Compartment, RangeSetBuilder } from '@codemirror/state'
   import { collab, receiveUpdates, sendableUpdates, getSyncedVersion } from '@codemirror/collab'
   import { EditorView, basicSetup } from 'codemirror'
+  import { MatchDecorator, Decoration, ViewPlugin } from '@codemirror/view'
+  import { highlightTree, tags } from '@lezer/highlight'
+  import { defaultHighlightStyle, HighlightStyle, syntaxHighlighting } from '@codemirror/language'
   import { markdown } from '@codemirror/lang-markdown'
   import { javascript } from '@codemirror/lang-javascript'
   import { html } from '@codemirror/lang-html'
   import { css } from '@codemirror/lang-css'
   import { json } from '@codemirror/lang-json'
-  import { oneDark } from '@codemirror/theme-one-dark'
+  import { oneDark, oneDarkHighlightStyle } from '@codemirror/theme-one-dark'
   import { useApi } from '@live-change/vue3-ssr'
   import RemoteAuthority from '../codemirror/RemoteAuthority.js'
 
@@ -60,31 +63,125 @@
   const languageCompartment = new Compartment()
   const themeCompartment = new Compartment()
 
+  const handlebarsMark = Decoration.mark({
+    class: 'cm-handlebars',
+    attributes: { style: 'color: #b45309' }
+  })
+  // Brackets, numbers and operators are missing from the stock light style.
+  const extraHighlightStyle = HighlightStyle.define([
+    { tag: tags.angleBracket, color: '#708' },
+    { tag: tags.number, color: '#164' },
+    { tag: tags.operator, color: '#a40' }
+  ])
+  const handlebarsDecorator = new MatchDecorator({
+    regexp: /\{\{\{[\s\S]*?\}\}\}|\{\{[\s\S]*?\}\}/g,
+    decoration: handlebarsMark
+  })
+  const handlebarsPlugin = ViewPlugin.fromClass(class {
+    constructor(view) {
+      this.decorations = handlebarsDecorator.createDeco(view)
+    }
+    update(update) {
+      this.decorations = handlebarsDecorator.updateDeco(update, this.decorations)
+    }
+  }, {
+    decorations: plugin => plugin.decorations
+  })
+
   const editorExtensions = computed(() => [
     basicSetup,
     languageCompartment.of(languageExtension(props.language)),
-    themeCompartment.of(props.dark ? oneDark : []),
+    themeCompartment.of(themeExtension(props.dark)),
     collab({ startVersion: version.value, clientID }),
     EditorView.updateListener.of((update) => {
       if(update.docChanged) schedulePush()
     })
   ])
 
+  function usesHandlebars(lang) {
+    return lang === 'html' || lang === 'css' || lang === 'javascript' || lang === 'js'
+  }
+
   function languageExtension(lang) {
+    let support
     switch(lang) {
       case 'markdown':
-        return markdown()
+        support = markdown()
+        break
       case 'javascript':
-        return javascript()
+      case 'js':
+        support = javascript()
+        break
       case 'html':
-        return html()
+        support = html()
+        break
       case 'css':
-        return css()
+        support = css()
+        break
       case 'json':
-        return json()
+        support = json()
+        break
       default:
-        return []
+        support = []
     }
+    return usesHandlebars(lang) ? [support, handlebarsPlugin] : support
+  }
+
+  // Vite can load @codemirror/language twice (different ?v= on the same chunk).
+  // The parser's tree then sits on a StateField the stock highlighter cannot see,
+  // so read whichever language state actually holds a tree.
+  function editorSyntaxTree(state) {
+    const values = state.values
+    if(!values) return null
+    let best = null
+    for(let i = 0; i < values.length; i++) {
+      const value = values[i]
+      if(!value || !value.context || !value.tree || typeof value.tree.iterate != 'function') continue
+      if(!best || value.tree.length > best.length) best = value.tree
+    }
+    return best
+  }
+
+  function syntaxColorExtension(highlighter) {
+    return ViewPlugin.fromClass(class {
+      constructor(view) {
+        this.decorations = this.build(view)
+      }
+      update(update) {
+        this.decorations = this.build(update.view)
+      }
+      build(view) {
+        const tree = editorSyntaxTree(view.state)
+        if(!tree || !tree.length) return Decoration.none
+        const builder = new RangeSetBuilder()
+        const markCache = Object.create(null)
+        let lastTo = -1
+        try {
+          for(const range of view.visibleRanges) {
+            highlightTree(tree, highlighter, (start, end, style) => {
+              if(end <= start || start < lastTo) return
+              lastTo = end
+              builder.add(start, end, markCache[style] || (markCache[style] = Decoration.mark({ class: style })))
+            }, range.from, range.to)
+          }
+        } catch(error) {
+          console.error('Syntax highlight failed', error)
+          return Decoration.none
+        }
+        return builder.finish()
+      }
+    }, {
+      decorations: plugin => plugin.decorations
+    })
+  }
+
+  function themeExtension(dark) {
+    if(dark) return [oneDark, syntaxColorExtension(oneDarkHighlightStyle)]
+    return [
+      syntaxHighlighting(defaultHighlightStyle),
+      syntaxHighlighting(extraHighlightStyle),
+      syntaxColorExtension([defaultHighlightStyle, extraHighlightStyle])
+    ]
   }
 
   async function createView() {
@@ -200,7 +297,7 @@
       if(!view) return
       view.dispatch({
         effects: [
-          themeCompartment.reconfigure(props.dark ? oneDark : [])
+          themeCompartment.reconfigure(themeExtension(props.dark))
         ]
       })
     }
@@ -211,6 +308,13 @@
   .lc-cm-editor {
     border: 1px solid #ddd;
     border-radius: 4px;
+    height: 100%;
     min-height: 300px;
+  }
+  .lc-cm-editor :deep(.cm-editor) {
+    height: 100%;
+  }
+  .lc-cm-editor :deep(.cm-handlebars) {
+    color: #b45309;
   }
 </style>

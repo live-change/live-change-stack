@@ -2,6 +2,7 @@ import path from 'path'
 import DbServer from '@live-change/db-server'
 import App from "@live-change/framework"
 import Dao from '@live-change/dao'
+import { withStartupPhase } from '@live-change/framework/lib/utils/startupProgress.js'
 
 async function setupDbServer(settings) {
   const { dbRoot, dbBackend, dbBackendUrl, dbSlowStart } = settings
@@ -20,10 +21,13 @@ async function setupDbServer(settings) {
     } 
   })
 
-  await server.initialize()
+  await withStartupPhase('opening database', () => server.initialize())
   console.info(`database initialized!`)
 
   const app = App.app()
+  // Expose for in-process diagnostics (dumpRangeObservables).
+  app.dbServer = server
+  if (typeof globalThis !== 'undefined') globalThis.__liveChangeDbServer = server
 
   const localServer = new Dao.ReactiveServer(() => server.createDao('local'))
   const loopback = new Dao.LoopbackConnection('local', localServer, {})

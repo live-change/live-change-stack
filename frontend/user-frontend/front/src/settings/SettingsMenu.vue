@@ -28,6 +28,9 @@
 
         <SettingsMenuItem v-if="client.user" name="user:changePassword" icon="key" :label="t('settings.changePassword')" />
 
+        <SettingsMenuItem v-if="client.user && mcpTokensEnabled"
+                          name="user:mcpTokens" icon="bolt" :label="t('settings.mcpTokens')" />
+
       </ul>
 
       <ul v-if="client.user" class="list-none p-2 m-0 border-t border-surface">
@@ -54,6 +57,7 @@
   const client = useClient()
 
   const clientConfig = api.getServiceDefinition('notification')?.clientConfig
+  const mcpTokensEnabled = !!api.getServiceDefinition('agentMcpServer')
 
   import { useI18n } from 'vue-i18n'
   const { t, availableLocales } = useI18n()

@@ -8,6 +8,7 @@ import Service from "./runtime/Service.js"
 
 import profileLog from "./utils/profileLog.js"
 import { startupLog, formatMs } from "./utils/startupLog.js"
+import { withStartupPhase } from "./utils/startupProgress.js"
 
 import Dao from "./runtime/Dao.js"
 import SessionDao from "./runtime/SessionDao.js"
@@ -182,6 +183,10 @@ class App {
   }
 
   async updateService( service, { updaters, force } = {}) {
+    return withStartupPhase(`updateService ${service.name}`, () => this.runUpdateService(service, { updaters, force }))
+  }
+
+  async runUpdateService( service, { updaters, force } = {}) {
     const serviceT0 = Date.now()
     const profileOp = await this.profileLog.begin({
       operation: "updateService", serviceName: service.name, force

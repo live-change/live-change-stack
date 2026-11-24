@@ -72,8 +72,18 @@ function closeDown(db) {
   })
 }
 
-function createDownBackend(Store, Down) {
+const FULL_COMPACT_START = Buffer.from([0x00])
+const FULL_COMPACT_END = Buffer.from([0xff, 0xff, 0xff, 0xff])
+
+function unsupportedCompact(backend) {
+  return async function compact() {
+    return { supported: false, backend }
+  }
+}
+
+function createDownBackend(Store, Down, name) {
   return {
+    name,
     Store,
     Down,
     createDb(dbPath, options) {
@@ -94,6 +104,18 @@ function createDownBackend(Store, Down) {
     async deleteStore(store) {
       await store.clear()
     },
+    async compact(db, range) {
+      if(!db || typeof db.compactRange !== 'function') {
+        return { supported: false, backend: name }
+      }
+      if(db._opened) await db._opened
+      const start = range && range.start != null ? range.start : FULL_COMPACT_START
+      const end = range && range.end != null ? range.end : FULL_COMPACT_END
+      await new Promise((resolve, reject) => {
+        db.compactRange(start, end, err => err ? reject(err) : resolve())
+      })
+      return { supported: true, backend: name }
+    },
     envStat(db) {
       return dirFileStat(db && db.path)
     }
@@ -102,13 +124,14 @@ function createDownBackend(Store, Down) {
 
 function createBackend({ name, url, maxDbs, mapSize }) {
   if(name == 'leveldb') {
-    return createDownBackend(levelStore, require('leveldown'))
+    return createDownBackend(levelStore, require('leveldown'), 'leveldb')
   } else if(name == 'rocksdb') {
-    return createDownBackend(rocksStore, require('@live-change/rocksdb'))
+    return createDownBackend(rocksStore, require('@live-change/rocksdb'), 'rocksdb')
   } else if(name == 'memdown') {
-    return createDownBackend(levelStore, require('memdown'))
+    return createDownBackend(levelStore, require('memdown'), 'memdown')
   } else if(name == 'mem' || name == 'memory') {
     return {
+      name: 'memory',
       Store: rbTreeStore,
       createDb(path, options) {
         const db = {}
@@ -126,10 +149,12 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       },
       async deleteStore(store) {
       },
+      compact: unsupportedCompact('memory'),
       envStat: unavailableEnvStat
     }
   } else if(name == 'lmdb') {
     return {
+      name: 'lmdb',
       lmdb,
       Store: lmdbStore,
       createDb(dbPath, options) {
@@ -187,6 +212,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       async deleteStore(store) {
         store.lmdb.drop()
       },
+      compact: unsupportedCompact('lmdb'),
       envStat(env) {
         if(!env || typeof env.info !== 'function') return unavailableEnvStat()
         const info = env.info()
@@ -220,6 +246,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
     const Store = require('@live-change/db-store-observable-db')
     const connection = new Store.Connection(url || 'ws://localhost:3530/api/ws')
     return {
+      name: 'observabledb',
       Store,
       connection,
       createDb(path, options) {
@@ -256,11 +283,13 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       deleteStore(store) {
         return connection.deleteStore(store.databaseName, store.storeName)
       },
+      compact: unsupportedCompact('observabledb'),
       envStat: unavailableEnvStat
     }
   } else if(name == 'sqlite') {
     const Database = require('better-sqlite3')
     return {
+      name: 'sqlite',
       Store: sqliteStore,
       Database,
       createDb(dbPath, options) {
@@ -289,6 +318,7 @@ function createBackend({ name, url, maxDbs, mapSize }) {
       async deleteStore(store) {
         store.drop()
       },
+      compact: unsupportedCompact('sqlite'),
       envStat(db) {
         if(!db || typeof db.pragma !== 'function') return unavailableEnvStat()
         const pageCount = db.pragma('page_count', { simple: true })

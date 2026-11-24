@@ -151,6 +151,74 @@ function computeCutoffs({ lastEventId, lastTriggerTimestamp, lastCommandTimestam
   }
 }
 
+async function clearRetainedData(snapshot) {
+  const lastEventId = snapshot ? snapshot.lastEventId : await getLastEventId()
+  const lastTriggerTimestamp = snapshot ? snapshot.lastTriggerTimestamp : await getLastTriggerTimestamp()
+  const lastCommandTimestamp = snapshot ? snapshot.lastCommandTimestamp : await getLastCommandTimestamp()
+
+  console.log("====== CLEAR STATS:")
+  console.log("Last event id:", lastEventId)
+  console.log("Last trigger timestamp:", lastTriggerTimestamp)
+  console.log("Last command timestamp:", lastCommandTimestamp)
+
+  const cutoffs = computeCutoffs({ lastEventId, lastTriggerTimestamp, lastCommandTimestamp })
+
+  if(cutoffs.eventsBefore) console.log("Clear events before", new Date(+(cutoffs.eventsBefore.split(':')[0])))
+  if(cutoffs.triggersBefore) console.log("Clear triggers before", cutoffs.triggersBefore)
+  if(cutoffs.commandsBefore) console.log("Clear commands before", cutoffs.commandsBefore)
+  if(cutoffs.eventReportsCommandsBefore) {
+    console.log("Clear eventReports (commands) before", cutoffs.eventReportsCommandsBefore)
+  }
+  if(cutoffs.eventReportsTriggersBefore) {
+    console.log("Clear eventReports (triggers) before", cutoffs.eventReportsTriggersBefore)
+  }
+
+  console.log("====== CLEARING:")
+  console.log("Last remaining event id:", cutoffs.eventsBefore)
+  console.log("Last remaining trigger timestamp:", cutoffs.triggersBefore)
+  console.log("Last remaining command timestamp:", cutoffs.commandsBefore)
+
+  if(shouldClear('clearEventReports')) {
+    await backupLog('clearEventReports start')
+    await removeOldEventReports(
+      cutoffs.eventReportsCommandsBefore,
+      cutoffs.eventReportsTriggersBefore,
+      { delay: 10 }
+    )
+    await backupLog('clearEventReports done')
+  }
+
+  if(shouldClear('clearCommands') && cutoffs.commandsBefore) {
+    await removeOldCommands(cutoffs.commandsBefore, { delay: 10 })
+  }
+  if(shouldClear('clearTriggers') && cutoffs.triggersBefore) {
+    await removeOldTriggers(cutoffs.triggersBefore, { delay: 10 })
+  }
+  if(shouldClear('clearEvents') && cutoffs.eventsBefore) {
+    await removeOldEvents(cutoffs.eventsBefore)
+  }
+  if(shouldClear('clearOpLogs') && cutoffs.opLogRetentionMs !== null) {
+    await removeOldOpLogs(cutoffs.opLogRetentionMs)
+  }
+}
+
+const COMPACT_TIMEOUT_MS = 12 * 60 * 60 * 1000
+
+async function compactDatabase() {
+  await backupLog('compactDatabase start')
+  try {
+    const result = await app.dao.requestWithSettings(
+      { requestTimeout: COMPACT_TIMEOUT_MS },
+      ['database', 'compactDatabase'],
+      app.databaseName
+    )
+    await backupLog('compactDatabase ' + JSON.stringify(result))
+  } catch(err) {
+    const detail = err && err.stack ? err.stack : String(err)
+    await backupLog(`compactDatabase failed: ${detail}`)
+  }
+}
+
 function doBackup() {
   console.log("DOING BACKUP!")
   if(currentBackup) return currentBackup
@@ -159,61 +227,16 @@ function doBackup() {
   currentBackup = {
     path, filename,
     promise: queue.add(async () => {
-      let lastEventId = await getLastEventId()
-      let lastTriggerTimestamp = await getLastTriggerTimestamp()
-      let lastCommandTimestamp = await getLastCommandTimestamp()
-
+      const lastEventId = await getLastEventId()
+      const lastTriggerTimestamp = await getLastTriggerTimestamp()
+      const lastCommandTimestamp = await getLastCommandTimestamp()
       await pruneBackupFiles()
       try {
         await createBackup(path, backupLog)
       } finally {
         await pruneBackupFiles()
       }
-
-      console.log("====== CLEAR STATS:")
-      console.log("Last event id:", lastEventId)
-      console.log("Last trigger timestamp:", lastTriggerTimestamp)
-      console.log("Last command timestamp:", lastCommandTimestamp)
-
-      const cutoffs = computeCutoffs({ lastEventId, lastTriggerTimestamp, lastCommandTimestamp })
-
-      if(cutoffs.eventsBefore) console.log("Clear events before", new Date(+(cutoffs.eventsBefore.split(':')[0])))
-      if(cutoffs.triggersBefore) console.log("Clear triggers before", cutoffs.triggersBefore)
-      if(cutoffs.commandsBefore) console.log("Clear commands before", cutoffs.commandsBefore)
-      if(cutoffs.eventReportsCommandsBefore) {
-        console.log("Clear eventReports (commands) before", cutoffs.eventReportsCommandsBefore)
-      }
-      if(cutoffs.eventReportsTriggersBefore) {
-        console.log("Clear eventReports (triggers) before", cutoffs.eventReportsTriggersBefore)
-      }
-
-      console.log("====== CLEARING:")
-      console.log("Last remaining event id:", cutoffs.eventsBefore)
-      console.log("Last remaining trigger timestamp:", cutoffs.triggersBefore)
-      console.log("Last remaining command timestamp:", cutoffs.commandsBefore)
-
-      if(shouldClear('clearEventReports')) {
-        await backupLog('clearEventReports start')
-        await removeOldEventReports(
-          cutoffs.eventReportsCommandsBefore,
-          cutoffs.eventReportsTriggersBefore,
-          { delay: 10 }
-        )
-        await backupLog('clearEventReports done')
-      }
-
-      if(shouldClear('clearCommands') && cutoffs.commandsBefore) {
-        await removeOldCommands(cutoffs.commandsBefore, { delay: 10 })
-      }
-      if(shouldClear('clearTriggers') && cutoffs.triggersBefore) {
-        await removeOldTriggers(cutoffs.triggersBefore, { delay: 10 })
-      }
-      if(shouldClear('clearEvents') && cutoffs.eventsBefore) {
-        await removeOldEvents(cutoffs.eventsBefore)
-      }
-      if(shouldClear('clearOpLogs') && cutoffs.opLogRetentionMs !== null) {
-        await removeOldOpLogs(cutoffs.opLogRetentionMs)
-      }
+      await clearRetainedData({ lastEventId, lastTriggerTimestamp, lastCommandTimestamp })
     })
   }
   currentBackup.promise.then(async () => {
@@ -234,6 +257,29 @@ function doBackup() {
   return currentBackup
 }
 
+function cleanWithoutBackup() {
+  console.log("CLEAN WITHOUT BACKUP!")
+  if(currentBackup) return currentBackup
+  currentBackup = {
+    path: null,
+    filename: 'cleanWithoutBackup',
+    promise: queue.add(async () => {
+      await clearRetainedData()
+      await compactDatabase()
+    })
+  }
+  currentBackup.promise.then(() => {
+    console.log("CLEAN FINISHED!")
+    currentBackup = null
+  }).catch(async err => {
+    const detail = err && err.stack ? err.stack : String(err)
+    console.error("CLEAN FAILED:", err)
+    await backupLog(`clean failed: ${detail}`)
+    currentBackup = null
+  })
+  return currentBackup
+}
+
 expressApp.get('/backup/doBackup', async (req, res) => {
   if(currentBackup) {
     res.status(200).send('Backup in progress: ' + currentBackup.filename)
@@ -241,6 +287,15 @@ expressApp.get('/backup/doBackup', async (req, res) => {
   }
   await queue.add(() => doBackup())
   res.status(200).send('Creating backup: '+currentBackup.filename)
+})
+
+expressApp.get('/backup/cleanWithoutBackup', async (req, res) => {
+  if(currentBackup) {
+    res.status(200).send('Clean or backup in progress: ' + currentBackup.filename)
+    return
+  }
+  await queue.add(() => cleanWithoutBackup())
+  res.status(200).send('Clean started: ' + currentBackup.filename)
 })
 
 expressApp.get('/backup/latest', async (req, res) => {

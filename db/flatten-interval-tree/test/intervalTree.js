@@ -229,4 +229,43 @@ describe('#IntervalTree', function() {
         expect(intervalTree3.exist([2, 5], 50)).to.be.true;
         expect(intervalTree3.exist([2, 5], 25)).to.be.false;
     });
+    it('May remove all duplicate object values sharing one interval', function () {
+        const tree = new IntervalTree();
+        const key = ['0001793783781512:', '\u00ff\u00ff\u00ff\u00ff'];
+        const values = [];
+        for (let i = 0; i < 114; i++) {
+            const value = { id: 'dup' + i };
+            tree.insert(key, value);
+            values.push(value);
+        }
+        expect(tree.size).to.equal(114);
+        let missed = 0;
+        for (const value of values) {
+            if (!tree.remove(key, value)) missed++;
+        }
+        expect(missed).to.equal(0);
+        expect(tree.size).to.equal(0);
+        expect(tree.isEmpty()).to.be.true;
+    });
+    it('May remove unique string intervals while duplicate object values sit in the tree', function () {
+        const tree = new IntervalTree();
+        const shared = ['0001793783781512:', '\u00ff\u00ff\u00ff\u00ff'];
+        for (let i = 0; i < 40; i++) {
+            tree.insert(shared, { id: 'live' + i });
+        }
+        const uniques = [];
+        for (let i = 0; i < 200; i++) {
+            const gt = '000179381' + String(i).padStart(10, '0') + ':000000';
+            const key = [gt, '\u00ff\u00ff\u00ff\u00ff'];
+            const value = { id: 'u' + i };
+            tree.insert(key, value);
+            uniques.push({ key, value });
+        }
+        let missed = 0;
+        for (const { key, value } of uniques) {
+            if (!tree.remove(key, value)) missed++;
+        }
+        expect(missed).to.equal(0);
+        expect(tree.size).to.equal(40);
+    });
 });

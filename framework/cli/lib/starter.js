@@ -11,6 +11,7 @@ import YAML from 'yaml'
 import { createProxyMiddleware } from 'http-proxy-middleware'
 import { readFile } from 'fs/promises'
 import App from '@live-change/framework'
+import { pushStartupPhase, clearStartupPhases } from '@live-change/framework/lib/utils/startupProgress.js'
 const app = App.app()
 
 import {
@@ -685,6 +686,8 @@ export async function describe(argv) {
 }
 
 export async function apiServer(argv) {
+  pushStartupPhase('starting server')
+  try {
   if(globalServicesConfig) argv.services = globalServicesConfig
 
   const { apiPort, apiHost } = argv
@@ -705,10 +708,14 @@ export async function apiServer(argv) {
 
   httpServer.listen(apiPort, apiHost)
   console.log(`Api server listening on ${apiHost}:${apiPort}`)
+  } finally {
+    clearStartupPhases()
+  }
 }
 
 export async function server(argv, dev) {
-
+  pushStartupPhase('starting server')
+  try {
   if(globalServicesConfig) argv.services = globalServicesConfig
 
   const { ssrRoot, ssrPort, ssrHost, apiHost, apiPort } = argv
@@ -780,6 +787,9 @@ export async function server(argv, dev) {
   httpServer.listen(ssrPort, ssrHost)
 
   console.log("LISTENING ON ",`${ssrHost}:${ssrPort} link: http://${ssrHost}:${ssrPort}/`)
+  } finally {
+    clearStartupPhases()
+  }
 }
 
 export async function prerender(argv) {

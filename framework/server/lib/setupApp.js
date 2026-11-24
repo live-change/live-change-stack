@@ -4,6 +4,7 @@ import { hashCode, encodeNumber, uidGenerator }from '@live-change/uid'
 
 import setupDbServer from './setupDbServer.js'
 import setupDbClient from './setupDbClient.js'
+import { withStartupPhase } from '@live-change/framework/lib/utils/startupProgress.js'
 
 import Debug from 'debug'
 const debug = Debug('server:app')
@@ -29,7 +30,7 @@ export async function setupAppDao(settings, env = process.env) {
   if(settings.withDb) {
     await setupDbServer(settings)
   } else {
-    await setupDbClient(settings)
+    await withStartupPhase('opening database', () => setupDbClient(settings))
   }
 }
 

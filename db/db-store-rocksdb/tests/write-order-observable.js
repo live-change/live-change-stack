@@ -77,7 +77,6 @@ test("disposed RangeObservable ignores in-flight putObject", async t => {
   await rangeObservable.readPromise
   t.deepEqual(rangeObservable.list.map(o => o.id), ['a', 'c'], 'initial range')
 
-  const initial = rangeObservable.list.slice()
   let releaseRead
   rangeObservable.readPromise = new Promise(resolve => { releaseRead = resolve })
   const inFlight = rangeObservable.putObject({ id: 'b', v: 2 })
@@ -85,7 +84,7 @@ test("disposed RangeObservable ignores in-flight putObject", async t => {
   t.ok(rangeObservable.disposed, 'observable disposed while putObject awaits')
   releaseRead()
   await inFlight
-  t.deepEqual(rangeObservable.list, initial, 'disposed observable list is not mutated')
+  t.equal(rangeObservable.list, undefined, 'disposed observable list is released')
 
   await closeTestDown(down, dbPath)
 })

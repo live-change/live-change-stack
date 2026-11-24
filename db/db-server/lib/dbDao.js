@@ -137,6 +137,19 @@ function localRequests(server, scriptContext) {
       if(!index) throw new Error("indexNotFound")
       return index.clearOpLog(lastTimestamp || Date.now() - 60 * 1000, limit)
     },
+    compactDatabase: async (dbName) => {
+      if(!server.databases.get(dbName)) throw new Error('databaseNotFound')
+      const dbStore = server.databaseStores.get(dbName)
+      if(!dbStore) throw new Error('databaseNotFound')
+      return dbStore.compact()
+    },
+    compactDatabaseRange: async (dbName, start, end) => {
+      if(!server.databases.get(dbName)) throw new Error('databaseNotFound')
+      const dbStore = server.databaseStores.get(dbName)
+      if(!dbStore) throw new Error('databaseNotFound')
+      if(start == null || end == null) throw new Error('rangeRequired')
+      return dbStore.compact({ start, end })
+    },
     updateDatabaseStorage: async (dbName, storagePatch = {}) => {
       return server.updateDatabaseStorage(dbName, storagePatch)
     },
@@ -397,6 +410,17 @@ function remoteRequests(server) {
       if(!index) throw new Error("indexNotFound")
       if(typeof lastTimestamp == 'string') lastTimestamp = new Date(lastTimestamp)
       return server.masterDao.request(['database', 'clearIndexOpLog'], dbName, indexName, lastTimestamp, limit)
+    },
+    compactDatabase: async (dbName) => {
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      return server.masterDao.request(['database', 'compactDatabase'], dbName)
+    },
+    compactDatabaseRange: async (dbName, start, end) => {
+      const db = server.databases.get(dbName)
+      if(!db) throw new Error('databaseNotFound')
+      if(start == null || end == null) throw new Error('rangeRequired')
+      return server.masterDao.request(['database', 'compactDatabaseRange'], dbName, start, end)
     },
     updateDatabaseStorage: async (dbName, storagePatch = {}) => {
       return server.masterDao.request(['database', 'updateDatabaseStorage'], dbName, storagePatch)

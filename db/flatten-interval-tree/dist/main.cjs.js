@@ -608,9 +608,13 @@ class IntervalTree {
         if (search_node.less_than(node)) {
             return this.tree_search(node.left, search_node);
         }
-        else {
-            return this.tree_search(node.right, search_node);
+        // keys equal but value mismatch: object values have no less_than,
+        // so duplicates of the same interval can sit in either subtree
+        if (node.item.key.equal_to(search_node.item.key)) {
+            return this.tree_search(node.left, search_node)
+                || this.tree_search(node.right, search_node);
         }
+        return this.tree_search(node.right, search_node);
     }
 
     // Original search_interval method; container res support push() insertion
@@ -794,6 +798,6 @@ class IntervalTree {
     };
 }
 
-exports.default = IntervalTree;
-exports.Node = Node;
 exports.Interval = Interval;
+exports.Node = Node;
+exports.default = IntervalTree;

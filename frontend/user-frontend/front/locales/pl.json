@@ -100,6 +100,7 @@
     "authorization": "AUTORYZACJA",
     "connectedAccounts": "Połączone konta",
     "changePassword": "Zmień hasło",
+    "mcpTokens": "Tokeny MCP",
     "deleteAccount": "Usuń konto",
     "localeSettings": "Ustawienia lokalizacji",
     "language": "Język",
@@ -322,5 +323,29 @@
   "signOut": {
     "title": "Wyloguj się",
     "signingOut": "Wylogowywanie"
+  },
+  "mcpTokens": {
+    "title": "Tokeny MCP",
+    "intro": "Token to Twoje konto. Agent nie podaje id użytkownika. Skopiuj wstawkę do Cursora, Claude Code albo Codex.",
+    "unavailable": "Ta aplikacja nie wystawia serwera agent MCP.",
+    "openOnly": "Endpointy MCP na tym serwerze nie wymagają tokenu.",
+    "openEndpoints": "Otwarte endpointy",
+    "newToken": "Nowy token",
+    "name": "Nazwa",
+    "create": "Utwórz token",
+    "created": "Token utworzony",
+    "copyOnce": "Skopiuj konfigurację teraz. Sekret nie będzie pokazany ponownie.",
+    "bearer": "Token Bearer",
+    "secretHidden": "Widoczny tylko raz, zaraz po utworzeniu",
+    "secretGone": "Sekret nie jest przechowywany, więc konfiguracji narzędzi nie da się pokazać ponownie.",
+    "expand": "Pokaż konfigurację",
+    "collapse": "Ukryj konfigurację",
+    "list": "Twoje tokeny",
+    "empty": "Nie ma jeszcze tokenów.",
+    "revoke": "Unieważnij",
+    "revokeConfirm": "Unieważnić ten token? Klienty, które go używają, przestaną działać.",
+    "revoked": "Token unieważniony",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano"
   }
 }

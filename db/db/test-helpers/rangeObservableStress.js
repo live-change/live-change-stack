@@ -276,4 +276,40 @@ export function runRangeObservableStressSuite({ makeStore, cleanup, label }) {
       await cleanup(ctx)
     }
   })
+
+  test(`${prefix}: sliding oplog windows release tree nodes and lists`, async t => {
+    t.plan(5)
+    const ctx = await makeStore(`test-stress-slide-${label}.db`)
+    const { store } = ctx
+    try {
+      const n = 2000
+      const limit = 128
+      for (let i = 0; i < n + limit; i++) await store.put({ id: pad(i), v: i })
+      const reader = { notify() {} }
+      let prev = null
+      let listsKept = 0
+      for (let i = 0; i < n; i++) {
+        const obs = store.rangeObservable({ gt: pad(i), limit })
+        obs.observe(reader)
+        if (obs.readPromise) await obs.readPromise
+        if (prev) {
+          prev.unobserve(reader)
+          if (prev.list) listsKept++
+        }
+        prev = obs
+      }
+      t.equal(listsKept, 0, 'disposed windows dropped their lists')
+      t.equal(store.rangeObservables.size, 1, 'map holds only the live window')
+      t.equal(store.rangeObservablesTree.size, 1, 'tree holds only the live window')
+      let disposedInTree = 0
+      store.rangeObservablesTree.forEach((key, value) => {
+        if (value && value.disposed) disposedInTree++
+      })
+      t.equal(disposedInTree, 0, 'no disposed ranges remain in the tree')
+      if (prev) prev.unobserve(reader)
+      t.equal(store.rangeObservables.size, 0, 'map empty after last unobserve')
+    } finally {
+      await cleanup(ctx)
+    }
+  })
 }
