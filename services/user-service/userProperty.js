@@ -42,7 +42,8 @@ definition.processor(function(service, app) {
         service.views[viewName] = new ViewDefinition({
           name: viewName,
           access(params, context) {
-            if(!context.client.user) return false
+            if(context.visibilityTest) return true
+            if(!context.client?.user) return false
             return config.userReadAccess ? config.userReadAccess(params, context) : true
           },
           daoPath(params, { client, context }) {

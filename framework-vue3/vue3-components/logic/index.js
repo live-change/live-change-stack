@@ -10,6 +10,9 @@ export { Loading, LoadingZone, WorkingZone, LoadingWorkingZone, Observe, Externa
 import { analytics, useAnalytics, installRouterAnalytics } from "./analytics.js"
 export { analytics, useAnalytics, installRouterAnalytics }
 
+import { trackForm, formErrorName } from "./trackForm.js"
+export { trackForm, formErrorName }
+
 import { synchronized } from "./synchronized.js"
 export { synchronized }
 

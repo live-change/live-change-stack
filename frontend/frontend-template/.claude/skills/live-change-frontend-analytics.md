@@ -1,4 +1,5 @@
 ---
+name: live-change-frontend-analytics
 description: Integrate analytics tracking with analytics.emit and provider wiring
 ---
 
@@ -31,7 +32,10 @@ Standard built-in events:
 | `pageView` | route `to` object | On route change (automatic in App.vue) |
 | `user:identification` | `{ user, session, identification, contacts }` | When user identity is known |
 | `consent` | `{ analytics: boolean }` | When user grants/denies tracking consent |
-| `locale:change` | locale settings object | When language/locale changes |
+| `form` | `{ service, action, ...context }` | A real save or submit has started. Field values stay out |
+| `formDone` | same payload | The command was accepted |
+| `formError` | same payload plus `error` | Validation or the command failed. `error` is a property name or `unknownError` |
+| `locale:change` | `{ language }` | Only when the language code changes |
 
 ## Step 2 – Wire user identification in App.vue
 
@@ -69,51 +73,116 @@ Create a file like `src/analytics/posthog.js`:
 import { analytics } from '@live-change/vue3-components'
 import posthog from 'posthog-js'
 
-posthog.init('phc_YOUR_KEY', {
-  api_host: 'https://eu.i.posthog.com',
-  person_profiles: 'always'
-})
+// Set per project. An empty key keeps the starter from sending events.
+const POSTHOG_KEY = ''
 
-// Page views
-analytics.on('pageView', (to) => {
-  posthog.register({
-    route: { name: to.name, params: to.params }
+function isAnalyticsGranted(value) {
+  return value === true || value === 'true'
+}
+
+// contactsShared rows are { type, id }, not arrays.
+function sharedContact(list, type) {
+  const row = (list ?? []).find(item => item?.type === type)
+  if (!row) return undefined
+  return row.id || row.email || row.phone
+}
+
+function personName(record) {
+  if (record?.name) return record.name
+  const parts = [record?.firstName, record?.lastName].filter(Boolean)
+  return parts.length ? parts.join(' ') : undefined
+}
+
+if (typeof window !== 'undefined' && POSTHOG_KEY) {
+  posthog.init(POSTHOG_KEY, {
+    api_host: 'https://eu.i.posthog.com',
+    ui_host: 'https://eu.posthog.com',
+    // Pending and rejected visitors are counted without a cookie. Opt-in switches to cookies.
+    cookieless_mode: 'on_reject',
+    opt_out_capturing_by_default: true,
+    person_profiles: 'identified_only',
+    capture_pageview: false
   })
-})
 
-// User identification
-analytics.on('user:identification', (identification) => {
-  if (!identification.user) {
-    posthog.reset()
-    return
+  let lastIdentification = null
+  let analyticsGranted = false
+  let hadIdentifiedUser = false
+
+  let lastPageviewUrl = ''
+
+  function capturePageview() {
+    const url = window.location.href
+    if (url === lastPageviewUrl) return
+    lastPageviewUrl = url
+    posthog.capture('$pageview', { $current_url: url })
   }
-  posthog.identify(identification.user, {
-    firstName: identification.identification?.firstName,
-    lastName: identification.identification?.lastName,
+
+  capturePageview()
+
+  function applyIdentification() {
+    if (!lastIdentification?.user) {
+      if (hadIdentifiedUser) {
+        posthog.reset()
+        hadIdentifiedUser = false
+      }
+      return
+    }
+    if (!analyticsGranted) return
+    const record = lastIdentification.identification
+    posthog.identify(lastIdentification.user, {
+      user: lastIdentification.user,
+      email: sharedContact(record?.contactsShared, 'email')
+        || (lastIdentification.contacts ?? []).find(c => c.contactType === 'email')?.email,
+      phone: sharedContact(record?.contactsShared, 'phone')
+        || (lastIdentification.contacts ?? []).find(c => c.contactType === 'phone')?.phone,
+      firstName: record?.firstName,
+      lastName: record?.lastName,
+      name: personName(record),
+      title: record?.title
+    })
+    hadIdentifiedUser = true
+  }
+
+  analytics.on('consent', (payload) => {
+    analyticsGranted = isAnalyticsGranted(payload?.analytics)
+    if (analyticsGranted) {
+      posthog.opt_in_capturing()
+      applyIdentification()
+    } else {
+      posthog.opt_out_capturing()
+    }
   })
-})
 
-// Consent
-analytics.on('consent', (payload) => {
-  if (payload?.analytics === true) {
-    posthog.opt_in_capturing()
-  } else {
-    posthog.opt_out_capturing()
-  }
-})
+  analytics.on('user:identification', (identification) => {
+    lastIdentification = identification
+    applyIdentification()
+  })
 
-// Catch-all for custom events
-const ignored = ['user:identification', 'pageView', 'consent']
-analytics.on('*', (type, event) => {
-  if (ignored.includes(type)) return
-  posthog.capture(type, event)
-})
+  analytics.on('pageView', (to) => {
+    posthog.register({
+      route: { name: to.name, params: to.params }
+    })
+    capturePageview()
+  })
+
+  analytics.on('locale', (record) => {
+    const language = record?.language
+    if (!language) return
+    posthog.register({ language })
+  })
+
+  const ignored = ['user:identification', 'pageView', 'consent', 'locale']
+  analytics.on('*', (type, event) => {
+    if (ignored.includes(type)) return
+    posthog.capture(type, event)
+  })
+}
 ```
 
-Import it in `App.vue`:
+Import it from `src/analytics/index.js` (`App.vue` already imports `./analytics`):
 
 ```javascript
-import './analytics/posthog'
+import './posthog.js'
 ```
 
 ## Step 4 – Emit custom events in components
@@ -129,6 +198,24 @@ analytics.emit('feature:used', { feature: 'darkMode', enabled: true })
 analytics.emit('navigation:click', { target: 'pricing', source: 'navbar' })
 ```
 
+## Saves
+
+`editorData` and `actionData` emit `form` before the model or action command, then `formDone` or `formError`. Draft autosave is not a save attempt. Pass `analyticsContext` as an object or a function; it is read when the event is sent. `service` and `action` from the command win over context. Do not put field values, email, or secrets in the context.
+
+Manual commands use `trackForm` from `@live-change/vue3-components`:
+
+```javascript
+import { trackForm } from '@live-change/vue3-components'
+
+await trackForm({
+  service: 'profile',
+  action: 'setMyUserIntent',
+  context: () => ({ place: 'onboarding', field: 'intent' })
+}, () => api.command(['profile', 'setMyUserIntent'], { keys }))
+```
+
+`<command-form>` still emits the same three names and keeps `parameters` in the payload.
+
 ## Step 5 – Consent handling
 
 Emit consent events from your consent banner:
@@ -143,4 +230,6 @@ function rejectAnalytics() {
 }
 ```
 
-Provider files listen for `consent` and enable/disable tracking accordingly.
+Provider files listen for `consent`. PostHog stays cookieless until the value is `true` or `'true'`, then opts in and identifies. Any other value opts out and does not identify.
+
+Emit `locale` whenever a language is known, including the first render, and keep it out of the catch-all. Providers store it as a property. Emit `locale:change` only when the language code actually changes, with `{ language }` and nothing else from the locale record.

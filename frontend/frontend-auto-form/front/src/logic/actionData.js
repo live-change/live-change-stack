@@ -1,7 +1,7 @@
 import { useToast } from 'primevue/usetoast'
 import { usePath, live, useApi } from '@live-change/vue3-ssr'
 import { ref, computed, inject, watch, getCurrentInstance } from 'vue'
-import { synchronized, defaultData } from '@live-change/vue3-components'
+import { synchronized, defaultData, trackForm } from '@live-change/vue3-components'
 
 import { propertiesValidationErrors } from './validation.js'
 
@@ -42,6 +42,7 @@ export default async function actionData(options) {
     path = usePath(options.appContext),
     api = useApi(options.appContext),
     workingZone = inject('workingZone', options.appContext),
+    analyticsContext,
 
   } = options
 
@@ -103,9 +104,12 @@ export default async function actionData(options) {
     commandPromise = (async () => {
       propertiesServerErrors.value = {}
       lastSentData.value = JSON.parse(JSON.stringify(requestData))
-      console.log("ACTION COMMAND DATA", requestData)
       try {
-        const result = await action(requestData)
+        const result = await trackForm({
+          service: serviceName,
+          action: actionName,
+          context: analyticsContext
+        }, () => action(requestData))
         done.value = true
         await onDone(result)
         return result

@@ -1,7 +1,7 @@
 import { useToast } from 'primevue/usetoast'
 import { usePath, live, useApi } from '@live-change/vue3-ssr'
 import { ref, computed, inject, watch, getCurrentInstance, unref } from 'vue'
-import { synchronized, defaultData } from '@live-change/vue3-components'
+import { synchronized, defaultData, trackForm } from '@live-change/vue3-components'
 
 import deepmerge from 'deepmerge';
 
@@ -54,6 +54,7 @@ export default function editorData(options) {
     extendSavedPath = x => x,
 
     initialData = {},
+    analyticsContext,
   } = options
 
   if(!identifiers) throw new Error('identifiers must be defined')
@@ -133,6 +134,7 @@ export default function editorData(options) {
     const lastUploadedData = ref(null)
 
     let savePromise = null
+    let lastSaveFailed = false
     const saving = ref(false)
     async function saveData(data){
       const savedIdentifiers = {}
@@ -155,19 +157,28 @@ export default function editorData(options) {
       savePromise = (async () => {
         propertiesServerErrors.value = {}
         lastUploadedData.value = JSON.parse(JSON.stringify(data))
-        console.log("SAVE DATA", requestData)
+        lastSaveFailed = false
+        const actionName = createOrUpdateAction
+          ? crudMethods.createOrUpdate
+          : (savedData.value ? crudMethods.update : crudMethods.create)
         try {
-          if(createOrUpdateAction) {
-            return await createOrUpdateAction(requestData)
-          }
-          if(savedData.value) {
-            return await updateAction(requestData)
-          } else {
+          return await trackForm({
+            service: serviceName,
+            action: actionName,
+            context: analyticsContext
+          }, async () => {
+            if(createOrUpdateAction) {
+              return await createOrUpdateAction(requestData)
+            }
+            if(savedData.value) {
+              return await updateAction(requestData)
+            }
             const createResult = await createAction(requestData)
             await onCreated(createResult)
             return createResult
-          }
+          })
         } catch(e) {
+          lastSaveFailed = true
           console.log("SAVE ERROR", e)
           if(e.properties) {
             propertiesServerErrors.value = e.properties
@@ -225,6 +236,7 @@ export default function editorData(options) {
         if(draftData.value) await removeDraftAction(draftIdentifiers)
         onSaved(saveResult)
         if(toast && savedToast) toast.add({ severity: 'success', summary: savedToast, life: 1500 })
+        return true
       }
 
       async function discardDraft() {
@@ -301,12 +313,18 @@ export default function editorData(options) {
         onReset()
       }
 
+      async function save() {
+        const attempted = await synchronizedData.save()
+        if(!attempted || lastSaveFailed) return false
+        return true
+      }
+
       return {
         identifiers,
         value: synchronizedData.value,
         data: synchronizedData.value,
         changed: synchronizedData.changed,
-        save: synchronizedData.save,
+        save,
         saving: synchronizedData.saving,
         saved: savedData,
         savedPath: savedDataPath,

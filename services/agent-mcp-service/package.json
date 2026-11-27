@@ -9,13 +9,13 @@
   },
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@live-change/access-control-service": "0.9.238",
-    "@live-change/framework": "0.9.238",
-    "@live-change/relations-plugin": "0.9.238",
-    "@live-change/user-service": "0.9.238"
+    "@live-change/access-control-service": "0.9.239",
+    "@live-change/framework": "0.9.239",
+    "@live-change/relations-plugin": "0.9.239",
+    "@live-change/user-service": "0.9.239"
   },
   "devDependencies": {
-    "@live-change/server": "0.9.238",
-    "@live-change/session-service": "0.9.238"
+    "@live-change/server": "0.9.239",
+    "@live-change/session-service": "0.9.239"
   }
 }
