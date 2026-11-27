@@ -14,6 +14,7 @@ import StyleClass from 'primevue/styleclass'
 import Ripple from 'primevue/ripple'
 import BadgeDirective from 'primevue/badgedirective'
 import Tooltip from 'primevue/tooltip'
+import AnimateOnScroll from 'primevue/animateonscroll'
 import VueLazyLoad from 'vue3-lazyload'
 import { createI18n } from 'vue-i18n'
 import { createHead } from "@vueuse/head"
@@ -97,6 +98,11 @@ export async function createApp(config, api, App, createRouter, host, headers, r
   app.directive('ripple', Ripple)
   app.directive('badge', BadgeDirective)
   app.directive('tooltip', Tooltip)
+  // Client hook hides the element until it scrolls in. On the server a no-op
+  // keeps the HTML visible for the first paint and for browsers without JS.
+  app.directive('animateonscroll', typeof window === 'undefined'
+    ? { getSSRProps: () => ({}) }
+    : AnimateOnScroll)
 
   app.use(VueLazyLoad, {
     // options...

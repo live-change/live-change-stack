@@ -287,6 +287,17 @@ export default async ({ command, mode, version, isSsrBuild, isPreview }, options
     },
 
     resolve: {
+      dedupe: [
+        'vue',
+        'vue-router',
+        '@vue/runtime-core',
+        '@vue/runtime-dom',
+        '@vue/server-renderer',
+        '@vue/shared',
+        '@vue/reactivity',
+        'primevue',
+        '@primevue/core'
+      ],
       alias: [
         { find: 'universal-websocket-client', replacement: 'universal-websocket-client/browser.js' },
         { find: 'sockjs-client', replacement: 'sockjs-client/dist/sockjs.min.js' }
